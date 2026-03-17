@@ -26,7 +26,7 @@ const AdminAlerts = () => {
     const driverIds = [...new Set(data.filter(a => a.driver_id).map(a => a.driver_id))];
     let nameMap = new Map<string, string>();
     if (driverIds.length > 0) {
-      const { data: drivers } = await supabase.from("drivers").select("id, user_id").in("id", driverIds) as any;
+      const { data: drivers } = await supabase.from("drivers").select("id, user_id").in("id", driverIds as string[]) as any;
       if (drivers?.length) {
         const uids = drivers.map((d: any) => d.user_id);
         const { data: profiles } = await supabase.from("profiles").select("id, name").in("id", uids);
