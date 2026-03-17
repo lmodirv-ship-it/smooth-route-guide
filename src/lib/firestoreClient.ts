@@ -1,7 +1,6 @@
 /**
  * Firestore wrapper that mimics Supabase's query builder API.
- * This allows a seamless migration from Supabase → Firebase Firestore
- * by keeping the same chainable API: firestoreDB.from('table').select('*').eq('field','val')
+ * Maps old Supabase table names to new Firebase collection names.
  */
 
 import {
