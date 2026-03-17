@@ -61,18 +61,11 @@ const ClientHome = () => {
 
       {/* Map */}
       <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-48 relative">
-        <div className="w-full h-full bg-secondary/50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="relative inline-block">
-              <MapPin className="w-10 h-10 text-primary mx-auto mb-2" />
-              <div className="absolute inset-0 w-10 h-10 mx-auto bg-primary/20 blur-lg rounded-full" />
-            </div>
-            <p className="text-sm text-muted-foreground">موقعك الحالي</p>
+        <GoogleMapWrapper zoom={14}>
+          <div className="absolute top-3 right-3 z-10 glass px-3 py-1.5 rounded-full text-xs text-foreground">
+            ٣ سائقين بالقرب منك
           </div>
-        </div>
-        <div className="absolute top-3 right-3 glass px-3 py-1.5 rounded-full text-xs text-foreground">
-          ٣ سائقين بالقرب منك
-        </div>
+        </GoogleMapWrapper>
       </div>
 
       {/* Nearby Drivers */}

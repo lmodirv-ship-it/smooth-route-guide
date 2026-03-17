@@ -26,32 +26,29 @@ const ActiveTrip = () => {
   return (
     <div className="min-h-screen gradient-dark flex flex-col">
       {/* Map Area */}
-      <div className="flex-1 relative bg-secondary/30 min-h-[40vh]">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <div className="relative inline-block">
-              <Navigation className="w-12 h-12 text-primary mx-auto" />
-              <div className="absolute inset-0 w-12 h-12 bg-primary/20 blur-xl rounded-full" />
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">
+      <div className="flex-1 relative min-h-[40vh]">
+        <GoogleMapWrapper zoom={15}>
+          {/* ETA Badge */}
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 glass px-4 py-2 rounded-full flex items-center gap-2">
+            <span className="text-foreground text-sm font-medium">{client.eta}</span>
+            <Clock className="w-4 h-4 text-primary" />
+          </div>
+
+          {/* Status */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 glass px-4 py-2 rounded-full">
+            <p className="text-sm text-foreground font-medium">
               {tripPhase === "arriving" ? "في الطريق للعميل" : tripPhase === "started" ? "الرحلة جارية" : "تم الوصول"}
             </p>
           </div>
-        </div>
 
-        {/* ETA Badge */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 glass px-4 py-2 rounded-full flex items-center gap-2">
-          <span className="text-foreground text-sm font-medium">{client.eta}</span>
-          <Clock className="w-4 h-4 text-primary" />
-        </div>
-
-        {/* Cancel */}
-        <button
-          onClick={() => navigate(-1)}
-          className="absolute top-4 right-4 w-10 h-10 rounded-full glass flex items-center justify-center"
-        >
-          <X className="w-5 h-5 text-muted-foreground" />
-        </button>
+          {/* Cancel */}
+          <button
+            onClick={() => navigate(-1)}
+            className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full glass flex items-center justify-center"
+          >
+            <X className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </GoogleMapWrapper>
       </div>
 
       {/* Bottom Sheet */}
