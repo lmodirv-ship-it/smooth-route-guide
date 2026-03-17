@@ -139,8 +139,9 @@ const DriverDelivery = () => {
   const pickedUp = async () => {
     if (!order) return;
     await supabase.from("delivery_orders").update({
-      status: "picked_up",
+      status: "in_transit",
       picked_up_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }).eq("id", order.id);
     setStage("delivering");
     await fetchCustomer(order.user_id);
@@ -152,6 +153,7 @@ const DriverDelivery = () => {
     await supabase.from("delivery_orders").update({
       status: "delivered",
       delivered_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }).eq("id", order.id);
     toast({ title: "تم التسليم بنجاح! 🎉" });
     setOrder(null);
