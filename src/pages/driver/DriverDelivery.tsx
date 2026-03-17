@@ -143,7 +143,7 @@ const DriverDelivery = () => {
   const pickedUp = async () => {
     if (!order) return;
     await supabase.from("delivery_orders").update({
-      status: "in_transit",
+      status: "picked_up",
       picked_up_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }).eq("id", order.id);
