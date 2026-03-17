@@ -16,8 +16,9 @@ import {
   signInWithPhoneNumber,
   type ConfirmationResult,
 } from "firebase/auth";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { createUserDocument, createRoleDocument, type UserRole } from "@/lib/firebaseServices";
 import logo from "@/assets/hn-driver-logo.png";
 
 type RoleId = "driver" | "client" | "delivery";
