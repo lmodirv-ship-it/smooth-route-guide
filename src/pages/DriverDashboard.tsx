@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   MapPin, DollarSign, Star, Clock, TrendingUp,
-  Bell, Menu, Power, ChevronLeft, Car, Navigation, BarChart3, User, Settings
+  Bell, Menu, Power, ChevronLeft, Car, Navigation, BarChart3, User, Settings, Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
@@ -113,6 +113,25 @@ const DriverDashboard = () => {
       </div>
 
       <IncomingRideRequest requests={requests} accepting={accepting} onAccept={acceptRequest} onReject={rejectRequest} />
+
+      {/* Delivery shortcut */}
+      {isOnline && (
+        <div className="px-4 mt-3">
+          <motion.button whileTap={{ scale: 0.97 }} onClick={() => navigate("/driver/delivery")}
+            className="w-full gradient-card rounded-xl p-3 border border-primary/20 flex items-center justify-between">
+            <ChevronLeft className="w-5 h-5 text-primary" />
+            <div className="flex items-center gap-3">
+              <div>
+                <p className="font-bold text-foreground text-sm text-right">طلبات التوصيل</p>
+                <p className="text-xs text-muted-foreground text-right">اطلع على طلبات المطاعم</p>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Package className="w-5 h-5 text-primary" />
+              </div>
+            </div>
+          </motion.button>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3 px-4 mt-4">
         {statCards.map((stat, i) => (

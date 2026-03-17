@@ -25,6 +25,7 @@ import DriverPromotions from "./pages/driver/DriverPromotions";
 import DriverSupport from "./pages/driver/DriverSupport";
 import DriverStatus from "./pages/driver/DriverStatus";
 import DriverEarnings from "./pages/driver/DriverEarnings";
+import DriverDelivery from "./pages/driver/DriverDelivery";
 
 // Client pages
 import ClientHome from "./pages/ClientHome";
@@ -114,6 +115,7 @@ const App = () => (
           <Route path="/driver/support" element={<DriverSupport />} />
           <Route path="/driver/status" element={<DriverStatus />} />
           <Route path="/driver/earnings" element={<DriverEarnings />} />
+          <Route path="/driver/delivery" element={<DriverDelivery />} />
 
           {/* Client App */}
           <Route path="/client" element={<ClientHome />} />
