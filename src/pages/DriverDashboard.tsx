@@ -223,9 +223,6 @@ const DriverDashboard = () => {
         </div>
       </div>
     </div>
-  return (
-    <>
-      {content}
       <RoleSwitcher />
     </>
   );
