@@ -140,7 +140,12 @@ const ClientHome = () => {
 
       {/* Map */}
       <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-48 relative">
-        <GoogleMapWrapper zoom={14}>
+        <GoogleMapWrapper
+          center={userLocation || undefined}
+          zoom={14}
+          showMarker={!!userLocation}
+          markerPosition={userLocation || undefined}
+        >
           <div className="absolute top-3 right-3 z-10 glass px-3 py-1.5 rounded-full text-xs text-foreground">
             ٣ سائقين بالقرب منك
           </div>
