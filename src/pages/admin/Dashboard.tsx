@@ -106,7 +106,7 @@ const AdminDashboardPage = () => {
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {[
           { icon: FileText, label: "إجمالي الطلبات", value: stats.requestsToday, color: "text-info", glow: "glow-ring-blue" },
           { icon: Car, label: "السائقون النشطون", value: stats.activeDrivers, color: "text-primary", glow: "glow-ring-orange" },
