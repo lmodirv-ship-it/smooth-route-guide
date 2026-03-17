@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
+import IncomingRideRequest from "@/components/IncomingRideRequest";
+import { useIncomingRideRequests } from "@/hooks/useIncomingRideRequests";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DriverDashboard = () => {
