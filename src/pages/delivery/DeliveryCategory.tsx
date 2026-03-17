@@ -105,7 +105,7 @@ const DeliveryCategory = () => {
     }
   };
 
-  if (category === "courier") return null;
+  if (category === "courier" || category === "restaurants") return null;
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
