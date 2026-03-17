@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Phone, PhoneIncoming, Clock, Users, AlertTriangle,
-  CheckCircle, Car, Headphones, Activity, Zap, BarChart3, Loader2
+  CheckCircle, Car, Headphones, Activity, Zap, BarChart3, Loader2, Package
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
