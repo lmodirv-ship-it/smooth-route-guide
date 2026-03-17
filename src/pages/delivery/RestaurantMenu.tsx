@@ -56,7 +56,7 @@ const RestaurantMenu = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-5 space-y-4" dir="rtl">
+      <div className="min-h-screen delivery-bg p-5 space-y-4" dir="rtl">
         <Skeleton className="h-40 rounded-2xl" />
         <Skeleton className="h-10 rounded-xl" />
         <Skeleton className="h-24 rounded-2xl" />
