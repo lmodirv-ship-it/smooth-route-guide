@@ -70,7 +70,7 @@ const DeliverySupport = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen delivery-bg" dir="rtl">
       <div className="bg-gradient-to-br from-info/80 via-info/60 to-info/40 pt-6 pb-8 px-5 rounded-b-3xl">
         <div className="flex items-center justify-between mb-4">
           <button onClick={() => navigate("/delivery")} className="p-2 rounded-xl bg-white/10 backdrop-blur-sm">

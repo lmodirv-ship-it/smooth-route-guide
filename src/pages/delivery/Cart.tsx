@@ -77,7 +77,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-40" dir="rtl">
+    <div className="min-h-screen delivery-bg pb-40" dir="rtl">
       {/* Header */}
       <div className="bg-card border-b border-border px-5 py-4 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-secondary">

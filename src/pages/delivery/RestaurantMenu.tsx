@@ -74,7 +74,7 @@ const RestaurantMenu = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-28" dir="rtl">
+    <div className="min-h-screen delivery-bg pb-28" dir="rtl">
       {/* Store Header */}
       <div className="bg-gradient-to-br from-primary/70 via-accent/50 to-secondary pt-6 pb-6 px-5 rounded-b-3xl">
         <div className="flex items-center justify-between mb-4">

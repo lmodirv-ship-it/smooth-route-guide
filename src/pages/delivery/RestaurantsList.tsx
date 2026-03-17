@@ -38,7 +38,7 @@ const RestaurantsList = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen delivery-bg" dir="rtl">
       {/* Header */}
       <div className="bg-gradient-to-br from-primary/80 via-accent/60 to-primary/40 pt-6 pb-8 px-5 rounded-b-3xl relative">
         <div className="flex items-center justify-between mb-4">
