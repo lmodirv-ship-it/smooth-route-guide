@@ -3,7 +3,9 @@ import { useMemo } from "react";
 import { Navigation } from "lucide-react";
 
 // Publishable key for client-side map rendering (restricted by HTTP referrer in Google Cloud Console)
-const GOOGLE_MAPS_API_KEY = "AIzaSyCBJ8vvBa875cIsAYfik4xYw-A8hj0LwaY";
+export const GOOGLE_MAPS_API_KEY = "AIzaSyCBJ8vvBa875cIsAYfik4xYw-A8hj0LwaY";
+
+const LIBRARIES: ("places")[] = ["places"];
 
 // Riyadh default center
 const DEFAULT_CENTER = { lat: 24.7136, lng: 46.6753 };
@@ -40,6 +42,7 @@ const GoogleMapWrapper = ({
 }: GoogleMapProps) => {
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    libraries: LIBRARIES,
   });
 
   const mapCenter = useMemo(() => center || DEFAULT_CENTER, [center]);
