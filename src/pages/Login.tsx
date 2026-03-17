@@ -44,6 +44,8 @@ const Login = () => {
           navigate("/admin");
         } else if (userRoles.includes("driver")) {
           navigate("/driver");
+        } else if (role === "delivery") {
+          navigate("/delivery");
         } else {
           navigate("/client");
         }
