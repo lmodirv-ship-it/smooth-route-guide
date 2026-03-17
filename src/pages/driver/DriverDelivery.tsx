@@ -56,39 +56,30 @@ const DriverDelivery = () => {
     if (!driverId) return;
 
     const fetchAssigned = async () => {
+      // Check for active orders (driver_assigned, picked_up, in_transit)
       const { data } = await supabase
         .from("delivery_orders")
         .select("*")
         .eq("driver_id", driverId)
-        .in("status", ["confirmed", "preparing", "ready", "picked_up"])
+        .in("status", ["driver_assigned", "picked_up", "in_transit"])
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
       if (data) {
         setOrder(data as DeliveryOrder);
-        if (data.status === "picked_up") {
+        if (data.status === "in_transit") {
           setStage("delivering");
           fetchCustomer(data.user_id);
-        } else if (data.status === "ready") {
-          setStage("at_restaurant");
-        } else {
-          setStage("to_restaurant");
-        }
-      } else {
-        // Check for newly assigned pending
-        const { data: pending } = await supabase
-          .from("delivery_orders")
-          .select("*")
-          .eq("driver_id", driverId)
-          .eq("status", "ready")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (pending) {
-          setOrder(pending as DeliveryOrder);
+        } else if (data.status === "picked_up") {
+          setStage("delivering");
+          fetchCustomer(data.user_id);
+        } else if (data.status === "driver_assigned") {
           setStage("new_request");
         }
+      } else {
+        setOrder(null);
+        setStage("idle");
       }
     };
 
