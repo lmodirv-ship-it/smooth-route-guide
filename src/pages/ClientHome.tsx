@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   MapPin, Search, Bell, Menu, Star, Clock, Navigation,
-  ChevronLeft, Car, Heart, User, Home, Phone, MessageCircle
+  ChevronLeft, Car, Heart, User, Home, Phone, MessageCircle, Bot
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
