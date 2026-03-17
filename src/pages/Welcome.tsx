@@ -53,8 +53,8 @@ const Welcome = () => {
         className="flex flex-col items-center pt-8 relative z-10"
       >
         <div className="relative">
-          <img src={logo} alt="HN Driver" className="w-36 h-36 mb-3" />
-          <div className="absolute inset-0 w-36 h-36 rounded-full bg-primary/10 blur-xl" />
+          <img src={logo} alt="HN Driver" className="w-48 h-48 mb-3" />
+          <div className="absolute inset-0 w-48 h-48 rounded-full bg-primary/15 blur-2xl" />
         </div>
         <h1 className="text-3xl font-bold font-display text-gradient-primary">HN Driver</h1>
         <p className="text-muted-foreground mt-1 text-sm">اختر نوع حسابك للمتابعة</p>
