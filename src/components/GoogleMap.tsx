@@ -7,8 +7,8 @@ export const GOOGLE_MAPS_API_KEY = "AIzaSyDpJ8TfGwfOa0XvwOyvmFpg-pdkYNSKoRM";
 
 const LIBRARIES: ("places")[] = ["places"];
 
-// Riyadh default center
-const DEFAULT_CENTER = { lat: 24.7136, lng: 46.6753 };
+// Tangier default center
+const DEFAULT_CENTER = { lat: 35.7595, lng: -5.8340 };
 
 const darkMapStyle = [
   { elementType: "geometry", stylers: [{ color: "#1a1d2e" }] },

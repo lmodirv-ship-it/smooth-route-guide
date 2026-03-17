@@ -44,12 +44,12 @@ const ClientHome = () => {
     );
   }, []);
 
-  const driverLocation = "24.7236,46.6853";
-  const customerLocation = userLocation ? `${userLocation.lat},${userLocation.lng}` : "24.7136,46.6753";
+  const driverLocation = "35.7695,-5.8240";
+  const customerLocation = userLocation ? `${userLocation.lat},${userLocation.lng}` : "35.7595,-5.8340";
 
   const quickLocations = [
-    { icon: Home, label: "المنزل", address: "حي الملقا، الرياض" },
-    { icon: Navigation, label: "العمل", address: "طريق الملك فهد، الرياض" },
+    { icon: Home, label: "المنزل", address: "حي مسنانة، طنجة" },
+    { icon: Navigation, label: "العمل", address: "شارع محمد الخامس، طنجة" },
   ];
 
   const nearbyDrivers = [
