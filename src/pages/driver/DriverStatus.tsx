@@ -39,7 +39,7 @@ const DriverStatus = () => {
     try {
       const { doc: fbDoc, updateDoc: fbUpdate } = await import("firebase/firestore");
       const { db: fbDb } = await import("@/lib/firebase");
-      await fbUpdate(fbDoc(fbDb, "drivers", user.uid), {
+      await fbUpdate(fbDoc(fbDb, "drivers", user.id), {
         isOnline: newOnline,
         isAvailable: newOnline,
       });
