@@ -239,6 +239,18 @@ const ClientHome = () => {
         </div>
       )}
 
+      {/* AI Assistant FAB */}
+      <motion.button
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => navigate("/assistant")}
+        className="fixed bottom-20 left-4 z-50 w-14 h-14 rounded-full gradient-primary glow-primary flex items-center justify-center shadow-lg"
+      >
+        <Bot className="w-6 h-6 text-primary-foreground" />
+      </motion.button>
+
       {/* Bottom Nav */}
       <div className="fixed bottom-0 left-0 right-0 glass-strong border-t border-border">
         <div className="flex justify-around py-2">
