@@ -4,11 +4,13 @@ import {
   Users, Car, DollarSign, TrendingUp, BarChart3, Bell,
   Search, Shield, Eye, Settings, Headphones, MapPin,
   AlertTriangle, CheckCircle, Clock, FileText, UserCheck,
-  XCircle, ChevronDown, Activity, Zap, BatteryLow
+  XCircle, ChevronDown, Activity, Zap, BatteryLow, Loader2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
 import logo from "@/assets/hn-driver-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
