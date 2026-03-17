@@ -158,11 +158,15 @@ const GoogleMapWrapper = ({
       >
         {showMarker && !driverLocation && <Marker position={markerPos} />}
         {driverLocation && (
-          <Marker
-            position={driverLocation}
-            icon={driverIcon}
-          />
+          <Marker position={driverLocation} icon={driverIcon} />
         )}
+        {nearbyDrivers.map((d) => (
+          <Marker
+            key={d.id}
+            position={{ lat: d.lat, lng: d.lng }}
+            icon={carIcon}
+          />
+        ))}
       </GoogleMapComponent>
       {children}
     </div>
