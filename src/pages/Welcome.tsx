@@ -117,7 +117,9 @@ const Welcome = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.3 + i * 0.15 }}
             onClick={() => handleRoleSelect(role.id, role.path)}
-            className="group relative overflow-hidden rounded-2xl p-5 gradient-card border border-border hover:border-primary/40 transition-all duration-300"
+            disabled={checking}
+            style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+            className="group relative overflow-hidden rounded-2xl p-5 gradient-card border border-border hover:border-primary/40 transition-all duration-300 disabled:opacity-50 cursor-pointer select-none"
           >
             <div className="absolute inset-0 gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />
             <div className="flex items-center gap-4">
