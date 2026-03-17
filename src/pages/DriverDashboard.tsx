@@ -12,7 +12,7 @@ import GoogleMapWrapper from "@/components/GoogleMap";
 import IncomingRideRequest from "@/components/IncomingRideRequest";
 import { useIncomingRideRequests } from "@/hooks/useIncomingRideRequests";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DriverDashboard = () => {

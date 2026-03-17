@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Package, CheckCircle, Bike, MapPin, Clock } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 
 const steps = [
   { key: "pending", label: "قيد المراجعة", icon: Clock },

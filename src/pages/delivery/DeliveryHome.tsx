@@ -9,7 +9,7 @@ import {
 import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 
 const categories = [

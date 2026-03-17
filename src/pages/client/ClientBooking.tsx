@@ -5,7 +5,7 @@ import { ArrowRight, Navigation, User, Star, CreditCard, Wallet, CheckCircle, Lo
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import GoogleMapWrapper from "@/components/GoogleMap";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 
 interface RideDraft {
@@ -147,9 +147,7 @@ const ClientBooking = () => {
             cleanup();
           }
         )
-        .subscribe((status) => {
-          console.info("[ride-booking] realtime_status", status);
-        });
+        .subscribe();
 
       timeoutId = window.setTimeout(() => {
         if (resolved) return;

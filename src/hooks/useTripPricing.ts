@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/firestoreClient';
 import { calculateTripPrice, DEFAULT_CURRENCY, CURRENCIES, type TripPriceEstimate } from '@/lib/pricing';
 
 interface DistanceSegment {
@@ -45,7 +45,7 @@ export function useTripPricing(currencyCode: string = DEFAULT_CURRENCY) {
         units: currency.unitSystem,
       });
 
-      const { data, error: fnError } = await supabase.functions.invoke<DistanceMatrixResponse>('distance-matrix', {
+      const { data, error: fnError } = await supabase.functions.invoke('distance-matrix', {
         body: { driverLocation, customerLocation, destination, units: currency.unitSystem },
       });
 

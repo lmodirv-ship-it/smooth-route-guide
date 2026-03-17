@@ -5,7 +5,7 @@ import { ArrowRight, Search, MapPin, ShoppingBag, Loader2, Star, Clock, Zap } fr
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 
 const categoryMeta: Record<string, { title: string; titleFr: string; emoji: string; dbCategory: string }> = {
   restaurants: { title: "مطاعم", titleFr: "Restaurants", emoji: "🍽️", dbCategory: "restaurant" },

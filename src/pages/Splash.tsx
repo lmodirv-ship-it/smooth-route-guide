@@ -28,6 +28,8 @@ const Splash = () => {
           const role = snap.exists() ? snap.data().role : savedRole || "client";
           if (role === "driver") navigate("/driver", { replace: true });
           else if (role === "delivery") navigate("/delivery", { replace: true });
+          else if (role === "admin") navigate("/admin", { replace: true });
+          else if (role === "call_center") navigate("/call-center", { replace: true });
           else navigate("/client", { replace: true });
         } catch {
           navigate("/welcome", { replace: true });

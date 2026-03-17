@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/firestoreClient';
 import { toast } from '@/hooks/use-toast';
 
 export interface RideRequest {

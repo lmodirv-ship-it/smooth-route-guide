@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import logo from "@/assets/hn-driver-logo.png";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import GoogleMapWrapper from "@/components/GoogleMap";
 

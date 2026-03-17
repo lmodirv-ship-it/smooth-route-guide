@@ -4,7 +4,7 @@ import { AlertTriangle, BatteryLow, Clock, MapPin, MessageCircle, CheckCircle, L
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 
 const AdminAlerts = () => {
   const [filter, setFilter] = useState<"all" | "active" | "resolved">("all");

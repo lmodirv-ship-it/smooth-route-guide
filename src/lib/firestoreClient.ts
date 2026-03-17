@@ -1,7 +1,6 @@
 /**
  * Firestore wrapper that mimics Supabase's query builder API.
- * This allows a seamless migration from Supabase → Firebase Firestore
- * by keeping the same chainable API: firestoreDB.from('table').select('*').eq('field','val')
+ * Maps old Supabase table names to new Firebase collection names.
  */
 
 import {
@@ -23,7 +22,43 @@ import {
   DocumentData,
   WhereFilterOp,
 } from "firebase/firestore";
-import { db, auth } from "./firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, auth, storage } from "./firebase";
+
+// Map old Supabase table names to Firebase collection names
+const COLLECTION_MAP: Record<string, string> = {
+  stores: "restaurants",
+  menu_categories: "restaurant_categories",
+  menu_items: "menu_items",
+  delivery_orders: "orders",
+  order_items: "order_items",
+  ride_requests: "orders",
+  trips: "orders",
+  drivers: "drivers",
+  profiles: "users",
+  notifications: "notifications",
+  alerts: "notifications",
+  complaints: "orders",
+  tickets: "orders",
+  call_center: "call_center_agents",
+  call_logs: "order_status_history",
+  earnings: "orders",
+  payments: "orders",
+  promotions: "app_settings",
+  ratings: "orders",
+  vehicles: "drivers",
+  wallet: "users",
+  zones: "app_settings",
+  app_settings: "app_settings",
+  documents: "drivers",
+  user_roles: "users",
+  chat_conversations: "notifications",
+  chat_messages: "notifications",
+  import_logs: "app_settings",
+  trip_status_history: "order_status_history",
+};
+
+const resolveCollection = (name: string) => COLLECTION_MAP[name] || name;
 
 type OrderDir = "asc" | "desc";
 
@@ -44,14 +79,16 @@ class FirestoreQueryBuilder<T = any> {
   private _neqFilters: Array<{ field: string; value: any }> = [];
   private _inFilters: Array<{ field: string; values: any[] }> = [];
   private _notNullFields: string[] = [];
+  private _headOnly = false;
 
   constructor(collectionName: string) {
-    this._collection = collectionName;
+    this._collection = resolveCollection(collectionName);
   }
 
-  select(fields?: string) {
+  select(fields?: string, opts?: { count?: string; head?: boolean }) {
     this._selectFields = fields || "*";
     this._mode = "select";
+    if (opts?.head) this._headOnly = true;
     return this;
   }
 
@@ -90,6 +127,26 @@ class FirestoreQueryBuilder<T = any> {
 
   in(field: string, values: any[]) {
     this._inFilters.push({ field, values });
+    return this;
+  }
+
+  gte(field: string, value: any) {
+    this._constraints.push(where(field, ">=", value));
+    return this;
+  }
+
+  lte(field: string, value: any) {
+    this._constraints.push(where(field, "<=", value));
+    return this;
+  }
+
+  gt(field: string, value: any) {
+    this._constraints.push(where(field, ">", value));
+    return this;
+  }
+
+  lt(field: string, value: any) {
+    this._constraints.push(where(field, "<", value));
     return this;
   }
 
@@ -401,16 +458,25 @@ class RealtimeChannel {
   }
 }
 
-// ---------- Storage wrapper ----------
+// ---------- Storage wrapper (Firebase Storage) ----------
 const storageWrapper = {
   from: (bucket: string) => ({
     upload: async (path: string, file: File) => {
-      // TODO: Implement Firebase Storage upload
-      console.warn("Firebase Storage upload not yet implemented");
-      return { data: { path }, error: null };
+      try {
+        const storageRef = ref(storage, `${bucket}/${path}`);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        return { data: { path, fullPath: `${bucket}/${path}`, publicUrl: url }, error: null };
+      } catch (e: any) {
+        return { data: null, error: { message: e.message } };
+      }
     },
     getPublicUrl: (path: string) => {
-      return { data: { publicUrl: path } };
+      // For Firebase Storage, we construct the URL
+      const projectId = "hn-driver-18963";
+      const encodedPath = encodeURIComponent(`${bucket}/${path}`);
+      const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${projectId}.firebasestorage.app/o/${encodedPath}?alt=media`;
+      return { data: { publicUrl } };
     },
   }),
 };

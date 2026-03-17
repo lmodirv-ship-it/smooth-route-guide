@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Minus, Plus, Trash2, ShoppingBag, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 import { toast } from "@/hooks/use-toast";
 
 const Cart = () => {

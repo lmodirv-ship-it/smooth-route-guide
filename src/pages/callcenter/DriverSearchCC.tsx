@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Search, Car, Star, MapPin, Phone, MessageCircle, Clock, User, Bike, Navigation, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 
 const DriverSearchCC = () => {
   const [query, setQuery] = useState("");
@@ -31,9 +31,9 @@ const DriverSearchCC = () => {
 
       setDrivers(driverRows.map(d => ({
         ...d,
-        name: pMap.get(d.user_id)?.name || "سائق",
-        phone: pMap.get(d.user_id)?.phone || "",
-        email: pMap.get(d.user_id)?.email || "",
+        name: (pMap.get(d.user_id) as any)?.name || "سائق",
+        phone: (pMap.get(d.user_id) as any)?.phone || "",
+        email: (pMap.get(d.user_id) as any)?.email || "",
         activeOrders: orderMap.get(d.id) || [],
       })));
     }

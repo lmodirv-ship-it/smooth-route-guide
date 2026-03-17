@@ -4,7 +4,7 @@ import { FileCheck, CheckCircle, XCircle, Clock, Eye, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 
 interface Doc {
   id: string; driver_id: string; type: string; status: string;

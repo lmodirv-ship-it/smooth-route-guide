@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 
 const CCDashboard = () => {
   const navigate = useNavigate();
@@ -57,11 +57,11 @@ const CCDashboard = () => {
     if (ordersRes.data) {
       const uids = [...new Set(ordersRes.data.map(o => o.user_id))];
       const { data: profiles } = await supabase.from("profiles").select("id, name, phone").in("id", uids);
-      const pMap = new Map(profiles?.map(p => [p.id, p]) || []);
+      const pMap = new Map((profiles as any[])?.map((p: any) => [p.id, p]) || []);
       setRecentOrders(ordersRes.data.map(o => ({
         ...o,
-        userName: pMap.get(o.user_id)?.name || "—",
-        userPhone: pMap.get(o.user_id)?.phone || "—",
+        userName: (pMap.get(o.user_id) as any)?.name || "—",
+        userPhone: (pMap.get(o.user_id) as any)?.phone || "—",
       })));
     }
 

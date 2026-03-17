@@ -10,10 +10,12 @@ import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 
 type RoleId = "driver" | "client" | "delivery";
 
-const roleDashboardPaths: Record<RoleId, string> = {
+const roleDashboardPaths: Record<string, string> = {
   driver: "/driver",
   client: "/client",
   delivery: "/delivery",
+  call_center: "/call-center",
+  admin: "/admin",
 };
 
 const Welcome = () => {

@@ -4,29 +4,24 @@ import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
+import type { UserRole } from "@/lib/firebaseServices";
 
-type RoleId = "driver" | "client" | "delivery";
-
-const roleDashboard: Record<RoleId, string> = {
+const roleDashboard: Record<UserRole, string> = {
   driver: "/driver",
   client: "/client",
   delivery: "/delivery",
-};
-
-const rolePathPrefix: Record<RoleId, string> = {
-  driver: "/driver",
-  client: "/client",
-  delivery: "/delivery",
+  call_center: "/call-center",
+  admin: "/admin",
 };
 
 interface AuthGuardProps {
   children: React.ReactNode;
-  requiredRole: RoleId;
+  requiredRole: UserRole;
 }
 
 const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
   const [state, setState] = useState<"loading" | "ok" | "no-auth" | "wrong-role" | "incomplete-profile">("loading");
-  const [userRole, setUserRole] = useState<RoleId | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -42,7 +37,7 @@ const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
           return;
         }
         const data = snap.data();
-        const role = data.role as RoleId;
+        const role = data.role as UserRole;
         setUserRole(role);
 
         if (role !== requiredRole) {
@@ -50,7 +45,6 @@ const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
           return;
         }
 
-        // Check profile completion - skip if already on complete-profile
         if (data.profileCompleted === false && !location.pathname.includes("complete-profile")) {
           setState("incomplete-profile");
           return;
@@ -72,17 +66,9 @@ const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
     );
   }
 
-  if (state === "no-auth") {
-    return <Navigate to="/welcome" replace />;
-  }
-
-  if (state === "wrong-role" && userRole) {
-    return <Navigate to={roleDashboard[userRole]} replace />;
-  }
-
-  if (state === "incomplete-profile") {
-    return <Navigate to="/complete-profile" replace />;
-  }
+  if (state === "no-auth") return <Navigate to="/welcome" replace />;
+  if (state === "wrong-role" && userRole) return <Navigate to={roleDashboard[userRole]} replace />;
+  if (state === "incomplete-profile") return <Navigate to="/complete-profile" replace />;
 
   return <>{children}</>;
 };

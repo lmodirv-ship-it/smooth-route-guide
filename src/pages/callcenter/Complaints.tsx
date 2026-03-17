@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 import { toast } from "@/hooks/use-toast";
 
 const categories = [
@@ -32,11 +32,11 @@ const Complaints = () => {
     if (data) {
       const uids = [...new Set(data.map(c => c.user_id))];
       const { data: profiles } = await supabase.from("profiles").select("id, name, phone").in("id", uids);
-      const pMap = new Map(profiles?.map(p => [p.id, p]) || []);
+      const pMap = new Map((profiles as any[])?.map((p: any) => [p.id, p]) || []);
       setComplaints(data.map(c => ({
         ...c,
-        userName: pMap.get(c.user_id)?.name || "—",
-        userPhone: pMap.get(c.user_id)?.phone || "—",
+        userName: (pMap.get(c.user_id) as any)?.name || "—",
+        userPhone: (pMap.get(c.user_id) as any)?.phone || "—",
       })));
     }
     setLoading(false);

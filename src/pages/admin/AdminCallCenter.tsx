@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 
 const AdminCallCenter = () => {
   const [tickets, setTickets] = useState<any[]>([]);
@@ -17,8 +17,8 @@ const AdminCallCenter = () => {
     if (!data) return;
     const uids = [...new Set(data.map(t => t.user_id))];
     const { data: profiles } = await supabase.from("profiles").select("id, name, phone").in("id", uids);
-    const nameMap = new Map(profiles?.map(p => [p.id, p]) || []);
-    setTickets(data.map(t => ({ ...t, userName: nameMap.get(t.user_id)?.name || "—", userPhone: nameMap.get(t.user_id)?.phone || "—" })));
+    const nameMap = new Map((profiles as any[])?.map((p: any) => [p.id, p]) || []);
+    setTickets(data.map(t => ({ ...t, userName: (nameMap.get(t.user_id) as any)?.name || "—", userPhone: (nameMap.get(t.user_id) as any)?.phone || "—" })));
   };
 
   useEffect(() => {

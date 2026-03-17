@@ -16,8 +16,9 @@ import {
   signInWithPhoneNumber,
   type ConfirmationResult,
 } from "firebase/auth";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { createUserDocument, createRoleDocument, type UserRole } from "@/lib/firebaseServices";
 import logo from "@/assets/hn-driver-logo.png";
 
 type RoleId = "driver" | "client" | "delivery";
@@ -78,16 +79,15 @@ const AuthPage = () => {
   }, [navigate, role]);
 
   const saveUserToFirestore = async (uid: string, extra: Record<string, any> = {}) => {
-    await setDoc(doc(db, "users", uid), {
-      uid,
-      role,
+    // Create main user document
+    await createUserDocument(uid, {
+      role: role as UserRole,
       fullName: extra.fullName || "",
       phone: extra.phone || "",
       email: extra.email || "",
-      status: "active",
-      profileCompleted: false,
-      createdAt: serverTimestamp(),
-    }, { merge: true });
+    });
+    // Create role-specific document
+    await createRoleDocument(uid, role as UserRole, extra);
   };
 
   // ─── Email/Password ───

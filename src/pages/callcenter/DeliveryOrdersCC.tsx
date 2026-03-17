@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 import { toast } from "@/hooks/use-toast";
 
 const statusFlow = [
@@ -59,20 +59,20 @@ const DeliveryOrdersCC = () => {
         if (driverRows) {
           const dUserIds = driverRows.map(d => d.user_id);
           const { data: dProfiles } = await supabase.from("profiles").select("id, name, phone").in("id", dUserIds);
-          const dpMap = new Map(dProfiles?.map(p => [p.id, p]) || []);
+          const dpMap = new Map((dProfiles as any[])?.map((p: any) => [p.id, p]) || []);
           driverRows.forEach(d => {
-            driverMap.set(d.id, { ...d, name: dpMap.get(d.user_id)?.name || "سائق", phone: dpMap.get(d.user_id)?.phone || "" });
+            driverMap.set(d.id, { ...d, name: (dpMap.get(d.user_id) as any)?.name || "سائق", phone: (dpMap.get(d.user_id) as any)?.phone || "" });
           });
         }
       }
 
       setOrders(data.map(o => ({
         ...o,
-        userName: pMap.get(o.user_id)?.name || "—",
-        userPhone: pMap.get(o.user_id)?.phone || "—",
-        userEmail: pMap.get(o.user_id)?.email || "",
-        driverName: o.driver_id ? driverMap.get(o.driver_id)?.name : null,
-        driverPhone: o.driver_id ? driverMap.get(o.driver_id)?.phone : null,
+        userName: (pMap.get(o.user_id) as any)?.name || "—",
+        userPhone: (pMap.get(o.user_id) as any)?.phone || "—",
+        userEmail: (pMap.get(o.user_id) as any)?.email || "",
+        driverName: o.driver_id ? (driverMap.get(o.driver_id) as any)?.name : null,
+        driverPhone: o.driver_id ? (driverMap.get(o.driver_id) as any)?.phone : null,
       })));
     }
     setLoading(false);
@@ -83,11 +83,11 @@ const DeliveryOrdersCC = () => {
     if (driversList) {
       const dUserIds = driversList.map(d => d.user_id);
       const { data: dProfiles } = await supabase.from("profiles").select("id, name, phone").in("id", dUserIds);
-      const pMap = new Map(dProfiles?.map(p => [p.id, p]) || []);
+      const pMap = new Map((dProfiles as any[])?.map((p: any) => [p.id, p]) || []);
       setDrivers(driversList.map(d => ({
         ...d,
-        name: pMap.get(d.user_id)?.name || "سائق",
-        phone: pMap.get(d.user_id)?.phone || "",
+        name: (pMap.get(d.user_id) as any)?.name || "سائق",
+        phone: (pMap.get(d.user_id) as any)?.phone || "",
       })));
     }
   }, []);
