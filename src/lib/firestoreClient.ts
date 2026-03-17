@@ -436,16 +436,25 @@ class RealtimeChannel {
   }
 }
 
-// ---------- Storage wrapper ----------
+// ---------- Storage wrapper (Firebase Storage) ----------
 const storageWrapper = {
   from: (bucket: string) => ({
     upload: async (path: string, file: File) => {
-      // TODO: Implement Firebase Storage upload
-      console.warn("Firebase Storage upload not yet implemented");
-      return { data: { path }, error: null };
+      try {
+        const storageRef = ref(storage, `${bucket}/${path}`);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        return { data: { path, fullPath: `${bucket}/${path}`, publicUrl: url }, error: null };
+      } catch (e: any) {
+        return { data: null, error: { message: e.message } };
+      }
     },
     getPublicUrl: (path: string) => {
-      return { data: { publicUrl: path } };
+      // For Firebase Storage, we construct the URL
+      const projectId = "hn-driver-18963";
+      const encodedPath = encodeURIComponent(`${bucket}/${path}`);
+      const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${projectId}.firebasestorage.app/o/${encodedPath}?alt=media`;
+      return { data: { publicUrl } };
     },
   }),
 };
