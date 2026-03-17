@@ -171,13 +171,13 @@ serve(async (req) => {
   }
 
   try {
-    const { city, type, useGoogle } = await req.json();
+    const { city, type, useGoogle, area } = await req.json();
     const GOOGLE_MAPS_API_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY');
 
     // Try Google Places API if key exists and useGoogle is true
     if (useGoogle && GOOGLE_MAPS_API_KEY) {
-      const query = `${type || 'restaurants'} in ${city || 'Tanger'}, Morocco`;
-      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${GOOGLE_MAPS_API_KEY}&language=fr`;
+      const areaQuery = area ? `${type || 'restaurants'} in ${area}, ${city || 'Tanger'}, Morocco` : `${type || 'restaurants'} in ${city || 'Tanger'}, Morocco`;
+      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(areaQuery)}&key=${GOOGLE_MAPS_API_KEY}&language=fr`;
 
       const response = await fetch(url);
       const data = await response.json();
@@ -219,13 +219,17 @@ serve(async (req) => {
       }
     }
 
-    // Fallback to mock data - return all for "restaurants" or "all"
-    const filtered = MOCK_RESTAURANTS.filter(r => {
+    // Fallback to mock data
+    let filtered = MOCK_RESTAURANTS.filter(r => {
       if (type && type !== 'all' && type !== 'restaurants') {
         return r.category.toLowerCase().includes(type.toLowerCase());
       }
       return true;
     });
+    // Filter by area if specified
+    if (area) {
+      filtered = filtered.filter(r => r.area.toLowerCase().includes(area.toLowerCase()));
+    }
 
     return new Response(JSON.stringify({ 
       restaurants: filtered, 

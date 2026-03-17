@@ -58,6 +58,21 @@ type MenuItem = {
 const GoogleMapsImport = () => {
   const [city] = useState("Tanger");
   const [type, setType] = useState("all");
+  const [area, setArea] = useState("all");
+
+  const TANGER_AREAS = [
+    { value: "all", label: "جميع المناطق" },
+    { value: "Mesnana", label: "مسنانة - Mesnana" },
+    { value: "Malabata", label: "مالاباطا - Malabata" },
+    { value: "Médina", label: "المدينة القديمة - Médina" },
+    { value: "Centre Ville", label: "وسط المدينة - Centre Ville" },
+    { value: "Kasbah", label: "القصبة - Kasbah" },
+    { value: "Marshan", label: "مرشان - Marshan" },
+    { value: "Boukhalef", label: "بوخالف - Boukhalef" },
+    { value: "Iberia", label: "إيبيريا - Iberia" },
+    { value: "Val Fleuri", label: "فال فلوري - Val Fleuri" },
+    { value: "Branes", label: "براناس - Branes" },
+  ];
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [results, setResults] = useState<Restaurant[]>([]);
@@ -103,7 +118,7 @@ const GoogleMapsImport = () => {
     setSelected(new Set());
     try {
       const { data, error } = await supabase.functions.invoke("google-places-search", {
-        body: { city, type: type === "all" ? "restaurants" : type, useGoogle: true },
+        body: { city, type: type === "all" ? "restaurants" : type, useGoogle: true, area: area !== "all" ? area : undefined },
       });
       if (error) throw error;
       setResults(data.restaurants || []);
@@ -375,6 +390,19 @@ const GoogleMapsImport = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="w-56">
+                  <label className="text-xs text-muted-foreground mb-1 block">المنطقة</label>
+                  <Select value={area} onValueChange={setArea}>
+                    <SelectTrigger className="bg-secondary/60 border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TANGER_AREAS.map(a => (
+                        <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button onClick={searchRestaurants} disabled={loading} className="h-10">
                   {loading ? <Loader2 className="w-4 h-4 animate-spin ml-1" /> : <Search className="w-4 h-4 ml-1" />}
                   بحث
@@ -483,18 +511,37 @@ const GoogleMapsImport = () => {
 
         {/* ===== MANAGE TAB ===== */}
         <TabsContent value="manage" className="space-y-4">
+          {/* Area filter for manage */}
+          <div className="flex items-center gap-3">
+            <label className="text-xs text-muted-foreground">فلتر حسب المنطقة:</label>
+            <div className="flex flex-wrap gap-2">
+              {TANGER_AREAS.map(a => (
+                <button
+                  key={a.value}
+                  onClick={() => setArea(a.value)}
+                  className={`px-3 py-1 rounded-full text-xs border transition-all ${
+                    area === a.value
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-secondary/40 text-muted-foreground border-border hover:border-primary/40"
+                  }`}
+                >
+                  {a.label.split(" - ")[0]}
+                </button>
+              ))}
+            </div>
+          </div>
           {loadingManage ? (
             <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-          ) : savedRestaurants.length === 0 ? (
+          ) : savedRestaurants.filter(r => area === "all" || (r.area || "").toLowerCase().includes(area.toLowerCase())).length === 0 ? (
             <Card className="bg-card/40 border-border border-dashed">
               <CardContent className="p-12 text-center">
                 <Package className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
-                <p className="text-muted-foreground">لا توجد مطاعم بعد. قم بالاستيراد أولاً.</p>
+                <p className="text-muted-foreground">{area !== "all" ? "لا توجد مطاعم في هذه المنطقة" : "لا توجد مطاعم بعد. قم بالاستيراد أولاً."}</p>
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {savedRestaurants.map(r => (
+              {savedRestaurants.filter(r => area === "all" || (r.area || "").toLowerCase().includes(area.toLowerCase())).map(r => (
                 <Card key={r.id} className="bg-card/60 border-border backdrop-blur">
                   {r.image_url && (
                     <img src={r.image_url} alt={r.name} className="w-full h-32 object-cover rounded-t-lg" />
