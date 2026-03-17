@@ -154,9 +154,15 @@ const DriverDelivery = () => {
 
   const delivered = async () => {
     if (!order) return;
+    // First mark as delivered (arrived at customer)
     await supabase.from("delivery_orders").update({
       status: "delivered",
       delivered_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }).eq("id", order.id);
+    // Then mark as completed
+    await supabase.from("delivery_orders").update({
+      status: "completed",
       updated_at: new Date().toISOString(),
     }).eq("id", order.id);
     toast({ title: "تم التسليم بنجاح! 🎉" });
