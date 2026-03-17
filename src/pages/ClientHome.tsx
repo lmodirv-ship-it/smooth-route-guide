@@ -20,6 +20,7 @@ const ClientHome = () => {
   const [destination, setDestination] = useState("");
   const [showEstimate, setShowEstimate] = useState(false);
   const { getEstimate, estimate, loading, error, reset } = useTripPricing("DH");
+  const { drivers: nearbyDriversData } = useNearbyDrivers();
 
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
