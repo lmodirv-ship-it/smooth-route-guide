@@ -39,6 +39,7 @@ const App = () => (
           <Route path="/client" element={<ClientHome />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/call-center" element={<CallCenter />} />
+          <Route path="/assistant" element={<AIAssistant />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
