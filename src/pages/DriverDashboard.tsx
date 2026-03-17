@@ -201,9 +201,14 @@ const DriverDashboard = () => {
           <img src={logo} alt="HN" className="w-8 h-8" />
           <span className="font-bold font-display text-gradient-primary text-lg">HN Driver</span>
         </div>
-        <button onClick={() => navigate("/driver/settings")} className="p-2">
-          <Menu className="w-5 h-5 text-muted-foreground" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button onClick={logout} className="p-2" title="تسجيل الخروج">
+            <LogOut className="w-5 h-5 text-destructive" />
+          </button>
+          <button onClick={() => navigate("/driver/settings")} className="p-2">
+            <Menu className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </div>
       </div>
 
       {activeTab === "home" && renderHome()}

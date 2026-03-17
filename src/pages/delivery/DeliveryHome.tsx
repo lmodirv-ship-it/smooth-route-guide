@@ -106,9 +106,14 @@ const DeliveryHome = () => {
 
         {/* Top bar */}
         <div className="flex items-center justify-between mb-5 relative z-10">
-          <button onClick={() => navigate("/welcome")} className="p-2 rounded-xl bg-white/10 backdrop-blur-sm">
-            <ArrowRight className="w-5 h-5 text-primary-foreground" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button onClick={logout} className="p-2 rounded-xl bg-white/10 backdrop-blur-sm" title="تسجيل الخروج">
+              <LogOut className="w-4 h-4 text-primary-foreground" />
+            </button>
+            <button onClick={() => navigate("/welcome")} className="p-2 rounded-xl bg-white/10 backdrop-blur-sm">
+              <ArrowRight className="w-5 h-5 text-primary-foreground" />
+            </button>
+          </div>
           <img src={deliveryLogo} alt="HN Delivery" className="w-11 h-11 rounded-full border-2 border-white/30 shadow-lg" />
           <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5">
             <MapPin className="w-3.5 h-3.5 text-primary-foreground" />

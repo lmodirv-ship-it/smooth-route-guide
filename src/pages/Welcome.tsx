@@ -141,6 +141,25 @@ const Welcome = () => {
         </div>
         <h1 className="text-4xl font-bold font-display text-gradient-primary mt-4 tracking-wider">HN DRIVER</h1>
         <p className="text-muted-foreground mt-1 text-sm">اختر نوع حسابك للمتابعة</p>
+        {currentUser && (
+          <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-3 flex flex-col items-center gap-2"
+          >
+            <p className="text-xs text-success">
+              ✓ مسجل كـ {currentUser.email || currentUser.phoneNumber}
+              {userRole && ` (${userRole === "driver" ? "سائق" : userRole === "client" ? "عميل" : "توصيل"})`}
+            </p>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 text-xs text-destructive hover:text-destructive/80 transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              استخدام حساب آخر
+            </button>
+          </motion.div>
+        )}
       </motion.div>
 
       <div className="flex flex-col gap-4 w-full max-w-sm relative z-10">
