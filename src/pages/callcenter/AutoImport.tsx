@@ -117,20 +117,27 @@ const AutoImport = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("scrape-restaurant", {
-        body: { url: url.trim(), city },
+        body: { url: normalizedUrl, city },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Edge function error:", error);
+        const msg = error.message?.includes("non-2xx")
+          ? "خطأ في الاتصال بالخادم. تأكد من صحة الرابط وحاول مرة أخرى."
+          : error.message || "خطأ غير متوقع";
+        toast.error(msg);
+        return;
+      }
 
       if (data?.success && data.data?.restaurants?.length > 0) {
         setExtractedData(data.data.restaurants);
         toast.success(`تم استخراج ${data.data.restaurants.length} مطعم بنجاح`);
       } else {
-        toast.error(data?.error || "لم يتم العثور على بيانات مطاعم");
+        toast.error(data?.error || "لم يتم العثور على بيانات مطاعم في هذا الرابط");
       }
     } catch (err: any) {
       console.error("Import error:", err);
-      toast.error(err.message || "خطأ أثناء الاستيراد");
+      toast.error("حدث خطأ أثناء الاستيراد. تحقق من اتصالك بالإنترنت.");
     } finally {
       setIsLoading(false);
     }
