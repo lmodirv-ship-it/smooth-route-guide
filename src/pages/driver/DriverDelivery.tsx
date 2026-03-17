@@ -113,9 +113,9 @@ const DriverDelivery = () => {
   // ── Actions ──
   const acceptOrder = async () => {
     if (!order) return;
-    // Mark as accepted by updating status
     await supabase.from("delivery_orders").update({
-      status: "picked_up",
+      status: "accepted",
+      accepted_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }).eq("id", order.id);
     setStage("to_restaurant");
