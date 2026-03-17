@@ -81,6 +81,7 @@ import Emergency from "./pages/callcenter/Emergency";
 import CallHistory from "./pages/callcenter/CallHistory";
 import CCReports from "./pages/callcenter/CCReports";
 import DeliveryOrdersCC from "./pages/callcenter/DeliveryOrdersCC";
+import RestaurantsCC from "./pages/callcenter/RestaurantsCC";
 
 // AI
 import AgentHub from "./pages/ai/AgentHub";
@@ -169,6 +170,7 @@ const App = () => (
             <Route path="complaints" element={<Complaints />} />
             <Route path="tickets" element={<Tickets />} />
             <Route path="delivery" element={<DeliveryOrdersCC />} />
+            <Route path="restaurants" element={<RestaurantsCC />} />
             <Route path="emergency" element={<Emergency />} />
             <Route path="history" element={<CallHistory />} />
             <Route path="reports" element={<CCReports />} />

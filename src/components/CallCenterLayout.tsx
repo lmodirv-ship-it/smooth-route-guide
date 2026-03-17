@@ -3,7 +3,7 @@ import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
   BarChart3, Phone, Car, Users, Search, AlertTriangle, FileText,
   Headphones, BarChart, Shield, Bell, PhoneCall, PlusCircle, Clock,
-  Menu, X
+  Menu, X, UtensilsCrossed
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import logo from "@/assets/hn-driver-logo.png";
@@ -19,6 +19,7 @@ const navItems = [
   { path: "/call-center/complaints", icon: AlertTriangle, label: "الشكاوى" },
   { path: "/call-center/tickets", icon: FileText, label: "التذاكر" },
   { path: "/call-center/emergency", icon: AlertTriangle, label: "الطوارئ" },
+  { path: "/call-center/restaurants", icon: UtensilsCrossed, label: "المطاعم" },
   { path: "/call-center/history", icon: Clock, label: "سجل المكالمات" },
   { path: "/call-center/reports", icon: BarChart, label: "التقارير" },
 ];
