@@ -19,6 +19,7 @@ Deno.serve(async (req) => {
     }
 
     const apiKey = Deno.env.get('GOOGLE_MAPS_API_KEY');
+    console.log('API Key exists:', !!apiKey, 'Length:', apiKey?.length || 0, 'Starts with:', apiKey?.substring(0, 8));
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
@@ -37,6 +38,8 @@ Deno.serve(async (req) => {
     ]);
 
     const [d1Data, d2Data] = await Promise.all([d1Response.json(), d2Response.json()]);
+    console.log('D1 response:', JSON.stringify(d1Data));
+    console.log('D2 response:', JSON.stringify(d2Data));
 
     // Validate D1
     if (d1Data.status !== 'OK') {
