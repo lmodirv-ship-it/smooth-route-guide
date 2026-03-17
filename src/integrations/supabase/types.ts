@@ -461,6 +461,48 @@ export type Database = {
           },
         ]
       }
+      import_logs: {
+        Row: {
+          categories_count: number
+          city: string
+          created_at: string
+          error_message: string | null
+          id: string
+          imported_by: string | null
+          products_count: number
+          restaurants_count: number
+          source_type: string
+          source_url: string
+          status: string
+        }
+        Insert: {
+          categories_count?: number
+          city?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          imported_by?: string | null
+          products_count?: number
+          restaurants_count?: number
+          source_type?: string
+          source_url?: string
+          status?: string
+        }
+        Update: {
+          categories_count?: number
+          city?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          imported_by?: string | null
+          products_count?: number
+          restaurants_count?: number
+          source_type?: string
+          source_url?: string
+          status?: string
+        }
+        Relationships: []
+      }
       menu_categories: {
         Row: {
           created_at: string
