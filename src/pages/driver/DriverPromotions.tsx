@@ -1,23 +1,24 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Gift, Clock, Star, Zap, TrendingUp, Trophy } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, Gift, Clock, Star, Zap, TrendingUp, Trophy, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const DriverPromotions = () => {
   const navigate = useNavigate();
+  const [promotions, setPromotions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const promotions = [
-    { id: 1, title: "مكافأة 10 رحلات", desc: "أكمل 10 رحلات اليوم واحصل على 50 DH إضافية", icon: Zap, color: "text-primary", bg: "bg-primary/10", progress: 7, total: 10, reward: "50 DH" },
-    { id: 2, title: "تقييم ممتاز", desc: "حافظ على تقييم 4.8+ لمدة أسبوع", icon: Star, color: "text-warning", bg: "bg-warning/10", progress: 5, total: 7, reward: "100 DH" },
-    { id: 3, title: "ساعات الذروة", desc: "اعمل خلال ساعات الذروة واربح 1.5x", icon: TrendingUp, color: "text-success", bg: "bg-success/10", progress: 0, total: 1, reward: "1.5x" },
-    { id: 4, title: "بطل الأسبوع", desc: "كن السائق الأعلى رحلات هذا الأسبوع", icon: Trophy, color: "text-info", bg: "bg-info/10", progress: 42, total: 60, reward: "200 DH" },
-  ];
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase.from("promotions").select("*").eq("active", true).order("created_at", { ascending: false });
+      setPromotions(data || []);
+      setLoading(false);
+    };
+    fetch();
+  }, []);
 
-  const coupons = [
-    { code: "HN2026", discount: "خصم 20% على عمولة المنصة", expires: "25/03/2026", active: true },
-    { code: "DRIVE50", discount: "مكافأة 50 DH على أول 5 رحلات", expires: "30/03/2026", active: true },
-    { code: "BONUS100", discount: "100 DH مكافأة تسجيل", expires: "منتهي", active: false },
-  ];
+  if (loading) return <div className="min-h-screen gradient-dark flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
     <div className="min-h-screen gradient-dark pb-6" dir="rtl">
@@ -28,52 +29,27 @@ const DriverPromotions = () => {
       </div>
 
       <div className="px-4 mt-4">
-        <h3 className="text-foreground font-bold mb-3">التحديات النشطة</h3>
+        <h3 className="text-foreground font-bold mb-3">أكواد الخصم النشطة</h3>
+        {promotions.length === 0 && <p className="text-center text-muted-foreground py-8">لا توجد عروض حالياً</p>}
         <div className="space-y-3">
           {promotions.map((p, i) => (
             <motion.div key={p.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
               className="gradient-card rounded-xl p-4 border border-border">
-              <div className="flex items-start gap-3">
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs gradient-primary text-primary-foreground px-2 py-0.5 rounded-full">{p.reward}</span>
-                    <h4 className="text-sm font-bold text-foreground">{p.title}</h4>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">{p.desc}</p>
-                  <div className="mt-3">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-muted-foreground">{p.progress}/{p.total}</span>
-                      <span className={p.color}>{Math.round((p.progress / p.total) * 100)}%</span>
-                    </div>
-                    <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
-                      <div className="h-full gradient-primary rounded-full transition-all" style={{ width: `${(p.progress / p.total) * 100}%` }} />
-                    </div>
-                  </div>
-                </div>
-                <div className={`w-12 h-12 rounded-xl ${p.bg} flex items-center justify-center flex-shrink-0`}>
-                  <p.icon className={`w-6 h-6 ${p.color}`} />
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        <h3 className="text-foreground font-bold mt-6 mb-3">أكواد الخصم</h3>
-        <div className="space-y-3">
-          {coupons.map((c, i) => (
-            <div key={i} className={`gradient-card rounded-xl p-4 border ${c.active ? "border-border" : "border-border opacity-50"}`}>
               <div className="flex items-center justify-between">
-                <span className={`text-xs px-2 py-0.5 rounded-full ${c.active ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
-                  {c.active ? "نشط" : "منتهي"}
-                </span>
-                <span className="text-primary font-mono font-bold">{c.code}</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-success/10 text-success">نشط</span>
+                <span className="text-primary font-mono font-bold text-lg">{p.code}</span>
               </div>
-              <p className="text-sm text-foreground mt-2">{c.discount}</p>
-              <div className="flex items-center gap-1 mt-1">
-                <Clock className="w-3 h-3 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">ينتهي: {c.expires}</span>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-sm text-foreground">خصم {p.discount_percent}%</span>
+                <span className="text-xs text-muted-foreground">استخدم {p.used_count || 0}/{p.max_uses || "∞"}</span>
               </div>
-            </div>
+              {p.expires_at && (
+                <div className="flex items-center gap-1 mt-2">
+                  <Clock className="w-3 h-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">ينتهي: {new Date(p.expires_at).toLocaleDateString("ar-SA")}</span>
+                </div>
+              )}
+            </motion.div>
           ))}
         </div>
       </div>

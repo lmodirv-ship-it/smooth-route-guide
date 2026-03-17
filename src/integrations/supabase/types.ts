@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      alerts: {
+        Row: {
+          created_at: string
+          driver_id: string | null
+          id: string
+          message: string
+          resolved_at: string | null
+          status: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          driver_id?: string | null
+          id?: string
+          message?: string
+          resolved_at?: string | null
+          status?: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          driver_id?: string | null
+          id?: string
+          message?: string
+          resolved_at?: string | null
+          status?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      app_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       call_center: {
         Row: {
           agent_id: string | null
@@ -38,6 +100,48 @@ export type Database = {
           request?: string
           status?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      call_logs: {
+        Row: {
+          agent_id: string | null
+          call_type: string
+          caller_name: string
+          caller_phone: string
+          created_at: string
+          duration: number | null
+          id: string
+          notes: string | null
+          reason: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          call_type?: string
+          caller_name?: string
+          caller_phone?: string
+          created_at?: string
+          duration?: number | null
+          id?: string
+          notes?: string | null
+          reason?: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          call_type?: string
+          caller_name?: string
+          caller_phone?: string
+          created_at?: string
+          duration?: number | null
+          id?: string
+          notes?: string | null
+          reason?: string
+          status?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -93,6 +197,66 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      complaints: {
+        Row: {
+          agent_id: string | null
+          agent_notes: string | null
+          category: string
+          created_at: string
+          description: string
+          driver_id: string | null
+          id: string
+          priority: string
+          status: string
+          trip_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_notes?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          driver_id?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          trip_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string | null
+          agent_notes?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          driver_id?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          trip_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaints_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "complaints_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
             referencedColumns: ["id"]
           },
         ]
@@ -397,6 +561,101 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      tickets: {
+        Row: {
+          agent_id: string | null
+          category: string
+          created_at: string
+          description: string
+          driver_id: string | null
+          id: string
+          priority: string
+          status: string
+          title: string
+          trip_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          driver_id?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          title?: string
+          trip_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          driver_id?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          title?: string
+          trip_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_status_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          status: string
+          trip_id: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          trip_id: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_status_history_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trips: {
         Row: {

@@ -1,24 +1,49 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, CreditCard, Wallet, Banknote, Plus, CheckCircle, Trash2 } from "lucide-react";
+import { ArrowRight, CreditCard, Wallet, Banknote, Plus, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 
 const ClientPayment = () => {
   const navigate = useNavigate();
   const [defaultMethod, setDefaultMethod] = useState("cash");
+  const [payments, setPayments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [balance, setBalance] = useState(0);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: wallet } = await supabase.from("wallet").select("balance").eq("user_id", user.id).maybeSingle();
+      setBalance(wallet?.balance || 0);
+
+      // Get recent payments via trips
+      const { data: trips } = await supabase.from("trips")
+        .select("id, fare, created_at, start_location, end_location")
+        .eq("user_id", user.id).eq("status", "completed")
+        .order("created_at", { ascending: false }).limit(10);
+
+      setPayments((trips || []).map(t => ({
+        id: t.id,
+        amount: `${t.fare || 0} DH`,
+        method: "نقداً",
+        date: new Date(t.created_at).toLocaleString("ar-SA", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" }),
+        trip: `${t.start_location || "—"} → ${t.end_location || "—"}`,
+      })));
+      setLoading(false);
+    };
+    fetch();
+  }, []);
 
   const methods = [
     { id: "cash", label: "نقداً", icon: Banknote, desc: "الدفع نقداً عند الوصول", color: "text-success" },
-    { id: "wallet", label: "المحفظة", icon: Wallet, desc: "الرصيد: 350 DH", color: "text-primary" },
-    { id: "card1", label: "Visa •••• 4532", icon: CreditCard, desc: "تنتهي 12/2027", color: "text-info" },
+    { id: "wallet", label: "المحفظة", icon: Wallet, desc: `الرصيد: ${balance} DH`, color: "text-primary" },
   ];
 
-  const history = [
-    { id: 1, amount: "35 DH", method: "نقداً", date: "اليوم 14:30", trip: "المعاريف → كازا فوياجور" },
-    { id: 2, amount: "28 DH", method: "المحفظة", date: "أمس 10:15", trip: "حي الحسني → عين الشق" },
-    { id: 3, amount: "52 DH", method: "Visa", date: "14/03 18:00", trip: "المطار → مراكش" },
-  ];
+  if (loading) return <div className="min-h-screen gradient-dark flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
     <div className="min-h-screen gradient-dark pb-24" dir="rtl">
@@ -37,32 +62,23 @@ const ClientPayment = () => {
               className={`w-full gradient-card rounded-xl p-4 border flex items-center justify-between transition-all ${defaultMethod === m.id ? "border-primary glow-ring-orange" : "border-border"}`}>
               <div className="flex items-center gap-2">
                 {defaultMethod === m.id && <CheckCircle className="w-5 h-5 text-primary" />}
-                {m.id.startsWith("card") && <Trash2 className="w-4 h-4 text-destructive/50 hover:text-destructive" />}
               </div>
               <div className="flex items-center gap-3">
-                <div>
-                  <p className="text-sm text-foreground font-medium">{m.label}</p>
-                  <p className="text-xs text-muted-foreground">{m.desc}</p>
-                </div>
-                <div className={`w-10 h-10 rounded-full bg-secondary flex items-center justify-center`}>
-                  <m.icon className={`w-5 h-5 ${m.color}`} />
-                </div>
+                <div><p className="text-sm text-foreground font-medium">{m.label}</p><p className="text-xs text-muted-foreground">{m.desc}</p></div>
+                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center"><m.icon className={`w-5 h-5 ${m.color}`} /></div>
               </div>
             </motion.button>
           ))}
         </div>
 
-        <Button variant="outline" className="w-full mt-3 border-dashed border-border text-muted-foreground rounded-xl">
-          <Plus className="w-4 h-4 ml-2" /> إضافة بطاقة جديدة
-        </Button>
-
         <h3 className="text-foreground font-bold mt-6 mb-3">سجل المدفوعات</h3>
         <div className="space-y-2">
-          {history.map((h) => (
+          {payments.length === 0 && <p className="text-center text-muted-foreground text-sm py-4">لا توجد مدفوعات</p>}
+          {payments.map(h => (
             <div key={h.id} className="gradient-card rounded-xl p-4 border border-border flex items-center justify-between">
               <span className="text-primary font-bold">{h.amount}</span>
               <div className="text-right">
-                <p className="text-sm text-foreground">{h.trip}</p>
+                <p className="text-sm text-foreground truncate max-w-[200px]">{h.trip}</p>
                 <p className="text-xs text-muted-foreground">{h.date} • {h.method}</p>
               </div>
             </div>

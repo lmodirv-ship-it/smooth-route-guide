@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -10,6 +10,7 @@ import GoogleMapWrapper from "@/components/GoogleMap";
 import IncomingRideRequest from "@/components/IncomingRideRequest";
 import { useIncomingRideRequests } from "@/hooks/useIncomingRideRequests";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DriverDashboard = () => {
@@ -19,32 +20,69 @@ const DriverDashboard = () => {
   const { requests, accepting, acceptRequest, rejectRequest } = useIncomingRideRequests(isOnline);
   const { location: driverLocation, permissionDenied, loading: gpsLoading } = useDriverGeolocation(isOnline);
 
-  const stats = [
-    { icon: DollarSign, label: "أرباح اليوم", value: "٢٥٠ ر.س", color: "text-primary", glow: "glow-ring-orange" },
-    { icon: Car, label: "الرحلات", value: "١٢", color: "text-info", glow: "glow-ring-blue" },
-    { icon: Star, label: "التقييم", value: "٤.٨", color: "text-warning", glow: "" },
-    { icon: Clock, label: "ساعات العمل", value: "٦:٣٠", color: "text-success", glow: "" },
-  ];
+  const [stats, setStats] = useState({ todayEarnings: 0, todayTrips: 0, rating: 0, hoursOnline: "0:00" });
+  const [recentTrips, setRecentTrips] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
 
-  const recentTrips = [
-    { from: "حي الملقا", to: "حي العليا", price: "٣٥ ر.س", time: "١٠:٣٠ ص", status: "مكتمل" },
-    { from: "المطار", to: "حي الياسمين", price: "٧٥ ر.س", time: "٩:١٥ ص", status: "مكتمل" },
-    { from: "جامعة الملك سعود", to: "حي النخيل", price: "٢٥ ر.س", time: "٨:٠٠ ص", status: "مكتمل" },
+  const fetchData = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Profile
+    const { data: prof } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+    setProfile(prof);
+
+    // Driver record
+    const { data: driverData } = await supabase.from("drivers").select("id, rating, status").eq("user_id", user.id).maybeSingle();
+    if (!driverData) return;
+
+    setIsOnline(driverData.status === "active");
+
+    // Today's trips
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: trips } = await supabase.from("trips")
+      .select("*").eq("driver_id", driverData.id)
+      .gte("created_at", today).order("created_at", { ascending: false });
+
+    const todayTrips = trips || [];
+    const todayEarnings = todayTrips.filter(t => t.status === "completed").reduce((s, t) => s + Number(t.fare || 0), 0);
+
+    setStats({
+      todayEarnings,
+      todayTrips: todayTrips.length,
+      rating: Number(driverData.rating) || 0,
+      hoursOnline: "—",
+    });
+
+    // Recent trips (last 5)
+    const { data: recent } = await supabase.from("trips")
+      .select("*").eq("driver_id", driverData.id)
+      .order("created_at", { ascending: false }).limit(5);
+    setRecentTrips(recent || []);
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const toggleOnline = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const newStatus = isOnline ? "inactive" : "active";
+    await supabase.from("drivers").update({ status: newStatus }).eq("user_id", user.id);
+    setIsOnline(!isOnline);
+  };
+
+  const statCards = [
+    { icon: DollarSign, label: "أرباح اليوم", value: `${stats.todayEarnings} DH`, color: "text-primary", glow: "glow-ring-orange" },
+    { icon: Car, label: "الرحلات", value: `${stats.todayTrips}`, color: "text-info", glow: "glow-ring-blue" },
+    { icon: Star, label: "التقييم", value: stats.rating > 0 ? stats.rating.toFixed(1) : "—", color: "text-warning", glow: "" },
+    { icon: Clock, label: "ساعات العمل", value: stats.hoursOnline, color: "text-success", glow: "" },
   ];
 
   const renderHome = () => (
     <>
-      {/* Online Toggle */}
       <div className="px-4 mt-4">
-        <motion.button
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setIsOnline(!isOnline)}
-          className={`w-full rounded-2xl p-4 flex items-center justify-between transition-all duration-500 ${
-            isOnline
-              ? "gradient-primary glow-primary"
-              : "gradient-card border border-border"
-          }`}
-        >
+        <motion.button whileTap={{ scale: 0.98 }} onClick={toggleOnline}
+          className={`w-full rounded-2xl p-4 flex items-center justify-between transition-all duration-500 ${isOnline ? "gradient-primary glow-primary" : "gradient-card border border-border"}`}>
           <div className="flex items-center gap-3">
             <div className={`icon-circle ${isOnline ? "!bg-primary-foreground/20" : ""}`}>
               <Power className={`w-6 h-6 ${isOnline ? "text-primary-foreground" : "text-muted-foreground"}`} />
@@ -59,59 +97,27 @@ const DriverDashboard = () => {
             </div>
           </div>
           <div className={`w-14 h-7 rounded-full relative transition-colors ${isOnline ? "bg-primary-foreground/20" : "bg-secondary"}`}>
-            <div className={`absolute top-0.5 w-6 h-6 rounded-full transition-all ${
-              isOnline ? "right-0.5 bg-primary-foreground" : "right-7 bg-muted-foreground"
-            }`} />
+            <div className={`absolute top-0.5 w-6 h-6 rounded-full transition-all ${isOnline ? "right-0.5 bg-primary-foreground" : "right-7 bg-muted-foreground"}`} />
           </div>
         </motion.button>
       </div>
 
-      {/* Map */}
       <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-44 relative">
-        <GoogleMapWrapper
-          zoom={15}
-          driverLocation={driverLocation}
-          panToDriver={isOnline}
-          showMarker={!isOnline}
-        >
+        <GoogleMapWrapper zoom={15} driverLocation={driverLocation} panToDriver={isOnline} showMarker={!isOnline}>
           {isOnline && (
             <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-success/20 text-success px-3 py-1 rounded-full text-xs font-medium border border-success/20 backdrop-blur-sm">
-              <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-              متصل
-            </div>
-          )}
-          {gpsLoading && isOnline && (
-            <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 bg-background/80 text-muted-foreground px-3 py-1 rounded-full text-xs backdrop-blur-sm border border-border">
-              <div className="w-3 h-3 border border-primary border-t-transparent rounded-full animate-spin" />
-              جاري تحديد الموقع...
-            </div>
-          )}
-          {permissionDenied && isOnline && (
-            <div className="absolute bottom-3 inset-x-3 z-10 bg-destructive/90 text-destructive-foreground px-3 py-2 rounded-lg text-xs text-center backdrop-blur-sm">
-              يجب تفعيل إذن الموقع ليظهر مكان السائق على الخريطة
+              <div className="w-2 h-2 rounded-full bg-success animate-pulse" />متصل
             </div>
           )}
         </GoogleMapWrapper>
       </div>
 
-      {/* Incoming Ride Requests */}
-      <IncomingRideRequest
-        requests={requests}
-        accepting={accepting}
-        onAccept={acceptRequest}
-        onReject={rejectRequest}
-      />
+      <IncomingRideRequest requests={requests} accepting={accepting} onAccept={acceptRequest} onReject={rejectRequest} />
 
-      {/* Stats */}
       <div className="grid grid-cols-2 gap-3 px-4 mt-4">
-        {stats.map((stat, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="gradient-card rounded-xl p-4 border border-border hover:border-primary/20 transition-colors"
-          >
+        {statCards.map((stat, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
+            className="gradient-card rounded-xl p-4 border border-border hover:border-primary/20 transition-colors">
             <div className="flex items-center gap-2 mb-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-secondary ${stat.glow}`}>
                 <stat.icon className={`w-4 h-4 ${stat.color}`} />
@@ -123,7 +129,6 @@ const DriverDashboard = () => {
         ))}
       </div>
 
-      {/* Recent Trips */}
       <div className="px-4 mt-6">
         <div className="flex items-center justify-between mb-3">
           <button onClick={() => navigate("/driver/history")} className="text-primary text-sm flex items-center gap-1">
@@ -132,30 +137,28 @@ const DriverDashboard = () => {
           <h2 className="font-bold text-foreground">آخر الرحلات</h2>
         </div>
         <div className="flex flex-col gap-3">
-          {recentTrips.map((trip, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 + i * 0.1 }}
-              className="gradient-card rounded-xl p-4 border border-border"
-            >
+          {recentTrips.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">لا توجد رحلات بعد</p>}
+          {recentTrips.map((trip) => (
+            <motion.div key={trip.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+              className="gradient-card rounded-xl p-4 border border-border">
               <div className="flex justify-between items-start">
-                <span className="text-primary font-bold">{trip.price}</span>
+                <span className="text-primary font-bold">{trip.fare || 0} DH</span>
                 <div className="text-right">
                   <div className="flex items-center gap-2 justify-end">
-                    <span className="text-sm text-foreground">{trip.from}</span>
+                    <span className="text-sm text-foreground">{trip.start_location || "—"}</span>
                     <div className="w-2 h-2 rounded-full bg-success" />
                   </div>
                   <div className="flex items-center gap-2 justify-end mt-1">
-                    <span className="text-sm text-foreground">{trip.to}</span>
+                    <span className="text-sm text-foreground">{trip.end_location || "—"}</span>
                     <div className="w-2 h-2 rounded-full bg-destructive" />
                   </div>
                 </div>
               </div>
               <div className="flex justify-between mt-2 pt-2 border-t border-border">
-                <span className="text-xs px-2 py-0.5 rounded-full bg-success/10 text-success">{trip.status}</span>
-                <span className="text-xs text-muted-foreground">{trip.time}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${trip.status === "completed" ? "bg-success/10 text-success" : "bg-info/10 text-info"}`}>
+                  {trip.status === "completed" ? "مكتمل" : "جارية"}
+                </span>
+                <span className="text-xs text-muted-foreground">{new Date(trip.created_at).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" })}</span>
               </div>
             </motion.div>
           ))}
@@ -166,7 +169,6 @@ const DriverDashboard = () => {
 
   return (
     <div className="min-h-screen gradient-dark pb-24">
-      {/* Header */}
       <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate("/driver/notifications")} className="p-2 relative">
           <Bell className="w-5 h-5 text-muted-foreground" />
@@ -182,95 +184,19 @@ const DriverDashboard = () => {
       </div>
 
       {activeTab === "home" && renderHome()}
-      {activeTab === "trips" && (
-        <div className="p-4">
-          <h2 className="text-foreground font-bold text-center mb-4">رحلاتي</h2>
-          {recentTrips.map((trip, i) => (
-            <div key={i} className="gradient-card rounded-xl p-4 border border-border mb-3">
-              <div className="flex justify-between items-center">
-                <span className="text-primary font-bold">{trip.price}</span>
-                <div className="text-right">
-                  <p className="text-sm text-foreground">{trip.from} → {trip.to}</p>
-                  <p className="text-xs text-muted-foreground">{trip.time}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      {activeTab === "earnings" && (
-        <div className="p-4">
-          <h2 className="text-foreground font-bold text-center mb-4">الأرباح</h2>
-          <div className="gradient-card rounded-2xl p-6 border border-border text-center mb-4">
-            <p className="text-muted-foreground text-sm">إجمالي الأرباح هذا الشهر</p>
-            <p className="text-4xl font-bold text-gradient-primary mt-2">٣,٧٥٠ ر.س</p>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: "اليوم", value: "٢٥٠" },
-              { label: "هذا الأسبوع", value: "١,٢٠٠" },
-              { label: "الرحلات", value: "٨٧" },
-            ].map((s, i) => (
-              <div key={i} className="gradient-card rounded-xl p-3 border border-border text-center">
-                <p className="text-xs text-muted-foreground">{s.label}</p>
-                <p className="text-lg font-bold text-foreground mt-1">{s.value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      {activeTab === "profile" && (
-        <div className="p-4 flex flex-col items-center">
-          <div className="icon-circle-orange w-20 h-20 mb-3">
-            <User className="w-8 h-8 text-primary" />
-          </div>
-          <h2 className="text-foreground font-bold text-lg">أحمد محمد</h2>
-          <p className="text-muted-foreground text-sm">سائق معتمد</p>
-          <div className="flex gap-2 mt-2">
-            <span className="text-xs bg-success/10 text-success px-3 py-1 rounded-full">نشط</span>
-            <span className="text-xs bg-warning/10 text-warning px-3 py-1 rounded-full flex items-center gap-1">
-              <Star className="w-3 h-3" /> ٤.٨
-            </span>
-          </div>
-          <div className="w-full mt-6 space-y-3">
-            {[
-              { label: "الإعدادات", icon: Settings, path: "/driver/settings" },
-              { label: "سجل الرحلات", icon: Clock, path: "/driver/history" },
-              { label: "الإشعارات", icon: Bell, path: "/driver/notifications" },
-            ].map((item, i) => (
-              <button
-                key={i}
-                onClick={() => navigate(item.path)}
-                className="w-full gradient-card rounded-xl p-4 border border-border flex items-center justify-between hover:border-primary/30 transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-                <div className="flex items-center gap-3">
-                  <span className="text-foreground">{item.label}</span>
-                  <item.icon className="w-5 h-5 text-primary" />
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
-      {/* Bottom Nav */}
       <div className="fixed bottom-0 left-0 right-0 glass-strong border-t border-border">
         <div className="flex justify-around py-2">
           {[
             { id: "home", icon: Navigation, label: "الرئيسية" },
-            { id: "trips", icon: Car, label: "رحلاتي" },
-            { id: "earnings", icon: BarChart3, label: "الأرباح" },
-            { id: "profile", icon: User, label: "حسابي" },
+            { id: "earnings", icon: BarChart3, label: "الأرباح", path: "/driver/earnings" },
+            { id: "wallet", icon: DollarSign, label: "المحفظة", path: "/driver/wallet" },
+            { id: "profile", icon: User, label: "حسابي", path: "/driver/profile" },
           ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex flex-col items-center gap-1 px-4 py-1 transition-colors ${
-                activeTab === tab.id ? "text-primary" : "text-muted-foreground"
-              }`}
-            >
-              <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? "drop-shadow-[0_0_6px_hsl(32,95%,55%,0.5)]" : ""}`} />
+            <button key={tab.id}
+              onClick={() => tab.path ? navigate(tab.path) : setActiveTab(tab.id)}
+              className={`flex flex-col items-center gap-1 px-4 py-1 transition-colors ${activeTab === tab.id && !tab.path ? "text-primary" : "text-muted-foreground"}`}>
+              <tab.icon className={`w-5 h-5 ${activeTab === tab.id && !tab.path ? "drop-shadow-[0_0_6px_hsl(32,95%,55%,0.5)]" : ""}`} />
               <span className="text-xs">{tab.label}</span>
             </button>
           ))}

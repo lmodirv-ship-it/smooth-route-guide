@@ -1,31 +1,69 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, DollarSign, TrendingUp, Calendar, BarChart3, Car } from "lucide-react";
+import { ArrowRight, DollarSign, TrendingUp, Calendar, Car, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const DriverEarnings = () => {
   const navigate = useNavigate();
   const [period, setPeriod] = useState<"day" | "week" | "month">("day");
+  const [trips, setTrips] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const data = {
-    day: { total: "250 DH", trips: 8, hours: "6:30", avg: "31 DH" },
-    week: { total: "1,200 DH", trips: 42, hours: "38:00", avg: "29 DH" },
-    month: { total: "3,750 DH", trips: 156, hours: "142:00", avg: "24 DH" },
-  };
+  useEffect(() => {
+    const fetch = async () => {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: driver } = await supabase.from("drivers").select("id").eq("user_id", user.id).maybeSingle();
+      if (!driver) { setLoading(false); return; }
 
-  const current = data[period];
+      const monthAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+      const { data } = await supabase.from("trips")
+        .select("fare, created_at, status, start_location, end_location")
+        .eq("driver_id", driver.id).eq("status", "completed")
+        .gte("created_at", monthAgo).order("created_at", { ascending: false });
+      setTrips(data || []);
+      setLoading(false);
+    };
+    fetch();
+  }, []);
 
-  const dailyBreakdown = [
-    { day: "الإثنين", amount: 280, trips: 9 },
-    { day: "الثلاثاء", amount: 310, trips: 11 },
-    { day: "الأربعاء", amount: 190, trips: 6 },
-    { day: "الخميس", amount: 350, trips: 12 },
-    { day: "الجمعة", amount: 420, trips: 14 },
-    { day: "السبت", amount: 250, trips: 8 },
-    { day: "الأحد", amount: 200, trips: 7 },
-  ];
+  const stats = useMemo(() => {
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10);
+    const weekAgo = Date.now() - 7 * 86400000;
 
-  const maxAmount = Math.max(...dailyBreakdown.map(d => d.amount));
+    const dayTrips = trips.filter(t => t.created_at.slice(0, 10) === todayStr);
+    const weekTrips = trips.filter(t => new Date(t.created_at).getTime() >= weekAgo);
+
+    const sum = (arr: any[]) => arr.reduce((s, t) => s + Number(t.fare || 0), 0);
+
+    return {
+      day: { total: sum(dayTrips), trips: dayTrips.length, avg: dayTrips.length > 0 ? Math.round(sum(dayTrips) / dayTrips.length) : 0 },
+      week: { total: sum(weekTrips), trips: weekTrips.length, avg: weekTrips.length > 0 ? Math.round(sum(weekTrips) / weekTrips.length) : 0 },
+      month: { total: sum(trips), trips: trips.length, avg: trips.length > 0 ? Math.round(sum(trips) / trips.length) : 0 },
+    };
+  }, [trips]);
+
+  const current = stats[period];
+
+  // Weekly breakdown
+  const weeklyBreakdown = useMemo(() => {
+    const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+    const grouped = new Map<number, { amount: number; trips: number }>();
+    const weekAgo = Date.now() - 7 * 86400000;
+    trips.filter(t => new Date(t.created_at).getTime() >= weekAgo).forEach(t => {
+      const day = new Date(t.created_at).getDay();
+      const existing = grouped.get(day) || { amount: 0, trips: 0 };
+      grouped.set(day, { amount: existing.amount + Number(t.fare || 0), trips: existing.trips + 1 });
+    });
+    return days.map((day, i) => ({ day, amount: grouped.get(i)?.amount || 0, trips: grouped.get(i)?.trips || 0 }));
+  }, [trips]);
+
+  const maxAmount = Math.max(...weeklyBreakdown.map(d => d.amount), 1);
+
+  if (loading) return <div className="min-h-screen gradient-dark flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
     <div className="min-h-screen gradient-dark pb-24" dir="rtl">
@@ -48,14 +86,14 @@ const DriverEarnings = () => {
         <motion.div key={period} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
           className="gradient-card rounded-2xl p-6 border border-border text-center mb-4">
           <p className="text-muted-foreground text-sm">إجمالي الأرباح</p>
-          <p className="text-4xl font-bold text-gradient-primary mt-2">{current.total}</p>
+          <p className="text-4xl font-bold text-gradient-primary mt-2">{current.total} DH</p>
         </motion.div>
 
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
             { icon: Car, label: "الرحلات", value: current.trips },
-            { icon: Calendar, label: "الساعات", value: current.hours },
-            { icon: TrendingUp, label: "المتوسط", value: current.avg },
+            { icon: Calendar, label: "المتوسط", value: `${current.avg} DH` },
+            { icon: TrendingUp, label: "الإجمالي", value: `${current.total} DH` },
           ].map((s, i) => (
             <div key={i} className="gradient-card rounded-xl p-3 border border-border text-center">
               <s.icon className="w-5 h-5 text-primary mx-auto mb-1" />
@@ -68,15 +106,15 @@ const DriverEarnings = () => {
         <h3 className="text-foreground font-bold mb-3">تفاصيل الأسبوع</h3>
         <div className="gradient-card rounded-xl p-4 border border-border">
           <div className="flex items-end gap-2 h-32 mb-3">
-            {dailyBreakdown.map((d, i) => (
+            {weeklyBreakdown.map((d, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
                 <span className="text-xs text-muted-foreground">{d.amount}</span>
-                <div className="w-full rounded-t-md gradient-primary transition-all" style={{ height: `${(d.amount / maxAmount) * 100}%` }} />
+                <div className="w-full rounded-t-md gradient-primary transition-all" style={{ height: `${(d.amount / maxAmount) * 100}%`, minHeight: d.amount > 0 ? "4px" : "0" }} />
               </div>
             ))}
           </div>
           <div className="flex gap-2">
-            {dailyBreakdown.map((d, i) => (
+            {weeklyBreakdown.map((d, i) => (
               <div key={i} className="flex-1 text-center">
                 <span className="text-[10px] text-muted-foreground">{d.day.slice(0, 3)}</span>
               </div>
