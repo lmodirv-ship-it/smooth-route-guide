@@ -28,10 +28,11 @@ const AdminRestaurants = () => {
   const fetchAll = async () => {
     setLoading(true);
     const [s, c, m] = await Promise.all([
-      supabase.from("stores").select("*").eq("category", "restaurant").order("name"),
+      supabase.from("stores").select("*").order("name"),
       supabase.from("menu_categories").select("*").order("sort_order"),
       supabase.from("menu_items").select("*").order("sort_order"),
     ]);
+    console.info(`[admin-restaurants] fetched ${s.data?.length || 0} stores`);
     setStores(s.data || []);
     setCategories(c.data || []);
     setMenuItems(m.data || []);
