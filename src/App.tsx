@@ -48,6 +48,7 @@ import DeliverySupport from "./pages/delivery/DeliverySupport";
 import RestaurantsList from "./pages/delivery/RestaurantsList";
 import RestaurantMenu from "./pages/delivery/RestaurantMenu";
 import Cart from "./pages/delivery/Cart";
+import OrderTracking from "./pages/delivery/OrderTracking";
 
 // Admin
 import AdminLayout from "./components/AdminLayout";
