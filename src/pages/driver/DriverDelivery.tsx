@@ -113,13 +113,18 @@ const DriverDelivery = () => {
   // ── Actions ──
   const acceptOrder = async () => {
     if (!order) return;
+    // Mark as accepted by updating status
+    await supabase.from("delivery_orders").update({
+      status: "picked_up",
+      updated_at: new Date().toISOString(),
+    }).eq("id", order.id);
     setStage("to_restaurant");
     toast({ title: "تم قبول الطلب ✅" });
   };
 
   const rejectOrder = async () => {
     if (!order) return;
-    await supabase.from("delivery_orders").update({ driver_id: null }).eq("id", order.id);
+    await supabase.from("delivery_orders").update({ driver_id: null, status: "confirmed", updated_at: new Date().toISOString() }).eq("id", order.id);
     setOrder(null);
     setStage("idle");
     toast({ title: "تم رفض الطلب" });
