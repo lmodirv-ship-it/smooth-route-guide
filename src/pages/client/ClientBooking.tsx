@@ -148,8 +148,6 @@ const ClientBooking = () => {
           }
         )
         .subscribe();
-          console.info("[ride-booking] realtime_status", status);
-        });
 
       timeoutId = window.setTimeout(() => {
         if (resolved) return;
