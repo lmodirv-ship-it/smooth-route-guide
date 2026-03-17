@@ -25,6 +25,7 @@ const TANGIER_CENTER = { lat: 35.7595, lng: -5.8340 };
 
 const DeliveryHome = () => {
   const navigate = useNavigate();
+  const logout = useFirebaseLogout();
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("طنجة");
   const [currentZone, setCurrentZone] = useState<string | null>(null);
