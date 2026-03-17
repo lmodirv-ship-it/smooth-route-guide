@@ -58,6 +58,21 @@ type MenuItem = {
 const GoogleMapsImport = () => {
   const [city] = useState("Tanger");
   const [type, setType] = useState("all");
+  const [area, setArea] = useState("all");
+
+  const TANGER_AREAS = [
+    { value: "all", label: "جميع المناطق" },
+    { value: "Mesnana", label: "مسنانة - Mesnana" },
+    { value: "Malabata", label: "مالاباطا - Malabata" },
+    { value: "Médina", label: "المدينة القديمة - Médina" },
+    { value: "Centre Ville", label: "وسط المدينة - Centre Ville" },
+    { value: "Kasbah", label: "القصبة - Kasbah" },
+    { value: "Marshan", label: "مرشان - Marshan" },
+    { value: "Boukhalef", label: "بوخالف - Boukhalef" },
+    { value: "Iberia", label: "إيبيريا - Iberia" },
+    { value: "Val Fleuri", label: "فال فلوري - Val Fleuri" },
+    { value: "Branes", label: "براناس - Branes" },
+  ];
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [results, setResults] = useState<Restaurant[]>([]);
