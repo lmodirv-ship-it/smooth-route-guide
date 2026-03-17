@@ -119,7 +119,7 @@ const RestaurantsCC = () => {
       const url = await uploadImage(storeImageFile, "stores");
       if (url) image_url = url;
     }
-    const payload = { ...storeForm, image_url };
+    const payload = { ...storeForm, image_url, zone_id: storeForm.zone_id || null };
     if (editingStore) {
       await supabase.from("stores").update(payload).eq("id", editingStore.id);
       toast({ title: "تم تحديث المطعم ✅" });
