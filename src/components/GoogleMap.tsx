@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { Navigation } from "lucide-react";
 
 // Publishable key for client-side map rendering (restricted by HTTP referrer in Google Cloud Console)
-export const GOOGLE_MAPS_API_KEY = "AIzaSyCBJ8vvBa875cIsAYfik4xYw-A8hj0LwaY";
+export const GOOGLE_MAPS_API_KEY = "AIzaSyDpJ8TfGwfOa0XvwOyvmFpg-pdkYNSKoRM";
 
 const LIBRARIES: ("places")[] = ["places"];
 
