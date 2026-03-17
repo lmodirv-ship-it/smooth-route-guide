@@ -63,6 +63,7 @@ import AdminDocuments from "./pages/admin/Documents";
 import AdminCallCenter from "./pages/admin/AdminCallCenter";
 import AdminDeliveryOrders from "./pages/admin/DeliveryOrders";
 import AdminSettings from "./pages/admin/Settings";
+import AdminRestaurants from "./pages/admin/AdminRestaurants";
 
 // Call Center
 import CallCenterLayout from "./components/CallCenterLayout";
