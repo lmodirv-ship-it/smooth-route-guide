@@ -3,7 +3,7 @@ import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
   BarChart3, Phone, Car, Users, Search, AlertTriangle, FileText,
   Headphones, BarChart, Shield, Bell, PhoneCall, PlusCircle, Clock,
-  Menu, X, UtensilsCrossed
+  Menu, X, UtensilsCrossed, Download
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import logo from "@/assets/hn-driver-logo.png";
