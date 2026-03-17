@@ -506,7 +506,7 @@ const OrderDetailPanel = ({
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
                     isCurrent ? `${step.bg} ${step.color} ring-2 ring-offset-1 ring-offset-background` :
                     isActive ? "bg-emerald-400/20 text-emerald-400" : "bg-secondary text-muted-foreground"
-                  }`} style={isCurrent ? { ringColor: `hsl(var(--primary))` } : {}}>
+                  }`}>
                     <step.icon className="w-3 h-3" />
                   </div>
                   {i < timelineSteps.length - 1 && (
