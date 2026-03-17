@@ -35,6 +35,12 @@ import ClientHistory from "./pages/client/ClientHistory";
 import ClientProfile from "./pages/client/ClientProfile";
 import ClientSupport from "./pages/client/ClientSupport";
 
+// Delivery pages
+import DeliveryHome from "./pages/delivery/DeliveryHome";
+import DeliveryCategory from "./pages/delivery/DeliveryCategory";
+import DeliveryTracking from "./pages/delivery/DeliveryTracking";
+import DeliveryHistory from "./pages/delivery/DeliveryHistory";
+
 // Admin
 import AdminLayout from "./components/AdminLayout";
 import AdminGuard from "./components/AdminGuard";
