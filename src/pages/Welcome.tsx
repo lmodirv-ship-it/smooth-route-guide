@@ -25,6 +25,15 @@ const Welcome = () => {
       glowClass: "glow-ring-blue",
       iconColor: "text-info",
     },
+    {
+      id: "delivery",
+      icon: Package,
+      title: "توصيل",
+      desc: "أرسل طرودك بسرعة وأمان",
+      path: "/login?role=delivery",
+      glowClass: "glow-ring-green",
+      iconColor: "text-success",
+    },
   ];
 
   return (
