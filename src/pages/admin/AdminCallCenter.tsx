@@ -17,8 +17,8 @@ const AdminCallCenter = () => {
     if (!data) return;
     const uids = [...new Set(data.map(t => t.user_id))];
     const { data: profiles } = await supabase.from("profiles").select("id, name, phone").in("id", uids);
-    const nameMap = new Map(profiles?.map(p => [p.id, p]) || []);
-    setTickets(data.map(t => ({ ...t, userName: nameMap.get(t.user_id)?.name || "—", userPhone: nameMap.get(t.user_id)?.phone || "—" })));
+    const nameMap = new Map((profiles as any[])?.map((p: any) => [p.id, p]) || []);
+    setTickets(data.map(t => ({ ...t, userName: (nameMap.get(t.user_id) as any)?.name || "—", userPhone: (nameMap.get(t.user_id) as any)?.phone || "—" })));
   };
 
   useEffect(() => {

@@ -83,11 +83,11 @@ const DeliveryOrdersCC = () => {
     if (driversList) {
       const dUserIds = driversList.map(d => d.user_id);
       const { data: dProfiles } = await supabase.from("profiles").select("id, name, phone").in("id", dUserIds);
-      const pMap = new Map(dProfiles?.map(p => [p.id, p]) || []);
+      const pMap = new Map((dProfiles as any[])?.map((p: any) => [p.id, p]) || []);
       setDrivers(driversList.map(d => ({
         ...d,
-        name: pMap.get(d.user_id)?.name || "سائق",
-        phone: pMap.get(d.user_id)?.phone || "",
+        name: (pMap.get(d.user_id) as any)?.name || "سائق",
+        phone: (pMap.get(d.user_id) as any)?.phone || "",
       })));
     }
   }, []);

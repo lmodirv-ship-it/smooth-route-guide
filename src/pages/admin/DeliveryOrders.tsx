@@ -30,8 +30,8 @@ const AdminDeliveryOrders = () => {
     if (data) {
       const uids = [...new Set(data.map(o => o.user_id))];
       const { data: profiles } = await supabase.from("profiles").select("id, name, phone").in("id", uids);
-      const pMap = new Map(profiles?.map(p => [p.id, p]) || []);
-      setOrders(data.map(o => ({ ...o, userName: pMap.get(o.user_id)?.name || "—", userPhone: pMap.get(o.user_id)?.phone || "—" })));
+      const pMap = new Map((profiles as any[])?.map((p: any) => [p.id, p]) || []);
+      setOrders(data.map(o => ({ ...o, userName: (pMap.get(o.user_id) as any)?.name || "—", userPhone: (pMap.get(o.user_id) as any)?.phone || "—" })));
     }
     setLoading(false);
   }, [filter]);
