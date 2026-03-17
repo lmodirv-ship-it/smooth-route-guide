@@ -6,6 +6,7 @@ import {
   Bell, Menu, Power, ChevronLeft, Car, Navigation, BarChart3, User, Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import GoogleMapWrapper from "@/components/GoogleMap";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DriverDashboard = () => {
@@ -62,19 +63,14 @@ const DriverDashboard = () => {
 
       {/* Map */}
       <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-44 relative">
-        <div className="w-full h-full bg-secondary/50 flex items-center justify-center">
-          <div className="text-center">
-            <MapPin className="w-10 h-10 text-primary mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">الخريطة</p>
-            <p className="text-xs text-muted-foreground">الرياض، المملكة العربية السعودية</p>
-          </div>
-        </div>
-        {isOnline && (
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-success/20 text-success px-3 py-1 rounded-full text-xs font-medium border border-success/20">
-            <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            متصل
-          </div>
-        )}
+        <GoogleMapWrapper zoom={13}>
+          {isOnline && (
+            <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-success/20 text-success px-3 py-1 rounded-full text-xs font-medium border border-success/20 backdrop-blur-sm">
+              <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
+              متصل
+            </div>
+          )}
+        </GoogleMapWrapper>
       </div>
 
       {/* Stats */}
