@@ -46,7 +46,7 @@ const DeliveryCategory = () => {
       setStores(data || []);
       setStoresLoading(false);
     };
-    if (category !== "courier") fetchStores();
+    if (category !== "courier" && category !== "restaurants") fetchStores();
   }, [category, meta.dbCategory]);
 
   const filteredStores = stores.filter((s) =>
