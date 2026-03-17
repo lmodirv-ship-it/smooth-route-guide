@@ -1,78 +1,70 @@
-export interface PricingConfig {
-  baseFee: number;
-  ratePerKm: number;
-  ratePerMile: number;
-  currency: string;
-  currencySymbol: string;
+export interface CurrencyConfig {
+  code: string;
+  symbol: string;
   unitSystem: 'metric' | 'imperial';
 }
 
-export interface PriceEstimate {
+export interface TripPriceEstimate {
+  d1Km: number;
+  d2Km: number;
+  totalDistanceKm: number;
+  d1DurationMin: number;
+  d2DurationMin: number;
   baseFee: number;
   distanceFee: number;
-  total: number;
-  distanceText: string;
-  durationText: string;
-  currency: string;
-  currencySymbol: string;
+  totalPrice: number;
+  currency: CurrencyConfig;
 }
 
-// Regional pricing configs
-export const PRICING_CONFIGS: Record<string, PricingConfig> = {
-  SAR: {
-    baseFee: 5,
-    ratePerKm: 2.5,
-    ratePerMile: 4.0,
-    currency: 'SAR',
-    currencySymbol: 'ر.س',
-    unitSystem: 'metric',
-  },
-  USD: {
-    baseFee: 3,
-    ratePerKm: 1.5,
-    ratePerMile: 2.4,
-    currency: 'USD',
-    currencySymbol: '$',
-    unitSystem: 'imperial',
-  },
-  EUR: {
-    baseFee: 3.5,
-    ratePerKm: 1.8,
-    ratePerMile: 2.9,
-    currency: 'EUR',
-    currencySymbol: '€',
-    unitSystem: 'metric',
-  },
+// Supported currencies — easily extensible
+export const CURRENCIES: Record<string, CurrencyConfig> = {
+  DH: { code: 'DH', symbol: 'د.م', unitSystem: 'metric' },
+  SAR: { code: 'SAR', symbol: 'ر.س', unitSystem: 'metric' },
+  USD: { code: 'USD', symbol: '$', unitSystem: 'imperial' },
+  EUR: { code: 'EUR', symbol: '€', unitSystem: 'metric' },
+  GBP: { code: 'GBP', symbol: '£', unitSystem: 'imperial' },
+  AED: { code: 'AED', symbol: 'د.إ', unitSystem: 'metric' },
+  EGP: { code: 'EGP', symbol: 'ج.م', unitSystem: 'metric' },
+  TND: { code: 'TND', symbol: 'د.ت', unitSystem: 'metric' },
 };
 
-export function calculatePrice(
-  distanceMeters: number,
-  config: PricingConfig
-): { baseFee: number; distanceFee: number; total: number } {
-  const distanceKm = distanceMeters / 1000;
-  const distanceMiles = distanceMeters / 1609.34;
+// Default currency
+export const DEFAULT_CURRENCY = 'DH';
 
-  const distanceFee =
-    config.unitSystem === 'metric'
-      ? distanceKm * config.ratePerKm
-      : distanceMiles * config.ratePerMile;
+// Pricing constants
+const BASE_FEE = 5;
+const RATE_PER_KM = 3;
 
-  const total = config.baseFee + distanceFee;
+/**
+ * Total_Price = 5 + ((D1 + D2) * 3)
+ * D1 = Driver → Customer distance in km
+ * D2 = Customer → Destination distance in km
+ */
+export function calculateTripPrice(
+  d1Meters: number,
+  d2Meters: number,
+  currencyCode: string = DEFAULT_CURRENCY
+): TripPriceEstimate {
+  const currency = CURRENCIES[currencyCode] || CURRENCIES[DEFAULT_CURRENCY];
+  const d1Km = d1Meters / 1000;
+  const d2Km = d2Meters / 1000;
+  const totalDistanceKm = d1Km + d2Km;
+  const distanceFee = totalDistanceKm * RATE_PER_KM;
+  const totalPrice = BASE_FEE + distanceFee;
 
   return {
-    baseFee: Math.round(config.baseFee * 100) / 100,
+    d1Km: Math.round(d1Km * 10) / 10,
+    d2Km: Math.round(d2Km * 10) / 10,
+    totalDistanceKm: Math.round(totalDistanceKm * 10) / 10,
+    d1DurationMin: 0,
+    d2DurationMin: 0,
+    baseFee: BASE_FEE,
     distanceFee: Math.round(distanceFee * 100) / 100,
-    total: Math.round(total * 100) / 100,
+    totalPrice: Math.round(totalPrice * 100) / 100,
+    currency,
   };
 }
 
-export function formatPrice(amount: number, config: PricingConfig): string {
-  return `${amount.toFixed(2)} ${config.currencySymbol}`;
-}
-
-export function formatDistance(meters: number, unitSystem: 'metric' | 'imperial'): string {
-  if (unitSystem === 'metric') {
-    return `${(meters / 1000).toFixed(1)} كم`;
-  }
-  return `${(meters / 1609.34).toFixed(1)} mi`;
+export function formatPrice(amount: number, currency: CurrencyConfig): string {
+  return `${amount.toFixed(2)} ${currency.symbol}`;
 }
