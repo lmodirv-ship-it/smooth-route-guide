@@ -1,1 +1,4 @@
 project_id = "typamugwwatqmdkxkfof"
+
+[functions.distance-matrix]
+verify_jwt = false
