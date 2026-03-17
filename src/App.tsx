@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
 import AuthGuard from "@/components/AuthGuard";
+import CallCenterGuard from "@/components/CallCenterGuard";
 
 // Core pages
 import Splash from "./pages/Splash";
@@ -166,7 +167,7 @@ const App = () => (
           </Route>
 
           {/* Call Center */}
-          <Route path="/call-center" element={<CallCenterLayout />}>
+          <Route path="/call-center" element={<CallCenterGuard><CallCenterLayout /></CallCenterGuard>}>
             <Route index element={<CCDashboard />} />
             <Route path="incoming" element={<IncomingCalls />} />
             <Route path="manual-booking" element={<ManualBooking />} />
