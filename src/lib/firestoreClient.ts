@@ -84,9 +84,10 @@ class FirestoreQueryBuilder<T = any> {
     this._collection = resolveCollection(collectionName);
   }
 
-  select(fields?: string) {
+  select(fields?: string, opts?: { count?: string; head?: boolean }) {
     this._selectFields = fields || "*";
     this._mode = "select";
+    if (opts?.head) this._headOnly = true;
     return this;
   }
 
