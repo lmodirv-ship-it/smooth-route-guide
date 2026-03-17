@@ -5,7 +5,13 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight, User as UserIcon, Phone, Loader2 }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+} from "firebase/auth";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import logo from "@/assets/hn-driver-logo.png";
 
 const getRoleHome = (role: string) => {
