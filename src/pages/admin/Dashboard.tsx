@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import { FileText, Car, DollarSign, Zap, MapPin, Clock, BatteryLow, Activity, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import GoogleMapWrapper from "@/components/GoogleMap";
 

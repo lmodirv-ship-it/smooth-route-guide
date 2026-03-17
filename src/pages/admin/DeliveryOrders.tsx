@@ -4,7 +4,7 @@ import { Package, Truck, Clock, CheckCircle, XCircle, MapPin, Search, RefreshCw,
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 import { toast } from "@/hooks/use-toast";
 
 const statusMap: Record<string, { label: string; color: string; bg: string }> = {

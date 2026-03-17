@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, DollarSign, Calendar, ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 
 const SimpleBarChart = ({ data, color }: { data: { label: string; value: number }[]; color: string }) => {
   const max = Math.max(...data.map(d => d.value), 1);
