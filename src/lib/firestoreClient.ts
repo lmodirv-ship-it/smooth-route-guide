@@ -128,6 +128,26 @@ class FirestoreQueryBuilder<T = any> {
     return this;
   }
 
+  gte(field: string, value: any) {
+    this._constraints.push(where(field, ">=", value));
+    return this;
+  }
+
+  lte(field: string, value: any) {
+    this._constraints.push(where(field, "<=", value));
+    return this;
+  }
+
+  gt(field: string, value: any) {
+    this._constraints.push(where(field, ">", value));
+    return this;
+  }
+
+  lt(field: string, value: any) {
+    this._constraints.push(where(field, "<", value));
+    return this;
+  }
+
   not(field: string, op: string, value: any) {
     // 'is' null → not null
     if (op === "is" && value === null) {
