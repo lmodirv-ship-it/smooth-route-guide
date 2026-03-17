@@ -119,6 +119,9 @@ const App = () => (
           <Route path="/delivery" element={<DeliveryHome />} />
           <Route path="/delivery/tracking" element={<DeliveryTracking />} />
           <Route path="/delivery/history" element={<DeliveryHistory />} />
+          <Route path="/delivery/courier/send" element={<CourierSend />} />
+          <Route path="/delivery/courier/address" element={<CourierAddress />} />
+          <Route path="/delivery/courier/track" element={<CourierTrack />} />
           <Route path="/delivery/:category" element={<DeliveryCategory />} />
 
           {/* Admin Dashboard */}
