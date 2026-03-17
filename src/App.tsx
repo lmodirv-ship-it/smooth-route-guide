@@ -124,12 +124,14 @@ const App = () => (
           <Route path="/call-center" element={<CallCenterLayout />}>
             <Route index element={<CCDashboard />} />
             <Route path="incoming" element={<IncomingCalls />} />
+            <Route path="manual-booking" element={<ManualBooking />} />
             <Route path="ride-assign" element={<RideAssign />} />
             <Route path="customers" element={<CustomerSearch />} />
             <Route path="drivers" element={<DriverSearchCC />} />
             <Route path="complaints" element={<Complaints />} />
             <Route path="tickets" element={<Tickets />} />
             <Route path="emergency" element={<Emergency />} />
+            <Route path="history" element={<CallHistory />} />
             <Route path="reports" element={<CCReports />} />
           </Route>
 
