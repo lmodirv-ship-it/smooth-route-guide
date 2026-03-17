@@ -219,9 +219,9 @@ serve(async (req) => {
       }
     }
 
-    // Fallback to mock data
+    // Fallback to mock data - return all for "restaurants" or "all"
     const filtered = MOCK_RESTAURANTS.filter(r => {
-      if (type && type !== 'all') {
+      if (type && type !== 'all' && type !== 'restaurants') {
         return r.category.toLowerCase().includes(type.toLowerCase());
       }
       return true;
