@@ -43,6 +43,7 @@ import DeliveryHistory from "./pages/delivery/DeliveryHistory";
 import CourierSend from "./pages/delivery/CourierSend";
 import CourierAddress from "./pages/delivery/CourierAddress";
 import CourierTrack from "./pages/delivery/CourierTrack";
+import DeliverySupport from "./pages/delivery/DeliverySupport";
 
 // Admin
 import AdminLayout from "./components/AdminLayout";
