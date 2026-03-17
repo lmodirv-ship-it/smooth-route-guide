@@ -17,12 +17,25 @@ const RestaurantsList = () => {
 
   const fetchStores = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("stores")
-      .select("*")
-      .eq("is_open", true)
-      .order("rating", { ascending: false });
-    setStores(data || []);
+    try {
+      // Fetch from "restaurants" collection directly, filter isActive
+      const { data, error } = await supabase
+        .from("stores")
+        .select("*")
+        .order("rating", { ascending: false });
+      
+      if (error) {
+        console.error("[restaurants] fetch error:", error);
+      }
+      
+      // Filter active restaurants - support both isActive and is_open field names
+      const activeStores = (data || []).filter((s: any) => s.isActive === true || s.is_open === true);
+      console.info(`[restaurants] fetched ${data?.length || 0} total, ${activeStores.length} active`);
+      setStores(activeStores);
+    } catch (err) {
+      console.error("[restaurants] unexpected error:", err);
+      setStores([]);
+    }
     setLoading(false);
   };
 
