@@ -1,78 +1,175 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, MapPin, Navigation, Clock, Car, User, Star, CreditCard, Wallet, CheckCircle, Loader2 } from "lucide-react";
+import { ArrowRight, Navigation, User, Star, CreditCard, Wallet, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import GoogleMapWrapper from "@/components/GoogleMap";
 import { supabase } from "@/integrations/supabase/client";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 
+interface RideDraft {
+  pickup: string;
+  destination: string;
+  distance: string;
+  duration: string;
+  price: number;
+}
+
+const DEFAULT_RIDE: RideDraft = {
+  pickup: "حي السواني، طنجة",
+  destination: "محطة القطار طنجة المدينة",
+  distance: "8.5 كم",
+  duration: "18 دقيقة",
+  price: 35,
+};
+
 const ClientBooking = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [step, setStep] = useState<"confirm" | "searching" | "matched">("confirm");
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "wallet">("cash");
   const [matchedDriver, setMatchedDriver] = useState<any>(null);
   const { drivers: nearbyDrivers } = useNearbyDrivers();
 
-  // These would come from navigation state in a real app
-  const ride = {
-    pickup: "حي المعاريف، الدار البيضاء",
-    destination: "محطة القطار كازا فوياجور",
-    distance: "8.5 كم",
-    duration: "18 دقيقة",
-    price: 35,
-  };
+  const ride = ((location.state as { ride?: RideDraft } | null)?.ride) ?? DEFAULT_RIDE;
+  const priceLabel = ride.price > 0 ? `${ride.price} DH` : "يُحدد لاحقاً";
 
   const handleConfirmBooking = async () => {
+    console.info("[ride-booking] starting_request", ride);
     setStep("searching");
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { toast({ title: "يجب تسجيل الدخول", variant: "destructive" }); setStep("confirm"); return; }
 
-    // Create ride request
-    const { data: request, error } = await supabase.from("ride_requests").insert({
-      user_id: user.id,
-      pickup: ride.pickup,
-      destination: ride.destination,
-      price: ride.price,
-      status: "pending",
-    }).select().single();
+    let timeoutId: number | null = null;
+    let channel: any = null;
+    let resolved = false;
 
-    if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); setStep("confirm"); return; }
+    const cleanup = () => {
+      if (timeoutId) window.clearTimeout(timeoutId);
+      if (channel) supabase.removeChannel(channel);
+    };
 
-    // Listen for acceptance
-    const ch = supabase.channel(`booking-${request.id}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "ride_requests", filter: `id=eq.${request.id}` }, async (payload) => {
-        if (payload.new.status === "accepted") {
-          // Find driver info from the trip
-          const { data: trip } = await supabase.from("trips").select("driver_id").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
-          if (trip?.driver_id) {
-            const { data: driver } = await supabase.from("drivers").select("id, user_id, rating").eq("id", trip.driver_id).maybeSingle() as any;
-            if (driver) {
-              const { data: prof } = await supabase.from("profiles").select("name").eq("id", driver.user_id).maybeSingle();
-              const { data: vehicle } = await supabase.from("vehicles").select("brand, model, plate_no, color").eq("driver_id", driver.id).maybeSingle();
-              setMatchedDriver({
-                name: prof?.name || "سائق",
-                rating: driver.rating || 0,
-                car: vehicle ? `${vehicle.brand} ${vehicle.model} ${vehicle.color || ""}` : "—",
-                plate: vehicle?.plate_no || "—",
-                eta: "3 دقائق",
-              });
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+      if (userError) {
+        console.error("[ride-booking] auth_error", userError);
+        throw new Error("تعذر التحقق من حسابك حالياً. يرجى تسجيل الدخول مرة أخرى.");
+      }
+
+      if (!user) {
+        toast({ title: "يجب تسجيل الدخول أولاً", variant: "destructive" });
+        setStep("confirm");
+        navigate("/login?role=client");
+        return;
+      }
+
+      const requestPayload = {
+        user_id: user.id,
+        pickup: ride.pickup,
+        destination: ride.destination,
+        price: ride.price > 0 ? ride.price : null,
+        status: "pending",
+      };
+
+      console.info("[ride-booking] creating_request", requestPayload);
+
+      const { data: request, error } = await supabase
+        .from("ride_requests")
+        .insert(requestPayload)
+        .select("id, user_id, pickup, destination, price, status, created_at")
+        .single();
+
+      if (error || !request) {
+        console.error("[ride-booking] create_request_failed", error);
+        throw new Error("تعذر إرسال طلب الرحلة حالياً. حاول مرة أخرى بعد قليل.");
+      }
+
+      console.info("[ride-booking] request_saved", request);
+
+      channel = supabase
+        .channel(`booking-${request.id}`)
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "ride_requests", filter: `id=eq.${request.id}` },
+          async (payload) => {
+            console.info("[ride-booking] request_updated", payload);
+
+            if (resolved || payload.new.status !== "accepted") return;
+            resolved = true;
+
+            try {
+              const { data: trip } = await supabase
+                .from("trips")
+                .select("driver_id")
+                .eq("user_id", user.id)
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+              if (trip?.driver_id) {
+                const { data: driver } = await supabase
+                  .from("drivers")
+                  .select("id, user_id, rating")
+                  .eq("id", trip.driver_id)
+                  .maybeSingle() as any;
+
+                if (driver) {
+                  const { data: profile } = await supabase
+                    .from("profiles")
+                    .select("name")
+                    .eq("id", driver.user_id)
+                    .maybeSingle();
+
+                  const { data: vehicle } = await supabase
+                    .from("vehicles")
+                    .select("brand, model, plate_no, color")
+                    .eq("driver_id", driver.id)
+                    .maybeSingle();
+
+                  setMatchedDriver({
+                    name: profile?.name || "سائق",
+                    rating: driver.rating || 0,
+                    car: vehicle ? `${vehicle.brand} ${vehicle.model} ${vehicle.color || ""}` : "—",
+                    plate: vehicle?.plate_no || "—",
+                    eta: "3 دقائق",
+                  });
+                }
+              }
+            } catch (lookupError) {
+              console.error("[ride-booking] driver_lookup_failed", lookupError);
             }
-          }
-          setStep("matched");
-          supabase.removeChannel(ch);
-        }
-      }).subscribe();
 
-    // Fallback timeout - simulate match after 5s if no real driver responds
-    setTimeout(() => {
-      if (step === "searching") {
+            if (!matchedDriver) {
+              setMatchedDriver({ name: "سائق متاح", rating: 4.5, car: "—", plate: "—", eta: "5 دقائق" });
+            }
+
+            setStep("matched");
+            cleanup();
+          }
+        )
+        .subscribe((status) => {
+          console.info("[ride-booking] realtime_status", status);
+        });
+
+      timeoutId = window.setTimeout(() => {
+        if (resolved) return;
+
+        console.warn("[ride-booking] driver_match_timeout", { requestId: request.id });
+        resolved = true;
         setMatchedDriver({ name: "سائق متاح", rating: 4.5, car: "—", plate: "—", eta: "5 دقائق" });
         setStep("matched");
-        supabase.removeChannel(ch);
-      }
-    }, 5000);
+        cleanup();
+      }, 5000);
+    } catch (err) {
+      console.error("[ride-booking] unexpected_failure", err);
+      cleanup();
+      setStep("confirm");
+      toast({
+        title: "تعذر إتمام الطلب",
+        description: err instanceof Error ? err.message : "حدث خطأ غير متوقع، حاول مرة أخرى.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -107,19 +204,19 @@ const ClientBooking = () => {
             </div>
 
             <div className="gradient-card rounded-xl p-4 border border-border mb-3">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center gap-4">
                 <div className="flex items-center gap-4">
                   <div className="text-center"><p className="text-xs text-muted-foreground">المسافة</p><p className="text-sm font-bold text-foreground">{ride.distance}</p></div>
                   <div className="text-center"><p className="text-xs text-muted-foreground">المدة</p><p className="text-sm font-bold text-foreground">{ride.duration}</p></div>
                 </div>
-                <div className="text-left"><p className="text-xs text-muted-foreground">السعر</p><p className="text-2xl font-bold text-primary">{ride.price} DH</p></div>
+                <div className="text-left"><p className="text-xs text-muted-foreground">السعر</p><p className="text-2xl font-bold text-primary">{priceLabel}</p></div>
               </div>
             </div>
 
             <div className="gradient-card rounded-xl p-4 border border-border mb-4">
               <p className="text-sm text-foreground font-bold mb-3">طريقة الدفع</p>
               <div className="flex gap-3">
-                {([["cash", "نقداً", CreditCard], ["wallet", "المحفظة", Wallet]] as const).map(([key, label, Icon]) => (
+                {([ ["cash", "نقداً", CreditCard], ["wallet", "المحفظة", Wallet]] as const).map(([key, label, Icon]) => (
                   <button key={key} onClick={() => setPaymentMethod(key)}
                     className={`flex-1 p-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${paymentMethod === key ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>
                     <Icon className="w-4 h-4" /><span className="text-sm">{label}</span>
@@ -139,7 +236,7 @@ const ClientBooking = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="gradient-card rounded-2xl p-8 border border-border text-center">
             <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto mb-4" />
             <h3 className="text-xl font-bold text-foreground">جاري البحث عن سائق</h3>
-            <p className="text-sm text-muted-foreground mt-2">يرجى الانتظار...</p>
+            <p className="text-sm text-muted-foreground mt-2">تم إرسال الطلب بنجاح، يرجى الانتظار...</p>
           </motion.div>
         )}
 
