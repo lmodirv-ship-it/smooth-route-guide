@@ -1,7 +1,10 @@
 import { useRef, useCallback } from "react";
-import { Autocomplete } from "@react-google-maps/api";
+import { Autocomplete, useJsApiLoader } from "@react-google-maps/api";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { GOOGLE_MAPS_API_KEY } from "@/components/GoogleMap";
+
+const LIBRARIES: ("places")[] = ["places"];
 
 interface PlacesAutocompleteProps {
   value: string;
@@ -17,6 +20,11 @@ const PlacesAutocomplete = ({
   onPlaceSelected,
   placeholder = "إلى أين تريد الذهاب؟",
 }: PlacesAutocompleteProps) => {
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    libraries: LIBRARIES,
+  });
+
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   const onLoad = useCallback((autocomplete: google.maps.places.Autocomplete) => {
@@ -34,20 +42,28 @@ const PlacesAutocomplete = ({
     }
   }, [onChange, onPlaceSelected]);
 
+  const inputElement = (
+    <Input
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="bg-secondary/80 border-border text-foreground h-14 rounded-2xl pr-12 pl-4 text-right text-base placeholder:text-muted-foreground"
+    />
+  );
+
   return (
     <div className="relative">
-      <Autocomplete
-        onLoad={onLoad}
-        onPlaceChanged={onPlaceChanged}
-        options={{ types: ["geocode", "establishment"] }}
-      >
-        <Input
-          placeholder={placeholder}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="bg-secondary/80 border-border text-foreground h-14 rounded-2xl pr-12 pl-4 text-right text-base placeholder:text-muted-foreground"
-        />
-      </Autocomplete>
+      {isLoaded ? (
+        <Autocomplete
+          onLoad={onLoad}
+          onPlaceChanged={onPlaceChanged}
+          options={{ types: ["geocode", "establishment"] }}
+        >
+          {inputElement}
+        </Autocomplete>
+      ) : (
+        inputElement
+      )}
       <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary pointer-events-none" />
     </div>
   );
