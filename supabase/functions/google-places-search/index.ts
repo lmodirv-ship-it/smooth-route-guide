@@ -219,13 +219,17 @@ serve(async (req) => {
       }
     }
 
-    // Fallback to mock data - return all for "restaurants" or "all"
-    const filtered = MOCK_RESTAURANTS.filter(r => {
+    // Fallback to mock data
+    let filtered = MOCK_RESTAURANTS.filter(r => {
       if (type && type !== 'all' && type !== 'restaurants') {
         return r.category.toLowerCase().includes(type.toLowerCase());
       }
       return true;
     });
+    // Filter by area if specified
+    if (area) {
+      filtered = filtered.filter(r => r.area.toLowerCase().includes(area.toLowerCase()));
+    }
 
     return new Response(JSON.stringify({ 
       restaurants: filtered, 
