@@ -47,7 +47,7 @@ const App = () => (
           <Route path="/driver/documents" element={<DocumentUpload />} />
           <Route path="/driver/trip" element={<ActiveTrip />} />
           <Route path="/client" element={<ClientHome />} />
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>
             <Route index element={<AdminDashboardPage />} />
             <Route path="requests" element={<AdminRideRequests />} />
             <Route path="drivers" element={<AdminDrivers />} />
