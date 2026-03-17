@@ -112,6 +112,12 @@ const App = () => (
           <Route path="/client/profile" element={<ClientProfile />} />
           <Route path="/client/support" element={<ClientSupport />} />
 
+          {/* Delivery App */}
+          <Route path="/delivery" element={<DeliveryHome />} />
+          <Route path="/delivery/:category" element={<DeliveryCategory />} />
+          <Route path="/delivery/tracking" element={<DeliveryTracking />} />
+          <Route path="/delivery/history" element={<DeliveryHistory />} />
+
           {/* Admin Dashboard */}
           <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>
             <Route index element={<AdminDashboardPage />} />
