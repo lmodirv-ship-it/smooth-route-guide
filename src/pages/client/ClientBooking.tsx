@@ -147,7 +147,7 @@ const ClientBooking = () => {
             cleanup();
           }
         )
-        .subscribe((status) => {
+        .subscribe();
           console.info("[ride-booking] realtime_status", status);
         });
 
