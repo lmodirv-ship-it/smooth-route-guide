@@ -21,18 +21,23 @@ import { auth, db } from "@/lib/firebase";
 import { createUserDocument, createRoleDocument, type UserRole } from "@/lib/firebaseServices";
 import logo from "@/assets/hn-driver-logo.png";
 
-type RoleId = "driver" | "client" | "delivery";
+type RoleId = "driver" | "client" | "delivery" | "admin" | "agent";
 
-const roleConfig: Record<RoleId, { label: string; color: string; icon: any }> = {
+const roleConfig: Record<string, { label: string; color: string; icon: any }> = {
   driver: { label: "حساب سائق", color: "text-primary", icon: Car },
   client: { label: "حساب عميل", color: "text-info", icon: UserIcon },
   delivery: { label: "حساب توصيل", color: "text-success", icon: ShoppingBag },
+  admin: { label: "حساب مسؤول", color: "text-destructive", icon: UserIcon },
+  agent: { label: "حساب مركز اتصال", color: "text-warning", icon: Phone },
 };
 
-const roleDashboard: Record<RoleId, string> = {
+const roleDashboard: Record<string, string> = {
   driver: "/driver",
   client: "/client",
   delivery: "/delivery",
+  admin: "/admin",
+  agent: "/call-center",
+  call_center: "/call-center",
 };
 
 const AuthPage = () => {

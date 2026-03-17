@@ -70,8 +70,26 @@ const DriverDashboard = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const newStatus = isOnline ? "inactive" : "active";
+    const newOnline = !isOnline;
+    
+    // Update Supabase-compatible driver record
     await supabase.from("drivers").update({ status: newStatus }).eq("user_id", user.id);
-    setIsOnline(!isOnline);
+    
+    // Also update Firebase drivers collection with isOnline/isAvailable
+    try {
+      const { doc: fbDoc, updateDoc: fbUpdate } = await import("firebase/firestore");
+      const { db: fbDb } = await import("@/lib/firebase");
+      await fbUpdate(fbDoc(fbDb, "drivers", user.uid), {
+        isOnline: newOnline,
+        isAvailable: newOnline,
+        lastLocationUpdate: new Date().toISOString(),
+      });
+      console.log("[Driver] Firebase isOnline:", newOnline, "isAvailable:", newOnline);
+    } catch (e) {
+      console.warn("[Driver] Firebase update failed:", e);
+    }
+    
+    setIsOnline(newOnline);
   };
 
   const statCards = [
