@@ -97,7 +97,7 @@ const Login = () => {
           {isLogin ? "تسجيل الدخول" : "إنشاء حساب جديد"}
         </h1>
         <span className={`text-sm mt-1 font-medium ${role === "driver" ? "text-primary" : "text-info"}`}>
-          {role === "driver" ? "حساب سائق" : role === "admin" ? "حساب مسؤول" : "حساب عميل"}
+          {role === "driver" ? "حساب سائق" : role === "admin" ? "حساب مسؤول" : role === "delivery" ? "حساب توصيل" : "حساب عميل"}
         </span>
       </motion.div>
 

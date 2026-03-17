@@ -35,6 +35,12 @@ import ClientHistory from "./pages/client/ClientHistory";
 import ClientProfile from "./pages/client/ClientProfile";
 import ClientSupport from "./pages/client/ClientSupport";
 
+// Delivery pages
+import DeliveryHome from "./pages/delivery/DeliveryHome";
+import DeliveryCategory from "./pages/delivery/DeliveryCategory";
+import DeliveryTracking from "./pages/delivery/DeliveryTracking";
+import DeliveryHistory from "./pages/delivery/DeliveryHistory";
+
 // Admin
 import AdminLayout from "./components/AdminLayout";
 import AdminGuard from "./components/AdminGuard";
@@ -105,6 +111,12 @@ const App = () => (
           <Route path="/client/history" element={<ClientHistory />} />
           <Route path="/client/profile" element={<ClientProfile />} />
           <Route path="/client/support" element={<ClientSupport />} />
+
+          {/* Delivery App */}
+          <Route path="/delivery" element={<DeliveryHome />} />
+          <Route path="/delivery/tracking" element={<DeliveryTracking />} />
+          <Route path="/delivery/history" element={<DeliveryHistory />} />
+          <Route path="/delivery/:category" element={<DeliveryCategory />} />
 
           {/* Admin Dashboard */}
           <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>

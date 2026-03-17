@@ -261,6 +261,78 @@ export type Database = {
           },
         ]
       }
+      delivery_orders: {
+        Row: {
+          accepted_at: string | null
+          category: string
+          created_at: string
+          delivered_at: string | null
+          delivery_address: string | null
+          delivery_lat: number | null
+          delivery_lng: number | null
+          driver_id: string | null
+          estimated_price: number | null
+          final_price: number | null
+          id: string
+          items: Json | null
+          notes: string | null
+          picked_up_at: string | null
+          pickup_address: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          status: string
+          store_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          category?: string
+          created_at?: string
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_lat?: number | null
+          delivery_lng?: number | null
+          driver_id?: string | null
+          estimated_price?: number | null
+          final_price?: number | null
+          id?: string
+          items?: Json | null
+          notes?: string | null
+          picked_up_at?: string | null
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          status?: string
+          store_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          category?: string
+          created_at?: string
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_lat?: number | null
+          delivery_lng?: number | null
+          driver_id?: string | null
+          estimated_price?: number | null
+          final_price?: number | null
+          id?: string
+          items?: Json | null
+          notes?: string | null
+          picked_up_at?: string | null
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          status?: string
+          store_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string
