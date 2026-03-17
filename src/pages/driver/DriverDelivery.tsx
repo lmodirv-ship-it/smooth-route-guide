@@ -10,6 +10,7 @@ import GoogleMapWrapper from "@/components/GoogleMap";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
 import { supabase } from "@/lib/firestoreClient";
 import { toast } from "@/hooks/use-toast";
+import { releaseDriver } from "@/lib/autoAssignDriver";
 import logo from "@/assets/hn-driver-logo.png";
 
 // ── Types ──
