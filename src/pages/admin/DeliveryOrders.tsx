@@ -129,7 +129,7 @@ const AdminDeliveryOrders = () => {
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="بحث بالاسم، المتجر، العنوان..." className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm" />
         </div>
-        {["all", "pending", "accepted", "picked_up", "in_transit", "delivered", "cancelled"].map(f => (
+        {["all", "pending", "confirmed", "driver_assigned", "accepted", "arrived_restaurant", "picked_up", "delivered", "completed", "cancelled"].map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={`text-xs px-3 py-1.5 rounded-lg transition-colors ${filter === f ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
             {f === "all" ? "الكل" : statusMap[f]?.label || f}
