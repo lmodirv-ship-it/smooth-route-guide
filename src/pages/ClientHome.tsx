@@ -8,11 +8,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
+import PriceEstimateCard from "@/components/PriceEstimateCard";
+import { useDistanceMatrix } from "@/hooks/useDistanceMatrix";
 import logo from "@/assets/hn-driver-logo.png";
 
 const ClientHome = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("home");
+  const [destination, setDestination] = useState("");
+  const [showEstimate, setShowEstimate] = useState(false);
+  const { getEstimate, estimate, loading, error, reset } = useDistanceMatrix("SAR");
 
   const quickLocations = [
     { icon: Home, label: "المنزل", address: "حي الملقا" },
@@ -25,6 +30,30 @@ const ClientHome = () => {
     { name: "سعد الحربي", rating: 4.8, car: "كيا أوبتيما", distance: "٧ دقائق", price: "٢٢ ر.س" },
   ];
 
+  const handleSearch = async () => {
+    if (!destination.trim()) return;
+    setShowEstimate(true);
+    // Using Riyadh center as origin (would be user's real location in production)
+    await getEstimate("24.7136,46.6753", destination);
+  };
+
+  const handleQuickLocation = async (address: string) => {
+    setDestination(address);
+    setShowEstimate(true);
+    await getEstimate("24.7136,46.6753", address);
+  };
+
+  const handleCancelEstimate = () => {
+    setShowEstimate(false);
+    setDestination("");
+    reset();
+  };
+
+  const handleBook = () => {
+    // Future: navigate to booking confirmation
+    navigate("/driver/trip");
+  };
+
   const renderHome = () => (
     <>
       {/* Search */}
@@ -32,9 +61,18 @@ const ClientHome = () => {
         <div className="relative">
           <Input
             placeholder="إلى أين تريد الذهاب؟"
-            className="bg-secondary/80 border-border text-foreground h-14 rounded-2xl pr-12 text-right text-base placeholder:text-muted-foreground"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            className="bg-secondary/80 border-border text-foreground h-14 rounded-2xl pr-12 pl-12 text-right text-base placeholder:text-muted-foreground"
           />
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+          <button
+            onClick={handleSearch}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-primary text-primary-foreground rounded-xl px-3 py-1.5 text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            ابحث
+          </button>
         </div>
       </div>
 
@@ -46,6 +84,7 @@ const ClientHome = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
+            onClick={() => handleQuickLocation(loc.address)}
             className="flex-1 gradient-card rounded-xl p-3 border border-border flex items-center gap-3 hover:border-primary/30 transition-colors"
           >
             <div className="text-right flex-1">
@@ -58,6 +97,17 @@ const ClientHome = () => {
           </motion.button>
         ))}
       </div>
+
+      {/* Price Estimate */}
+      {showEstimate && (
+        <PriceEstimateCard
+          estimate={estimate}
+          loading={loading}
+          error={error}
+          onBook={handleBook}
+          onCancel={handleCancelEstimate}
+        />
+      )}
 
       {/* Map */}
       <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-48 relative">
