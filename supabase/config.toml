@@ -8,3 +8,12 @@ verify_jwt = false
 
 [functions.generate-menu]
 verify_jwt = false
+
+[functions.scrape-restaurant]
+verify_jwt = false
+
+[functions.hn-assistant]
+verify_jwt = false
+
+[functions.admin-ai-agent]
+verify_jwt = false
