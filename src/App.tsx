@@ -12,6 +12,7 @@ import Splash from "./pages/Splash";
 import Welcome from "./pages/Welcome";
 import AuthPage from "./pages/AuthPage";
 import CompleteProfile from "./pages/CompleteProfile";
+import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
 
 // Driver pages
@@ -108,6 +109,7 @@ const App = () => (
           <Route path="/login" element={<AuthPage />} />
           <Route path="/auth/:role" element={<AuthPage />} />
           <Route path="/complete-profile" element={<CompleteProfile />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* Driver App - Protected */}
           <Route path="/driver" element={<AuthGuard requiredRole="driver"><DriverDashboard /></AuthGuard>} />

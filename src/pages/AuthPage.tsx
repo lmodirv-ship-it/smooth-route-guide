@@ -270,6 +270,17 @@ const AuthPage = () => {
             </div>
           </div>
 
+          {isLogin && (
+            <button
+              type="button"
+              onClick={() => navigate("/forgot-password")}
+              className="text-sm text-primary hover:text-primary/80 transition-colors text-right"
+              style={{ touchAction: "manipulation" }}
+            >
+              نسيت كلمة المرور؟
+            </button>
+          )}
+
           <Button type="submit" disabled={loading}
             className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-bold text-lg mt-2 hover:opacity-90 transition-opacity glow-primary">
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : isLogin ? "دخول" : "إنشاء حساب"}
