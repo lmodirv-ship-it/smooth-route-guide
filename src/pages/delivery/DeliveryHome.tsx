@@ -4,8 +4,9 @@ import { motion } from "framer-motion";
 import {
   Search, MapPin, ArrowRight, ChefHat, ShoppingCart,
   Gift, Heart, Bike, Store, Sparkles, Clock, Zap, Phone,
-  Navigation
+  Navigation, LogOut
 } from "lucide-react";
+import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
