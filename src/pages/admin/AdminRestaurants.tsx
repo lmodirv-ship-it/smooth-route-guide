@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { Plus, Pencil, Store, UtensilsCrossed, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CsvMenuImport from "@/components/admin/CsvMenuImport";
 
 const AdminRestaurants = () => {
   const [stores, setStores] = useState<any[]>([]);
@@ -204,6 +205,14 @@ const AdminRestaurants = () => {
               </CardContent>
             )}
           </Card>
+          {selectedStore && (
+            <CsvMenuImport
+              storeId={selectedStore}
+              storeName={stores.find((s) => s.id === selectedStore)?.name || ""}
+              categories={storeCats}
+              onImportComplete={fetchAll}
+            />
+          )}
         </TabsContent>
       </Tabs>
 
