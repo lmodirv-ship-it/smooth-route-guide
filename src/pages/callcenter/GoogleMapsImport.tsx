@@ -390,6 +390,19 @@ const GoogleMapsImport = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="w-56">
+                  <label className="text-xs text-muted-foreground mb-1 block">المنطقة</label>
+                  <Select value={area} onValueChange={setArea}>
+                    <SelectTrigger className="bg-secondary/60 border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TANGER_AREAS.map(a => (
+                        <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button onClick={searchRestaurants} disabled={loading} className="h-10">
                   {loading ? <Loader2 className="w-4 h-4 animate-spin ml-1" /> : <Search className="w-4 h-4 ml-1" />}
                   بحث
