@@ -6,6 +6,7 @@ import {
   Clock, User, Star, Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import GoogleMapWrapper from "@/components/GoogleMap";
 
 const ActiveTrip = () => {
   const navigate = useNavigate();
