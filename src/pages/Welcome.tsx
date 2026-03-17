@@ -28,7 +28,8 @@ const Welcome = () => {
     },
     {
       id: "delivery",
-      icon: Package,
+      icon: null,
+      customLogo: deliveryLogo,
       title: "توصيل",
       desc: "أرسل طرودك بسرعة وأمان",
       path: "/login?role=delivery",
