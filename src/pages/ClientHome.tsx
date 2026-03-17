@@ -5,6 +5,7 @@ import {
   MapPin, Search, Bell, Menu, Star, Clock, Navigation,
   ChevronLeft, Car, Heart, User, Home, Phone, MessageCircle, Bot
 } from "lucide-react";
+import RoleSwitcher from "@/components/RoleSwitcher";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
@@ -207,6 +208,7 @@ const ClientHome = () => {
   );
 
   return (
+    <>
     <div className="min-h-screen gradient-dark pb-24">
       {/* Header */}
       <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
@@ -305,6 +307,8 @@ const ClientHome = () => {
         </div>
       </div>
     </div>
+      <RoleSwitcher />
+    </>
   );
 };
 

@@ -6,6 +6,7 @@ import {
   Gift, Heart, Bike, Store, Sparkles, Clock, Zap, Phone,
   Navigation
 } from "lucide-react";
+import RoleSwitcher from "@/components/RoleSwitcher";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
@@ -91,6 +92,7 @@ const DeliveryHome = () => {
   );
 
   return (
+    <>
     <div className="min-h-screen delivery-bg relative overflow-hidden" dir="rtl">
       {/* Gradient Header */}
       <div className="relative bg-gradient-to-br from-primary/90 via-accent/80 to-primary/70 pt-6 pb-16 px-5 rounded-b-[2.5rem]">
@@ -278,6 +280,8 @@ const DeliveryHome = () => {
         )}
       </div>
     </div>
+      <RoleSwitcher />
+    </>
   );
 };
 

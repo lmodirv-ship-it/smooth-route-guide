@@ -5,6 +5,7 @@ import {
   MapPin, DollarSign, Star, Clock, TrendingUp,
   Bell, Menu, Power, ChevronLeft, Car, Navigation, BarChart3, User, Settings, Package
 } from "lucide-react";
+import RoleSwitcher from "@/components/RoleSwitcher";
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
 import IncomingRideRequest from "@/components/IncomingRideRequest";
@@ -187,6 +188,7 @@ const DriverDashboard = () => {
   );
 
   return (
+    <>
     <div className="min-h-screen gradient-dark pb-24">
       <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate("/driver/notifications")} className="p-2 relative">
@@ -222,6 +224,8 @@ const DriverDashboard = () => {
         </div>
       </div>
     </div>
+      <RoleSwitcher />
+    </>
   );
 };
 
