@@ -2,3 +2,6 @@ project_id = "typamugwwatqmdkxkfof"
 
 [functions.distance-matrix]
 verify_jwt = false
+
+[functions.google-places-search]
+verify_jwt = false
