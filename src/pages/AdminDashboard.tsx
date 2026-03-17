@@ -541,13 +541,13 @@ const AdminDashboard = () => {
                   <div key={req.id} className="p-4 hover:bg-secondary/30 transition-colors">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="text-xs h-7 text-success border-success/30 hover:bg-success/10">
-                          <UserCheck className="w-3 h-3 ml-1" /> قبول
+                        <Button size="sm" variant="outline" disabled={processingId === req.id} onClick={() => handleAcceptRequest(req)} className="text-xs h-7 text-success border-success/30 hover:bg-success/10">
+                          {processingId === req.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <><UserCheck className="w-3 h-3 ml-1" /> قبول</>}
                         </Button>
-                        <Button size="sm" variant="outline" className="text-xs h-7 text-info border-info/30 hover:bg-info/10">
+                        <Button size="sm" variant="outline" disabled={processingId === req.id} onClick={() => handleOpenAssignDialog(req)} className="text-xs h-7 text-info border-info/30 hover:bg-info/10">
                           <Car className="w-3 h-3 ml-1" /> تعيين
                         </Button>
-                        <Button size="sm" variant="outline" className="text-xs h-7 text-destructive border-destructive/30 hover:bg-destructive/10">
+                        <Button size="sm" variant="outline" disabled={processingId === req.id} onClick={() => handleCancelRequest(req)} className="text-xs h-7 text-destructive border-destructive/30 hover:bg-destructive/10">
                           <XCircle className="w-3 h-3 ml-1" /> إلغاء
                         </Button>
                       </div>
