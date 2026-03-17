@@ -14,6 +14,7 @@ import DocumentUpload from "./pages/DocumentUpload";
 import ActiveTrip from "./pages/ActiveTrip";
 import ClientHome from "./pages/ClientHome";
 import AdminLayout from "./components/AdminLayout";
+import AdminGuard from "./components/AdminGuard";
 import AdminDashboardPage from "./pages/admin/Dashboard";
 import AdminRideRequests from "./pages/admin/RideRequests";
 import AdminDrivers from "./pages/admin/Drivers";
@@ -46,7 +47,7 @@ const App = () => (
           <Route path="/driver/documents" element={<DocumentUpload />} />
           <Route path="/driver/trip" element={<ActiveTrip />} />
           <Route path="/client" element={<ClientHome />} />
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>
             <Route index element={<AdminDashboardPage />} />
             <Route path="requests" element={<AdminRideRequests />} />
             <Route path="drivers" element={<AdminDrivers />} />
