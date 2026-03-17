@@ -57,16 +57,18 @@ const AdminDashboardPage = () => {
 
   const fetchStats = useCallback(async () => {
     const today = new Date().toISOString().slice(0, 10);
-    const [reqRes, activeRes, totalRes, ridesRes, incomeRes] = await Promise.all([
+    const [reqRes, activeRes, totalRes, ridesRes, incomeRes, delPendRes, delActiveRes] = await Promise.all([
       supabase.from("ride_requests").select("id", { count: "exact", head: true }).gte("created_at", today),
       supabase.from("drivers").select("id", { count: "exact", head: true }).eq("status", "active"),
       supabase.from("drivers").select("id", { count: "exact", head: true }),
       supabase.from("trips").select("id", { count: "exact", head: true }).eq("status", "in_progress"),
       supabase.from("earnings").select("amount").gte("date", today),
+      supabase.from("delivery_orders").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("delivery_orders").select("id", { count: "exact", head: true }).in("status", ["accepted", "picked_up", "in_transit"]),
     ]);
     const totalIncome = (incomeRes.data || []).reduce((s, e) => s + Number(e.amount), 0);
     const active = activeRes.count || 0, total = totalRes.count || 0;
-    setStats({ requestsToday: reqRes.count || 0, activeDrivers: active, ongoingRides: ridesRes.count || 0, incomeToday: totalIncome, totalDrivers: total, offlineDrivers: total - active });
+    setStats({ requestsToday: reqRes.count || 0, activeDrivers: active, ongoingRides: ridesRes.count || 0, incomeToday: totalIncome, totalDrivers: total, offlineDrivers: total - active, deliveryPending: delPendRes.count || 0, deliveryActive: delActiveRes.count || 0 });
   }, []);
 
   const fetchTrips = useCallback(async () => {
