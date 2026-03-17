@@ -24,8 +24,8 @@ const statusFlow = [
   { key: "cancelled", label: "ملغي ❌", labelShort: "ملغي", icon: XCircle, color: "text-destructive", bg: "bg-destructive/10", border: "border-destructive/30" },
 ];
 
-// Import Car icon separately since it's not in the initial imports
-import { Car } from "lucide-react";
+
+// Car is already imported above
 
 const DeliveryOrdersCC = () => {
   const [orders, setOrders] = useState<any[]>([]);
