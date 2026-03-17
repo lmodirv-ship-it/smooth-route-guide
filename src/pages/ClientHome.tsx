@@ -208,6 +208,7 @@ const ClientHome = () => {
   );
 
   return (
+    <>
     <div className="min-h-screen gradient-dark pb-24">
       {/* Header */}
       <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">

@@ -188,6 +188,7 @@ const DriverDashboard = () => {
   );
 
   return (
+    <>
     <div className="min-h-screen gradient-dark pb-24">
       <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate("/driver/notifications")} className="p-2 relative">
