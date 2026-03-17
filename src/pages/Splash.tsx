@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import logo from "@/assets/hn-driver-logo.png";
+import splashLogo from "@/assets/designs/iindex.jpeg";
 
 const Splash = () => {
   const navigate = useNavigate();
@@ -10,56 +10,72 @@ const Splash = () => {
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(1), 300);
     const t2 = setTimeout(() => setPhase(2), 1200);
-    const t3 = setTimeout(() => navigate("/welcome"), 3000);
+    const t3 = setTimeout(() => navigate("/welcome"), 3500);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [navigate]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gradient-hero particles-bg relative">
-      {/* Glow rings */}
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background relative overflow-hidden">
+      {/* Background glow effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
+        <div className="absolute top-1/4 right-1/4 w-[200px] h-[200px] rounded-full bg-info/5 blur-[80px]" />
+      </div>
+
+      {/* Expanding glow rings */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: phase >= 1 ? 2.5 : 0, opacity: phase >= 1 ? 0.08 : 0 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          className="w-40 h-40 rounded-full border-2 border-primary absolute"
+          animate={{ scale: phase >= 1 ? 2.5 : 0, opacity: phase >= 1 ? 0.06 : 0 }}
+          transition={{ duration: 1.8, ease: "easeOut" }}
+          className="w-48 h-48 rounded-full border-2 border-primary absolute"
         />
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: phase >= 1 ? 4 : 0, opacity: phase >= 1 ? 0.04 : 0 }}
-          transition={{ duration: 2, ease: "easeOut", delay: 0.3 }}
-          className="w-40 h-40 rounded-full border border-primary absolute"
+          animate={{ scale: phase >= 1 ? 4.5 : 0, opacity: phase >= 1 ? 0.03 : 0 }}
+          transition={{ duration: 2.5, ease: "easeOut", delay: 0.3 }}
+          className="w-48 h-48 rounded-full border border-primary absolute"
         />
       </div>
 
+      {/* Main logo */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.5, y: 20 }}
-        animate={{ opacity: phase >= 1 ? 1 : 0, scale: phase >= 1 ? 1 : 0.5, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+        initial={{ opacity: 0, scale: 0.3 }}
+        animate={{ opacity: phase >= 1 ? 1 : 0, scale: phase >= 1 ? 1 : 0.3 }}
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         className="relative z-10 flex flex-col items-center"
       >
         <div className="relative">
-          <img src={logo} alt="HN Driver" className="w-28 h-28 mx-auto mb-5 drop-shadow-2xl" />
-          <div className="absolute inset-0 w-28 h-28 mx-auto rounded-full bg-primary/10 blur-2xl" />
+          <motion.img
+            src={splashLogo}
+            alt="HN Driver"
+            className="w-72 h-auto mx-auto rounded-3xl drop-shadow-2xl"
+            animate={{ 
+              filter: phase >= 1 
+                ? ["drop-shadow(0 0 30px hsl(32, 95%, 55%, 0.4))", "drop-shadow(0 0 50px hsl(32, 95%, 55%, 0.6))", "drop-shadow(0 0 30px hsl(32, 95%, 55%, 0.4))"]
+                : "none"
+            }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          />
         </div>
-        <h1 className="text-5xl font-bold font-display text-gradient-primary tracking-wider">
-          HN Driver
-        </h1>
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: phase >= 2 ? 1 : 0, y: phase >= 2 ? 0 : 10 }}
-          transition={{ duration: 0.5 }}
-          className="text-muted-foreground mt-3 text-center text-sm"
-        >
-          منصة التوصيل الذكية
-        </motion.p>
       </motion.div>
 
+      {/* Tagline */}
+      <motion.p
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: phase >= 2 ? 1 : 0, y: phase >= 2 ? 0 : 15 }}
+        transition={{ duration: 0.6 }}
+        className="text-muted-foreground mt-6 text-center text-sm tracking-wide relative z-10"
+      >
+        منصة التوصيل الذكية
+      </motion.p>
+
+      {/* Loading dots */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: phase >= 2 ? 1 : 0 }}
         transition={{ duration: 0.5 }}
-        className="absolute bottom-12 flex gap-2"
+        className="absolute bottom-14 flex gap-2"
       >
         {[0, 1, 2].map((i) => (
           <div
