@@ -79,6 +79,7 @@ class FirestoreQueryBuilder<T = any> {
   private _neqFilters: Array<{ field: string; value: any }> = [];
   private _inFilters: Array<{ field: string; values: any[] }> = [];
   private _notNullFields: string[] = [];
+  private _headOnly = false;
 
   constructor(collectionName: string) {
     this._collection = resolveCollection(collectionName);
