@@ -39,10 +39,10 @@ const CourierAddress = () => {
       Math.cos((pickupLat * Math.PI) / 180) * Math.cos((deliveryLat * Math.PI) / 180) *
       Math.sin(dLon / 2) ** 2;
     const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const base = 100;
-    const perKm = 30;
+    const base = 5; // 5 DH base
+    const perKm = 3; // 3 DH per km (Tangier pricing)
     const sizeMultiplier = packageSize === "xlarge" ? 2 : packageSize === "large" ? 1.5 : packageSize === "medium" ? 1.2 : 1;
-    const fragileExtra = packageFragile ? 50 : 0;
+    const fragileExtra = packageFragile ? 5 : 0;
     return Math.round((base + dist * perKm) * sizeMultiplier + fragileExtra);
   })();
 
