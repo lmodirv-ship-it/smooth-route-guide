@@ -81,6 +81,7 @@ import Emergency from "./pages/callcenter/Emergency";
 import CallHistory from "./pages/callcenter/CallHistory";
 import CCReports from "./pages/callcenter/CCReports";
 import DeliveryOrdersCC from "./pages/callcenter/DeliveryOrdersCC";
+import RestaurantsCC from "./pages/callcenter/RestaurantsCC";
 
 // AI
 import AgentHub from "./pages/ai/AgentHub";
