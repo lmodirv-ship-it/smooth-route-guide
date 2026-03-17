@@ -77,6 +77,8 @@ const GoogleMapsImport = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [importLogs, setImportLogs] = useState<any[]>([]);
   const [showLogs, setShowLogs] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiPreview, setAiPreview] = useState<any>(null);
 
   useEffect(() => {
     if (activeTab === "manage") loadSavedRestaurants();
