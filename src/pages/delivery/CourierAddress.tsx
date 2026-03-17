@@ -39,10 +39,10 @@ const CourierAddress = () => {
       Math.cos((pickupLat * Math.PI) / 180) * Math.cos((deliveryLat * Math.PI) / 180) *
       Math.sin(dLon / 2) ** 2;
     const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const base = 100;
-    const perKm = 30;
+    const base = 5; // 5 DH base
+    const perKm = 3; // 3 DH per km (Tangier pricing)
     const sizeMultiplier = packageSize === "xlarge" ? 2 : packageSize === "large" ? 1.5 : packageSize === "medium" ? 1.2 : 1;
-    const fragileExtra = packageFragile ? 50 : 0;
+    const fragileExtra = packageFragile ? 5 : 0;
     return Math.round((base + dist * perKm) * sizeMultiplier + fragileExtra);
   })();
 
@@ -212,7 +212,7 @@ const CourierAddress = () => {
             {deliveryLat && pickupLat && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-card rounded-2xl border border-primary/20 p-4">
                 <p className="text-xs text-muted-foreground mb-1">التكلفة التقديرية</p>
-                <p className="text-2xl font-bold text-primary">{estimatedPrice} د.ج</p>
+                <p className="text-2xl font-bold text-primary">{estimatedPrice} DH</p>
               </motion.div>
             )}
           </motion.div>
@@ -282,7 +282,7 @@ const CourierAddress = () => {
               <Row label="الهاتف" value={recipientPhone} />
               <div className="h-px bg-border" />
               <div className="flex justify-between items-center">
-                <p className="text-xl font-bold text-primary">{estimatedPrice} د.ج</p>
+                <p className="text-xl font-bold text-primary">{estimatedPrice} DH</p>
                 <p className="text-sm text-muted-foreground">التكلفة التقديرية</p>
               </div>
             </div>

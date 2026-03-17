@@ -43,6 +43,7 @@ import DeliveryHistory from "./pages/delivery/DeliveryHistory";
 import CourierSend from "./pages/delivery/CourierSend";
 import CourierAddress from "./pages/delivery/CourierAddress";
 import CourierTrack from "./pages/delivery/CourierTrack";
+import DeliverySupport from "./pages/delivery/DeliverySupport";
 
 // Admin
 import AdminLayout from "./components/AdminLayout";
@@ -122,6 +123,7 @@ const App = () => (
           <Route path="/delivery/courier/send" element={<CourierSend />} />
           <Route path="/delivery/courier/address" element={<CourierAddress />} />
           <Route path="/delivery/courier/track" element={<CourierTrack />} />
+          <Route path="/delivery/support" element={<DeliverySupport />} />
           <Route path="/delivery/:category" element={<DeliveryCategory />} />
 
           {/* Admin Dashboard */}

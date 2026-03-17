@@ -270,6 +270,7 @@ export type Database = {
           delivery_address: string | null
           delivery_lat: number | null
           delivery_lng: number | null
+          delivery_type: string
           driver_id: string | null
           estimated_price: number | null
           final_price: number | null
@@ -284,6 +285,7 @@ export type Database = {
           store_name: string | null
           updated_at: string
           user_id: string
+          zone_id: string | null
         }
         Insert: {
           accepted_at?: string | null
@@ -293,6 +295,7 @@ export type Database = {
           delivery_address?: string | null
           delivery_lat?: number | null
           delivery_lng?: number | null
+          delivery_type?: string
           driver_id?: string | null
           estimated_price?: number | null
           final_price?: number | null
@@ -307,6 +310,7 @@ export type Database = {
           store_name?: string | null
           updated_at?: string
           user_id: string
+          zone_id?: string | null
         }
         Update: {
           accepted_at?: string | null
@@ -316,6 +320,7 @@ export type Database = {
           delivery_address?: string | null
           delivery_lat?: number | null
           delivery_lng?: number | null
+          delivery_type?: string
           driver_id?: string | null
           estimated_price?: number | null
           final_price?: number | null
@@ -330,8 +335,17 @@ export type Database = {
           store_name?: string | null
           updated_at?: string
           user_id?: string
+          zone_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "delivery_orders_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       documents: {
         Row: {
@@ -634,6 +648,74 @@ export type Database = {
         }
         Relationships: []
       }
+      stores: {
+        Row: {
+          address: string | null
+          category: string
+          created_at: string
+          delivery_fee: number | null
+          delivery_time_max: number | null
+          delivery_time_min: number | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_open: boolean
+          lat: number | null
+          lng: number | null
+          min_order: number | null
+          name: string
+          phone: string | null
+          rating: number | null
+          zone_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          category?: string
+          created_at?: string
+          delivery_fee?: number | null
+          delivery_time_max?: number | null
+          delivery_time_min?: number | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_open?: boolean
+          lat?: number | null
+          lng?: number | null
+          min_order?: number | null
+          name?: string
+          phone?: string | null
+          rating?: number | null
+          zone_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          category?: string
+          created_at?: string
+          delivery_fee?: number | null
+          delivery_time_max?: number | null
+          delivery_time_min?: number | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_open?: boolean
+          lat?: number | null
+          lng?: number | null
+          min_order?: number | null
+          name?: string
+          phone?: string | null
+          rating?: number | null
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stores_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tickets: {
         Row: {
           agent_id: string | null
@@ -853,6 +935,45 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      zones: {
+        Row: {
+          center_lat: number
+          center_lng: number
+          city: string
+          created_at: string
+          delivery_fee: number
+          id: string
+          is_active: boolean
+          name_ar: string
+          name_fr: string
+          radius_km: number
+        }
+        Insert: {
+          center_lat?: number
+          center_lng?: number
+          city?: string
+          created_at?: string
+          delivery_fee?: number
+          id?: string
+          is_active?: boolean
+          name_ar?: string
+          name_fr?: string
+          radius_km?: number
+        }
+        Update: {
+          center_lat?: number
+          center_lng?: number
+          city?: string
+          created_at?: string
+          delivery_fee?: number
+          id?: string
+          is_active?: boolean
+          name_ar?: string
+          name_fr?: string
+          radius_km?: number
         }
         Relationships: []
       }
