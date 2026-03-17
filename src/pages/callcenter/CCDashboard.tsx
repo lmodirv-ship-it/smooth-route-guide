@@ -7,7 +7,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 
 const CCDashboard = () => {
-  const [stats, setStats] = useState({ pendingRequests: 0, activeComplaints: 0, activeDrivers: 0, openTickets: 0, callsToday: 0 });
+  const [stats, setStats] = useState({ pendingRequests: 0, activeComplaints: 0, activeDrivers: 0, openTickets: 0, callsToday: 0, deliveryPending: 0 });
   const [recentCalls, setRecentCalls] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
