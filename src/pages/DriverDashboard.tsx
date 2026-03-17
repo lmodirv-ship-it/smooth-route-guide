@@ -17,6 +17,7 @@ import logo from "@/assets/hn-driver-logo.png";
 
 const DriverDashboard = () => {
   const navigate = useNavigate();
+  const logout = useFirebaseLogout();
   const [isOnline, setIsOnline] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
   const { requests, accepting, acceptRequest, rejectRequest } = useIncomingRideRequests(isOnline);
