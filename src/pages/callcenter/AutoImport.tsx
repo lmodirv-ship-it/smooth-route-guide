@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 import { toast } from "sonner";
 import { 
   Globe, Download, Eye, Check, Edit, Save, Loader2, 

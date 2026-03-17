@@ -5,7 +5,7 @@ import { ArrowRight, MapPin, Navigation, Loader2, ChevronLeft, Phone, User } fro
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 import PlacesAutocomplete from "@/components/PlacesAutocomplete";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 
