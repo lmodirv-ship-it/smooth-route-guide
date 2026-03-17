@@ -15,6 +15,7 @@ const DriverDashboard = () => {
   const navigate = useNavigate();
   const [isOnline, setIsOnline] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
+  const { requests, accepting, acceptRequest, rejectRequest } = useIncomingRideRequests(isOnline);
 
   const stats = [
     { icon: DollarSign, label: "أرباح اليوم", value: "٢٥٠ ر.س", color: "text-primary", glow: "glow-ring-orange" },
