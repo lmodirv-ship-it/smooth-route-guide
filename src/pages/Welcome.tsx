@@ -52,24 +52,38 @@ const Welcome = () => {
         transition={{ duration: 0.6 }}
         className="flex flex-col items-center pt-8 relative z-10"
       >
-        <div className="relative">
+        <div className="relative flex items-center justify-center">
+          {/* Outer glowing ring */}
+          <motion.div
+            className="absolute w-56 h-56 rounded-full"
+            style={{
+              background: "conic-gradient(from 0deg, hsl(32, 95%, 55%), hsl(45, 95%, 65%), hsl(32, 95%, 55%))",
+              padding: "3px",
+            }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+          >
+            <div className="w-full h-full rounded-full bg-background" />
+          </motion.div>
+          {/* Inner glow */}
+          <motion.div
+            className="absolute w-52 h-52 rounded-full bg-primary/10 blur-2xl"
+            animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.25, 0.1] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          />
+          {/* Logo */}
           <motion.img
             src={logo}
             alt="HN Driver"
-            className="w-48 h-48 mb-3 drop-shadow-2xl"
+            className="w-48 h-48 rounded-full object-cover border-4 border-primary/30 shadow-2xl relative z-10"
             animate={{
-              scale: [1, 1.06, 1],
-              filter: [
-                "drop-shadow(0 0 20px hsl(32, 95%, 55%, 0.3))",
-                "drop-shadow(0 0 40px hsl(32, 95%, 55%, 0.6))",
-                "drop-shadow(0 0 20px hsl(32, 95%, 55%, 0.3))",
+              scale: [1, 1.04, 1],
+              boxShadow: [
+                "0 0 20px hsl(32, 95%, 55%, 0.2)",
+                "0 0 40px hsl(32, 95%, 55%, 0.5)",
+                "0 0 20px hsl(32, 95%, 55%, 0.2)",
               ],
             }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute inset-0 w-48 h-48 rounded-full bg-primary/15 blur-2xl"
-            animate={{ scale: [1, 1.3, 1], opacity: [0.15, 0.3, 0.15] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           />
         </div>
