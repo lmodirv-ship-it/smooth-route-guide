@@ -136,8 +136,11 @@ export type Database = {
         Row: {
           car_id: string | null
           created_at: string
+          current_lat: number | null
+          current_lng: number | null
           id: string
           license_no: string
+          location_updated_at: string | null
           rating: number | null
           status: string
           user_id: string
@@ -145,8 +148,11 @@ export type Database = {
         Insert: {
           car_id?: string | null
           created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
           id?: string
           license_no?: string
+          location_updated_at?: string | null
           rating?: number | null
           status?: string
           user_id: string
@@ -154,8 +160,11 @@ export type Database = {
         Update: {
           car_id?: string | null
           created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
           id?: string
           license_no?: string
+          location_updated_at?: string | null
           rating?: number | null
           status?: string
           user_id?: string

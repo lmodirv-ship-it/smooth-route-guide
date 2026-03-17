@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
 import IncomingRideRequest from "@/components/IncomingRideRequest";
 import { useIncomingRideRequests } from "@/hooks/useIncomingRideRequests";
+import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DriverDashboard = () => {
@@ -16,6 +17,7 @@ const DriverDashboard = () => {
   const [isOnline, setIsOnline] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
   const { requests, accepting, acceptRequest, rejectRequest } = useIncomingRideRequests(isOnline);
+  const { location: driverLocation, permissionDenied, loading: gpsLoading } = useDriverGeolocation(isOnline);
 
   const stats = [
     { icon: DollarSign, label: "أرباح اليوم", value: "٢٥٠ ر.س", color: "text-primary", glow: "glow-ring-orange" },
@@ -66,11 +68,27 @@ const DriverDashboard = () => {
 
       {/* Map */}
       <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-44 relative">
-        <GoogleMapWrapper zoom={13}>
+        <GoogleMapWrapper
+          zoom={15}
+          driverLocation={driverLocation}
+          panToDriver={isOnline}
+          showMarker={!isOnline}
+        >
           {isOnline && (
             <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-success/20 text-success px-3 py-1 rounded-full text-xs font-medium border border-success/20 backdrop-blur-sm">
               <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
               متصل
+            </div>
+          )}
+          {gpsLoading && isOnline && (
+            <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 bg-background/80 text-muted-foreground px-3 py-1 rounded-full text-xs backdrop-blur-sm border border-border">
+              <div className="w-3 h-3 border border-primary border-t-transparent rounded-full animate-spin" />
+              جاري تحديد الموقع...
+            </div>
+          )}
+          {permissionDenied && isOnline && (
+            <div className="absolute bottom-3 inset-x-3 z-10 bg-destructive/90 text-destructive-foreground px-3 py-2 rounded-lg text-xs text-center backdrop-blur-sm">
+              يجب تفعيل إذن الموقع ليظهر مكان السائق على الخريطة
             </div>
           )}
         </GoogleMapWrapper>
