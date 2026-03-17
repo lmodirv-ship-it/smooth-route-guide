@@ -151,11 +151,11 @@ const RestaurantsCC = () => {
         phone: store.phone || "", delivery_time_min: store.delivery_time_min || 20,
         delivery_time_max: store.delivery_time_max || 40, is_open: store.is_open,
         description: store.description || "", delivery_fee: store.delivery_fee || 10,
-        min_order: store.min_order || 0,
+        min_order: store.min_order || 0, zone_id: store.zone_id || "",
       });
     } else {
       setEditingStore(null);
-      setStoreForm({ name: "", category: "restaurant", address: "", phone: "", delivery_time_min: 20, delivery_time_max: 40, is_open: true, description: "", delivery_fee: 10, min_order: 0 });
+      setStoreForm({ name: "", category: "restaurant", address: "", phone: "", delivery_time_min: 20, delivery_time_max: 40, is_open: true, description: "", delivery_fee: 10, min_order: 0, zone_id: "" });
     }
     setStoreImageFile(null);
     setStoreDialog(true);
