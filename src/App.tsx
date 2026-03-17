@@ -103,6 +103,7 @@ const App = () => (
           <Route path="/" element={<Splash />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/auth/:role" element={<Login />} />
 
           {/* Driver App */}
           <Route path="/driver" element={<DriverDashboard />} />
