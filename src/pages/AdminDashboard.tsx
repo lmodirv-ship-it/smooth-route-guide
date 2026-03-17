@@ -643,6 +643,49 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Assign Driver Dialog */}
+      <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+        <DialogContent className="gradient-card border-border" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">تعيين سائق للطلب</DialogTitle>
+          </DialogHeader>
+          {assigningRequest && (
+            <div className="mb-4 p-3 rounded-lg bg-secondary/50 text-sm">
+              <p className="text-foreground font-medium">{assigningRequest.pickup}</p>
+              <p className="text-muted-foreground text-xs">← {assigningRequest.destination}</p>
+              <p className="text-primary font-semibold mt-1">{assigningRequest.price || 0} ر.س</p>
+            </div>
+          )}
+          {availableDrivers.length === 0 ? (
+            <p className="text-center text-muted-foreground py-4">لا يوجد سائقين متاحين حالياً</p>
+          ) : (
+            <div className="space-y-2 max-h-64 overflow-auto">
+              {availableDrivers.map((d) => (
+                <button
+                  key={d.id}
+                  disabled={processingId !== null}
+                  onClick={() => handleAssignDriver(d.id)}
+                  className="w-full flex items-center justify-between p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors"
+                >
+                  <Button size="sm" variant="outline" className="text-xs text-primary border-primary/30">
+                    {processingId ? <Loader2 className="w-3 h-3 animate-spin" /> : "تعيين"}
+                  </Button>
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <p className="text-sm text-foreground font-medium">{d.name}</p>
+                      <p className="text-xs text-warning">★ {d.rating || "—"}</p>
+                    </div>
+                    <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center">
+                      <Car className="w-4 h-4 text-primary" />
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
