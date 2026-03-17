@@ -5,6 +5,7 @@ import {
   MapPin, DollarSign, Star, Clock, TrendingUp,
   Bell, Menu, Power, ChevronLeft, Car, Navigation, BarChart3, User, Settings, Package
 } from "lucide-react";
+import RoleSwitcher from "@/components/RoleSwitcher";
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
 import IncomingRideRequest from "@/components/IncomingRideRequest";
