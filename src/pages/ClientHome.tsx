@@ -20,9 +20,29 @@ const ClientHome = () => {
   const [showEstimate, setShowEstimate] = useState(false);
   const { getEstimate, estimate, loading, error, reset } = useTripPricing("DH");
 
-  // Simulated locations (in production: real GPS)
-  const driverLocation = "24.7236,46.6853"; // nearest driver
-  const customerLocation = "24.7136,46.6753"; // customer's GPS
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationError("المتصفح لا يدعم تحديد الموقع");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      },
+      () => {
+        setLocationError("تعذر الوصول إلى موقعك");
+        // fallback to Riyadh
+        setUserLocation({ lat: 24.7136, lng: 46.6753 });
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }, []);
+
+  const driverLocation = "24.7236,46.6853";
+  const customerLocation = userLocation ? `${userLocation.lat},${userLocation.lng}` : "24.7136,46.6753";
 
   const quickLocations = [
     { icon: Home, label: "المنزل", address: "حي الملقا، الرياض" },
