@@ -37,8 +37,8 @@ const ClientHome = () => {
       },
       () => {
         setLocationError("تعذر الوصول إلى موقعك");
-        // fallback to Riyadh
-        setUserLocation({ lat: 24.7136, lng: 46.6753 });
+        // fallback to Tangier
+        setUserLocation({ lat: 35.7595, lng: -5.8340 });
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
