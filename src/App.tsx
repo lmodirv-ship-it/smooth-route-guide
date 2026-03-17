@@ -25,6 +25,7 @@ import DriverPromotions from "./pages/driver/DriverPromotions";
 import DriverSupport from "./pages/driver/DriverSupport";
 import DriverStatus from "./pages/driver/DriverStatus";
 import DriverEarnings from "./pages/driver/DriverEarnings";
+import DriverDelivery from "./pages/driver/DriverDelivery";
 
 // Client pages
 import ClientHome from "./pages/ClientHome";
