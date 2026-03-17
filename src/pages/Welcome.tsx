@@ -1,15 +1,32 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Car, User, Headphones, Shield } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 
 const Welcome = () => {
   const navigate = useNavigate();
+  const [checking, setChecking] = useState(false);
 
-  const handleRoleSelect = (roleId: string, path: string) => {
+  const handleRoleSelect = async (roleId: string, path: string) => {
     localStorage.setItem("hn_user_role", roleId);
-    navigate(path);
+    setChecking(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // Already logged in — go to dashboard
+        navigate(path);
+      } else {
+        // Not logged in — go to login with role
+        navigate(`/login?role=${roleId}`);
+      }
+    } catch {
+      navigate(`/login?role=${roleId}`);
+    } finally {
+      setChecking(false);
+    }
   };
 
   const roles = [
@@ -100,7 +117,9 @@ const Welcome = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.3 + i * 0.15 }}
             onClick={() => handleRoleSelect(role.id, role.path)}
-            className="group relative overflow-hidden rounded-2xl p-5 gradient-card border border-border hover:border-primary/40 transition-all duration-300"
+            disabled={checking}
+            style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+            className="group relative overflow-hidden rounded-2xl p-5 gradient-card border border-border hover:border-primary/40 transition-all duration-300 disabled:opacity-50 cursor-pointer select-none"
           >
             <div className="absolute inset-0 gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />
             <div className="flex items-center gap-4">
