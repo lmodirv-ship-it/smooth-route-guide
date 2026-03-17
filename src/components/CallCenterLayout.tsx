@@ -10,14 +10,14 @@ import logo from "@/assets/hn-driver-logo.png";
 
 const navItems = [
   { path: "/call-center", icon: BarChart3, label: "لوحة التحكم" },
+  { path: "/call-center/delivery", icon: PlusCircle, label: "طلبات التوصيل" },
+  { path: "/call-center/drivers", icon: Car, label: "السائقون" },
   { path: "/call-center/incoming", icon: PhoneCall, label: "المكالمات الواردة" },
   { path: "/call-center/manual-booking", icon: PlusCircle, label: "حجز يدوي" },
-  { path: "/call-center/ride-assign", icon: Car, label: "تعيين السائقين" },
-  { path: "/call-center/customers", icon: Users, label: "بحث العملاء" },
-  { path: "/call-center/drivers", icon: Car, label: "بحث السائقين" },
+  { path: "/call-center/ride-assign", icon: Car, label: "تعيين الرحلات" },
+  { path: "/call-center/customers", icon: Users, label: "العملاء" },
   { path: "/call-center/complaints", icon: AlertTriangle, label: "الشكاوى" },
   { path: "/call-center/tickets", icon: FileText, label: "التذاكر" },
-  { path: "/call-center/delivery", icon: PlusCircle, label: "طلبات التوصيل" },
   { path: "/call-center/emergency", icon: AlertTriangle, label: "الطوارئ" },
   { path: "/call-center/history", icon: Clock, label: "سجل المكالمات" },
   { path: "/call-center/reports", icon: BarChart, label: "التقارير" },

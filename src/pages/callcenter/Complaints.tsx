@@ -1,151 +1,225 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, Clock, User, CheckCircle, XCircle, ArrowUp, Plus, MessageCircle, Filter } from "lucide-react";
+import { AlertTriangle, Clock, User, CheckCircle, XCircle, ArrowUp, Plus, MessageCircle, Loader2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
+const categories = [
+  { id: "late_delivery", label: "تأخير التوصيل" },
+  { id: "wrong_item", label: "منتج خاطئ" },
+  { id: "driver_issue", label: "مشكلة مع السائق" },
+  { id: "restaurant_issue", label: "مشكلة مع المطعم" },
+  { id: "payment", label: "مشكلة دفع" },
+  { id: "cancellation", label: "إلغاء" },
+  { id: "other", label: "أخرى" },
+];
+
 const Complaints = () => {
-  const [filter, setFilter] = useState<"all" | "open" | "review" | "resolved">("all");
+  const [complaints, setComplaints] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all");
+  const [selected, setSelected] = useState<any>(null);
+  const [agentNotes, setAgentNotes] = useState("");
   const [showNew, setShowNew] = useState(false);
-  const [selected, setSelected] = useState<number | null>(null);
+  const [newForm, setNewForm] = useState({ category: "", description: "", userId: "" });
 
-  const complaints = [
-    { id: 1, client: "عبدالله أحمد", driver: "أحمد الفاسي", category: "تأخر", desc: "السائق تأخر 15 دقيقة عن الموعد المحدد بدون إشعار مسبق", status: "مفتوح", time: "اليوم 14:30", priority: "عالي", trip: "R-001", agentNotes: "" },
-    { id: 2, client: "فاطمة محمد", driver: "خالد المنصوري", category: "سلوك", desc: "السائق كان غير مهذب في التعامل ورفض تشغيل التكييف", status: "قيد المراجعة", time: "أمس 10:15", priority: "عالي", trip: "R-002", agentNotes: "تم التواصل مع السائق" },
-    { id: 3, client: "نورة السعيد", driver: "سعيد بنعمر", category: "مسار خاطئ", desc: "السائق أخذ مساراً أطول من المعتاد مما رفع سعر الرحلة", status: "محلول", time: "12/03", priority: "متوسط", trip: "R-003", agentNotes: "تم تعويض العميل 15 DH" },
-    { id: 4, client: "محمد البكري", driver: "يوسف العربي", category: "فوترة", desc: "تم خصم مبلغ مزدوج من المحفظة", status: "مفتوح", time: "اليوم 09:00", priority: "عالي", trip: "R-004", agentNotes: "" },
-    { id: 5, client: "عائشة المنصوري", driver: "أحمد الفاسي", category: "نظافة", desc: "السيارة لم تكن نظيفة", status: "قيد المراجعة", time: "أمس 16:00", priority: "منخفض", trip: "R-005", agentNotes: "تم تحذير السائق" },
-  ];
+  const fetchComplaints = useCallback(async () => {
+    const { data } = await supabase.from("complaints").select("*").order("created_at", { ascending: false }).limit(100);
+    if (data) {
+      const uids = [...new Set(data.map(c => c.user_id))];
+      const { data: profiles } = await supabase.from("profiles").select("id, name, phone").in("id", uids);
+      const pMap = new Map(profiles?.map(p => [p.id, p]) || []);
+      setComplaints(data.map(c => ({
+        ...c,
+        userName: pMap.get(c.user_id)?.name || "—",
+        userPhone: pMap.get(c.user_id)?.phone || "—",
+      })));
+    }
+    setLoading(false);
+  }, []);
 
-  const categories = ["تأخر", "سلوك", "مسار خاطئ", "فوترة", "نظافة", "أخرى"];
+  useEffect(() => {
+    fetchComplaints();
+    const ch = supabase.channel("cc-complaints-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "complaints" }, fetchComplaints)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [fetchComplaints]);
+
+  const updateStatus = async (id: string, status: string) => {
+    const { error } = await supabase.from("complaints").update({ status, updated_at: new Date().toISOString() }).eq("id", id);
+    if (error) { toast({ title: "خطأ", variant: "destructive" }); return; }
+    toast({ title: status === "resolved" ? "تم الحل ✅" : status === "in_review" ? "قيد المراجعة" : "تم التحديث" });
+  };
+
+  const saveNotes = async (id: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase.from("complaints").update({
+      agent_notes: agentNotes,
+      agent_id: user?.id,
+      updated_at: new Date().toISOString(),
+    }).eq("id", id);
+    if (error) { toast({ title: "خطأ", variant: "destructive" }); return; }
+    toast({ title: "تم حفظ الملاحظات ✅" });
+  };
 
   const filtered = filter === "all" ? complaints :
-    filter === "open" ? complaints.filter(c => c.status === "مفتوح") :
-    filter === "review" ? complaints.filter(c => c.status === "قيد المراجعة") :
-    complaints.filter(c => c.status === "محلول");
+    filter === "open" ? complaints.filter(c => c.status === "open") :
+    filter === "in_review" ? complaints.filter(c => c.status === "in_review") :
+    complaints.filter(c => c.status === "resolved");
 
-  const selectedComplaint = complaints.find(c => c.id === selected);
+  const getPriorityBadge = (p: string) => {
+    if (p === "high") return { label: "عالي", color: "text-destructive", bg: "bg-destructive/10" };
+    if (p === "low") return { label: "منخفض", color: "text-info", bg: "bg-info/10" };
+    return { label: "متوسط", color: "text-amber-400", bg: "bg-amber-400/10" };
+  };
+
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <Button size="sm" onClick={() => setShowNew(!showNew)} className="gradient-primary text-primary-foreground rounded-lg">
-          <Plus className="w-4 h-4 ml-1" /> شكوى جديدة
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Button size="sm" onClick={() => setShowNew(!showNew)} className="rounded-lg gap-1">
+          <Plus className="w-4 h-4" /> شكوى جديدة
         </Button>
-        <h1 className="text-xl font-bold text-foreground">إدارة الشكاوى</h1>
+        <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5 text-destructive" />
+          الشكاوى
+        </h1>
       </div>
 
-      {/* New Complaint Form */}
       {showNew && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
-          className="gradient-card rounded-xl p-4 border border-border mb-4 space-y-3">
+          className="glass rounded-xl p-4 border border-border space-y-3">
           <h3 className="text-foreground font-bold text-sm">تسجيل شكوى جديدة</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Input placeholder="اسم العميل أو رقمه" className="bg-secondary border-border rounded-lg text-right text-sm" />
-            <Input placeholder="اسم السائق (اختياري)" className="bg-secondary border-border rounded-lg text-right text-sm" />
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {categories.map(cat => (
-              <button key={cat} className="text-xs px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:border-primary hover:text-primary transition-all">{cat}</button>
-            ))}
-          </div>
-          <Textarea placeholder="تفاصيل الشكوى..." className="bg-secondary border-border rounded-lg text-right min-h-[60px] text-sm" />
+          <Select onValueChange={v => setNewForm(f => ({ ...f, category: v }))}>
+            <SelectTrigger className="bg-card border-border text-sm"><SelectValue placeholder="التصنيف" /></SelectTrigger>
+            <SelectContent>
+              {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Textarea value={newForm.description} onChange={e => setNewForm(f => ({ ...f, description: e.target.value }))}
+            placeholder="تفاصيل الشكوى..." className="bg-card border-border text-right text-sm min-h-[60px]" />
           <div className="flex gap-2">
-            <Button size="sm" className="gradient-primary text-primary-foreground rounded-lg" onClick={() => { setShowNew(false); toast({ title: "✅ تم تسجيل الشكوى" }); }}>حفظ</Button>
-            <Button size="sm" variant="outline" className="border-border rounded-lg" onClick={() => setShowNew(false)}>إلغاء</Button>
+            <Button size="sm" className="rounded-lg" onClick={async () => {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) return;
+              const { error } = await supabase.from("complaints").insert({
+                user_id: user.id, category: newForm.category, description: newForm.description, priority: "medium",
+              });
+              if (error) { toast({ title: "خطأ", variant: "destructive" }); return; }
+              toast({ title: "تم تسجيل الشكوى ✅" });
+              setShowNew(false);
+              setNewForm({ category: "", description: "", userId: "" });
+            }}>حفظ</Button>
+            <Button size="sm" variant="outline" onClick={() => setShowNew(false)}>إلغاء</Button>
           </div>
         </motion.div>
       )}
 
       {/* Filter Tabs */}
-      <div className="flex gap-2 mb-4 overflow-auto">
-        {([["all", "الكل", complaints.length], ["open", "مفتوح", complaints.filter(c => c.status === "مفتوح").length], ["review", "قيد المراجعة", complaints.filter(c => c.status === "قيد المراجعة").length], ["resolved", "محلول", complaints.filter(c => c.status === "محلول").length]] as const).map(([key, label, count]) => (
+      <div className="flex gap-2">
+        {([
+          ["all", "الكل", complaints.length],
+          ["open", "مفتوح", complaints.filter(c => c.status === "open").length],
+          ["in_review", "قيد المراجعة", complaints.filter(c => c.status === "in_review").length],
+          ["resolved", "محلول", complaints.filter(c => c.status === "resolved").length],
+        ] as const).map(([key, label, count]) => (
           <button key={key} onClick={() => setFilter(key)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-              filter === key ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
-            }`}>
-            {label} ({count})
-          </button>
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              filter === key ? "gradient-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"
+            }`}>{label} ({count})</button>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          {filtered.map(c => (
-            <button key={c.id} onClick={() => setSelected(c.id)}
-              className={`w-full gradient-card rounded-xl p-3 border text-right transition-all ${
-                selected === c.id ? "border-primary glow-ring-orange" : "border-border hover:border-primary/20"
-              }`}>
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex gap-1">
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${c.status === "مفتوح" ? "bg-warning/10 text-warning" : c.status === "قيد المراجعة" ? "bg-info/10 text-info" : "bg-success/10 text-success"}`}>{c.status}</span>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${c.priority === "عالي" ? "bg-destructive/10 text-destructive" : c.priority === "متوسط" ? "bg-warning/10 text-warning" : "bg-info/10 text-info"}`}>{c.priority}</span>
+        <div className="space-y-2 max-h-[65vh] overflow-auto">
+          {filtered.map(c => {
+            const pb = getPriorityBadge(c.priority);
+            return (
+              <button key={c.id} onClick={() => { setSelected(c); setAgentNotes(c.agent_notes || ""); }}
+                className={`w-full glass rounded-xl p-3 border text-right transition-all ${
+                  selected?.id === c.id ? "border-primary glow-ring-orange" : "border-border hover:border-primary/30"
+                }`}>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex gap-1">
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                      c.status === "open" ? "bg-amber-400/10 text-amber-400" :
+                      c.status === "in_review" ? "bg-info/10 text-info" :
+                      "bg-success/10 text-success"
+                    }`}>{c.status === "open" ? "مفتوح" : c.status === "in_review" ? "مراجعة" : "محلول"}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${pb.bg} ${pb.color}`}>{pb.label}</span>
+                  </div>
+                  <p className="text-sm font-bold text-foreground">{c.userName}</p>
                 </div>
-                <p className="text-sm font-medium text-foreground">{c.client}</p>
-              </div>
-              <p className="text-xs text-muted-foreground line-clamp-1">{c.desc}</p>
-              <p className="text-[10px] text-muted-foreground mt-1">{c.category} • {c.time}</p>
-            </button>
-          ))}
+                <p className="text-xs text-muted-foreground line-clamp-1">{c.description}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  {categories.find(cat => cat.id === c.category)?.label || c.category} •{" "}
+                  {new Date(c.created_at).toLocaleDateString("ar-SA")}
+                </p>
+              </button>
+            );
+          })}
+          {filtered.length === 0 && <p className="text-center text-muted-foreground text-sm py-8">لا توجد شكاوى</p>}
         </div>
 
-        {selectedComplaint ? (
+        {selected ? (
           <div className="lg:col-span-2 space-y-4">
-            <div className="gradient-card rounded-xl p-5 border border-border">
+            <div className="glass rounded-xl p-5 border border-border">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="text-success border-success/30 rounded-lg text-xs">
-                    <CheckCircle className="w-3 h-3 ml-1" /> حل
+                  <Button size="sm" variant="outline" className="text-success border-success/30 rounded-lg text-xs gap-1"
+                    onClick={() => updateStatus(selected.id, "resolved")}>
+                    <CheckCircle className="w-3 h-3" /> حل
                   </Button>
-                  <Button size="sm" variant="outline" className="text-warning border-warning/30 rounded-lg text-xs">
-                    <ArrowUp className="w-3 h-3 ml-1" /> تصعيد
-                  </Button>
-                  <Button size="sm" variant="outline" className="text-destructive border-destructive/30 rounded-lg text-xs">
-                    <XCircle className="w-3 h-3 ml-1" /> رفض
+                  <Button size="sm" variant="outline" className="text-info border-info/30 rounded-lg text-xs gap-1"
+                    onClick={() => updateStatus(selected.id, "in_review")}>
+                    <ArrowUp className="w-3 h-3" /> مراجعة
                   </Button>
                 </div>
-                <h3 className="text-foreground font-bold">شكوى #{selectedComplaint.id}</h3>
+                <h3 className="text-foreground font-bold">شكوى #{selected.id?.slice(0, 8)}</h3>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                {[
-                  { label: "العميل", value: selectedComplaint.client },
-                  { label: "السائق", value: selectedComplaint.driver },
-                  { label: "التصنيف", value: selectedComplaint.category },
-                  { label: "الرحلة", value: selectedComplaint.trip },
-                  { label: "الأولوية", value: selectedComplaint.priority },
-                  { label: "التاريخ", value: selectedComplaint.time },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{item.value}</span>
-                    <span className="text-foreground text-xs font-medium">{item.label}</span>
-                  </div>
-                ))}
+              <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
+                <div className="flex justify-between"><span className="text-muted-foreground">{selected.userName}</span><span className="text-foreground font-bold">الزبون</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{selected.userPhone}</span><span className="text-foreground font-bold">الهاتف</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{categories.find(c => c.id === selected.category)?.label || selected.category}</span><span className="text-foreground font-bold">التصنيف</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{selected.priority}</span><span className="text-foreground font-bold">الأولوية</span></div>
               </div>
 
-              <div className="bg-secondary/30 rounded-lg p-4 mb-4">
+              <div className="bg-secondary/20 rounded-lg p-4 mb-4">
                 <h4 className="text-xs font-bold text-foreground mb-1">التفاصيل</h4>
-                <p className="text-sm text-muted-foreground">{selectedComplaint.desc}</p>
+                <p className="text-sm text-muted-foreground">{selected.description}</p>
               </div>
 
-              <div>
-                <h4 className="text-xs font-bold text-foreground mb-2">ملاحظات الموظف</h4>
-                <Textarea
-                  defaultValue={selectedComplaint.agentNotes}
-                  placeholder="أضف ملاحظاتك هنا..."
-                  className="bg-secondary/50 border-border rounded-lg text-right min-h-[60px] text-sm"
-                />
-                <Button size="sm" className="mt-2 gradient-primary text-primary-foreground rounded-lg text-xs">
-                  <MessageCircle className="w-3 h-3 ml-1" /> حفظ الملاحظات
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-foreground">ملاحظات الموظف</h4>
+                <Textarea value={agentNotes} onChange={e => setAgentNotes(e.target.value)}
+                  placeholder="أضف ملاحظاتك..." className="bg-card border-border text-right text-sm min-h-[60px]" />
+                <Button size="sm" className="rounded-lg text-xs gap-1" onClick={() => saveNotes(selected.id)}>
+                  <MessageCircle className="w-3 h-3" /> حفظ الملاحظات
                 </Button>
               </div>
+
+              {/* Contact buttons */}
+              {selected.userPhone && selected.userPhone !== "—" && (
+                <div className="flex gap-2 mt-4">
+                  <a href={`tel:${selected.userPhone}`}>
+                    <Button size="sm" variant="outline" className="rounded-lg text-xs gap-1 text-info border-info/30">
+                      <Phone className="w-3 h-3" />اتصال بالزبون
+                    </Button>
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         ) : (
-          <div className="lg:col-span-2 gradient-card rounded-2xl p-12 border border-border text-center">
-            <AlertTriangle className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+          <div className="lg:col-span-2 glass rounded-2xl p-12 border border-border text-center">
+            <AlertTriangle className="w-16 h-16 text-muted-foreground/20 mx-auto mb-4" />
             <p className="text-foreground font-bold">اختر شكوى لعرض التفاصيل</p>
           </div>
         )}
