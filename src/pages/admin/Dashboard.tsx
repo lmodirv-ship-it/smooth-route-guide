@@ -111,6 +111,8 @@ const AdminDashboardPage = () => {
           { icon: FileText, label: "إجمالي الطلبات", value: stats.requestsToday, color: "text-info", glow: "glow-ring-blue" },
           { icon: Car, label: "السائقون النشطون", value: stats.activeDrivers, color: "text-primary", glow: "glow-ring-orange" },
           { icon: Zap, label: "رحلات جارية", value: stats.ongoingRides, color: "text-success", glow: "" },
+          { icon: Package, label: "توصيل معلّق", value: stats.deliveryPending, color: "text-accent", glow: "" },
+          { icon: Package, label: "توصيل نشط", value: stats.deliveryActive, color: "text-info", glow: "glow-ring-blue" },
           { icon: DollarSign, label: "أرباح اليوم", value: stats.incomeToday, color: "text-warning", glow: "glow-ring-orange", prefix: "" },
         ].map((stat, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
