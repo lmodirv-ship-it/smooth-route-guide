@@ -1,18 +1,22 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Package, Truck, Clock, CheckCircle, XCircle, MapPin, Search, RefreshCw, Eye } from "lucide-react";
+import { Package, Truck, Clock, CheckCircle, XCircle, MapPin, Search, RefreshCw, Eye, UserCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/firestoreClient";
 import { toast } from "@/hooks/use-toast";
+import { assignNearestDriver } from "@/lib/autoAssignDriver";
 
 const statusMap: Record<string, { label: string; color: string; bg: string }> = {
   pending: { label: "معلّق", color: "text-warning", bg: "bg-warning/10" },
-  accepted: { label: "مقبول", color: "text-info", bg: "bg-info/10" },
+  confirmed: { label: "مؤكد", color: "text-blue-500", bg: "bg-blue-500/10" },
+  driver_assigned: { label: "تم تعيين سائق", color: "text-cyan-500", bg: "bg-cyan-500/10" },
+  accepted: { label: "السائق قبل", color: "text-indigo-500", bg: "bg-indigo-500/10" },
+  arrived_restaurant: { label: "وصل المطعم", color: "text-orange-500", bg: "bg-orange-500/10" },
   picked_up: { label: "تم الاستلام", color: "text-primary", bg: "bg-primary/10" },
-  in_transit: { label: "قيد التوصيل", color: "text-accent", bg: "bg-accent/10" },
-  delivered: { label: "تم التسليم", color: "text-success", bg: "bg-success/10" },
+  delivered: { label: "تم التوصيل", color: "text-success", bg: "bg-success/10" },
+  completed: { label: "مكتمل", color: "text-emerald-600", bg: "bg-emerald-600/10" },
   cancelled: { label: "ملغي", color: "text-destructive", bg: "bg-destructive/10" },
 };
 
@@ -52,6 +56,30 @@ const AdminDeliveryOrders = () => {
     const { error } = await supabase.from("delivery_orders").update(updates).eq("id", id);
     if (error) { toast({ title: "خطأ في التحديث", variant: "destructive" }); return; }
     toast({ title: `تم تحديث الحالة: ${statusMap[status]?.label || status}` });
+    fetchOrders();
+  };
+
+  const handleConfirmAndAssign = async (order: any) => {
+    // First confirm the order
+    await supabase.from("delivery_orders").update({ 
+      status: "confirmed", 
+      updated_at: new Date().toISOString() 
+    }).eq("id", order.id);
+    
+    toast({ title: "تم تأكيد الطلب ✅ جاري البحث عن سائق..." });
+
+    // Auto-assign nearest driver
+    const pickupLat = order.pickup_lat ? Number(order.pickup_lat) : 35.7595;
+    const pickupLng = order.pickup_lng ? Number(order.pickup_lng) : -5.834;
+
+    const assigned = await assignNearestDriver(order.id, pickupLat, pickupLng);
+    
+    if (assigned) {
+      toast({ title: `تم تعيين السائق: ${assigned.fullName || "سائق"} (${assigned.distance.toFixed(1)} كم)` });
+    } else {
+      toast({ title: "لا يوجد سائق متاح حالياً", description: "الطلب مؤكد وينتظر سائق", variant: "destructive" });
+    }
+    
     fetchOrders();
   };
 
@@ -101,7 +129,7 @@ const AdminDeliveryOrders = () => {
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="بحث بالاسم، المتجر، العنوان..." className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm" />
         </div>
-        {["all", "pending", "accepted", "picked_up", "in_transit", "delivered", "cancelled"].map(f => (
+        {["all", "pending", "confirmed", "driver_assigned", "accepted", "arrived_restaurant", "picked_up", "delivered", "completed", "cancelled"].map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={`text-xs px-3 py-1.5 rounded-lg transition-colors ${filter === f ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
             {f === "all" ? "الكل" : statusMap[f]?.label || f}
@@ -136,12 +164,27 @@ const AdminDeliveryOrders = () => {
                         <button onClick={() => setSelected(o)} className="p-1 hover:bg-secondary rounded"><Eye className="w-4 h-4 text-info" /></button>
                         {o.status === "pending" && (
                           <>
-                            <button onClick={() => updateStatus(o.id, "accepted")} className="p-1 hover:bg-success/10 rounded"><CheckCircle className="w-4 h-4 text-success" /></button>
+                            <button onClick={() => handleConfirmAndAssign(o)} className="text-xs bg-success/10 text-success px-2 py-0.5 rounded flex items-center gap-1">
+                              <UserCheck className="w-3 h-3" />تأكيد + تعيين سائق
+                            </button>
                             <button onClick={() => updateStatus(o.id, "cancelled")} className="p-1 hover:bg-destructive/10 rounded"><XCircle className="w-4 h-4 text-destructive" /></button>
                           </>
                         )}
-                        {o.status === "accepted" && (
-                          <button onClick={() => updateStatus(o.id, "picked_up")} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">استلام</button>
+                        {o.status === "confirmed" && (
+                          <button onClick={() => {
+                            const lat = o.pickup_lat ? Number(o.pickup_lat) : 35.7595;
+                            const lng = o.pickup_lng ? Number(o.pickup_lng) : -5.834;
+                            assignNearestDriver(o.id, lat, lng).then(d => {
+                              if (d) toast({ title: `تم تعيين: ${d.fullName || "سائق"}` });
+                              else toast({ title: "لا يوجد سائق متاح", variant: "destructive" });
+                              fetchOrders();
+                            });
+                          }} className="text-xs bg-cyan-500/10 text-cyan-500 px-2 py-0.5 rounded flex items-center gap-1">
+                            <UserCheck className="w-3 h-3" />تعيين سائق
+                          </button>
+                        )}
+                        {(o.status === "driver_assigned" || o.status === "accepted") && (
+                          <span className="text-xs text-muted-foreground">بانتظار السائق</span>
                         )}
                         {o.status === "picked_up" && (
                           <button onClick={() => updateStatus(o.id, "delivered")} className="text-xs bg-success/10 text-success px-2 py-0.5 rounded">تسليم</button>

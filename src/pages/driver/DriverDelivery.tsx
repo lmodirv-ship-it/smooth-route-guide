@@ -10,6 +10,7 @@ import GoogleMapWrapper from "@/components/GoogleMap";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
 import { supabase } from "@/lib/firestoreClient";
 import { toast } from "@/hooks/use-toast";
+import { releaseDriver } from "@/lib/autoAssignDriver";
 import logo from "@/assets/hn-driver-logo.png";
 
 // ── Types ──
@@ -161,17 +162,21 @@ const DriverDelivery = () => {
 
   const delivered = async () => {
     if (!order) return;
-    // First mark as delivered (arrived at customer)
+    // Mark as delivered then completed
     await supabase.from("delivery_orders").update({
       status: "delivered",
       delivered_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }).eq("id", order.id);
-    // Then mark as completed
     await supabase.from("delivery_orders").update({
       status: "completed",
       updated_at: new Date().toISOString(),
     }).eq("id", order.id);
+    
+    // Release driver (make available again)
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) await releaseDriver(user.id);
+    
     toast({ title: "تم التسليم بنجاح! 🎉" });
     setOrder(null);
     setStage("idle");
