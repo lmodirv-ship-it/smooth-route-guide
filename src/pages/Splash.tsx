@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 import splashLogo from "@/assets/designs/iindex.jpeg";
 
 const Splash = () => {
@@ -11,24 +12,47 @@ const Splash = () => {
     const t1 = setTimeout(() => setPhase(1), 300);
     const t2 = setTimeout(() => setPhase(2), 1200);
     const t3 = setTimeout(() => {
-      const savedRole = localStorage.getItem("hn_user_role");
-      if (savedRole === "driver") navigate("/driver");
-      else if (savedRole === "client") navigate("/client");
-      else if (savedRole === "delivery") navigate("/delivery");
-      else navigate("/welcome");
+      void (async () => {
+        const savedRole = localStorage.getItem("hn_user_role");
+
+        if (savedRole !== "driver" && savedRole !== "client" && savedRole !== "delivery") {
+          navigate("/welcome");
+          return;
+        }
+
+        try {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+
+          if (session) {
+            if (savedRole === "driver") navigate("/driver");
+            else if (savedRole === "client") navigate("/client");
+            else navigate("/delivery");
+          } else {
+            navigate(`/auth/${savedRole}`);
+          }
+        } catch (error) {
+          console.error("Splash navigation failed:", error);
+          navigate(`/auth/${savedRole}`);
+        }
+      })();
     }, 3500);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
   }, [navigate]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background relative overflow-hidden">
-      {/* Background glow effects */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px]" />
         <div className="absolute top-1/4 right-1/4 w-[200px] h-[200px] rounded-full bg-info/5 blur-[80px]" />
       </div>
 
-      {/* Expanding glow rings */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
@@ -44,7 +68,6 @@ const Splash = () => {
         />
       </div>
 
-      {/* Main logo */}
       <motion.div
         initial={{ opacity: 0, scale: 0.3 }}
         animate={{ opacity: phase >= 1 ? 1 : 0, scale: phase >= 1 ? 1 : 0.3 }}
@@ -56,8 +79,8 @@ const Splash = () => {
             src={splashLogo}
             alt="HN Driver"
             className="w-72 h-auto mx-auto rounded-3xl drop-shadow-2xl"
-            animate={{ 
-              filter: phase >= 1 
+            animate={{
+              filter: phase >= 1
                 ? ["drop-shadow(0 0 30px hsl(32, 95%, 55%, 0.4))", "drop-shadow(0 0 50px hsl(32, 95%, 55%, 0.6))", "drop-shadow(0 0 30px hsl(32, 95%, 55%, 0.4))"]
                 : "none"
             }}
@@ -66,7 +89,6 @@ const Splash = () => {
         </div>
       </motion.div>
 
-      {/* Tagline */}
       <motion.p
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: phase >= 2 ? 1 : 0, y: phase >= 2 ? 0 : 15 }}
@@ -76,7 +98,6 @@ const Splash = () => {
         منصة التوصيل الذكية
       </motion.p>
 
-      {/* Loading dots */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: phase >= 2 ? 1 : 0 }}

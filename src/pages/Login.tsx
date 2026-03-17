@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, User as UserIcon, Phone, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,18 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";
 
+const getRoleHome = (role: string) => {
+  if (role === "admin") return "/admin";
+  if (role === "driver") return "/driver";
+  if (role === "delivery") return "/delivery";
+  return "/client";
+};
+
 const Login = () => {
   const navigate = useNavigate();
+  const { role: roleParam } = useParams();
   const [searchParams] = useSearchParams();
-  const role = searchParams.get("role") || "driver";
+  const role = searchParams.get("role") || roleParam || "driver";
   const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -19,6 +27,26 @@ const Login = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (active && session) {
+        navigate(getRoleHome(role), { replace: true });
+      }
+    };
+
+    void checkSession();
+
+    return () => {
+      active = false;
+    };
+  }, [navigate, role]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,21 +61,20 @@ const Login = () => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
-        // Check role and redirect
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) throw new Error("لم يتم العثور على المستخدم");
 
         const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
-        const userRoles = roles?.map(r => r.role) || [];
+        const userRoles = roles?.map((r) => r.role) || [];
 
         if (userRoles.includes("admin")) {
           navigate("/admin");
         } else if (userRoles.includes("driver")) {
           navigate("/driver");
-        } else if (role === "delivery") {
-          navigate("/delivery");
         } else {
-          navigate("/client");
+          navigate(getRoleHome(role));
         }
 
         toast({ title: "تم تسجيل الدخول بنجاح ✅" });
