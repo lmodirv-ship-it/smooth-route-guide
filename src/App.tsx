@@ -83,6 +83,7 @@ import CCReports from "./pages/callcenter/CCReports";
 import DeliveryOrdersCC from "./pages/callcenter/DeliveryOrdersCC";
 import RestaurantsCC from "./pages/callcenter/RestaurantsCC";
 import AutoImport from "./pages/callcenter/AutoImport";
+import GoogleMapsImport from "./pages/callcenter/GoogleMapsImport";
 
 // AI
 import AgentHub from "./pages/ai/AgentHub";
