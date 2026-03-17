@@ -13,12 +13,14 @@ import PlacesAutocomplete from "@/components/PlacesAutocomplete";
 import PriceEstimateCard from "@/components/PriceEstimateCard";
 import { useTripPricing } from "@/hooks/useTripPricing";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
+import { toast } from "@/hooks/use-toast";
 import logo from "@/assets/hn-driver-logo.png";
 
 const ClientHome = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("home");
   const [destination, setDestination] = useState("");
+  const [destinationCoords, setDestinationCoords] = useState<string | null>(null);
   const [showEstimate, setShowEstimate] = useState(false);
   const { getEstimate, estimate, loading, error, reset } = useTripPricing("DH");
   const { drivers: nearbyDriversData } = useNearbyDrivers();
@@ -37,7 +39,6 @@ const ClientHome = () => {
       },
       () => {
         setLocationError("تعذر الوصول إلى موقعك");
-        // fallback to Tangier
         setUserLocation({ lat: 35.7595, lng: -5.8340 });
       },
       { enableHighAccuracy: true, timeout: 10000 }
@@ -48,8 +49,8 @@ const ClientHome = () => {
   const customerLocation = userLocation ? `${userLocation.lat},${userLocation.lng}` : "35.7595,-5.8340";
 
   const quickLocations = [
-    { icon: Home, label: "المنزل", address: "حي مسنانة، طنجة" },
-    { icon: Navigation, label: "العمل", address: "شارع محمد الخامس، طنجة" },
+    { icon: Home, label: "المنزل", address: "حي مسنانة، طنجة", coords: "35.7584,-5.8509" },
+    { icon: Navigation, label: "العمل", address: "شارع محمد الخامس، طنجة", coords: "35.7806,-5.8126" },
   ];
 
   const nearbyDrivers = [
@@ -58,42 +59,64 @@ const ClientHome = () => {
     { name: "سعد الحربي", rating: 4.8, car: "كيا أوبتيما", distance: "٧ دقائق", price: "٢٢ د.م" },
   ];
 
-  // Re-calculate when destination changes
   useEffect(() => {
     if (showEstimate && destination.trim()) {
       const timer = setTimeout(() => {
-        getEstimate(driverLocation, customerLocation, destination);
-      }, 600); // debounce
+        void getEstimate(driverLocation, customerLocation, destinationCoords || destination);
+      }, 600);
       return () => clearTimeout(timer);
     }
-  }, [destination]);
+  }, [showEstimate, destination, destinationCoords, driverLocation, customerLocation, getEstimate]);
 
   const handleSearch = async () => {
     if (!destination.trim()) return;
     setShowEstimate(true);
-    await getEstimate(driverLocation, customerLocation, destination);
+    await getEstimate(driverLocation, customerLocation, destinationCoords || destination);
   };
 
-  const handlePlaceSelected = async (address: string, _lat: number, _lng: number) => {
+  const handlePlaceSelected = async (address: string, lat: number, lng: number) => {
+    const coords = `${lat},${lng}`;
     setDestination(address);
+    setDestinationCoords(coords);
     setShowEstimate(true);
-    await getEstimate(driverLocation, customerLocation, address);
+    await getEstimate(driverLocation, customerLocation, coords);
   };
 
-  const handleQuickLocation = async (address: string) => {
+  const handleQuickLocation = async (address: string, coords: string) => {
     setDestination(address);
+    setDestinationCoords(coords);
     setShowEstimate(true);
-    await getEstimate(driverLocation, customerLocation, address);
+    await getEstimate(driverLocation, customerLocation, coords);
   };
 
   const handleCancelEstimate = () => {
     setShowEstimate(false);
     setDestination("");
+    setDestinationCoords(null);
     reset();
   };
 
   const handleBook = () => {
-    navigate("/driver/trip");
+    if (!destination.trim()) {
+      toast({
+        title: "حدد الوجهة أولاً",
+        description: "اختر الوجهة من البحث أو من الأماكن السريعة قبل إنشاء الطلب.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    navigate("/client/booking", {
+      state: {
+        ride: {
+          pickup: userLocation ? "موقعي الحالي" : "طنجة",
+          destination,
+          distance: estimate ? `${estimate.d2Km} كم` : "—",
+          duration: estimate ? `${estimate.d2DurationMin} دقيقة` : "—",
+          price: estimate?.totalPrice ?? 0,
+        },
+      },
+    });
   };
 
   const renderHome = () => (
@@ -102,7 +125,10 @@ const ClientHome = () => {
       <div className="px-4 mt-4">
         <PlacesAutocomplete
           value={destination}
-          onChange={setDestination}
+          onChange={(value) => {
+            setDestination(value);
+            setDestinationCoords(null);
+          }}
           onPlaceSelected={handlePlaceSelected}
           placeholder="إلى أين تريد الذهاب؟"
         />
@@ -116,7 +142,7 @@ const ClientHome = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
-            onClick={() => handleQuickLocation(loc.address)}
+            onClick={() => handleQuickLocation(loc.address, loc.coords)}
             className="flex-1 gradient-card rounded-xl p-3 border border-border flex items-center gap-3 hover:border-primary/30 transition-colors"
           >
             <div className="text-right flex-1">
@@ -197,7 +223,10 @@ const ClientHome = () => {
                   </div>
                 </div>
               </div>
-              <Button className="w-full mt-3 h-10 rounded-xl gradient-primary text-primary-foreground font-medium hover:opacity-90 glow-primary">
+              <Button
+                onClick={handleBook}
+                className="w-full mt-3 h-10 rounded-xl gradient-primary text-primary-foreground font-medium hover:opacity-90 glow-primary"
+              >
                 اطلب رحلة
               </Button>
             </motion.div>
