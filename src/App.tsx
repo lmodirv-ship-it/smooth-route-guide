@@ -138,6 +138,7 @@ const App = () => (
             <Route path="map" element={<AdminLiveMap />} />
             <Route path="alerts" element={<AdminAlerts />} />
             <Route path="documents" element={<AdminDocuments />} />
+            <Route path="delivery" element={<AdminDeliveryOrders />} />
             <Route path="call-center" element={<AdminCallCenter />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
