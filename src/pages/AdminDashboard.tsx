@@ -4,11 +4,13 @@ import {
   Users, Car, DollarSign, TrendingUp, BarChart3, Bell,
   Search, Shield, Eye, Settings, Headphones, MapPin,
   AlertTriangle, CheckCircle, Clock, FileText, UserCheck,
-  XCircle, ChevronDown, Activity, Zap, BatteryLow
+  XCircle, ChevronDown, Activity, Zap, BatteryLow, Loader2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
 import logo from "@/assets/hn-driver-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
@@ -60,7 +62,130 @@ const AdminDashboard = () => {
   });
   const [recentTrips, setRecentTrips] = useState<RecentTrip[]>([]);
   const [rideRequests, setRideRequests] = useState<RideRequest[]>([]);
+  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [assigningRequest, setAssigningRequest] = useState<RideRequest | null>(null);
+  const [availableDrivers, setAvailableDrivers] = useState<{ id: string; name: string; rating: number | null }[]>([]);
   const { drivers: nearbyDrivers } = useNearbyDrivers();
+
+  // ── Action handlers ──
+  const handleAcceptRequest = async (req: RideRequest) => {
+    setProcessingId(req.id);
+    try {
+      // Find first available active driver
+      const { data: drivers } = await supabase
+        .from("drivers")
+        .select("id, user_id, rating")
+        .eq("status", "active")
+        .limit(1) as any;
+
+      if (!drivers || drivers.length === 0) {
+        toast({ title: "لا يوجد سائقين متاحين", variant: "destructive" });
+        return;
+      }
+
+      const driver = drivers[0];
+
+      const { error: updateErr } = await supabase
+        .from("ride_requests")
+        .update({ status: "accepted" })
+        .eq("id", req.id);
+      if (updateErr) throw updateErr;
+
+      const { error: tripErr } = await supabase.from("trips").insert({
+        user_id: req.user_id,
+        driver_id: driver.id,
+        start_location: req.pickup,
+        end_location: req.destination,
+        fare: req.price || 0,
+        status: "in_progress",
+      });
+      if (tripErr) throw tripErr;
+
+      toast({ title: "تم قبول الطلب وتعيين سائق بنجاح" });
+      setRideRequests(prev => prev.filter(r => r.id !== req.id));
+    } catch (e: any) {
+      toast({ title: "خطأ", description: e.message, variant: "destructive" });
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleCancelRequest = async (req: RideRequest) => {
+    setProcessingId(req.id);
+    try {
+      const { error } = await supabase
+        .from("ride_requests")
+        .update({ status: "rejected" })
+        .eq("id", req.id);
+      if (error) throw error;
+      toast({ title: "تم إلغاء الطلب" });
+      setRideRequests(prev => prev.filter(r => r.id !== req.id));
+    } catch (e: any) {
+      toast({ title: "خطأ", description: e.message, variant: "destructive" });
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleOpenAssignDialog = async (req: RideRequest) => {
+    setAssigningRequest(req);
+    setAssignDialogOpen(true);
+    // Fetch active drivers with names
+    const { data: driversData } = await supabase
+      .from("drivers")
+      .select("id, user_id, rating")
+      .eq("status", "active") as any;
+
+    if (driversData && driversData.length > 0) {
+      const userIds = driversData.map((d: any) => d.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, name")
+        .in("id", userIds);
+      const nameMap = new Map(profiles?.map(p => [p.id, p.name]) || []);
+      setAvailableDrivers(
+        driversData.map((d: any) => ({
+          id: d.id,
+          name: nameMap.get(d.user_id) || "سائق",
+          rating: d.rating,
+        }))
+      );
+    } else {
+      setAvailableDrivers([]);
+    }
+  };
+
+  const handleAssignDriver = async (driverId: string) => {
+    if (!assigningRequest) return;
+    setProcessingId(assigningRequest.id);
+    try {
+      const { error: updateErr } = await supabase
+        .from("ride_requests")
+        .update({ status: "accepted" })
+        .eq("id", assigningRequest.id);
+      if (updateErr) throw updateErr;
+
+      const { error: tripErr } = await supabase.from("trips").insert({
+        user_id: assigningRequest.user_id,
+        driver_id: driverId,
+        start_location: assigningRequest.pickup,
+        end_location: assigningRequest.destination,
+        fare: assigningRequest.price || 0,
+        status: "in_progress",
+      });
+      if (tripErr) throw tripErr;
+
+      toast({ title: "تم تعيين السائق بنجاح" });
+      setRideRequests(prev => prev.filter(r => r.id !== assigningRequest.id));
+      setAssignDialogOpen(false);
+      setAssigningRequest(null);
+    } catch (e: any) {
+      toast({ title: "خطأ", description: e.message, variant: "destructive" });
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   // ── Fetch dashboard data ──
   useEffect(() => {
@@ -416,13 +541,13 @@ const AdminDashboard = () => {
                   <div key={req.id} className="p-4 hover:bg-secondary/30 transition-colors">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="text-xs h-7 text-success border-success/30 hover:bg-success/10">
-                          <UserCheck className="w-3 h-3 ml-1" /> قبول
+                        <Button size="sm" variant="outline" disabled={processingId === req.id} onClick={() => handleAcceptRequest(req)} className="text-xs h-7 text-success border-success/30 hover:bg-success/10">
+                          {processingId === req.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <><UserCheck className="w-3 h-3 ml-1" /> قبول</>}
                         </Button>
-                        <Button size="sm" variant="outline" className="text-xs h-7 text-info border-info/30 hover:bg-info/10">
+                        <Button size="sm" variant="outline" disabled={processingId === req.id} onClick={() => handleOpenAssignDialog(req)} className="text-xs h-7 text-info border-info/30 hover:bg-info/10">
                           <Car className="w-3 h-3 ml-1" /> تعيين
                         </Button>
-                        <Button size="sm" variant="outline" className="text-xs h-7 text-destructive border-destructive/30 hover:bg-destructive/10">
+                        <Button size="sm" variant="outline" disabled={processingId === req.id} onClick={() => handleCancelRequest(req)} className="text-xs h-7 text-destructive border-destructive/30 hover:bg-destructive/10">
                           <XCircle className="w-3 h-3 ml-1" /> إلغاء
                         </Button>
                       </div>
@@ -518,6 +643,49 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Assign Driver Dialog */}
+      <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+        <DialogContent className="gradient-card border-border" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">تعيين سائق للطلب</DialogTitle>
+          </DialogHeader>
+          {assigningRequest && (
+            <div className="mb-4 p-3 rounded-lg bg-secondary/50 text-sm">
+              <p className="text-foreground font-medium">{assigningRequest.pickup}</p>
+              <p className="text-muted-foreground text-xs">← {assigningRequest.destination}</p>
+              <p className="text-primary font-semibold mt-1">{assigningRequest.price || 0} ر.س</p>
+            </div>
+          )}
+          {availableDrivers.length === 0 ? (
+            <p className="text-center text-muted-foreground py-4">لا يوجد سائقين متاحين حالياً</p>
+          ) : (
+            <div className="space-y-2 max-h-64 overflow-auto">
+              {availableDrivers.map((d) => (
+                <button
+                  key={d.id}
+                  disabled={processingId !== null}
+                  onClick={() => handleAssignDriver(d.id)}
+                  className="w-full flex items-center justify-between p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors"
+                >
+                  <Button size="sm" variant="outline" className="text-xs text-primary border-primary/30">
+                    {processingId ? <Loader2 className="w-3 h-3 animate-spin" /> : "تعيين"}
+                  </Button>
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <p className="text-sm text-foreground font-medium">{d.name}</p>
+                      <p className="text-xs text-warning">★ {d.rating || "—"}</p>
+                    </div>
+                    <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center">
+                      <Car className="w-4 h-4 text-primary" />
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
