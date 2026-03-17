@@ -6,6 +6,7 @@ import {
   Gift, Heart, Bike, Store, Sparkles, Clock, Zap, Phone,
   Navigation
 } from "lucide-react";
+import RoleSwitcher from "@/components/RoleSwitcher";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
