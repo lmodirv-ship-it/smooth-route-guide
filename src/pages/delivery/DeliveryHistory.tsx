@@ -62,7 +62,7 @@ const DeliveryHistory = () => {
                 {new Date(o.created_at).toLocaleDateString("ar")}
               </div>
               {o.estimated_price && (
-                <p className="text-sm font-bold text-primary mt-1">{o.estimated_price} د.ج</p>
+                <p className="text-sm font-bold text-primary mt-1">{o.estimated_price} DH</p>
               )}
             </motion.div>
           ))}

@@ -88,7 +88,7 @@ const CourierTrack = () => {
               <p className="text-xs text-white/60">#{order.id?.slice(0, 8)}</p>
             </div>
             {order.estimated_price && (
-              <p className="text-2xl font-bold text-white mt-2">{order.estimated_price} د.ج</p>
+              <p className="text-2xl font-bold text-white mt-2">{order.estimated_price} DH</p>
             )}
           </motion.div>
         )}

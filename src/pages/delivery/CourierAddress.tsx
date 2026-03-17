@@ -282,7 +282,7 @@ const CourierAddress = () => {
               <Row label="الهاتف" value={recipientPhone} />
               <div className="h-px bg-border" />
               <div className="flex justify-between items-center">
-                <p className="text-xl font-bold text-primary">{estimatedPrice} د.ج</p>
+                <p className="text-xl font-bold text-primary">{estimatedPrice} DH</p>
                 <p className="text-sm text-muted-foreground">التكلفة التقديرية</p>
               </div>
             </div>

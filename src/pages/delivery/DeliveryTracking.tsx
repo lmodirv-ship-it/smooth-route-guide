@@ -78,7 +78,7 @@ const DeliveryTracking = () => {
             <h2 className="font-bold text-foreground mt-2">{order.store_name || "طلب توصيل"}</h2>
             <p className="text-xs text-muted-foreground mt-1">الفئة: {order.category}</p>
             {order.estimated_price && (
-              <p className="text-sm font-bold text-primary mt-2">{order.estimated_price} د.ج</p>
+              <p className="text-sm font-bold text-primary mt-2">{order.estimated_price} DH</p>
             )}
           </motion.div>
 
