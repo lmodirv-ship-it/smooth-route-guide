@@ -57,13 +57,21 @@ const AuthPage = () => {
   const [confirmResult, setConfirmResult] = useState<ConfirmationResult | null>(null);
   const [otpSent, setOtpSent] = useState(false);
 
-  // Redirect if already logged in
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const snap = await getDoc(doc(db, "users", user.uid));
-        const userRole = snap.exists() ? (snap.data().role as RoleId) : role;
-        navigate(roleDashboard[userRole] || roleDashboard.client, { replace: true });
+        if (snap.exists()) {
+          const data = snap.data();
+          const userRole = (data.role as RoleId) || role;
+          if (data.profileCompleted === false) {
+            navigate("/complete-profile", { replace: true });
+          } else {
+            navigate(roleDashboard[userRole] || roleDashboard.client, { replace: true });
+          }
+        } else {
+          navigate(roleDashboard[role], { replace: true });
+        }
       }
     });
     return unsub;
@@ -76,6 +84,8 @@ const AuthPage = () => {
       fullName: extra.fullName || "",
       phone: extra.phone || "",
       email: extra.email || "",
+      status: "active",
+      profileCompleted: false,
       createdAt: serverTimestamp(),
     }, { merge: true });
   };

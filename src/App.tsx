@@ -4,11 +4,13 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
+import AuthGuard from "@/components/AuthGuard";
 
 // Core pages
 import Splash from "./pages/Splash";
 import Welcome from "./pages/Welcome";
 import AuthPage from "./pages/AuthPage";
+import CompleteProfile from "./pages/CompleteProfile";
 import NotFound from "./pages/NotFound";
 
 // Driver pages
@@ -104,47 +106,48 @@ const App = () => (
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/login" element={<AuthPage />} />
           <Route path="/auth/:role" element={<AuthPage />} />
+          <Route path="/complete-profile" element={<CompleteProfile />} />
 
-          {/* Driver App */}
-          <Route path="/driver" element={<DriverDashboard />} />
-          <Route path="/driver/history" element={<DriverHistory />} />
-          <Route path="/driver/notifications" element={<DriverNotifications />} />
-          <Route path="/driver/settings" element={<DriverSettings />} />
-          <Route path="/driver/documents" element={<DocumentUpload />} />
-          <Route path="/driver/trip" element={<ActiveTrip />} />
-          <Route path="/driver/profile" element={<DriverProfile />} />
-          <Route path="/driver/wallet" element={<DriverWallet />} />
-          <Route path="/driver/car-info" element={<CarInfo />} />
-          <Route path="/driver/promotions" element={<DriverPromotions />} />
-          <Route path="/driver/support" element={<DriverSupport />} />
-          <Route path="/driver/status" element={<DriverStatus />} />
-          <Route path="/driver/earnings" element={<DriverEarnings />} />
-          <Route path="/driver/delivery" element={<DriverDelivery />} />
+          {/* Driver App - Protected */}
+          <Route path="/driver" element={<AuthGuard requiredRole="driver"><DriverDashboard /></AuthGuard>} />
+          <Route path="/driver/history" element={<AuthGuard requiredRole="driver"><DriverHistory /></AuthGuard>} />
+          <Route path="/driver/notifications" element={<AuthGuard requiredRole="driver"><DriverNotifications /></AuthGuard>} />
+          <Route path="/driver/settings" element={<AuthGuard requiredRole="driver"><DriverSettings /></AuthGuard>} />
+          <Route path="/driver/documents" element={<AuthGuard requiredRole="driver"><DocumentUpload /></AuthGuard>} />
+          <Route path="/driver/trip" element={<AuthGuard requiredRole="driver"><ActiveTrip /></AuthGuard>} />
+          <Route path="/driver/profile" element={<AuthGuard requiredRole="driver"><DriverProfile /></AuthGuard>} />
+          <Route path="/driver/wallet" element={<AuthGuard requiredRole="driver"><DriverWallet /></AuthGuard>} />
+          <Route path="/driver/car-info" element={<AuthGuard requiredRole="driver"><CarInfo /></AuthGuard>} />
+          <Route path="/driver/promotions" element={<AuthGuard requiredRole="driver"><DriverPromotions /></AuthGuard>} />
+          <Route path="/driver/support" element={<AuthGuard requiredRole="driver"><DriverSupport /></AuthGuard>} />
+          <Route path="/driver/status" element={<AuthGuard requiredRole="driver"><DriverStatus /></AuthGuard>} />
+          <Route path="/driver/earnings" element={<AuthGuard requiredRole="driver"><DriverEarnings /></AuthGuard>} />
+          <Route path="/driver/delivery" element={<AuthGuard requiredRole="driver"><DriverDelivery /></AuthGuard>} />
 
-          {/* Client App */}
-          <Route path="/client" element={<ClientHome />} />
-          <Route path="/client/booking" element={<ClientBooking />} />
-          <Route path="/client/tracking" element={<RideTracking />} />
-          <Route path="/client/payment" element={<ClientPayment />} />
-          <Route path="/client/wallet" element={<ClientWallet />} />
-          <Route path="/client/history" element={<ClientHistory />} />
-          <Route path="/client/profile" element={<ClientProfile />} />
-          <Route path="/client/support" element={<ClientSupport />} />
+          {/* Client App - Protected */}
+          <Route path="/client" element={<AuthGuard requiredRole="client"><ClientHome /></AuthGuard>} />
+          <Route path="/client/booking" element={<AuthGuard requiredRole="client"><ClientBooking /></AuthGuard>} />
+          <Route path="/client/tracking" element={<AuthGuard requiredRole="client"><RideTracking /></AuthGuard>} />
+          <Route path="/client/payment" element={<AuthGuard requiredRole="client"><ClientPayment /></AuthGuard>} />
+          <Route path="/client/wallet" element={<AuthGuard requiredRole="client"><ClientWallet /></AuthGuard>} />
+          <Route path="/client/history" element={<AuthGuard requiredRole="client"><ClientHistory /></AuthGuard>} />
+          <Route path="/client/profile" element={<AuthGuard requiredRole="client"><ClientProfile /></AuthGuard>} />
+          <Route path="/client/support" element={<AuthGuard requiredRole="client"><ClientSupport /></AuthGuard>} />
 
-          {/* Delivery App */}
-          <Route path="/delivery" element={<DeliveryHome />} />
-          <Route path="/delivery/tracking" element={<DeliveryTracking />} />
-          <Route path="/delivery/history" element={<DeliveryHistory />} />
-          <Route path="/delivery/courier/send" element={<CourierSend />} />
-          <Route path="/delivery/courier/address" element={<CourierAddress />} />
-          <Route path="/delivery/courier/track" element={<CourierTrack />} />
-          <Route path="/delivery/support" element={<DeliverySupport />} />
-          <Route path="/delivery/restaurants" element={<RestaurantsList />} />
-          <Route path="/delivery/restaurant/:id" element={<RestaurantMenu />} />
-          <Route path="/delivery/cart" element={<Cart />} />
-          <Route path="/delivery/order/:id" element={<OrderTracking />} />
-          <Route path="/delivery/order" element={<OrderTracking />} />
-          <Route path="/delivery/:category" element={<DeliveryCategory />} />
+          {/* Delivery App - Protected */}
+          <Route path="/delivery" element={<AuthGuard requiredRole="delivery"><DeliveryHome /></AuthGuard>} />
+          <Route path="/delivery/tracking" element={<AuthGuard requiredRole="delivery"><DeliveryTracking /></AuthGuard>} />
+          <Route path="/delivery/history" element={<AuthGuard requiredRole="delivery"><DeliveryHistory /></AuthGuard>} />
+          <Route path="/delivery/courier/send" element={<AuthGuard requiredRole="delivery"><CourierSend /></AuthGuard>} />
+          <Route path="/delivery/courier/address" element={<AuthGuard requiredRole="delivery"><CourierAddress /></AuthGuard>} />
+          <Route path="/delivery/courier/track" element={<AuthGuard requiredRole="delivery"><CourierTrack /></AuthGuard>} />
+          <Route path="/delivery/support" element={<AuthGuard requiredRole="delivery"><DeliverySupport /></AuthGuard>} />
+          <Route path="/delivery/restaurants" element={<AuthGuard requiredRole="delivery"><RestaurantsList /></AuthGuard>} />
+          <Route path="/delivery/restaurant/:id" element={<AuthGuard requiredRole="delivery"><RestaurantMenu /></AuthGuard>} />
+          <Route path="/delivery/cart" element={<AuthGuard requiredRole="delivery"><Cart /></AuthGuard>} />
+          <Route path="/delivery/order/:id" element={<AuthGuard requiredRole="delivery"><OrderTracking /></AuthGuard>} />
+          <Route path="/delivery/order" element={<AuthGuard requiredRole="delivery"><OrderTracking /></AuthGuard>} />
+          <Route path="/delivery/:category" element={<AuthGuard requiredRole="delivery"><DeliveryCategory /></AuthGuard>} />
 
           {/* Admin Dashboard */}
           <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>
