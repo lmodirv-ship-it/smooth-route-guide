@@ -78,10 +78,12 @@ const Login = () => {
         // Save user to Firestore "users" collection
         await setDoc(doc(db, "users", cred.user.uid), {
           uid: cred.user.uid,
-          name,
+          fullName: name,
           email,
           phone,
           role,
+          status: "active",
+          profileCompleted: false,
           createdAt: serverTimestamp(),
         });
         toast({ title: "تم إنشاء الحساب بنجاح ✅" });
