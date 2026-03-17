@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Package, CheckCircle, Bike, MapPin, Clock } from "lucide-react";
+import { ArrowRight, Package, CheckCircle, Bike, MapPin, Clock, Store } from "lucide-react";
 import { supabase } from "@/lib/firestoreClient";
 
 const steps = [
   { key: "pending", label: "قيد المراجعة", icon: Clock },
-  { key: "accepted", label: "تم القبول", icon: CheckCircle },
+  { key: "confirmed", label: "تم التأكيد", icon: CheckCircle },
+  { key: "accepted", label: "السائق قبل الطلب", icon: Bike },
+  { key: "arrived_restaurant", label: "وصل للمطعم", icon: Store },
   { key: "picked_up", label: "تم الاستلام", icon: Package },
-  { key: "in_transit", label: "في الطريق", icon: Bike },
   { key: "delivered", label: "تم التوصيل", icon: MapPin },
+  { key: "completed", label: "مكتمل", icon: CheckCircle },
 ];
 
 const DeliveryTracking = () => {
@@ -31,7 +33,6 @@ const DeliveryTracking = () => {
     };
     fetchLatest();
 
-    // Realtime listener
     const channel = supabase
       .channel("delivery-tracking")
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "delivery_orders" }, (payload) => {
@@ -61,16 +62,12 @@ const DeliveryTracking = () => {
         </div>
       ) : (
         <>
-          {/* Order Info */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-card rounded-2xl border border-border p-5 mb-6"
-          >
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            className="bg-card rounded-2xl border border-border p-5 mb-6">
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">#{order.id?.slice(0, 8)}</span>
               <span className={`text-xs font-bold px-3 py-1 rounded-full ${
-                order.status === "delivered" ? "bg-success/10 text-success" : "bg-primary/10 text-primary"
+                order.status === "completed" ? "bg-emerald-500/10 text-emerald-500" : "bg-primary/10 text-primary"
               }`}>
                 {steps.find((s) => s.key === order.status)?.label || order.status}
               </span>
@@ -82,7 +79,6 @@ const DeliveryTracking = () => {
             )}
           </motion.div>
 
-          {/* Progress Steps */}
           <div className="bg-card rounded-2xl border border-border p-5">
             <h3 className="font-bold text-foreground mb-4">حالة الطلب</h3>
             <div className="space-y-4">
@@ -90,19 +86,13 @@ const DeliveryTracking = () => {
                 const isActive = i <= currentStep;
                 const isCurrent = i === currentStep;
                 return (
-                  <motion.div
-                    key={step.key}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
+                  <motion.div key={step.key}
+                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="flex items-center gap-3"
-                  >
+                    className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
-                      isCurrent
-                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                        : isActive
-                        ? "bg-success/15 text-success"
-                        : "bg-secondary text-muted-foreground"
+                      isCurrent ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30" :
+                      isActive ? "bg-emerald-500/15 text-emerald-500" : "bg-secondary text-muted-foreground"
                     }`}>
                       <step.icon className="w-5 h-5" />
                     </div>
@@ -112,7 +102,7 @@ const DeliveryTracking = () => {
                       </p>
                     </div>
                     {isActive && i < currentStep && (
-                      <CheckCircle className="w-4 h-4 text-success" />
+                      <CheckCircle className="w-4 h-4 text-emerald-500" />
                     )}
                     {isCurrent && (
                       <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
