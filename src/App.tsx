@@ -123,6 +123,7 @@ const App = () => (
           <Route path="/delivery/courier/send" element={<CourierSend />} />
           <Route path="/delivery/courier/address" element={<CourierAddress />} />
           <Route path="/delivery/courier/track" element={<CourierTrack />} />
+          <Route path="/delivery/support" element={<DeliverySupport />} />
           <Route path="/delivery/:category" element={<DeliveryCategory />} />
 
           {/* Admin Dashboard */}
