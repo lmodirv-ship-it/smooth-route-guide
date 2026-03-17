@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Eye, EyeOff, Phone, Lock, ArrowLeft } from "lucide-react";
+import { motion } from "framer-motion";
+import { Eye, EyeOff, Phone, Lock, ArrowRight, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import logo from "@/assets/hn-driver-logo.png";
@@ -25,60 +26,76 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col px-6 py-8 gradient-dark">
+    <div className="flex min-h-screen flex-col px-6 py-8 gradient-hero particles-bg relative">
       {/* Back button */}
-      <button onClick={() => navigate("/welcome")} className="self-start mb-6">
-        <ArrowLeft className="w-6 h-6 text-muted-foreground hover:text-foreground transition-colors" />
+      <button onClick={() => navigate("/welcome")} className="self-start mb-6 relative z-10">
+        <ArrowRight className="w-6 h-6 text-muted-foreground hover:text-foreground transition-colors" />
       </button>
 
       {/* Header */}
-      <div className="flex flex-col items-center mb-10 animate-fade-in">
-        <img src={logo} alt="HN Driver" className="w-16 h-16 mb-3" />
+      <motion.div
+        initial={{ opacity: 0, y: -15 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col items-center mb-8 relative z-10"
+      >
+        <div className="relative">
+          <img src={logo} alt="HN Driver" className="w-16 h-16 mb-3" />
+          <div className="absolute inset-0 w-16 h-16 rounded-full bg-primary/10 blur-xl" />
+        </div>
         <h1 className="text-2xl font-bold text-foreground">
           {isLogin ? "تسجيل الدخول" : "إنشاء حساب جديد"}
         </h1>
-        <span className="text-sm text-primary mt-1 font-medium">
+        <span className={`text-sm mt-1 font-medium ${role === "driver" ? "text-primary" : "text-info"}`}>
           {role === "driver" ? "حساب سائق" : "حساب عميل"}
         </span>
-      </div>
+      </motion.div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-sm mx-auto animate-slide-up">
+      <motion.form
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-4 w-full max-w-sm mx-auto relative z-10"
+      >
         {!isLogin && (
           <div className="space-y-2">
-            <label className="text-sm text-muted-foreground">الاسم الكامل</label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="أدخل اسمك"
-              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl text-right"
-            />
+            <label className="text-sm text-muted-foreground text-right block">الاسم الكامل</label>
+            <div className="relative">
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="أدخل اسمك"
+                className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right"
+              />
+              <UserIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            </div>
           </div>
         )}
 
         <div className="space-y-2">
-          <label className="text-sm text-muted-foreground">رقم الهاتف</label>
+          <label className="text-sm text-muted-foreground text-right block">رقم الهاتف</label>
           <div className="relative">
             <Input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="05XXXXXXXX"
               type="tel"
-              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right"
+              className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right"
             />
             <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm text-muted-foreground">كلمة المرور</label>
+          <label className="text-sm text-muted-foreground text-right block">كلمة المرور</label>
           <div className="relative">
             <Input
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               type={showPassword ? "text" : "password"}
-              className="bg-secondary border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right"
+              className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right"
             />
             <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <button
@@ -103,7 +120,7 @@ const Login = () => {
 
         <Button
           type="submit"
-          className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-bold text-lg mt-2 hover:opacity-90 transition-opacity"
+          className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-bold text-lg mt-2 hover:opacity-90 transition-opacity glow-primary"
         >
           {isLogin ? "دخول" : "إنشاء حساب"}
         </Button>
@@ -122,7 +139,7 @@ const Login = () => {
         >
           {isLogin ? "إنشاء حساب جديد" : "لدي حساب بالفعل"}
         </Button>
-      </form>
+      </motion.form>
     </div>
   );
 };

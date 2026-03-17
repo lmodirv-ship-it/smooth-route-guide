@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   MapPin, Search, Bell, Menu, Star, Clock, Navigation,
-  ChevronLeft, Car, Heart, User, Home
+  ChevronLeft, Car, Heart, User, Home, Phone, MessageCircle
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,28 +24,14 @@ const ClientHome = () => {
     { name: "سعد الحربي", rating: 4.8, car: "كيا أوبتيما", distance: "٧ دقائق", price: "٢٢ ر.س" },
   ];
 
-  return (
-    <div className="min-h-screen gradient-dark pb-24">
-      {/* Header */}
-      <div className="glass sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
-        <button className="p-2">
-          <Bell className="w-5 h-5 text-muted-foreground" />
-        </button>
-        <div className="flex items-center gap-2">
-          <img src={logo} alt="HN" className="w-8 h-8" />
-          <span className="font-bold font-display text-primary text-lg">HN Driver</span>
-        </div>
-        <button className="p-2">
-          <Menu className="w-5 h-5 text-muted-foreground" />
-        </button>
-      </div>
-
-      {/* Search Bar */}
+  const renderHome = () => (
+    <>
+      {/* Search */}
       <div className="px-4 mt-4">
         <div className="relative">
           <Input
             placeholder="إلى أين تريد الذهاب؟"
-            className="bg-secondary border-border text-foreground h-14 rounded-2xl pr-12 text-right text-base placeholder:text-muted-foreground"
+            className="bg-secondary/80 border-border text-foreground h-14 rounded-2xl pr-12 text-right text-base placeholder:text-muted-foreground"
           />
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
         </div>
@@ -53,30 +40,36 @@ const ClientHome = () => {
       {/* Quick Locations */}
       <div className="flex gap-3 px-4 mt-4">
         {quickLocations.map((loc, i) => (
-          <button
+          <motion.button
             key={i}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
             className="flex-1 gradient-card rounded-xl p-3 border border-border flex items-center gap-3 hover:border-primary/30 transition-colors"
           >
-            <div>
-              <p className="text-sm font-medium text-foreground text-right">{loc.label}</p>
-              <p className="text-xs text-muted-foreground text-right">{loc.address}</p>
+            <div className="text-right flex-1">
+              <p className="text-sm font-medium text-foreground">{loc.label}</p>
+              <p className="text-xs text-muted-foreground">{loc.address}</p>
             </div>
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <div className="icon-circle-orange w-10 h-10">
               <loc.icon className="w-5 h-5 text-primary" />
             </div>
-          </button>
+          </motion.button>
         ))}
       </div>
 
       {/* Map */}
-      <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-52 relative">
-        <div className="w-full h-full bg-secondary flex items-center justify-center">
+      <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-48 relative">
+        <div className="w-full h-full bg-secondary/50 flex items-center justify-center">
           <div className="text-center">
-            <MapPin className="w-10 h-10 text-primary mx-auto mb-2" />
+            <div className="relative inline-block">
+              <MapPin className="w-10 h-10 text-primary mx-auto mb-2" />
+              <div className="absolute inset-0 w-10 h-10 mx-auto bg-primary/20 blur-lg rounded-full" />
+            </div>
             <p className="text-sm text-muted-foreground">موقعك الحالي</p>
           </div>
         </div>
-        <div className="absolute top-3 right-3 bg-card/80 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs text-foreground border border-border">
+        <div className="absolute top-3 right-3 glass px-3 py-1.5 rounded-full text-xs text-foreground">
           ٣ سائقين بالقرب منك
         </div>
       </div>
@@ -91,7 +84,13 @@ const ClientHome = () => {
         </div>
         <div className="flex flex-col gap-3">
           {nearbyDrivers.map((driver, i) => (
-            <div key={i} className="gradient-card rounded-xl p-4 border border-border hover:border-primary/30 transition-colors">
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 + i * 0.1 }}
+              className="gradient-card rounded-xl p-4 border border-border hover:border-primary/20 transition-colors"
+            >
               <div className="flex justify-between items-start">
                 <div className="text-left">
                   <span className="text-primary font-bold text-lg">{driver.price}</span>
@@ -108,21 +107,87 @@ const ClientHome = () => {
                       <Star className="w-3 h-3 text-warning fill-warning" />
                     </div>
                   </div>
-                  <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
-                    <User className="w-6 h-6 text-muted-foreground" />
+                  <div className="icon-circle-blue w-12 h-12">
+                    <User className="w-6 h-6 text-info" />
                   </div>
                 </div>
               </div>
-              <Button className="w-full mt-3 h-10 rounded-xl gradient-primary text-primary-foreground font-medium hover:opacity-90">
+              <Button className="w-full mt-3 h-10 rounded-xl gradient-primary text-primary-foreground font-medium hover:opacity-90 glow-primary">
                 اطلب رحلة
               </Button>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
+    </>
+  );
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 glass border-t border-border">
+  return (
+    <div className="min-h-screen gradient-dark pb-24">
+      {/* Header */}
+      <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
+        <button className="p-2 relative">
+          <Bell className="w-5 h-5 text-muted-foreground" />
+          <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-destructive" />
+        </button>
+        <div className="flex items-center gap-2">
+          <img src={logo} alt="HN" className="w-8 h-8" />
+          <span className="font-bold font-display text-gradient-primary text-lg">HN Driver</span>
+        </div>
+        <button className="p-2">
+          <Menu className="w-5 h-5 text-muted-foreground" />
+        </button>
+      </div>
+
+      {activeTab === "home" && renderHome()}
+      {activeTab === "trips" && (
+        <div className="p-4">
+          <h2 className="text-foreground font-bold text-center mb-4">رحلاتي</h2>
+          <div className="text-center text-muted-foreground mt-10">
+            <Car className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+            <p>لا توجد رحلات سابقة</p>
+          </div>
+        </div>
+      )}
+      {activeTab === "favorites" && (
+        <div className="p-4">
+          <h2 className="text-foreground font-bold text-center mb-4">المفضلة</h2>
+          <div className="text-center text-muted-foreground mt-10">
+            <Heart className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
+            <p>لا توجد أماكن مفضلة</p>
+          </div>
+        </div>
+      )}
+      {activeTab === "profile" && (
+        <div className="p-4 flex flex-col items-center">
+          <div className="icon-circle-blue w-20 h-20 mb-3">
+            <User className="w-8 h-8 text-info" />
+          </div>
+          <h2 className="text-foreground font-bold text-lg">محمد أحمد</h2>
+          <p className="text-muted-foreground text-sm">عميل</p>
+          <div className="w-full mt-6 space-y-3">
+            {[
+              { label: "بيانات الحساب", icon: User },
+              { label: "اتصل بنا", icon: Phone },
+              { label: "المساعدة", icon: MessageCircle },
+            ].map((item, i) => (
+              <button
+                key={i}
+                className="w-full gradient-card rounded-xl p-4 border border-border flex items-center justify-between hover:border-primary/30 transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+                <div className="flex items-center gap-3">
+                  <span className="text-foreground">{item.label}</span>
+                  <item.icon className="w-5 h-5 text-info" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Nav */}
+      <div className="fixed bottom-0 left-0 right-0 glass-strong border-t border-border">
         <div className="flex justify-around py-2">
           {[
             { id: "home", icon: Home, label: "الرئيسية" },
@@ -137,7 +202,7 @@ const ClientHome = () => {
                 activeTab === tab.id ? "text-primary" : "text-muted-foreground"
               }`}
             >
-              <tab.icon className="w-5 h-5" />
+              <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? "drop-shadow-[0_0_6px_hsl(32,95%,55%,0.5)]" : ""}`} />
               <span className="text-xs">{tab.label}</span>
             </button>
           ))}
