@@ -68,12 +68,13 @@ const DriverDelivery = () => {
 
       if (data) {
         setOrder(data as DeliveryOrder);
-        if (data.status === "in_transit") {
+        if (data.status === "picked_up") {
           setStage("delivering");
           fetchCustomer(data.user_id);
-        } else if (data.status === "picked_up") {
-          setStage("delivering");
-          fetchCustomer(data.user_id);
+        } else if (data.status === "arrived_restaurant") {
+          setStage("at_restaurant");
+        } else if (data.status === "accepted") {
+          setStage("to_restaurant");
         } else if (data.status === "driver_assigned") {
           setStage("new_request");
         }
