@@ -49,6 +49,7 @@ const CCDashboard = () => {
     { icon: AlertTriangle, label: "الشكاوى النشطة", value: stats.activeComplaints, color: "text-destructive", bg: "bg-destructive/10" },
     { icon: Car, label: "السائقون المتاحون", value: stats.activeDrivers, color: "text-success", bg: "bg-success/10" },
     { icon: CheckCircle, label: "التذاكر المفتوحة", value: stats.openTickets, color: "text-info", bg: "bg-info/10" },
+    { icon: Package, label: "توصيل معلّق", value: stats.deliveryPending, color: "text-accent", bg: "bg-accent/10" },
   ];
 
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
