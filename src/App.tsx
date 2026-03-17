@@ -91,6 +91,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <CartProvider>
       <BrowserRouter>
         <Routes>
           {/* Core */}
