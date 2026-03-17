@@ -1,17 +1,45 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, MapPin, Clock, Star, Car } from "lucide-react";
+import { ArrowRight, Clock, Star, Car, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const ClientHistory = () => {
   const navigate = useNavigate();
+  const [trips, setTrips] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const trips = [
-    { id: 1, from: "حي المعاريف", to: "كازا فوياجور", price: "35 DH", date: "اليوم 14:30", driver: "أحمد الفاسي", rating: 5, status: "مكتمل" },
-    { id: 2, from: "حي الحسني", to: "عين الشق", price: "28 DH", date: "أمس 10:15", driver: "خالد المنصوري", rating: 4, status: "مكتمل" },
-    { id: 3, from: "محطة القطار", to: "المطار", price: "52 DH", date: "14/03 18:00", driver: "سعيد بنعمر", rating: 5, status: "مكتمل" },
-    { id: 4, from: "حي السلام", to: "المدينة القديمة", price: "22 DH", date: "13/03 09:30", driver: "يوسف العربي", rating: 0, status: "ملغي" },
-    { id: 5, from: "جامعة الحسن الثاني", to: "حي النخيل", price: "18 DH", date: "12/03 16:00", driver: "محمد البكري", rating: 4, status: "مكتمل" },
-  ];
+  useEffect(() => {
+    const fetch = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("trips")
+        .select("*").eq("user_id", user.id)
+        .order("created_at", { ascending: false }).limit(50);
+
+      if (!data) { setLoading(false); return; }
+
+      // Get driver names
+      const driverIds = [...new Set(data.filter(t => t.driver_id).map(t => t.driver_id))];
+      let driverNames = new Map<string, string>();
+      if (driverIds.length > 0) {
+        const { data: drivers } = await supabase.from("drivers").select("id, user_id").in("id", driverIds) as any;
+        if (drivers?.length) {
+          const uids = drivers.map((d: any) => d.user_id);
+          const { data: profiles } = await supabase.from("profiles").select("id, name").in("id", uids);
+          const dMap = new Map<string, string>(drivers.map((d: any) => [d.id, d.user_id]));
+          const pMap = new Map<string, string>(profiles?.map(p => [p.id, p.name]) || []);
+          driverIds.forEach(did => driverNames.set(did as string, pMap.get(dMap.get(did as string) || "") || "سائق"));
+        }
+      }
+
+      setTrips(data.map(t => ({ ...t, driverName: driverNames.get(t.driver_id) || "—" })));
+      setLoading(false);
+    };
+    fetch();
+  }, []);
+
+  if (loading) return <div className="min-h-screen gradient-dark flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
     <div className="min-h-screen gradient-dark pb-24" dir="rtl">
@@ -22,40 +50,29 @@ const ClientHistory = () => {
       </div>
 
       <div className="px-4 mt-4 space-y-3">
+        {trips.length === 0 && <p className="text-center text-muted-foreground py-12">لا توجد رحلات سابقة</p>}
         {trips.map((trip, i) => (
           <motion.div key={trip.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
             className="gradient-card rounded-xl p-4 border border-border">
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center gap-2">
-                <span className={`text-xs px-2 py-0.5 rounded-full ${trip.status === "مكتمل" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
-                  {trip.status}
+                <span className={`text-xs px-2 py-0.5 rounded-full ${trip.status === "completed" ? "bg-success/10 text-success" : trip.status === "in_progress" ? "bg-info/10 text-info" : "bg-destructive/10 text-destructive"}`}>
+                  {trip.status === "completed" ? "مكتمل" : trip.status === "in_progress" ? "جارية" : "ملغي"}
                 </span>
-                <span className="text-primary font-bold">{trip.price}</span>
+                <span className="text-primary font-bold">{trip.fare || 0} DH</span>
               </div>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Clock className="w-3 h-3" /> {trip.date}
+                <Clock className="w-3 h-3" />
+                {new Date(trip.created_at).toLocaleDateString("ar-SA")}
               </div>
             </div>
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-success" />
-                <span className="text-sm text-foreground">{trip.from}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-destructive" />
-                <span className="text-sm text-foreground">{trip.to}</span>
-              </div>
+              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-success" /><span className="text-sm text-foreground">{trip.start_location || "—"}</span></div>
+              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-destructive" /><span className="text-sm text-foreground">{trip.end_location || "—"}</span></div>
             </div>
             <div className="flex justify-between items-center mt-3 pt-3 border-t border-border">
-              {trip.rating > 0 && (
-                <div className="flex gap-0.5">
-                  {[1, 2, 3, 4, 5].map(s => (
-                    <Star key={s} className={`w-3 h-3 ${s <= trip.rating ? "text-warning fill-warning" : "text-muted-foreground"}`} />
-                  ))}
-                </div>
-              )}
               <div className="flex items-center gap-1">
-                <span className="text-xs text-muted-foreground">{trip.driver}</span>
+                <span className="text-xs text-muted-foreground">{trip.driverName}</span>
                 <Car className="w-3 h-3 text-muted-foreground" />
               </div>
             </div>
