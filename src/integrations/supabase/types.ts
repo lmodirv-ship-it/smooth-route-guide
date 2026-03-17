@@ -839,12 +839,14 @@ export type Database = {
       stores: {
         Row: {
           address: string | null
+          area: string | null
           category: string
           created_at: string
           delivery_fee: number | null
           delivery_time_max: number | null
           delivery_time_min: number | null
           description: string | null
+          google_place_id: string | null
           id: string
           image_url: string | null
           is_open: boolean
@@ -858,12 +860,14 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          area?: string | null
           category?: string
           created_at?: string
           delivery_fee?: number | null
           delivery_time_max?: number | null
           delivery_time_min?: number | null
           description?: string | null
+          google_place_id?: string | null
           id?: string
           image_url?: string | null
           is_open?: boolean
@@ -877,12 +881,14 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          area?: string | null
           category?: string
           created_at?: string
           delivery_fee?: number | null
           delivery_time_max?: number | null
           delivery_time_min?: number | null
           description?: string | null
+          google_place_id?: string | null
           id?: string
           image_url?: string | null
           is_open?: boolean
