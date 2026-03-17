@@ -1,59 +1,91 @@
 import { useNavigate } from "react-router-dom";
-import { Car, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { Car, User, Headphones, Shield } from "lucide-react";
 import logo from "@/assets/hn-driver-logo.png";
 
 const Welcome = () => {
   const navigate = useNavigate();
 
+  const roles = [
+    {
+      id: "driver",
+      icon: Car,
+      title: "سائق",
+      desc: "سجل كسائق وابدأ بالربح",
+      path: "/login?role=driver",
+      glowClass: "glow-ring-orange",
+      iconColor: "text-primary",
+    },
+    {
+      id: "client",
+      icon: User,
+      title: "عميل",
+      desc: "اطلب رحلة بسهولة وأمان",
+      path: "/login?role=client",
+      glowClass: "glow-ring-blue",
+      iconColor: "text-info",
+    },
+  ];
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-between px-6 py-12 gradient-dark">
+    <div className="flex min-h-screen flex-col items-center justify-between px-6 py-10 gradient-hero particles-bg relative">
       {/* Header */}
-      <div className="flex flex-col items-center pt-8 animate-fade-in">
-        <img src={logo} alt="HN Driver" className="w-24 h-24 mb-4" />
-        <h1 className="text-3xl font-bold font-display text-primary glow-text">HN Driver</h1>
-        <p className="text-muted-foreground mt-1 text-sm">اختر نوع حسابك</p>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="flex flex-col items-center pt-8 relative z-10"
+      >
+        <div className="relative">
+          <img src={logo} alt="HN Driver" className="w-20 h-20 mb-3" />
+          <div className="absolute inset-0 w-20 h-20 rounded-full bg-primary/10 blur-xl" />
+        </div>
+        <h1 className="text-3xl font-bold font-display text-gradient-primary">HN Driver</h1>
+        <p className="text-muted-foreground mt-1 text-sm">اختر نوع حسابك للمتابعة</p>
+      </motion.div>
+
+      {/* Role Cards */}
+      <div className="flex flex-col gap-4 w-full max-w-sm relative z-10">
+        {roles.map((role, i) => (
+          <motion.button
+            key={role.id}
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 + i * 0.15 }}
+            onClick={() => navigate(role.path)}
+            className="group relative overflow-hidden rounded-2xl p-5 gradient-card border border-border hover:border-primary/40 transition-all duration-300"
+          >
+            <div className="absolute inset-0 gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />
+            <div className="flex items-center gap-4">
+              <div className={`icon-circle ${role.glowClass}`}>
+                <role.icon className={`w-6 h-6 ${role.iconColor}`} />
+              </div>
+              <div className="text-right flex-1">
+                <h3 className="text-lg font-bold text-foreground">{role.title}</h3>
+                <p className="text-sm text-muted-foreground">{role.desc}</p>
+              </div>
+            </div>
+          </motion.button>
+        ))}
       </div>
 
-      {/* Role Selection */}
-      <div className="flex flex-col gap-4 w-full max-w-sm animate-slide-up" style={{ animationDelay: "0.3s" }}>
-        <button
-          onClick={() => navigate("/login?role=driver")}
-          className="group relative overflow-hidden rounded-2xl p-6 gradient-card border border-border hover:border-primary/50 transition-all duration-300"
-        >
-          <div className="absolute inset-0 gradient-primary opacity-0 group-hover:opacity-10 transition-opacity" />
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl gradient-primary flex items-center justify-center shadow-lg">
-              <Car className="w-7 h-7 text-primary-foreground" />
-            </div>
-            <div className="text-right flex-1">
-              <h3 className="text-lg font-bold text-foreground">سائق</h3>
-              <p className="text-sm text-muted-foreground">سجل كسائق وابدأ بالربح</p>
-            </div>
-          </div>
-        </button>
-
-        <button
-          onClick={() => navigate("/login?role=client")}
-          className="group relative overflow-hidden rounded-2xl p-6 gradient-card border border-border hover:border-primary/50 transition-all duration-300"
-        >
-          <div className="absolute inset-0 gradient-primary opacity-0 group-hover:opacity-10 transition-opacity" />
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center shadow-lg">
-              <User className="w-7 h-7 text-primary" />
-            </div>
-            <div className="text-right flex-1">
-              <h3 className="text-lg font-bold text-foreground">عميل</h3>
-              <p className="text-sm text-muted-foreground">اطلب رحلة بسهولة</p>
-            </div>
-          </div>
-        </button>
-      </div>
-
-      {/* Footer */}
-      <p className="text-xs text-muted-foreground animate-fade-in" style={{ animationDelay: "0.6s" }}>
-        بالمتابعة أنت توافق على الشروط والأحكام
-      </p>
+      {/* Features strip */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.8 }}
+        className="flex gap-6 items-center relative z-10"
+      >
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          <span className="text-xs">آمن</span>
+          <Shield className="w-3.5 h-3.5 text-success" />
+        </div>
+        <div className="flex items-center gap-1.5 text-muted-foreground">
+          <span className="text-xs">دعم ٢٤/٧</span>
+          <Headphones className="w-3.5 h-3.5 text-info" />
+        </div>
+        <p className="text-xs text-muted-foreground">بالمتابعة أنت توافق على الشروط والأحكام</p>
+      </motion.div>
     </div>
   );
 };
