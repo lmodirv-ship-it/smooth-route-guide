@@ -10,7 +10,13 @@ const Splash = () => {
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(1), 300);
     const t2 = setTimeout(() => setPhase(2), 1200);
-    const t3 = setTimeout(() => navigate("/welcome"), 3500);
+    const t3 = setTimeout(() => {
+      const savedRole = localStorage.getItem("hn_user_role");
+      if (savedRole === "driver") navigate("/driver");
+      else if (savedRole === "client") navigate("/client");
+      else if (savedRole === "delivery") navigate("/delivery");
+      else navigate("/welcome");
+    }, 3500);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [navigate]);
 
