@@ -50,7 +50,7 @@ const SimpleBarChart = ({ data, color }: { data: { label: string; value: number 
 };
 
 const AdminDashboardPage = () => {
-  const [stats, setStats] = useState<DashboardStats>({ requestsToday: 0, activeDrivers: 0, ongoingRides: 0, incomeToday: 0, totalDrivers: 0, offlineDrivers: 0 });
+  const [stats, setStats] = useState<DashboardStats>({ requestsToday: 0, activeDrivers: 0, ongoingRides: 0, incomeToday: 0, totalDrivers: 0, offlineDrivers: 0, deliveryPending: 0, deliveryActive: 0 });
   const [incomeRange, setIncomeRange] = useState<"daily" | "weekly" | "monthly">("weekly");
   const [recentTrips, setRecentTrips] = useState<any[]>([]);
   const { drivers: nearbyDrivers } = useNearbyDrivers();
