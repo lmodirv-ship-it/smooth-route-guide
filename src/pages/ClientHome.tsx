@@ -306,6 +306,11 @@ const ClientHome = () => {
         </div>
       </div>
     </div>
+  return (
+    <>
+      {content}
+      <RoleSwitcher />
+    </>
   );
 };
 
