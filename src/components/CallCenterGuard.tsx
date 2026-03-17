@@ -7,11 +7,11 @@ import { Loader2, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 
-interface AdminGuardProps {
+interface CallCenterGuardProps {
   children: React.ReactNode;
 }
 
-const AdminGuard = ({ children }: AdminGuardProps) => {
+const CallCenterGuard = ({ children }: CallCenterGuardProps) => {
   const [state, setState] = useState<"loading" | "authorized" | "unauthorized" | "unauthenticated">("loading");
   const logout = useFirebaseLogout();
 
@@ -23,8 +23,14 @@ const AdminGuard = ({ children }: AdminGuardProps) => {
       }
       try {
         const snap = await getDoc(doc(db, "users", user.uid));
-        if (snap.exists() && snap.data().role === "admin") {
-          setState("authorized");
+        if (snap.exists()) {
+          const role = snap.data().role;
+          // Allow admin and agent roles
+          if (role === "admin" || role === "agent" || role === "call_center") {
+            setState("authorized");
+          } else {
+            setState("unauthorized");
+          }
         } else {
           setState("unauthorized");
         }
@@ -58,7 +64,7 @@ const AdminGuard = ({ children }: AdminGuardProps) => {
             <ShieldOff className="w-10 h-10 text-destructive" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">غير مصرح</h1>
-          <p className="text-muted-foreground">ليس لديك صلاحية الوصول إلى لوحة التحكم. يجب أن يكون لديك دور "مسؤول" للدخول.</p>
+          <p className="text-muted-foreground">ليس لديك صلاحية الوصول إلى مركز الاتصال.</p>
           <div className="flex gap-3 justify-center pt-4">
             <Button variant="outline" onClick={() => window.history.back()} className="border-border">
               رجوع
@@ -75,4 +81,4 @@ const AdminGuard = ({ children }: AdminGuardProps) => {
   return <>{children}</>;
 };
 
-export default AdminGuard;
+export default CallCenterGuard;
