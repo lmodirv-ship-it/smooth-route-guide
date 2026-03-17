@@ -65,8 +65,12 @@ const RestaurantsCC = () => {
   // Fetch stores
   const fetchStores = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase.from("stores").select("*").order("created_at", { ascending: false });
-    setStores(data || []);
+    const [storesRes, zonesRes] = await Promise.all([
+      supabase.from("stores").select("*").order("created_at", { ascending: false }),
+      supabase.from("zones").select("*").order("name_ar"),
+    ]);
+    setStores(storesRes.data || []);
+    setZones(zonesRes.data || []);
     setLoading(false);
   }, []);
 
