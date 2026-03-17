@@ -114,31 +114,31 @@ const RestaurantsList = () => {
               >
                 <div className="flex items-start gap-3 p-4">
                   <div className="w-16 h-16 rounded-xl bg-secondary flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden">
-                    {store.image_url ? (
-                      <img src={store.image_url} alt={store.name} className="w-full h-full object-cover" />
+                    {(store.image_url || store.imageURL) ? (
+                      <img src={store.image_url || store.imageURL} alt={store.name} className="w-full h-full object-cover" />
                     ) : (
                       <UtensilsCrossed className="w-6 h-6 text-muted-foreground/40" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-foreground text-base truncate">{store.name}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{store.description}</p>
+                    <h3 className="font-bold text-foreground text-base truncate">{store.name || "مطعم"}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{store.description || ""}</p>
                     <div className="flex items-center gap-3 mt-2 flex-wrap">
-                      <span className="flex items-center gap-1 text-xs font-semibold text-amber-400">
+                      <span className="flex items-center gap-1 text-xs font-semibold text-warning">
                         <Star className="w-3.5 h-3.5 fill-current" />
-                        {store.rating || 4.5}
+                        {store.rating || "—"}
                       </span>
                       <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="w-3 h-3" />
-                        {store.delivery_time_min || 20}-{store.delivery_time_max || 40} دقيقة
+                        {store.estimatedDeliveryTime || store.delivery_time_min ? `${store.delivery_time_min || 20}-${store.delivery_time_max || 40} دقيقة` : "30-45 دقيقة"}
                       </span>
                       <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <MapPin className="w-3 h-3" />
-                        {store.address?.split("،")[0] || "طنجة"}
+                        {store.city || store.address?.split("،")[0] || "—"}
                       </span>
                     </div>
                     <div className="mt-2">
-                      <span className="text-xs font-bold text-primary">{store.delivery_fee || 10} DH</span>
+                      <span className="text-xs font-bold text-primary">{store.deliveryFee || store.delivery_fee || 10} DH</span>
                       <span className="text-[10px] text-muted-foreground mr-1">رسوم التوصيل</span>
                     </div>
                   </div>
