@@ -81,7 +81,7 @@ class FirestoreQueryBuilder<T = any> {
   private _notNullFields: string[] = [];
 
   constructor(collectionName: string) {
-    this._collection = collectionName;
+    this._collection = resolveCollection(collectionName);
   }
 
   select(fields?: string) {
