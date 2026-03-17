@@ -6,6 +6,7 @@ import {
   Bell, Menu, Power, ChevronLeft, Car, Navigation, BarChart3, User, Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import GoogleMapWrapper from "@/components/GoogleMap";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DriverDashboard = () => {
