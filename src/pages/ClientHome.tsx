@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   MapPin, Search, Bell, Menu, Star, Clock, Navigation,
-  ChevronLeft, Car, Heart, User, Home, Phone, MessageCircle, Bot
+  ChevronLeft, Car, Heart, User, Home, Phone, MessageCircle, Bot, LogOut
 } from "lucide-react";
+import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import logo from "@/assets/hn-driver-logo.png";
 
 const ClientHome = () => {
   const navigate = useNavigate();
+  const logout = useFirebaseLogout();
   const [activeTab, setActiveTab] = useState("home");
   const [destination, setDestination] = useState("");
   const [destinationCoords, setDestinationCoords] = useState<string | null>(null);
@@ -249,9 +251,14 @@ const ClientHome = () => {
           <img src={logo} alt="HN" className="w-8 h-8" />
           <span className="font-bold font-display text-gradient-primary text-lg">HN Driver</span>
         </div>
-        <button className="p-2">
-          <Menu className="w-5 h-5 text-muted-foreground" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button onClick={logout} className="p-2" title="تسجيل الخروج">
+            <LogOut className="w-5 h-5 text-destructive" />
+          </button>
+          <button className="p-2">
+            <Menu className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </div>
       </div>
 
       {activeTab === "home" && renderHome()}
