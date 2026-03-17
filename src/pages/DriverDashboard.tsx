@@ -76,6 +76,14 @@ const DriverDashboard = () => {
         </GoogleMapWrapper>
       </div>
 
+      {/* Incoming Ride Requests */}
+      <IncomingRideRequest
+        requests={requests}
+        accepting={accepting}
+        onAccept={acceptRequest}
+        onReject={rejectRequest}
+      />
+
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 px-4 mt-4">
         {stats.map((stat, i) => (
