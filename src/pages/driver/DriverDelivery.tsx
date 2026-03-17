@@ -56,39 +56,30 @@ const DriverDelivery = () => {
     if (!driverId) return;
 
     const fetchAssigned = async () => {
+      // Check for active orders (driver_assigned, picked_up, in_transit)
       const { data } = await supabase
         .from("delivery_orders")
         .select("*")
         .eq("driver_id", driverId)
-        .in("status", ["confirmed", "preparing", "ready", "picked_up"])
+        .in("status", ["driver_assigned", "picked_up", "in_transit"])
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
       if (data) {
         setOrder(data as DeliveryOrder);
-        if (data.status === "picked_up") {
+        if (data.status === "in_transit") {
           setStage("delivering");
           fetchCustomer(data.user_id);
-        } else if (data.status === "ready") {
-          setStage("at_restaurant");
-        } else {
-          setStage("to_restaurant");
-        }
-      } else {
-        // Check for newly assigned pending
-        const { data: pending } = await supabase
-          .from("delivery_orders")
-          .select("*")
-          .eq("driver_id", driverId)
-          .eq("status", "ready")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (pending) {
-          setOrder(pending as DeliveryOrder);
+        } else if (data.status === "picked_up") {
+          setStage("delivering");
+          fetchCustomer(data.user_id);
+        } else if (data.status === "driver_assigned") {
           setStage("new_request");
         }
+      } else {
+        setOrder(null);
+        setStage("idle");
       }
     };
 
@@ -122,13 +113,18 @@ const DriverDelivery = () => {
   // ── Actions ──
   const acceptOrder = async () => {
     if (!order) return;
+    // Mark as accepted by updating status
+    await supabase.from("delivery_orders").update({
+      status: "picked_up",
+      updated_at: new Date().toISOString(),
+    }).eq("id", order.id);
     setStage("to_restaurant");
     toast({ title: "تم قبول الطلب ✅" });
   };
 
   const rejectOrder = async () => {
     if (!order) return;
-    await supabase.from("delivery_orders").update({ driver_id: null }).eq("id", order.id);
+    await supabase.from("delivery_orders").update({ driver_id: null, status: "confirmed", updated_at: new Date().toISOString() }).eq("id", order.id);
     setOrder(null);
     setStage("idle");
     toast({ title: "تم رفض الطلب" });
@@ -143,8 +139,9 @@ const DriverDelivery = () => {
   const pickedUp = async () => {
     if (!order) return;
     await supabase.from("delivery_orders").update({
-      status: "picked_up",
+      status: "in_transit",
       picked_up_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }).eq("id", order.id);
     setStage("delivering");
     await fetchCustomer(order.user_id);
@@ -156,6 +153,7 @@ const DriverDelivery = () => {
     await supabase.from("delivery_orders").update({
       status: "delivered",
       delivered_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }).eq("id", order.id);
     toast({ title: "تم التسليم بنجاح! 🎉" });
     setOrder(null);
