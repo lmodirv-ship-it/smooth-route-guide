@@ -7,12 +7,15 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
+import IncomingRideRequest from "@/components/IncomingRideRequest";
+import { useIncomingRideRequests } from "@/hooks/useIncomingRideRequests";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DriverDashboard = () => {
   const navigate = useNavigate();
   const [isOnline, setIsOnline] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
+  const { requests, accepting, acceptRequest, rejectRequest } = useIncomingRideRequests(isOnline);
 
   const stats = [
     { icon: DollarSign, label: "أرباح اليوم", value: "٢٥٠ ر.س", color: "text-primary", glow: "glow-ring-orange" },
@@ -72,6 +75,14 @@ const DriverDashboard = () => {
           )}
         </GoogleMapWrapper>
       </div>
+
+      {/* Incoming Ride Requests */}
+      <IncomingRideRequest
+        requests={requests}
+        accepting={accepting}
+        onAccept={acceptRequest}
+        onReject={rejectRequest}
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 px-4 mt-4">
