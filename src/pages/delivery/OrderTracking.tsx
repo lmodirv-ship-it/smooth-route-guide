@@ -1,0 +1,211 @@
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ArrowRight, Package, CheckCircle, Bike, MapPin, Clock, Phone, ChefHat, Store, User, UtensilsCrossed } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+
+const steps = [
+  { key: "pending", label: "قيد المراجعة", sublabel: "مركز الاتصال يراجع طلبك", icon: Clock, color: "bg-amber-500" },
+  { key: "confirmed", label: "تم التأكيد", sublabel: "تم تأكيد الطلب مع المطعم", icon: CheckCircle, color: "bg-blue-500" },
+  { key: "preparing", label: "قيد التحضير", sublabel: "المطعم يحضر طلبك", icon: ChefHat, color: "bg-orange-500" },
+  { key: "ready", label: "جاهز للاستلام", sublabel: "بانتظار السائق", icon: UtensilsCrossed, color: "bg-purple-500" },
+  { key: "picked_up", label: "تم الاستلام", sublabel: "السائق في الطريق إليك", icon: Bike, color: "bg-primary" },
+  { key: "delivered", label: "تم التوصيل", sublabel: "وصل طلبك بالسلامة!", icon: MapPin, color: "bg-emerald-500" },
+];
+
+const OrderTracking = () => {
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const [order, setOrder] = useState<any>(null);
+  const [driverProfile, setDriverProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchOrder = async () => {
+      let query = supabase.from("delivery_orders").select("*");
+      if (id) {
+        query = query.eq("id", id);
+      } else {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        query = query.eq("user_id", user.id).order("created_at", { ascending: false }).limit(1);
+      }
+      const { data } = await query.single();
+      if (data) {
+        setOrder(data);
+        if (data.driver_id) {
+          const { data: driver } = await supabase.from("drivers").select("user_id").eq("id", data.driver_id).single();
+          if (driver) {
+            const { data: profile } = await supabase.from("profiles").select("name, phone").eq("id", driver.user_id).single();
+            setDriverProfile(profile);
+          }
+        }
+      }
+    };
+    fetchOrder();
+
+    const channel = supabase
+      .channel("order-tracking-rt")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "delivery_orders" }, (payload) => {
+        if (!id || payload.new.id === id) {
+          setOrder((prev: any) => prev?.id === payload.new.id ? payload.new : prev);
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [id]);
+
+  const currentStep = steps.findIndex((s) => s.key === (order?.status || "pending"));
+  const isCancelled = order?.status === "cancelled";
+
+  return (
+    <div className="min-h-screen bg-background px-5 pt-6 pb-10" dir="rtl">
+      <div className="flex items-center justify-between mb-6">
+        <button onClick={() => navigate("/delivery")} className="p-2 rounded-xl bg-secondary">
+          <ArrowRight className="w-5 h-5 text-foreground" />
+        </button>
+        <h1 className="text-lg font-bold text-foreground">تتبع الطلب</h1>
+        <div className="w-9" />
+      </div>
+
+      {!order ? (
+        <div className="text-center py-20">
+          <Package className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground">لا يوجد طلب نشط</p>
+          <Button onClick={() => navigate("/delivery/restaurants")} variant="outline" className="mt-4 rounded-xl">
+            اطلب الآن
+          </Button>
+        </div>
+      ) : (
+        <>
+          {/* Order Info Card */}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            className="bg-card rounded-2xl border border-border p-5 mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] text-muted-foreground font-mono">#{order.id?.slice(0, 8)}</span>
+              {isCancelled ? (
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-destructive/10 text-destructive">ملغي</span>
+              ) : (
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-primary/10 text-primary">
+                  {steps[currentStep]?.label || order.status}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl">🍽️</div>
+              <div>
+                <h2 className="font-bold text-foreground">{order.store_name || "طلب توصيل"}</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {new Date(order.created_at).toLocaleDateString("ar-MA", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}
+                </p>
+              </div>
+            </div>
+            {order.estimated_price && (
+              <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
+                <span className="text-lg font-bold text-primary">{order.estimated_price} DH</span>
+                <span className="text-xs text-muted-foreground">المجموع</span>
+              </div>
+            )}
+          </motion.div>
+
+          {/* Items Summary */}
+          {order.items && Array.isArray(order.items) && order.items.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+              className="bg-card rounded-2xl border border-border p-4 mb-4">
+              <h3 className="text-sm font-bold text-foreground mb-2">تفاصيل الطلب</h3>
+              <div className="space-y-2">
+                {(order.items as any[]).map((item: any, i: number) => (
+                  <div key={i} className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">{item.price * item.qty} DH</span>
+                    <span className="text-foreground">{item.name} × {item.qty}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Driver Info */}
+          {driverProfile && order.status !== "pending" && order.status !== "confirmed" && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+              className="bg-card rounded-2xl border border-border p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <a href={`tel:${driverProfile.phone}`} className="p-2 rounded-xl bg-primary/10">
+                  <Phone className="w-4 h-4 text-primary" />
+                </a>
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-foreground">{driverProfile.name}</p>
+                    <p className="text-xs text-muted-foreground">السائق</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="w-5 h-5 text-primary" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Progress Steps */}
+          {!isCancelled && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+              className="bg-card rounded-2xl border border-border p-5">
+              <h3 className="font-bold text-foreground mb-5">مسار الطلب</h3>
+              <div className="relative">
+                {/* Vertical line */}
+                <div className="absolute right-[19px] top-5 bottom-5 w-0.5 bg-border" />
+                <div className="absolute right-[19px] top-5 w-0.5 bg-primary transition-all duration-700"
+                  style={{ height: `${Math.max(0, currentStep) * 20}%` }} />
+
+                <div className="space-y-6">
+                  {steps.map((step, i) => {
+                    const isActive = i <= currentStep;
+                    const isCurrent = i === currentStep;
+                    return (
+                      <motion.div key={step.key}
+                        initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 + i * 0.08 }}
+                        className="flex items-start gap-4 relative">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 z-10 transition-all duration-500 ${
+                          isCurrent ? `${step.color} text-white shadow-lg scale-110` :
+                          isActive ? "bg-emerald-500/15 text-emerald-500" : "bg-secondary text-muted-foreground"
+                        }`}>
+                          <step.icon className="w-5 h-5" />
+                        </div>
+                        <div className="pt-1.5">
+                          <p className={`text-sm font-bold ${isActive ? "text-foreground" : "text-muted-foreground/50"}`}>
+                            {step.label}
+                          </p>
+                          <p className={`text-xs mt-0.5 ${isCurrent ? "text-primary" : "text-muted-foreground/60"}`}>
+                            {step.sublabel}
+                          </p>
+                        </div>
+                        {isActive && i < currentStep && (
+                          <CheckCircle className="w-4 h-4 text-emerald-500 absolute left-0 top-3" />
+                        )}
+                        {isCurrent && (
+                          <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse absolute left-0 top-3.5" />
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {isCancelled && (
+            <div className="bg-destructive/5 border border-destructive/20 rounded-2xl p-5 text-center">
+              <p className="text-destructive font-bold">تم إلغاء هذا الطلب</p>
+              <Button onClick={() => navigate("/delivery/restaurants")} variant="outline" className="mt-3 rounded-xl">
+                اطلب مرة أخرى
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+export default OrderTracking;
