@@ -426,10 +426,13 @@ const RestaurantsCC = () => {
                   <Switch checked={storeForm.is_open} onCheckedChange={v => setStoreForm(p => ({ ...p, is_open: v }))} />
                 </div>
               </div>
-              <Button onClick={handleSaveStore} disabled={savingStore} className="w-full gap-2">
-                {savingStore ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                {editingStore ? "حفظ التعديلات" : "إضافة المطعم"}
-              </Button>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setStoreDialog(false)} className="flex-1">إلغاء</Button>
+                <Button onClick={handleSaveStore} disabled={savingStore} className="flex-1 gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground">
+                  {savingStore ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                  {editingStore ? "حفظ التعديلات" : "حفظ"}
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
