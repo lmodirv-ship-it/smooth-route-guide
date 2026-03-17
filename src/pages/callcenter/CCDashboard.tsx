@@ -38,6 +38,7 @@ const CCDashboard = () => {
       .on("postgres_changes", { event: "*", schema: "public", table: "ride_requests" }, fetchStats)
       .on("postgres_changes", { event: "*", schema: "public", table: "complaints" }, fetchStats)
       .on("postgres_changes", { event: "*", schema: "public", table: "call_logs" }, fetchStats)
+      .on("postgres_changes", { event: "*", schema: "public", table: "delivery_orders" }, fetchStats)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [fetchStats]);
