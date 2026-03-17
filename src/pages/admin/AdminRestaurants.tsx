@@ -205,6 +205,14 @@ const AdminRestaurants = () => {
               </CardContent>
             )}
           </Card>
+          {selectedStore && (
+            <CsvMenuImport
+              storeId={selectedStore}
+              storeName={stores.find((s) => s.id === selectedStore)?.name || ""}
+              categories={storeCats}
+              onImportComplete={fetchAll}
+            />
+          )}
         </TabsContent>
       </Tabs>
 
