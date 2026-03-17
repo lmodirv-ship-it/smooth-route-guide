@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Package, Truck, Clock, CheckCircle, XCircle, MapPin, Search, RefreshCw, Eye } from "lucide-react";
+import { Package, Truck, Clock, CheckCircle, XCircle, MapPin, Search, RefreshCw, Eye, UserCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/firestoreClient";
 import { toast } from "@/hooks/use-toast";
+import { assignNearestDriver } from "@/lib/autoAssignDriver";
 
 const statusMap: Record<string, { label: string; color: string; bg: string }> = {
   pending: { label: "معلّق", color: "text-warning", bg: "bg-warning/10" },
