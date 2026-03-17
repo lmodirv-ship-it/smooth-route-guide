@@ -65,8 +65,11 @@ const ClientBooking = () => {
 
       const requestPayload = {
         user_id: user.id,
+        userId: user.id,
         pickup: ride.pickup,
+        pickupLocation: ride.pickup,
         destination: ride.destination,
+        dropoffLocation: ride.destination,
         price: ride.price > 0 ? ride.price : null,
         status: "pending",
       };
