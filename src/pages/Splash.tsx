@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import splashLogo from "@/assets/designs/iindex.jpeg";
 
 const Splash = () => {
@@ -12,38 +14,28 @@ const Splash = () => {
     const t1 = setTimeout(() => setPhase(1), 300);
     const t2 = setTimeout(() => setPhase(2), 1200);
     const t3 = setTimeout(() => {
-      void (async () => {
+      const unsub = onAuthStateChanged(auth, async (user) => {
+        unsub();
         const savedRole = localStorage.getItem("hn_user_role");
 
-        if (savedRole !== "driver" && savedRole !== "client" && savedRole !== "delivery") {
-          navigate("/welcome");
+        if (!user) {
+          navigate(savedRole ? `/auth/${savedRole}` : "/welcome", { replace: true });
           return;
         }
 
         try {
-          const {
-            data: { session },
-          } = await supabase.auth.getSession();
-
-          if (session) {
-            if (savedRole === "driver") navigate("/driver");
-            else if (savedRole === "client") navigate("/client");
-            else navigate("/delivery");
-          } else {
-            navigate(`/auth/${savedRole}`);
-          }
-        } catch (error) {
-          console.error("Splash navigation failed:", error);
-          navigate(`/auth/${savedRole}`);
+          const snap = await getDoc(doc(db, "users", user.uid));
+          const role = snap.exists() ? snap.data().role : savedRole || "client";
+          if (role === "driver") navigate("/driver", { replace: true });
+          else if (role === "delivery") navigate("/delivery", { replace: true });
+          else navigate("/client", { replace: true });
+        } catch {
+          navigate("/welcome", { replace: true });
         }
-      })();
+      });
     }, 3500);
 
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [navigate]);
 
   return (
@@ -105,11 +97,7 @@ const Splash = () => {
         className="absolute bottom-14 flex gap-2"
       >
         {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="w-2 h-2 rounded-full bg-primary animate-pulse"
-            style={{ animationDelay: `${i * 0.3}s` }}
-          />
+          <div key={i} className="w-2 h-2 rounded-full bg-primary animate-pulse" style={{ animationDelay: `${i * 0.3}s` }} />
         ))}
       </motion.div>
     </div>

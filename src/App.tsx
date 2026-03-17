@@ -8,7 +8,7 @@ import { CartProvider } from "@/contexts/CartContext";
 // Core pages
 import Splash from "./pages/Splash";
 import Welcome from "./pages/Welcome";
-import Login from "./pages/Login";
+import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
 // Driver pages
@@ -102,8 +102,8 @@ const App = () => (
           {/* Core */}
           <Route path="/" element={<Splash />} />
           <Route path="/welcome" element={<Welcome />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/auth/:role" element={<Login />} />
+          <Route path="/login" element={<AuthPage />} />
+          <Route path="/auth/:role" element={<AuthPage />} />
 
           {/* Driver App */}
           <Route path="/driver" element={<DriverDashboard />} />
