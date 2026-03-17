@@ -83,6 +83,7 @@ const AdminDashboardPage = () => {
       .on("postgres_changes", { event: "*", schema: "public", table: "ride_requests" }, fetchStats)
       .on("postgres_changes", { event: "*", schema: "public", table: "trips" }, () => { fetchTrips(); fetchStats(); })
       .on("postgres_changes", { event: "*", schema: "public", table: "drivers" }, fetchStats)
+      .on("postgres_changes", { event: "*", schema: "public", table: "delivery_orders" }, fetchStats)
       .subscribe();
     return () => { clearInterval(interval); supabase.removeChannel(ch); };
   }, [fetchStats, fetchTrips]);
