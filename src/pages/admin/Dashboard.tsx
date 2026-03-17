@@ -9,6 +9,7 @@ import GoogleMapWrapper from "@/components/GoogleMap";
 interface DashboardStats {
   requestsToday: number; activeDrivers: number; ongoingRides: number;
   incomeToday: number; totalDrivers: number; offlineDrivers: number;
+  deliveryPending: number; deliveryActive: number;
 }
 
 const DonutChart = ({ online, offline }: { online: number; offline: number }) => {
