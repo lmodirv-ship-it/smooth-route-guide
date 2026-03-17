@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { FileText, Car, DollarSign, Zap, MapPin, Clock, BatteryLow, Activity } from "lucide-react";
+import { FileText, Car, DollarSign, Zap, MapPin, Clock, BatteryLow, Activity, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
@@ -9,6 +9,7 @@ import GoogleMapWrapper from "@/components/GoogleMap";
 interface DashboardStats {
   requestsToday: number; activeDrivers: number; ongoingRides: number;
   incomeToday: number; totalDrivers: number; offlineDrivers: number;
+  deliveryPending: number; deliveryActive: number;
 }
 
 const DonutChart = ({ online, offline }: { online: number; offline: number }) => {
@@ -49,23 +50,25 @@ const SimpleBarChart = ({ data, color }: { data: { label: string; value: number 
 };
 
 const AdminDashboardPage = () => {
-  const [stats, setStats] = useState<DashboardStats>({ requestsToday: 0, activeDrivers: 0, ongoingRides: 0, incomeToday: 0, totalDrivers: 0, offlineDrivers: 0 });
+  const [stats, setStats] = useState<DashboardStats>({ requestsToday: 0, activeDrivers: 0, ongoingRides: 0, incomeToday: 0, totalDrivers: 0, offlineDrivers: 0, deliveryPending: 0, deliveryActive: 0 });
   const [incomeRange, setIncomeRange] = useState<"daily" | "weekly" | "monthly">("weekly");
   const [recentTrips, setRecentTrips] = useState<any[]>([]);
   const { drivers: nearbyDrivers } = useNearbyDrivers();
 
   const fetchStats = useCallback(async () => {
     const today = new Date().toISOString().slice(0, 10);
-    const [reqRes, activeRes, totalRes, ridesRes, incomeRes] = await Promise.all([
+    const [reqRes, activeRes, totalRes, ridesRes, incomeRes, delPendRes, delActiveRes] = await Promise.all([
       supabase.from("ride_requests").select("id", { count: "exact", head: true }).gte("created_at", today),
       supabase.from("drivers").select("id", { count: "exact", head: true }).eq("status", "active"),
       supabase.from("drivers").select("id", { count: "exact", head: true }),
       supabase.from("trips").select("id", { count: "exact", head: true }).eq("status", "in_progress"),
       supabase.from("earnings").select("amount").gte("date", today),
+      supabase.from("delivery_orders").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("delivery_orders").select("id", { count: "exact", head: true }).in("status", ["accepted", "picked_up", "in_transit"]),
     ]);
     const totalIncome = (incomeRes.data || []).reduce((s, e) => s + Number(e.amount), 0);
     const active = activeRes.count || 0, total = totalRes.count || 0;
-    setStats({ requestsToday: reqRes.count || 0, activeDrivers: active, ongoingRides: ridesRes.count || 0, incomeToday: totalIncome, totalDrivers: total, offlineDrivers: total - active });
+    setStats({ requestsToday: reqRes.count || 0, activeDrivers: active, ongoingRides: ridesRes.count || 0, incomeToday: totalIncome, totalDrivers: total, offlineDrivers: total - active, deliveryPending: delPendRes.count || 0, deliveryActive: delActiveRes.count || 0 });
   }, []);
 
   const fetchTrips = useCallback(async () => {
@@ -80,6 +83,7 @@ const AdminDashboardPage = () => {
       .on("postgres_changes", { event: "*", schema: "public", table: "ride_requests" }, fetchStats)
       .on("postgres_changes", { event: "*", schema: "public", table: "trips" }, () => { fetchTrips(); fetchStats(); })
       .on("postgres_changes", { event: "*", schema: "public", table: "drivers" }, fetchStats)
+      .on("postgres_changes", { event: "*", schema: "public", table: "delivery_orders" }, fetchStats)
       .subscribe();
     return () => { clearInterval(interval); supabase.removeChannel(ch); };
   }, [fetchStats, fetchTrips]);
@@ -102,11 +106,13 @@ const AdminDashboardPage = () => {
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {[
           { icon: FileText, label: "إجمالي الطلبات", value: stats.requestsToday, color: "text-info", glow: "glow-ring-blue" },
           { icon: Car, label: "السائقون النشطون", value: stats.activeDrivers, color: "text-primary", glow: "glow-ring-orange" },
           { icon: Zap, label: "رحلات جارية", value: stats.ongoingRides, color: "text-success", glow: "" },
+          { icon: Package, label: "توصيل معلّق", value: stats.deliveryPending, color: "text-accent", glow: "" },
+          { icon: Package, label: "توصيل نشط", value: stats.deliveryActive, color: "text-info", glow: "glow-ring-blue" },
           { icon: DollarSign, label: "أرباح اليوم", value: stats.incomeToday, color: "text-warning", glow: "glow-ring-orange", prefix: "" },
         ].map((stat, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}

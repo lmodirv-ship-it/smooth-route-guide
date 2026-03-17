@@ -17,6 +17,7 @@ const navItems = [
   { path: "/call-center/drivers", icon: Car, label: "بحث السائقين" },
   { path: "/call-center/complaints", icon: AlertTriangle, label: "الشكاوى" },
   { path: "/call-center/tickets", icon: FileText, label: "التذاكر" },
+  { path: "/call-center/delivery", icon: PlusCircle, label: "طلبات التوصيل" },
   { path: "/call-center/emergency", icon: AlertTriangle, label: "الطوارئ" },
   { path: "/call-center/history", icon: Clock, label: "سجل المكالمات" },
   { path: "/call-center/reports", icon: BarChart, label: "التقارير" },

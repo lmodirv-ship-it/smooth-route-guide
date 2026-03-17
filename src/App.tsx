@@ -57,6 +57,7 @@ import AdminLiveMap from "./pages/admin/LiveMap";
 import AdminAlerts from "./pages/admin/Alerts";
 import AdminDocuments from "./pages/admin/Documents";
 import AdminCallCenter from "./pages/admin/AdminCallCenter";
+import AdminDeliveryOrders from "./pages/admin/DeliveryOrders";
 import AdminSettings from "./pages/admin/Settings";
 
 // Call Center
@@ -72,6 +73,7 @@ import Tickets from "./pages/callcenter/Tickets";
 import Emergency from "./pages/callcenter/Emergency";
 import CallHistory from "./pages/callcenter/CallHistory";
 import CCReports from "./pages/callcenter/CCReports";
+import DeliveryOrdersCC from "./pages/callcenter/DeliveryOrdersCC";
 
 // AI
 import AgentHub from "./pages/ai/AgentHub";
@@ -136,6 +138,7 @@ const App = () => (
             <Route path="map" element={<AdminLiveMap />} />
             <Route path="alerts" element={<AdminAlerts />} />
             <Route path="documents" element={<AdminDocuments />} />
+            <Route path="delivery" element={<AdminDeliveryOrders />} />
             <Route path="call-center" element={<AdminCallCenter />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
@@ -150,6 +153,7 @@ const App = () => (
             <Route path="drivers" element={<DriverSearchCC />} />
             <Route path="complaints" element={<Complaints />} />
             <Route path="tickets" element={<Tickets />} />
+            <Route path="delivery" element={<DeliveryOrdersCC />} />
             <Route path="emergency" element={<Emergency />} />
             <Route path="history" element={<CallHistory />} />
             <Route path="reports" element={<CCReports />} />

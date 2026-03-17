@@ -2,27 +2,29 @@ import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Phone, PhoneIncoming, Clock, Users, AlertTriangle,
-  CheckCircle, Car, Headphones, Activity, Zap, BarChart3, Loader2
+  CheckCircle, Car, Headphones, Activity, Zap, BarChart3, Loader2, Package
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const CCDashboard = () => {
-  const [stats, setStats] = useState({ pendingRequests: 0, activeComplaints: 0, activeDrivers: 0, openTickets: 0, callsToday: 0 });
+  const [stats, setStats] = useState({ pendingRequests: 0, activeComplaints: 0, activeDrivers: 0, openTickets: 0, callsToday: 0, deliveryPending: 0 });
   const [recentCalls, setRecentCalls] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchStats = useCallback(async () => {
     const today = new Date().toISOString().slice(0, 10);
-    const [reqRes, compRes, drvRes, tickRes, callRes] = await Promise.all([
+    const [reqRes, compRes, drvRes, tickRes, callRes, delRes] = await Promise.all([
       supabase.from("ride_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
       supabase.from("complaints").select("id", { count: "exact", head: true }).eq("status", "open"),
       supabase.from("drivers").select("id", { count: "exact", head: true }).eq("status", "active"),
       supabase.from("tickets").select("id", { count: "exact", head: true }).eq("status", "open"),
       supabase.from("call_logs").select("id", { count: "exact", head: true }).gte("created_at", today),
+      supabase.from("delivery_orders").select("id", { count: "exact", head: true }).eq("status", "pending"),
     ]);
     setStats({
       pendingRequests: reqRes.count || 0, activeComplaints: compRes.count || 0,
       activeDrivers: drvRes.count || 0, openTickets: tickRes.count || 0, callsToday: callRes.count || 0,
+      deliveryPending: delRes.count || 0,
     });
 
     const { data: calls } = await supabase.from("call_logs").select("*").order("created_at", { ascending: false }).limit(10);
@@ -36,6 +38,7 @@ const CCDashboard = () => {
       .on("postgres_changes", { event: "*", schema: "public", table: "ride_requests" }, fetchStats)
       .on("postgres_changes", { event: "*", schema: "public", table: "complaints" }, fetchStats)
       .on("postgres_changes", { event: "*", schema: "public", table: "call_logs" }, fetchStats)
+      .on("postgres_changes", { event: "*", schema: "public", table: "delivery_orders" }, fetchStats)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [fetchStats]);
@@ -46,6 +49,7 @@ const CCDashboard = () => {
     { icon: AlertTriangle, label: "الشكاوى النشطة", value: stats.activeComplaints, color: "text-destructive", bg: "bg-destructive/10" },
     { icon: Car, label: "السائقون المتاحون", value: stats.activeDrivers, color: "text-success", bg: "bg-success/10" },
     { icon: CheckCircle, label: "التذاكر المفتوحة", value: stats.openTickets, color: "text-info", bg: "bg-info/10" },
+    { icon: Package, label: "توصيل معلّق", value: stats.deliveryPending, color: "text-accent", bg: "bg-accent/10" },
   ];
 
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
@@ -57,7 +61,7 @@ const CCDashboard = () => {
         <h1 className="text-xl font-bold text-foreground">لوحة مركز الاتصال</h1>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         {statCards.map((s, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
             className="gradient-card rounded-xl p-4 border border-border">
