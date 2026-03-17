@@ -1,34 +1,36 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Camera, MapPin, Car, Loader2, CheckCircle } from "lucide-react";
+import { Camera, MapPin, Car, Loader2, CheckCircle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { updateDocument, COLLECTIONS, type UserRole } from "@/lib/firebaseServices";
 import logo from "@/assets/hn-driver-logo.png";
 
-type RoleId = "driver" | "client" | "delivery";
-
-const roleDashboard: Record<RoleId, string> = {
+const roleDashboard: Record<UserRole, string> = {
   driver: "/driver",
   client: "/client",
   delivery: "/delivery",
+  call_center: "/call-center",
+  admin: "/admin",
 };
 
 const CompleteProfile = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [role, setRole] = useState<RoleId>("client");
+  const [role, setRole] = useState<UserRole>("client");
   const [uid, setUid] = useState("");
 
   const [city, setCity] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [vehicleType, setVehicleType] = useState("");
   const [plateNumber, setPlateNumber] = useState("");
+  const [licenseNumber, setLicenseNumber] = useState("");
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
@@ -42,12 +44,12 @@ const CompleteProfile = () => {
         if (snap.exists()) {
           const data = snap.data();
           if (data.profileCompleted === true) {
-            navigate(roleDashboard[(data.role as RoleId) || "client"], { replace: true });
+            navigate(roleDashboard[(data.role as UserRole) || "client"], { replace: true });
             return;
           }
-          setRole((data.role as RoleId) || "client");
+          setRole((data.role as UserRole) || "client");
           setCity(data.city || "");
-          setAvatarUrl(data.avatarUrl || "");
+          setAvatarUrl(data.photoURL || "");
         }
       } catch {
         // ignore
@@ -63,23 +65,37 @@ const CompleteProfile = () => {
       toast({ title: "يرجى إدخال المدينة", variant: "destructive" });
       return;
     }
-    if (role === "driver" && (!vehicleType || !plateNumber)) {
-      toast({ title: "يرجى إدخال بيانات المركبة", variant: "destructive" });
+    if (role === "driver" && (!vehicleType || !plateNumber || !licenseNumber)) {
+      toast({ title: "يرجى إدخال بيانات المركبة ورقم الرخصة", variant: "destructive" });
       return;
     }
 
     setSaving(true);
     try {
-      const updateData: Record<string, any> = {
+      // Update users collection
+      await updateDocument(COLLECTIONS.users, uid, {
         city,
-        avatarUrl,
+        photoURL: avatarUrl,
         profileCompleted: true,
-      };
+      });
+
+      // Update role-specific collection
       if (role === "driver") {
-        updateData.vehicleType = vehicleType;
-        updateData.plateNumber = plateNumber;
+        await updateDocument(COLLECTIONS.drivers, uid, {
+          city,
+          vehicleType,
+          vehiclePlate: plateNumber,
+          licenseNumber,
+        });
+      } else if (role === "client") {
+        await updateDocument(COLLECTIONS.clients, uid, { city });
+      } else if (role === "delivery") {
+        await updateDocument(COLLECTIONS.delivery_agents, uid, {
+          city,
+          vehicleType,
+        });
       }
-      await updateDoc(doc(db, "users", uid), updateData);
+
       toast({ title: "تم إكمال الملف الشخصي ✅" });
       navigate(roleDashboard[role], { replace: true });
     } catch (err: any) {
@@ -116,75 +132,58 @@ const CompleteProfile = () => {
         onSubmit={handleSubmit}
         className="flex flex-col gap-4 w-full max-w-sm mx-auto relative z-10"
       >
-        {/* City */}
         <div className="space-y-2">
           <label className="text-sm text-muted-foreground block">المدينة</label>
           <div className="relative">
-            <Input
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="مثال: طنجة"
-              className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11"
-            />
+            <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="مثال: طنجة"
+              className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11" />
             <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           </div>
         </div>
 
-        {/* Avatar URL */}
         <div className="space-y-2">
           <label className="text-sm text-muted-foreground block">رابط الصورة الشخصية (اختياري)</label>
           <div className="relative">
-            <Input
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              placeholder="https://..."
-              className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11"
-            />
+            <Input value={avatarUrl} onChange={(e) => setAvatarUrl(e.target.value)} placeholder="https://..."
+              className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11" />
             <Camera className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           </div>
         </div>
 
-        {/* Driver-specific fields */}
-        {role === "driver" && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            className="flex flex-col gap-4"
-          >
+        {(role === "driver" || role === "delivery") && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="flex flex-col gap-4">
             <div className="space-y-2">
               <label className="text-sm text-muted-foreground block">نوع المركبة</label>
               <div className="relative">
-                <Input
-                  value={vehicleType}
-                  onChange={(e) => setVehicleType(e.target.value)}
-                  placeholder="مثال: سيارة صغيرة"
-                  className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11"
-                />
+                <Input value={vehicleType} onChange={(e) => setVehicleType(e.target.value)} placeholder="مثال: سيارة صغيرة"
+                  className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11" />
                 <Car className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm text-muted-foreground block">رقم اللوحة</label>
-              <Input
-                value={plateNumber}
-                onChange={(e) => setPlateNumber(e.target.value)}
-                placeholder="مثال: 12345-أ-67"
-                className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl"
-              />
-            </div>
+            {role === "driver" && (
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground block">رقم اللوحة</label>
+                  <Input value={plateNumber} onChange={(e) => setPlateNumber(e.target.value)} placeholder="مثال: 12345-أ-67"
+                    className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground block">رقم الرخصة</label>
+                  <div className="relative">
+                    <Input value={licenseNumber} onChange={(e) => setLicenseNumber(e.target.value)} placeholder="رقم رخصة القيادة"
+                      className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11" />
+                    <FileText className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  </div>
+                </div>
+              </>
+            )}
           </motion.div>
         )}
 
-        <Button
-          type="submit"
-          disabled={saving}
-          className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-bold text-lg mt-4 hover:opacity-90 transition-opacity glow-primary"
-        >
+        <Button type="submit" disabled={saving}
+          className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-bold text-lg mt-4 hover:opacity-90 transition-opacity glow-primary">
           {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-            <span className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5" />
-              حفظ والمتابعة
-            </span>
+            <span className="flex items-center gap-2"><CheckCircle className="w-5 h-5" />حفظ والمتابعة</span>
           )}
         </Button>
       </motion.form>
