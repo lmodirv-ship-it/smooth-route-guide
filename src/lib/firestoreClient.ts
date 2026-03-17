@@ -22,7 +22,43 @@ import {
   DocumentData,
   WhereFilterOp,
 } from "firebase/firestore";
-import { db, auth } from "./firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, auth, storage } from "./firebase";
+
+// Map old Supabase table names to Firebase collection names
+const COLLECTION_MAP: Record<string, string> = {
+  stores: "restaurants",
+  menu_categories: "restaurant_categories",
+  menu_items: "menu_items",
+  delivery_orders: "orders",
+  order_items: "order_items",
+  ride_requests: "orders",
+  trips: "orders",
+  drivers: "drivers",
+  profiles: "users",
+  notifications: "notifications",
+  alerts: "notifications",
+  complaints: "orders",
+  tickets: "orders",
+  call_center: "call_center_agents",
+  call_logs: "order_status_history",
+  earnings: "orders",
+  payments: "orders",
+  promotions: "app_settings",
+  ratings: "orders",
+  vehicles: "drivers",
+  wallet: "users",
+  zones: "app_settings",
+  app_settings: "app_settings",
+  documents: "drivers",
+  user_roles: "users",
+  chat_conversations: "notifications",
+  chat_messages: "notifications",
+  import_logs: "app_settings",
+  trip_status_history: "order_status_history",
+};
+
+const resolveCollection = (name: string) => COLLECTION_MAP[name] || name;
 
 type OrderDir = "asc" | "desc";
 
