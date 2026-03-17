@@ -12,6 +12,7 @@ import Splash from "./pages/Splash";
 import Welcome from "./pages/Welcome";
 import AuthPage from "./pages/AuthPage";
 import CompleteProfile from "./pages/CompleteProfile";
+import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
 
 // Driver pages
