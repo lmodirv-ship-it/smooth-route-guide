@@ -115,6 +115,7 @@ const App = () => (
           <Route path="/driver/support" element={<DriverSupport />} />
           <Route path="/driver/status" element={<DriverStatus />} />
           <Route path="/driver/earnings" element={<DriverEarnings />} />
+          <Route path="/driver/delivery" element={<DriverDelivery />} />
 
           {/* Client App */}
           <Route path="/client" element={<ClientHome />} />
