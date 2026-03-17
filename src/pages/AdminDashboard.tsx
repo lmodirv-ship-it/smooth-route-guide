@@ -62,7 +62,130 @@ const AdminDashboard = () => {
   });
   const [recentTrips, setRecentTrips] = useState<RecentTrip[]>([]);
   const [rideRequests, setRideRequests] = useState<RideRequest[]>([]);
+  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [assigningRequest, setAssigningRequest] = useState<RideRequest | null>(null);
+  const [availableDrivers, setAvailableDrivers] = useState<{ id: string; name: string; rating: number | null }[]>([]);
   const { drivers: nearbyDrivers } = useNearbyDrivers();
+
+  // ── Action handlers ──
+  const handleAcceptRequest = async (req: RideRequest) => {
+    setProcessingId(req.id);
+    try {
+      // Find first available active driver
+      const { data: drivers } = await supabase
+        .from("drivers")
+        .select("id, user_id, rating")
+        .eq("status", "active")
+        .limit(1) as any;
+
+      if (!drivers || drivers.length === 0) {
+        toast({ title: "لا يوجد سائقين متاحين", variant: "destructive" });
+        return;
+      }
+
+      const driver = drivers[0];
+
+      const { error: updateErr } = await supabase
+        .from("ride_requests")
+        .update({ status: "accepted" })
+        .eq("id", req.id);
+      if (updateErr) throw updateErr;
+
+      const { error: tripErr } = await supabase.from("trips").insert({
+        user_id: req.user_id,
+        driver_id: driver.id,
+        start_location: req.pickup,
+        end_location: req.destination,
+        fare: req.price || 0,
+        status: "in_progress",
+      });
+      if (tripErr) throw tripErr;
+
+      toast({ title: "تم قبول الطلب وتعيين سائق بنجاح" });
+      setRideRequests(prev => prev.filter(r => r.id !== req.id));
+    } catch (e: any) {
+      toast({ title: "خطأ", description: e.message, variant: "destructive" });
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleCancelRequest = async (req: RideRequest) => {
+    setProcessingId(req.id);
+    try {
+      const { error } = await supabase
+        .from("ride_requests")
+        .update({ status: "rejected" })
+        .eq("id", req.id);
+      if (error) throw error;
+      toast({ title: "تم إلغاء الطلب" });
+      setRideRequests(prev => prev.filter(r => r.id !== req.id));
+    } catch (e: any) {
+      toast({ title: "خطأ", description: e.message, variant: "destructive" });
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleOpenAssignDialog = async (req: RideRequest) => {
+    setAssigningRequest(req);
+    setAssignDialogOpen(true);
+    // Fetch active drivers with names
+    const { data: driversData } = await supabase
+      .from("drivers")
+      .select("id, user_id, rating")
+      .eq("status", "active") as any;
+
+    if (driversData && driversData.length > 0) {
+      const userIds = driversData.map((d: any) => d.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, name")
+        .in("id", userIds);
+      const nameMap = new Map(profiles?.map(p => [p.id, p.name]) || []);
+      setAvailableDrivers(
+        driversData.map((d: any) => ({
+          id: d.id,
+          name: nameMap.get(d.user_id) || "سائق",
+          rating: d.rating,
+        }))
+      );
+    } else {
+      setAvailableDrivers([]);
+    }
+  };
+
+  const handleAssignDriver = async (driverId: string) => {
+    if (!assigningRequest) return;
+    setProcessingId(assigningRequest.id);
+    try {
+      const { error: updateErr } = await supabase
+        .from("ride_requests")
+        .update({ status: "accepted" })
+        .eq("id", assigningRequest.id);
+      if (updateErr) throw updateErr;
+
+      const { error: tripErr } = await supabase.from("trips").insert({
+        user_id: assigningRequest.user_id,
+        driver_id: driverId,
+        start_location: assigningRequest.pickup,
+        end_location: assigningRequest.destination,
+        fare: assigningRequest.price || 0,
+        status: "in_progress",
+      });
+      if (tripErr) throw tripErr;
+
+      toast({ title: "تم تعيين السائق بنجاح" });
+      setRideRequests(prev => prev.filter(r => r.id !== assigningRequest.id));
+      setAssignDialogOpen(false);
+      setAssigningRequest(null);
+    } catch (e: any) {
+      toast({ title: "خطأ", description: e.message, variant: "destructive" });
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   // ── Fetch dashboard data ──
   useEffect(() => {
