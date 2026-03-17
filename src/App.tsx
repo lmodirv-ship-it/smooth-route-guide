@@ -53,12 +53,14 @@ import AdminSettings from "./pages/admin/Settings";
 import CallCenterLayout from "./components/CallCenterLayout";
 import CCDashboard from "./pages/callcenter/CCDashboard";
 import IncomingCalls from "./pages/callcenter/IncomingCalls";
+import ManualBooking from "./pages/callcenter/ManualBooking";
 import RideAssign from "./pages/callcenter/RideAssign";
 import CustomerSearch from "./pages/callcenter/CustomerSearch";
 import DriverSearchCC from "./pages/callcenter/DriverSearchCC";
 import Complaints from "./pages/callcenter/Complaints";
 import Tickets from "./pages/callcenter/Tickets";
 import Emergency from "./pages/callcenter/Emergency";
+import CallHistory from "./pages/callcenter/CallHistory";
 import CCReports from "./pages/callcenter/CCReports";
 
 // AI
@@ -122,12 +124,14 @@ const App = () => (
           <Route path="/call-center" element={<CallCenterLayout />}>
             <Route index element={<CCDashboard />} />
             <Route path="incoming" element={<IncomingCalls />} />
+            <Route path="manual-booking" element={<ManualBooking />} />
             <Route path="ride-assign" element={<RideAssign />} />
             <Route path="customers" element={<CustomerSearch />} />
             <Route path="drivers" element={<DriverSearchCC />} />
             <Route path="complaints" element={<Complaints />} />
             <Route path="tickets" element={<Tickets />} />
             <Route path="emergency" element={<Emergency />} />
+            <Route path="history" element={<CallHistory />} />
             <Route path="reports" element={<CCReports />} />
           </Route>
 
