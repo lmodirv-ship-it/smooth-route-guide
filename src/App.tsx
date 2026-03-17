@@ -70,6 +70,7 @@ import AdminCallCenter from "./pages/admin/AdminCallCenter";
 import AdminDeliveryOrders from "./pages/admin/DeliveryOrders";
 import AdminSettings from "./pages/admin/Settings";
 import AdminRestaurants from "./pages/admin/AdminRestaurants";
+import RegisteredUsers from "./pages/admin/RegisteredUsers";
 
 // Call Center
 import CallCenterLayout from "./components/CallCenterLayout";
@@ -155,6 +156,7 @@ const App = () => (
           {/* Admin Dashboard */}
           <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>
             <Route index element={<AdminDashboardPage />} />
+            <Route path="users" element={<RegisteredUsers />} />
             <Route path="requests" element={<AdminRideRequests />} />
             <Route path="drivers" element={<AdminDrivers />} />
             <Route path="clients" element={<AdminClients />} />

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   BarChart3, FileText, Car, Users, TrendingUp, MapPin,
   AlertTriangle, FileCheck, Headphones, Settings, Shield,
-  Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed
+  Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -57,6 +57,7 @@ async function streamAdminAI({ messages, onDelta, onDone, onError }: {
 
 const navItems = [
   { path: "/admin", icon: BarChart3, label: "Dashboard" },
+  { path: "/admin/users", icon: UserCog, label: "Registered Users" },
   { path: "/admin/requests", icon: FileText, label: "Ride Requests" },
   { path: "/admin/drivers", icon: Car, label: "Drivers" },
   { path: "/admin/clients", icon: Users, label: "Clients" },
