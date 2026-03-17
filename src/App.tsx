@@ -40,6 +40,9 @@ import DeliveryHome from "./pages/delivery/DeliveryHome";
 import DeliveryCategory from "./pages/delivery/DeliveryCategory";
 import DeliveryTracking from "./pages/delivery/DeliveryTracking";
 import DeliveryHistory from "./pages/delivery/DeliveryHistory";
+import CourierSend from "./pages/delivery/CourierSend";
+import CourierAddress from "./pages/delivery/CourierAddress";
+import CourierTrack from "./pages/delivery/CourierTrack";
 
 // Admin
 import AdminLayout from "./components/AdminLayout";
