@@ -10,10 +10,13 @@ import { assignNearestDriver } from "@/lib/autoAssignDriver";
 
 const statusMap: Record<string, { label: string; color: string; bg: string }> = {
   pending: { label: "معلّق", color: "text-warning", bg: "bg-warning/10" },
-  accepted: { label: "مقبول", color: "text-info", bg: "bg-info/10" },
+  confirmed: { label: "مؤكد", color: "text-blue-500", bg: "bg-blue-500/10" },
+  driver_assigned: { label: "تم تعيين سائق", color: "text-cyan-500", bg: "bg-cyan-500/10" },
+  accepted: { label: "السائق قبل", color: "text-indigo-500", bg: "bg-indigo-500/10" },
+  arrived_restaurant: { label: "وصل المطعم", color: "text-orange-500", bg: "bg-orange-500/10" },
   picked_up: { label: "تم الاستلام", color: "text-primary", bg: "bg-primary/10" },
-  in_transit: { label: "قيد التوصيل", color: "text-accent", bg: "bg-accent/10" },
-  delivered: { label: "تم التسليم", color: "text-success", bg: "bg-success/10" },
+  delivered: { label: "تم التوصيل", color: "text-success", bg: "bg-success/10" },
+  completed: { label: "مكتمل", color: "text-emerald-600", bg: "bg-emerald-600/10" },
   cancelled: { label: "ملغي", color: "text-destructive", bg: "bg-destructive/10" },
 };
 
