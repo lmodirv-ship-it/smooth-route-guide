@@ -13,16 +13,18 @@ const CCDashboard = () => {
 
   const fetchStats = useCallback(async () => {
     const today = new Date().toISOString().slice(0, 10);
-    const [reqRes, compRes, drvRes, tickRes, callRes] = await Promise.all([
+    const [reqRes, compRes, drvRes, tickRes, callRes, delRes] = await Promise.all([
       supabase.from("ride_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
       supabase.from("complaints").select("id", { count: "exact", head: true }).eq("status", "open"),
       supabase.from("drivers").select("id", { count: "exact", head: true }).eq("status", "active"),
       supabase.from("tickets").select("id", { count: "exact", head: true }).eq("status", "open"),
       supabase.from("call_logs").select("id", { count: "exact", head: true }).gte("created_at", today),
+      supabase.from("delivery_orders").select("id", { count: "exact", head: true }).eq("status", "pending"),
     ]);
     setStats({
       pendingRequests: reqRes.count || 0, activeComplaints: compRes.count || 0,
       activeDrivers: drvRes.count || 0, openTickets: tickRes.count || 0, callsToday: callRes.count || 0,
+      deliveryPending: delRes.count || 0,
     });
 
     const { data: calls } = await supabase.from("call_logs").select("*").order("created_at", { ascending: false }).limit(10);
