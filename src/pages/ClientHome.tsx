@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   MapPin, Search, Bell, Menu, Star, Clock, Navigation,
-  ChevronLeft, Car, Heart, User, Home, Phone, MessageCircle, Bot
+  ChevronLeft, Car, Heart, User, Home, Phone, MessageCircle, Bot, LogOut
 } from "lucide-react";
+import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
