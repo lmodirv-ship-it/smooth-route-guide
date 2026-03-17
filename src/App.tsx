@@ -71,6 +71,7 @@ import AdminDeliveryOrders from "./pages/admin/DeliveryOrders";
 import AdminSettings from "./pages/admin/Settings";
 import AdminRestaurants from "./pages/admin/AdminRestaurants";
 import RegisteredUsers from "./pages/admin/RegisteredUsers";
+import SetupAdmin from "./pages/admin/SetupAdmin";
 
 // Call Center
 import CallCenterLayout from "./components/CallCenterLayout";
