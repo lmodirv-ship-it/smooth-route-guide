@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Star, Clock, MapPin, Plus, Minus, ShoppingCart } from "lucide-react";
+import { ArrowRight, Star, Clock, MapPin, Plus, Minus, ShoppingCart, UtensilsCrossed, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -19,22 +19,29 @@ const RestaurantMenu = () => {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
+  const fetchData = async () => {
+    if (!id) return;
+    setLoading(true);
+    const [storeRes, catRes, itemsRes] = await Promise.all([
+      supabase.from("stores").select("*").eq("id", id).single(),
+      supabase.from("menu_categories").select("*").eq("store_id", id).eq("is_active", true).order("sort_order"),
+      supabase.from("menu_items").select("*").eq("store_id", id).eq("is_available", true).order("sort_order"),
+    ]);
+    setStore(storeRes.data);
+    setCategories(catRes.data || []);
+    setMenuItems(itemsRes.data || []);
+    if (catRes.data?.length && !activeCategory) setActiveCategory(catRes.data[0].id);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchData(); }, [id]);
+
+  // Realtime
   useEffect(() => {
     if (!id) return;
-    const fetchData = async () => {
-      setLoading(true);
-      const [storeRes, catRes, itemsRes] = await Promise.all([
-        supabase.from("stores").select("*").eq("id", id).single(),
-        supabase.from("menu_categories").select("*").eq("store_id", id).order("sort_order"),
-        supabase.from("menu_items").select("*").eq("store_id", id).order("sort_order"),
-      ]);
-      setStore(storeRes.data);
-      setCategories(catRes.data || []);
-      setMenuItems(itemsRes.data || []);
-      if (catRes.data?.length) setActiveCategory(catRes.data[0].id);
-      setLoading(false);
-    };
-    fetchData();
+    const ch1 = supabase.channel("menu-cats-rt").on("postgres_changes", { event: "*", schema: "public", table: "menu_categories" }, () => fetchData()).subscribe();
+    const ch2 = supabase.channel("menu-items-rt").on("postgres_changes", { event: "*", schema: "public", table: "menu_items" }, () => fetchData()).subscribe();
+    return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
   }, [id]);
 
   const getItemQuantity = (menuItemId: string) => {
@@ -76,30 +83,52 @@ const RestaurantMenu = () => {
   return (
     <div className="min-h-screen delivery-bg pb-28" dir="rtl">
       {/* Store Header */}
-      <div className="bg-gradient-to-br from-primary/70 via-accent/50 to-secondary pt-6 pb-6 px-5 rounded-b-3xl">
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white/10 backdrop-blur-sm">
-            <ArrowRight className="w-5 h-5 text-primary-foreground" />
-          </button>
-          <button onClick={() => navigate("/delivery/cart")} className="p-2 rounded-xl bg-white/10 backdrop-blur-sm relative">
-            <ShoppingCart className="w-5 h-5 text-primary-foreground" />
-            {totalItems > 0 && (
-              <Badge className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0 min-w-[18px] h-[18px]">
-                {totalItems}
-              </Badge>
-            )}
-          </button>
+      <div className="relative rounded-b-3xl overflow-hidden">
+        {store.image_url ? (
+          <div className="h-44 relative">
+            <img src={store.image_url} alt={store.name} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+          </div>
+        ) : (
+          <div className="bg-gradient-to-br from-primary/70 via-accent/50 to-secondary pt-6 pb-6 px-5">
+            <div className="h-20" />
+          </div>
+        )}
+        <div className="absolute top-0 left-0 right-0 px-5 pt-6">
+          <div className="flex items-center justify-between">
+            <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-black/30 backdrop-blur-sm">
+              <ArrowRight className="w-5 h-5 text-primary-foreground" />
+            </button>
+            <button onClick={() => navigate("/delivery/cart")} className="p-2 rounded-xl bg-black/30 backdrop-blur-sm relative">
+              <ShoppingCart className="w-5 h-5 text-primary-foreground" />
+              {totalItems > 0 && (
+                <Badge className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0 min-w-[18px] h-[18px]">
+                  {totalItems}
+                </Badge>
+              )}
+            </button>
+          </div>
         </div>
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center text-3xl mx-auto mb-2">🍽️</div>
-          <h1 className="text-xl font-bold text-primary-foreground">{store.name}</h1>
-          <p className="text-xs text-primary-foreground/70 mt-1">{store.description}</p>
-          <div className="flex items-center justify-center gap-4 mt-3 text-xs text-primary-foreground/80">
-            <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />{store.rating}</span>
+        <div className="px-5 pb-4 -mt-8 relative z-10">
+          <div className="flex items-end gap-3">
+            <div className="w-16 h-16 rounded-2xl bg-card border-2 border-border flex items-center justify-center text-3xl overflow-hidden flex-shrink-0">
+              {store.image_url ? (
+                <img src={store.image_url} className="w-full h-full object-cover" />
+              ) : (
+                <UtensilsCrossed className="w-7 h-7 text-muted-foreground/40" />
+              )}
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">{store.name}</h1>
+              <p className="text-xs text-muted-foreground mt-0.5">{store.description}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1 text-amber-400 font-semibold"><Star className="w-3.5 h-3.5 fill-amber-400" />{store.rating}</span>
             <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{store.delivery_time_min}-{store.delivery_time_max} دقيقة</span>
             <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{store.address?.split("،")[0]}</span>
           </div>
-          <p className="text-xs font-bold text-primary-foreground mt-2">توصيل: {store.delivery_fee} DH</p>
+          <p className="text-xs font-bold text-primary mt-2">توصيل: {store.delivery_fee} DH</p>
         </div>
       </div>
 
@@ -137,6 +166,14 @@ const RestaurantMenu = () => {
                 transition={{ delay: i * 0.05 }}
                 className="bg-card rounded-2xl border border-border p-4 flex items-center gap-3"
               >
+                {/* Item image */}
+                <div className="w-16 h-16 rounded-xl bg-secondary/40 overflow-hidden flex-shrink-0">
+                  {item.image_url ? (
+                    <img src={item.image_url} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center"><Package className="w-5 h-5 text-muted-foreground/30" /></div>
+                  )}
+                </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-foreground text-sm">{item.name_ar}</h3>
                   <p className="text-[11px] text-muted-foreground/70 mt-0.5">{item.name_fr}</p>

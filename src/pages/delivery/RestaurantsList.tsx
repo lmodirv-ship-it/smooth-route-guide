@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Search, Star, Clock, MapPin, ChevronLeft } from "lucide-react";
+import { ArrowRight, Search, Star, Clock, MapPin, ChevronLeft, UtensilsCrossed } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,19 +15,25 @@ const RestaurantsList = () => {
   const [stores, setStores] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchStores = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("stores")
+      .select("*")
+      .eq("is_open", true)
+      .order("rating", { ascending: false });
+    setStores(data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchStores(); }, []);
+
+  // Realtime
   useEffect(() => {
-    const fetch = async () => {
-      setLoading(true);
-      const { data } = await supabase
-        .from("stores")
-        .select("*")
-        .eq("category", "restaurant")
-        .eq("is_open", true)
-        .order("rating", { ascending: false });
-      setStores(data || []);
-      setLoading(false);
-    };
-    fetch();
+    const ch = supabase.channel("stores-client-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "stores" }, () => fetchStores())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
   const filtered = stores.filter(
@@ -90,11 +96,15 @@ const RestaurantsList = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06 }}
                 onClick={() => navigate(`/delivery/restaurant/${store.id}`)}
-                className="bg-card rounded-2xl border border-border p-4 hover:border-primary/40 transition-all cursor-pointer active:scale-[0.98]"
+                className="bg-card rounded-2xl border border-border overflow-hidden hover:border-primary/40 transition-all cursor-pointer active:scale-[0.98]"
               >
-                <div className="flex items-start gap-3">
-                  <div className="w-16 h-16 rounded-xl bg-secondary flex items-center justify-center text-2xl flex-shrink-0">
-                    🍽️
+                <div className="flex items-start gap-3 p-4">
+                  <div className="w-16 h-16 rounded-xl bg-secondary flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden">
+                    {store.image_url ? (
+                      <img src={store.image_url} alt={store.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <UtensilsCrossed className="w-6 h-6 text-muted-foreground/40" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-foreground text-base truncate">{store.name}</h3>
