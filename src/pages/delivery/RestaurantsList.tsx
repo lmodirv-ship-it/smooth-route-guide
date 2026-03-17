@@ -98,8 +98,9 @@ const RestaurantsList = () => {
           : filtered.length === 0
           ? (
             <div className="text-center py-16">
-              <p className="text-muted-foreground text-lg">لا توجد نتائج</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">جرب البحث بكلمة أخرى</p>
+              <UtensilsCrossed className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+              <p className="text-muted-foreground text-lg">لا توجد مطاعم متاحة حالياً</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">سيتم إضافة مطاعم جديدة قريباً</p>
             </div>
           )
           : filtered.map((store, i) => (
