@@ -51,6 +51,12 @@ const ClientHome = () => {
     await getEstimate(driverLocation, customerLocation, destination);
   };
 
+  const handlePlaceSelected = async (address: string, _lat: number, _lng: number) => {
+    setDestination(address);
+    setShowEstimate(true);
+    await getEstimate(driverLocation, customerLocation, address);
+  };
+
   const handleQuickLocation = async (address: string) => {
     setDestination(address);
     setShowEstimate(true);
