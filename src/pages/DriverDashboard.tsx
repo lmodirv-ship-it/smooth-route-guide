@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   MapPin, DollarSign, Star, Clock, TrendingUp,
-  Bell, Menu, Power, ChevronLeft, Car, Navigation, BarChart3, User, Settings
+  Bell, Menu, Power, ChevronLeft, Car, Navigation, BarChart3, User, Settings, Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
