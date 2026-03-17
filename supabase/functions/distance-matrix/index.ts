@@ -38,6 +38,8 @@ Deno.serve(async (req) => {
     ]);
 
     const [d1Data, d2Data] = await Promise.all([d1Response.json(), d2Response.json()]);
+    console.log('D1 response:', JSON.stringify(d1Data));
+    console.log('D2 response:', JSON.stringify(d2Data));
 
     // Validate D1
     if (d1Data.status !== 'OK') {
