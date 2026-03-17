@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.google-places-search]
 verify_jwt = false
+
+[functions.generate-menu]
+verify_jwt = false
