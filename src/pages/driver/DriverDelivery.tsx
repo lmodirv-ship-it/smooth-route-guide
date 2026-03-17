@@ -93,7 +93,7 @@ const DriverDelivery = () => {
         filter: `driver_id=eq.${driverId}`,
       }, (payload) => {
         const newOrder = payload.new as DeliveryOrder;
-        if (newOrder.status === "cancelled" || newOrder.status === "delivered") {
+        if (newOrder.status === "cancelled" || newOrder.status === "completed") {
           setOrder(null);
           setStage("idle");
           setCustomerInfo(null);

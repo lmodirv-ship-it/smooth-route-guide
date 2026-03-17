@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Package, CheckCircle, Bike, MapPin, Clock, Phone, ChefHat, Store, User, UtensilsCrossed, Car, XCircle } from "lucide-react";
+import { ArrowRight, Package, CheckCircle, Bike, MapPin, Clock, Phone, ChefHat, Store, User, Car, XCircle, UtensilsCrossed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/firestoreClient";
 
@@ -9,9 +9,11 @@ const steps = [
   { key: "pending", label: "قيد المراجعة", sublabel: "مركز الاتصال يراجع طلبك", icon: Clock, color: "bg-amber-500" },
   { key: "confirmed", label: "تم التأكيد", sublabel: "تم تأكيد الطلب مع المطعم", icon: CheckCircle, color: "bg-blue-500" },
   { key: "driver_assigned", label: "تعيين سائق", sublabel: "تم تعيين سائق لطلبك", icon: Car, color: "bg-cyan-500" },
-  { key: "picked_up", label: "تم الاستلام", sublabel: "السائق استلم الطلب من المطعم", icon: Package, color: "bg-purple-500" },
-  { key: "in_transit", label: "في الطريق", sublabel: "السائق في الطريق إليك", icon: Bike, color: "bg-primary" },
-  { key: "delivered", label: "تم التوصيل", sublabel: "وصل طلبك بالسلامة!", icon: MapPin, color: "bg-emerald-500" },
+  { key: "accepted", label: "السائق قبل الطلب", sublabel: "السائق في الطريق للمطعم", icon: Bike, color: "bg-indigo-500" },
+  { key: "arrived_restaurant", label: "وصل للمطعم", sublabel: "السائق في المطعم لاستلام طلبك", icon: Store, color: "bg-orange-500" },
+  { key: "picked_up", label: "تم الاستلام", sublabel: "السائق استلم الطلب ومتجه إليك", icon: Package, color: "bg-purple-500" },
+  { key: "delivered", label: "تم التوصيل", sublabel: "وصل طلبك!", icon: MapPin, color: "bg-emerald-500" },
+  { key: "completed", label: "مكتمل", sublabel: "تم إتمام الطلب بنجاح", icon: CheckCircle, color: "bg-emerald-600" },
 ];
 
 const OrderTracking = () => {
@@ -46,7 +48,6 @@ const OrderTracking = () => {
     };
     fetchOrder();
 
-    // Realtime subscription for live status updates
     const channel = supabase
       .channel("order-tracking-rt")
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "delivery_orders" }, (payload) => {
@@ -54,7 +55,6 @@ const OrderTracking = () => {
           setOrder((prev: any) => {
             if (prev?.id === payload.new.id) {
               const updated = payload.new;
-              // Fetch driver info if newly assigned
               if (updated.driver_id && updated.driver_id !== prev?.driver_id) {
                 fetchDriverProfile(updated.driver_id);
               }
@@ -167,7 +167,7 @@ const OrderTracking = () => {
               <div className="relative">
                 <div className="absolute right-[19px] top-5 bottom-5 w-0.5 bg-border" />
                 <div className="absolute right-[19px] top-5 w-0.5 bg-primary transition-all duration-700"
-                  style={{ height: `${Math.max(0, currentStep) * 20}%` }} />
+                  style={{ height: `${Math.max(0, currentStep / (steps.length - 1)) * 100}%` }} />
 
                 <div className="space-y-6">
                   {steps.map((step, i) => {
