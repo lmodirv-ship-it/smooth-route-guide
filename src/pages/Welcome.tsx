@@ -69,7 +69,11 @@ const Welcome = () => {
             <div className="absolute inset-0 gradient-primary opacity-0 group-hover:opacity-5 transition-opacity" />
             <div className="flex items-center gap-4">
               <div className={`icon-circle ${role.glowClass}`}>
-                <role.icon className={`w-6 h-6 ${role.iconColor}`} />
+                {role.customLogo ? (
+                  <img src={role.customLogo} alt={role.title} className="w-8 h-8 rounded-full object-cover" />
+                ) : (
+                  <role.icon className={`w-6 h-6 ${role.iconColor}`} />
+                )}
               </div>
               <div className="text-right flex-1">
                 <h3 className="text-lg font-bold text-foreground">{role.title}</h3>
