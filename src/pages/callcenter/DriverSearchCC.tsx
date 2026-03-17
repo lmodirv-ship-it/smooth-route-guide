@@ -31,9 +31,9 @@ const DriverSearchCC = () => {
 
       setDrivers(driverRows.map(d => ({
         ...d,
-        name: pMap.get(d.user_id)?.name || "سائق",
-        phone: pMap.get(d.user_id)?.phone || "",
-        email: pMap.get(d.user_id)?.email || "",
+        name: (pMap.get(d.user_id) as any)?.name || "سائق",
+        phone: (pMap.get(d.user_id) as any)?.phone || "",
+        email: (pMap.get(d.user_id) as any)?.email || "",
         activeOrders: orderMap.get(d.id) || [],
       })));
     }
