@@ -57,6 +57,7 @@ import AdminLiveMap from "./pages/admin/LiveMap";
 import AdminAlerts from "./pages/admin/Alerts";
 import AdminDocuments from "./pages/admin/Documents";
 import AdminCallCenter from "./pages/admin/AdminCallCenter";
+import AdminDeliveryOrders from "./pages/admin/DeliveryOrders";
 import AdminSettings from "./pages/admin/Settings";
 
 // Call Center
