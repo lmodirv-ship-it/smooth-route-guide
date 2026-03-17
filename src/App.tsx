@@ -114,9 +114,9 @@ const App = () => (
 
           {/* Delivery App */}
           <Route path="/delivery" element={<DeliveryHome />} />
-          <Route path="/delivery/:category" element={<DeliveryCategory />} />
           <Route path="/delivery/tracking" element={<DeliveryTracking />} />
           <Route path="/delivery/history" element={<DeliveryHistory />} />
+          <Route path="/delivery/:category" element={<DeliveryCategory />} />
 
           {/* Admin Dashboard */}
           <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>
