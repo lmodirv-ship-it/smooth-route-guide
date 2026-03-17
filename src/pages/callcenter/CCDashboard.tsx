@@ -61,7 +61,7 @@ const CCDashboard = () => {
         <h1 className="text-xl font-bold text-foreground">لوحة مركز الاتصال</h1>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         {statCards.map((s, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
             className="gradient-card rounded-xl p-4 border border-border">
