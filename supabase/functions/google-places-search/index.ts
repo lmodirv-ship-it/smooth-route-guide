@@ -171,13 +171,13 @@ serve(async (req) => {
   }
 
   try {
-    const { city, type, useGoogle } = await req.json();
+    const { city, type, useGoogle, area } = await req.json();
     const GOOGLE_MAPS_API_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY');
 
     // Try Google Places API if key exists and useGoogle is true
     if (useGoogle && GOOGLE_MAPS_API_KEY) {
-      const query = `${type || 'restaurants'} in ${city || 'Tanger'}, Morocco`;
-      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${GOOGLE_MAPS_API_KEY}&language=fr`;
+      const areaQuery = area ? `${type || 'restaurants'} in ${area}, ${city || 'Tanger'}, Morocco` : `${type || 'restaurants'} in ${city || 'Tanger'}, Morocco`;
+      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(areaQuery)}&key=${GOOGLE_MAPS_API_KEY}&language=fr`;
 
       const response = await fetch(url);
       const data = await response.json();
