@@ -27,11 +27,10 @@ const DeliveryCategory = () => {
   const [storesLoading, setStoresLoading] = useState(true);
   const [deliveryType, setDeliveryType] = useState<"standard" | "express">("standard");
 
-  // Redirect courier to dedicated send flow
+  // Redirect courier to dedicated send flow, restaurants to dedicated page
   useEffect(() => {
-    if (category === "courier") {
-      navigate("/delivery/courier/send", { replace: true });
-    }
+    if (category === "courier") navigate("/delivery/courier/send", { replace: true });
+    if (category === "restaurants") navigate("/delivery/restaurants", { replace: true });
   }, [category, navigate]);
 
   // Fetch real stores from DB
@@ -47,7 +46,7 @@ const DeliveryCategory = () => {
       setStores(data || []);
       setStoresLoading(false);
     };
-    if (category !== "courier") fetchStores();
+    if (category !== "courier" && category !== "restaurants") fetchStores();
   }, [category, meta.dbCategory]);
 
   const filteredStores = stores.filter((s) =>
@@ -106,7 +105,7 @@ const DeliveryCategory = () => {
     }
   };
 
-  if (category === "courier") return null;
+  if (category === "courier" || category === "restaurants") return null;
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">

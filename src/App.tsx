@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { CartProvider } from "@/contexts/CartContext";
 
 // Core pages
 import Splash from "./pages/Splash";
@@ -44,6 +45,9 @@ import CourierSend from "./pages/delivery/CourierSend";
 import CourierAddress from "./pages/delivery/CourierAddress";
 import CourierTrack from "./pages/delivery/CourierTrack";
 import DeliverySupport from "./pages/delivery/DeliverySupport";
+import RestaurantsList from "./pages/delivery/RestaurantsList";
+import RestaurantMenu from "./pages/delivery/RestaurantMenu";
+import Cart from "./pages/delivery/Cart";
 
 // Admin
 import AdminLayout from "./components/AdminLayout";
@@ -59,6 +63,7 @@ import AdminDocuments from "./pages/admin/Documents";
 import AdminCallCenter from "./pages/admin/AdminCallCenter";
 import AdminDeliveryOrders from "./pages/admin/DeliveryOrders";
 import AdminSettings from "./pages/admin/Settings";
+import AdminRestaurants from "./pages/admin/AdminRestaurants";
 
 // Call Center
 import CallCenterLayout from "./components/CallCenterLayout";
@@ -86,6 +91,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <CartProvider>
       <BrowserRouter>
         <Routes>
           {/* Core */}
@@ -126,6 +132,9 @@ const App = () => (
           <Route path="/delivery/courier/address" element={<CourierAddress />} />
           <Route path="/delivery/courier/track" element={<CourierTrack />} />
           <Route path="/delivery/support" element={<DeliverySupport />} />
+          <Route path="/delivery/restaurants" element={<RestaurantsList />} />
+          <Route path="/delivery/restaurant/:id" element={<RestaurantMenu />} />
+          <Route path="/delivery/cart" element={<Cart />} />
           <Route path="/delivery/:category" element={<DeliveryCategory />} />
 
           {/* Admin Dashboard */}
@@ -140,6 +149,7 @@ const App = () => (
             <Route path="documents" element={<AdminDocuments />} />
             <Route path="delivery" element={<AdminDeliveryOrders />} />
             <Route path="call-center" element={<AdminCallCenter />} />
+            <Route path="restaurants" element={<AdminRestaurants />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
 
@@ -166,6 +176,7 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      </CartProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

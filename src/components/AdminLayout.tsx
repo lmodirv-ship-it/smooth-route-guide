@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   BarChart3, FileText, Car, Users, TrendingUp, MapPin,
   AlertTriangle, FileCheck, Headphones, Settings, Shield,
-  Search, Bell, Activity, Bot, Send, X, Loader2
+  Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -66,6 +66,7 @@ const navItems = [
   { path: "/admin/documents", icon: FileCheck, label: "Documents" },
   { path: "/admin/delivery", icon: Send, label: "Delivery" },
   { path: "/admin/call-center", icon: Headphones, label: "Call Center" },
+  { path: "/admin/restaurants", icon: UtensilsCrossed, label: "Restaurants" },
   { path: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 
