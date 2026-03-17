@@ -1,178 +1,95 @@
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
-  Phone, PhoneIncoming, PhoneOff, Clock, Users, AlertTriangle,
-  CheckCircle, TrendingUp, Car, Headphones, Activity, Zap, BarChart3
+  Phone, PhoneIncoming, Clock, Users, AlertTriangle,
+  CheckCircle, Car, Headphones, Activity, Zap, BarChart3, Loader2
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const CCDashboard = () => {
-  const stats = [
-    { icon: PhoneIncoming, label: "المكالمات الحالية", value: "7", change: "+3", color: "text-primary", bg: "bg-primary/10" },
-    { icon: Clock, label: "الطلبات المعلقة", value: "12", change: "+5", color: "text-warning", bg: "bg-warning/10" },
-    { icon: AlertTriangle, label: "الشكاوى النشطة", value: "4", change: "-1", color: "text-destructive", bg: "bg-destructive/10" },
-    { icon: Car, label: "السائقون المتاحون", value: "23", change: "+2", color: "text-success", bg: "bg-success/10" },
-    { icon: CheckCircle, label: "تم الحل اليوم", value: "38", change: "+12", color: "text-info", bg: "bg-info/10" },
-    { icon: Users, label: "الوكلاء النشطون", value: "5/6", change: "", color: "text-foreground", bg: "bg-secondary" },
+  const [stats, setStats] = useState({ pendingRequests: 0, activeComplaints: 0, activeDrivers: 0, openTickets: 0, callsToday: 0 });
+  const [recentCalls, setRecentCalls] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchStats = useCallback(async () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const [reqRes, compRes, drvRes, tickRes, callRes] = await Promise.all([
+      supabase.from("ride_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("complaints").select("id", { count: "exact", head: true }).eq("status", "open"),
+      supabase.from("drivers").select("id", { count: "exact", head: true }).eq("status", "active"),
+      supabase.from("tickets").select("id", { count: "exact", head: true }).eq("status", "open"),
+      supabase.from("call_logs").select("id", { count: "exact", head: true }).gte("created_at", today),
+    ]);
+    setStats({
+      pendingRequests: reqRes.count || 0, activeComplaints: compRes.count || 0,
+      activeDrivers: drvRes.count || 0, openTickets: tickRes.count || 0, callsToday: callRes.count || 0,
+    });
+
+    const { data: calls } = await supabase.from("call_logs").select("*").order("created_at", { ascending: false }).limit(10);
+    setRecentCalls(calls || []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+    const ch = supabase.channel("cc-dash-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "ride_requests" }, fetchStats)
+      .on("postgres_changes", { event: "*", schema: "public", table: "complaints" }, fetchStats)
+      .on("postgres_changes", { event: "*", schema: "public", table: "call_logs" }, fetchStats)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [fetchStats]);
+
+  const statCards = [
+    { icon: PhoneIncoming, label: "مكالمات اليوم", value: stats.callsToday, color: "text-primary", bg: "bg-primary/10" },
+    { icon: Clock, label: "الطلبات المعلقة", value: stats.pendingRequests, color: "text-warning", bg: "bg-warning/10" },
+    { icon: AlertTriangle, label: "الشكاوى النشطة", value: stats.activeComplaints, color: "text-destructive", bg: "bg-destructive/10" },
+    { icon: Car, label: "السائقون المتاحون", value: stats.activeDrivers, color: "text-success", bg: "bg-success/10" },
+    { icon: CheckCircle, label: "التذاكر المفتوحة", value: stats.openTickets, color: "text-info", bg: "bg-info/10" },
   ];
 
-  const kpis = [
-    { label: "متوسط وقت الرد", value: "12 ثانية", target: "< 15 ثانية", ok: true },
-    { label: "متوسط مدة المكالمة", value: "3:42", target: "< 5:00", ok: true },
-    { label: "نسبة الحل من أول اتصال", value: "87%", target: "> 80%", ok: true },
-    { label: "رضا العملاء", value: "4.6/5", target: "> 4.5", ok: true },
-    { label: "المكالمات المهملة", value: "3%", target: "< 5%", ok: true },
-    { label: "وقت الانتظار الأقصى", value: "2:45", target: "< 2:00", ok: false },
-  ];
-
-  const recentActivity = [
-    { time: "14:32", agent: "سارة", action: "رد على مكالمة", client: "عبدالله أحمد", type: "طلب رحلة", status: "محلول" },
-    { time: "14:28", agent: "أحمد", action: "أنشأ تذكرة", client: "فاطمة محمد", type: "شكوى", status: "مفتوح" },
-    { time: "14:25", agent: "سارة", action: "عيّن سائق", client: "خالد العمري", type: "حجز يدوي", status: "محلول" },
-    { time: "14:20", agent: "يوسف", action: "صعّد حالة طوارئ", client: "نورة السعيد", type: "طوارئ", status: "جاري" },
-    { time: "14:15", agent: "ليلى", action: "أغلق تذكرة", client: "محمد البكري", type: "استفسار", status: "مغلق" },
-    { time: "14:10", agent: "سارة", action: "حل شكوى", client: "عائشة المنصوري", type: "شكوى", status: "محلول" },
-  ];
-
-  const agentStatus = [
-    { name: "سارة", status: "في مكالمة", calls: 15, avgTime: "3:12", satisfaction: "96%" },
-    { name: "أحمد", status: "متاح", calls: 12, avgTime: "4:05", satisfaction: "89%" },
-    { name: "يوسف", status: "في مكالمة", calls: 10, avgTime: "2:48", satisfaction: "94%" },
-    { name: "ليلى", status: "استراحة", calls: 8, avgTime: "3:30", satisfaction: "92%" },
-    { name: "كريم", status: "متاح", calls: 11, avgTime: "3:55", satisfaction: "88%" },
-  ];
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-success/10 text-success px-3 py-1 rounded-full text-xs">
-            <Activity className="w-3 h-3" />
-            مباشر
-          </div>
-        </div>
+        <div className="flex items-center gap-1.5 bg-success/10 text-success px-3 py-1 rounded-full text-xs"><Activity className="w-3 h-3" />مباشر</div>
         <h1 className="text-xl font-bold text-foreground">لوحة مركز الاتصال</h1>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        {stats.map((s, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="gradient-card rounded-xl p-4 border border-border"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div className={`w-10 h-10 rounded-lg ${s.bg} flex items-center justify-center`}>
-                <s.icon className={`w-5 h-5 ${s.color}`} />
-              </div>
-              {s.change && (
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                  s.change.startsWith("+") ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-                }`}>{s.change}</span>
-              )}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+        {statCards.map((s, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+            className="gradient-card rounded-xl p-4 border border-border">
+            <div className={`w-10 h-10 rounded-lg ${s.bg} flex items-center justify-center mb-2`}>
+              <s.icon className={`w-5 h-5 ${s.color}`} />
             </div>
             <p className="text-2xl font-bold text-foreground">{s.value}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+            <p className="text-xs text-muted-foreground">{s.label}</p>
           </motion.div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        {/* KPIs */}
-        <div>
-          <h2 className="text-foreground font-bold mb-3 flex items-center gap-2">
-            <Zap className="w-4 h-4 text-primary" />
-            مؤشرات الأداء اليومية
-          </h2>
-          <div className="gradient-card rounded-xl border border-border divide-y divide-border">
-            {kpis.map((kpi, i) => (
-              <div key={i} className="flex items-center justify-between p-3">
-                <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${kpi.ok ? "bg-success" : "bg-destructive animate-pulse"}`} />
-                  <span className="text-xs text-muted-foreground">الهدف: {kpi.target}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className={`text-sm font-bold ${kpi.ok ? "text-foreground" : "text-destructive"}`}>{kpi.value}</span>
-                  <span className="text-sm text-foreground">{kpi.label}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Agent Status */}
-        <div>
-          <h2 className="text-foreground font-bold mb-3 flex items-center gap-2">
-            <Headphones className="w-4 h-4 text-info" />
-            حالة الوكلاء
-          </h2>
-          <div className="gradient-card rounded-xl border border-border overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-muted-foreground text-xs">
-                  <td className="p-2.5">الرضا</td>
-                  <td className="p-2.5">المتوسط</td>
-                  <td className="p-2.5">المكالمات</td>
-                  <td className="p-2.5">الحالة</td>
-                  <td className="p-2.5 text-right">الوكيل</td>
-                </tr>
-              </thead>
-              <tbody>
-                {agentStatus.map((a, i) => (
-                  <tr key={i} className="border-b border-border last:border-0">
-                    <td className="p-2.5 text-success text-xs">{a.satisfaction}</td>
-                    <td className="p-2.5 text-muted-foreground text-xs">{a.avgTime}</td>
-                    <td className="p-2.5 text-foreground text-xs">{a.calls}</td>
-                    <td className="p-2.5">
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                        a.status === "في مكالمة" ? "bg-primary/10 text-primary" :
-                        a.status === "متاح" ? "bg-success/10 text-success" :
-                        "bg-warning/10 text-warning"
-                      }`}>{a.status}</span>
-                    </td>
-                    <td className="p-2.5 text-right text-foreground font-medium text-xs">{a.name}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <h2 className="text-foreground font-bold mb-3 flex items-center gap-2">
-        <BarChart3 className="w-4 h-4 text-primary" />
-        النشاط الأخير
-      </h2>
+      <h2 className="text-foreground font-bold mb-3 flex items-center gap-2"><BarChart3 className="w-4 h-4 text-primary" />آخر المكالمات</h2>
       <div className="gradient-card rounded-xl border border-border overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-muted-foreground text-xs">
-              <td className="p-3">الحالة</td>
-              <td className="p-3">النوع</td>
-              <td className="p-3">العميل</td>
-              <td className="p-3">الإجراء</td>
-              <td className="p-3">الوكيل</td>
-              <td className="p-3 text-right">الوقت</td>
+              <td className="p-3">الحالة</td><td className="p-3">السبب</td><td className="p-3">المتصل</td><td className="p-3 text-right">الوقت</td>
             </tr>
           </thead>
           <tbody>
-            {recentActivity.map((a, i) => (
-              <tr key={i} className="border-b border-border last:border-0 hover:bg-secondary/20 transition-colors">
+            {recentCalls.length === 0 && <tr><td colSpan={4} className="p-8 text-center text-muted-foreground">لا توجد مكالمات</td></tr>}
+            {recentCalls.map((c) => (
+              <tr key={c.id} className="border-b border-border last:border-0 hover:bg-secondary/20 transition-colors">
                 <td className="p-3">
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    a.status === "محلول" ? "bg-success/10 text-success" :
-                    a.status === "مفتوح" ? "bg-warning/10 text-warning" :
-                    a.status === "جاري" ? "bg-info/10 text-info" :
-                    "bg-muted text-muted-foreground"
-                  }`}>{a.status}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${c.status === "answered" ? "bg-success/10 text-success" : c.status === "missed" ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"}`}>
+                    {c.status === "answered" ? "مجاب" : c.status === "missed" ? "فائت" : c.status}
+                  </span>
                 </td>
-                <td className="p-3 text-muted-foreground text-xs">{a.type}</td>
-                <td className="p-3 text-foreground text-xs">{a.client}</td>
-                <td className="p-3 text-foreground text-xs">{a.action}</td>
-                <td className="p-3 text-info text-xs">{a.agent}</td>
-                <td className="p-3 text-right text-muted-foreground text-xs">{a.time}</td>
+                <td className="p-3 text-foreground text-xs">{c.reason || "—"}</td>
+                <td className="p-3 text-foreground text-xs">{c.caller_name || c.caller_phone || "—"}</td>
+                <td className="p-3 text-right text-muted-foreground text-xs">{new Date(c.created_at).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" })}</td>
               </tr>
             ))}
           </tbody>
