@@ -87,7 +87,6 @@ class FirestoreQueryBuilder<T = any> {
 
   select(fields?: string, opts?: { count?: string; head?: boolean }) {
     this._selectFields = fields || "*";
-    this._mode = "select";
     if (opts?.head) this._headOnly = true;
     return this;
   }
@@ -273,13 +272,17 @@ class FirestoreQueryBuilder<T = any> {
     const results: any[] = [];
 
     for (const item of items) {
-      const docData = { ...item, created_at: item.created_at || new Date().toISOString() };
+      const docData = {
+        ...item,
+        created_at: item.created_at || new Date().toISOString(),
+        createdAt: item.createdAt || serverTimestamp(),
+      };
       
       // If item has an 'id' field, use it as document ID
       if (item.id) {
         const docRef = doc(db, this._collection, item.id);
         await setDoc(docRef, docData);
-        results.push(docData);
+        results.push({ id: item.id, ...docData });
       } else {
         const docRef = await addDoc(ref, docData);
         results.push({ id: docRef.id, ...docData });
