@@ -77,22 +77,12 @@ const ClientHome = () => {
     <>
       {/* Search */}
       <div className="px-4 mt-4">
-        <div className="relative">
-          <Input
-            placeholder="إلى أين تريد الذهاب؟"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            className="bg-secondary/80 border-border text-foreground h-14 rounded-2xl pr-12 pl-16 text-right text-base placeholder:text-muted-foreground"
-          />
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
-          <button
-            onClick={handleSearch}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-primary text-primary-foreground rounded-xl px-3 py-1.5 text-sm font-medium hover:opacity-90 transition-opacity"
-          >
-            ابحث
-          </button>
-        </div>
+        <PlacesAutocomplete
+          value={destination}
+          onChange={setDestination}
+          onPlaceSelected={handlePlaceSelected}
+          placeholder="إلى أين تريد الذهاب؟"
+        />
       </div>
 
       {/* Quick Locations */}
