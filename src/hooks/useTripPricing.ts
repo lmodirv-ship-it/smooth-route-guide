@@ -45,7 +45,7 @@ export function useTripPricing(currencyCode: string = DEFAULT_CURRENCY) {
         units: currency.unitSystem,
       });
 
-      const { data, error: fnError } = await supabase.functions.invoke<DistanceMatrixResponse>('distance-matrix', {
+      const { data, error: fnError } = await supabase.functions.invoke('distance-matrix', {
         body: { driverLocation, customerLocation, destination, units: currency.unitSystem },
       });
 
