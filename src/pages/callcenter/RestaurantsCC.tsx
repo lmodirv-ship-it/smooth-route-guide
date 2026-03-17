@@ -260,9 +260,9 @@ const RestaurantsCC = () => {
             </h1>
             <p className="text-sm text-muted-foreground mt-1">إضافة وتعديل المطاعم والقوائم</p>
           </div>
-          <Button onClick={() => openStoreForm()} className="gap-2">
-            <Plus className="w-4 h-4" />
-            إضافة مطعم
+          <Button onClick={() => openStoreForm()} className="gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all text-sm font-bold px-6 h-11">
+            <Plus className="w-5 h-5" />
+            ➕ إضافة مطعم
           </Button>
         </div>
 
