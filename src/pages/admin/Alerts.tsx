@@ -23,7 +23,7 @@ const AdminAlerts = () => {
       return;
     }
     // Get driver names
-    const driverIds = [...new Set(data.filter(a => a.driver_id).map(a => a.driver_id))];
+    const driverIds: string[] = [...new Set(data.filter(a => a.driver_id).map(a => a.driver_id))] as string[];
     let nameMap = new Map<string, string>();
     if (driverIds.length > 0) {
       const { data: drivers } = await supabase.from("drivers").select("id, user_id").in("id", driverIds as string[]) as any;
