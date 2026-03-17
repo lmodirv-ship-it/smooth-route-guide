@@ -30,6 +30,7 @@ const STORE_CATEGORIES = [
 const RestaurantsCC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [stores, setStores] = useState<any[]>([]);
+  const [zones, setZones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedStore, setSelectedStore] = useState<any>(null);
@@ -40,7 +41,7 @@ const RestaurantsCC = () => {
   const [storeForm, setStoreForm] = useState({
     name: "", category: "restaurant", address: "", phone: "",
     delivery_time_min: 20, delivery_time_max: 40, is_open: true,
-    description: "", delivery_fee: 10, min_order: 0,
+    description: "", delivery_fee: 10, min_order: 0, zone_id: "",
   });
   const [storeImageFile, setStoreImageFile] = useState<File | null>(null);
   const [savingStore, setSavingStore] = useState(false);
