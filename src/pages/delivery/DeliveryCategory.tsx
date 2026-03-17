@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Search, MapPin, Plus, Minus, ShoppingBag, Loader2 } from "lucide-react";
@@ -50,6 +50,13 @@ const DeliveryCategory = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedStore, setSelectedStore] = useState<string | null>(null);
+
+  // Redirect courier to dedicated send flow
+  useEffect(() => {
+    if (category === "courier") {
+      navigate("/delivery/courier/send", { replace: true });
+    }
+  }, [category, navigate]);
 
   const filteredStores = stores.filter((s) =>
     s.name.includes(search) || s.desc.includes(search)
