@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, User, Headphones, Shield, Package } from "lucide-react";
+import { Car, User, Headphones, Shield } from "lucide-react";
 import logo from "@/assets/hn-driver-logo.png";
+import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 
 const Welcome = () => {
   const navigate = useNavigate();
