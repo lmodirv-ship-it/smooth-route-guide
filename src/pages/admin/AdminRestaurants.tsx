@@ -47,7 +47,7 @@ const AdminRestaurants = () => {
         await supabase.from("stores").update({ ...storeForm }).eq("id", editingStore.id);
         toast({ title: "تم تحديث المطعم ✅" });
       } else {
-        await supabase.from("stores").insert({ ...storeForm, category: "restaurant", is_open: true });
+        await supabase.from("stores").insert({ ...storeForm, category: "restaurant", is_open: true, isActive: true });
         toast({ title: "تم إضافة المطعم ✅" });
       }
       setShowStoreDialog(false);
