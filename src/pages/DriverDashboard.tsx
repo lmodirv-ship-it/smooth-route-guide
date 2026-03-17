@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   MapPin, DollarSign, Star, Clock, TrendingUp,
-  Bell, Menu, Power, ChevronLeft, Car, Navigation, BarChart3, User, Settings, Package
+  Bell, Menu, Power, ChevronLeft, Car, Navigation, BarChart3, User, Settings, Package, LogOut
 } from "lucide-react";
+import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
