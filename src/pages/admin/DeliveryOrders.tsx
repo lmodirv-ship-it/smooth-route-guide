@@ -164,12 +164,27 @@ const AdminDeliveryOrders = () => {
                         <button onClick={() => setSelected(o)} className="p-1 hover:bg-secondary rounded"><Eye className="w-4 h-4 text-info" /></button>
                         {o.status === "pending" && (
                           <>
-                            <button onClick={() => updateStatus(o.id, "accepted")} className="p-1 hover:bg-success/10 rounded"><CheckCircle className="w-4 h-4 text-success" /></button>
+                            <button onClick={() => handleConfirmAndAssign(o)} className="text-xs bg-success/10 text-success px-2 py-0.5 rounded flex items-center gap-1">
+                              <UserCheck className="w-3 h-3" />تأكيد + تعيين سائق
+                            </button>
                             <button onClick={() => updateStatus(o.id, "cancelled")} className="p-1 hover:bg-destructive/10 rounded"><XCircle className="w-4 h-4 text-destructive" /></button>
                           </>
                         )}
-                        {o.status === "accepted" && (
-                          <button onClick={() => updateStatus(o.id, "picked_up")} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">استلام</button>
+                        {o.status === "confirmed" && (
+                          <button onClick={() => {
+                            const lat = o.pickup_lat ? Number(o.pickup_lat) : 35.7595;
+                            const lng = o.pickup_lng ? Number(o.pickup_lng) : -5.834;
+                            assignNearestDriver(o.id, lat, lng).then(d => {
+                              if (d) toast({ title: `تم تعيين: ${d.fullName || "سائق"}` });
+                              else toast({ title: "لا يوجد سائق متاح", variant: "destructive" });
+                              fetchOrders();
+                            });
+                          }} className="text-xs bg-cyan-500/10 text-cyan-500 px-2 py-0.5 rounded flex items-center gap-1">
+                            <UserCheck className="w-3 h-3" />تعيين سائق
+                          </button>
+                        )}
+                        {(o.status === "driver_assigned" || o.status === "accepted") && (
+                          <span className="text-xs text-muted-foreground">بانتظار السائق</span>
                         )}
                         {o.status === "picked_up" && (
                           <button onClick={() => updateStatus(o.id, "delivered")} className="text-xs bg-success/10 text-success px-2 py-0.5 rounded">تسليم</button>
