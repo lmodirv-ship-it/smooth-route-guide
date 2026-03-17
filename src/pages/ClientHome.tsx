@@ -11,6 +11,7 @@ import GoogleMapWrapper from "@/components/GoogleMap";
 import PlacesAutocomplete from "@/components/PlacesAutocomplete";
 import PriceEstimateCard from "@/components/PriceEstimateCard";
 import { useTripPricing } from "@/hooks/useTripPricing";
+import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import logo from "@/assets/hn-driver-logo.png";
 
 const ClientHome = () => {
