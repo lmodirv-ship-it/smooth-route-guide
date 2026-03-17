@@ -279,9 +279,6 @@ const DeliveryHome = () => {
         )}
       </div>
     </div>
-  return (
-    <>
-      {content}
       <RoleSwitcher />
     </>
   );
