@@ -61,7 +61,7 @@ const DriverDelivery = () => {
         .from("delivery_orders")
         .select("*")
         .eq("driver_id", driverId)
-        .in("status", ["driver_assigned", "picked_up", "in_transit"])
+        .in("status", ["driver_assigned", "accepted", "arrived_restaurant", "picked_up"])
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
