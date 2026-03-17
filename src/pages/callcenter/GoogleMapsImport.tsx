@@ -5,7 +5,7 @@ import {
   MapPin, Search, Download, Check, CheckSquare, Square,
   Loader2, Star, Phone, Clock, Trash2, Edit, Eye,
   Globe, ChevronDown, ChevronUp, Plus, X, Package,
-  FolderOpen, ToggleLeft, ToggleRight, Navigation
+  FolderOpen, ToggleLeft, ToggleRight, Navigation, Sparkles, Wand2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
