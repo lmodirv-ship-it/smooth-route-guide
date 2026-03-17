@@ -27,11 +27,10 @@ const DeliveryCategory = () => {
   const [storesLoading, setStoresLoading] = useState(true);
   const [deliveryType, setDeliveryType] = useState<"standard" | "express">("standard");
 
-  // Redirect courier to dedicated send flow
+  // Redirect courier to dedicated send flow, restaurants to dedicated page
   useEffect(() => {
-    if (category === "courier") {
-      navigate("/delivery/courier/send", { replace: true });
-    }
+    if (category === "courier") navigate("/delivery/courier/send", { replace: true });
+    if (category === "restaurants") navigate("/delivery/restaurants", { replace: true });
   }, [category, navigate]);
 
   // Fetch real stores from DB
