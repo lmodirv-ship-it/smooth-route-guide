@@ -13,8 +13,17 @@ import DriverSettings from "./pages/DriverSettings";
 import DocumentUpload from "./pages/DocumentUpload";
 import ActiveTrip from "./pages/ActiveTrip";
 import ClientHome from "./pages/ClientHome";
-import AdminDashboard from "./pages/AdminDashboard";
-import CallCenter from "./pages/CallCenter";
+import AdminLayout from "./components/AdminLayout";
+import AdminDashboardPage from "./pages/admin/Dashboard";
+import AdminRideRequests from "./pages/admin/RideRequests";
+import AdminDrivers from "./pages/admin/Drivers";
+import AdminClients from "./pages/admin/Clients";
+import AdminEarnings from "./pages/admin/Earnings";
+import AdminLiveMap from "./pages/admin/LiveMap";
+import AdminAlerts from "./pages/admin/Alerts";
+import AdminDocuments from "./pages/admin/Documents";
+import AdminCallCenter from "./pages/admin/AdminCallCenter";
+import AdminSettings from "./pages/admin/Settings";
 import AIAssistant from "./pages/AIAssistant";
 import NotFound from "./pages/NotFound";
 
@@ -37,8 +46,19 @@ const App = () => (
           <Route path="/driver/documents" element={<DocumentUpload />} />
           <Route path="/driver/trip" element={<ActiveTrip />} />
           <Route path="/client" element={<ClientHome />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/call-center" element={<CallCenter />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="requests" element={<AdminRideRequests />} />
+            <Route path="drivers" element={<AdminDrivers />} />
+            <Route path="clients" element={<AdminClients />} />
+            <Route path="earnings" element={<AdminEarnings />} />
+            <Route path="map" element={<AdminLiveMap />} />
+            <Route path="alerts" element={<AdminAlerts />} />
+            <Route path="documents" element={<AdminDocuments />} />
+            <Route path="call-center" element={<AdminCallCenter />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Route>
+          <Route path="/call-center" element={<AdminCallCenter />} />
           <Route path="/assistant" element={<AIAssistant />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

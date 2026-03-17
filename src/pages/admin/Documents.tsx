@@ -24,7 +24,7 @@ const AdminDocuments = () => {
     const { data: drivers } = await supabase.from("drivers").select("id, user_id").in("id", driverIds) as any;
     const uids = drivers?.map((d: any) => d.user_id) || [];
     const { data: profiles } = await supabase.from("profiles").select("id, name").in("id", uids);
-    const driverUserMap = new Map(drivers?.map((d: any) => [d.id, d.user_id]) || []);
+    const driverUserMap = new Map<string, string>(drivers?.map((d: any) => [d.id, d.user_id]) || []);
     const nameMap = new Map(profiles?.map(p => [p.id, p.name]) || []);
     setDocs(data.map(d => ({ ...d, driverName: nameMap.get(driverUserMap.get(d.driver_id) || "") || "سائق" })));
   };
