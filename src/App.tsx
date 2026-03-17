@@ -156,6 +156,7 @@ const App = () => (
           {/* Admin Dashboard */}
           <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>
             <Route index element={<AdminDashboardPage />} />
+            <Route path="users" element={<RegisteredUsers />} />
             <Route path="requests" element={<AdminRideRequests />} />
             <Route path="drivers" element={<AdminDrivers />} />
             <Route path="clients" element={<AdminClients />} />

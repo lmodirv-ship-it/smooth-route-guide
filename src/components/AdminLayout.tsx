@@ -57,6 +57,7 @@ async function streamAdminAI({ messages, onDelta, onDone, onError }: {
 
 const navItems = [
   { path: "/admin", icon: BarChart3, label: "Dashboard" },
+  { path: "/admin/users", icon: UserCog, label: "Registered Users" },
   { path: "/admin/requests", icon: FileText, label: "Ride Requests" },
   { path: "/admin/drivers", icon: Car, label: "Drivers" },
   { path: "/admin/clients", icon: Users, label: "Clients" },
