@@ -76,6 +76,8 @@ const AuthPage = () => {
       fullName: extra.fullName || "",
       phone: extra.phone || "",
       email: extra.email || "",
+      status: "active",
+      profileCompleted: false,
       createdAt: serverTimestamp(),
     }, { merge: true });
   };
