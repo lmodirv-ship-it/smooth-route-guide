@@ -79,16 +79,15 @@ const AuthPage = () => {
   }, [navigate, role]);
 
   const saveUserToFirestore = async (uid: string, extra: Record<string, any> = {}) => {
-    await setDoc(doc(db, "users", uid), {
-      uid,
-      role,
+    // Create main user document
+    await createUserDocument(uid, {
+      role: role as UserRole,
       fullName: extra.fullName || "",
       phone: extra.phone || "",
       email: extra.email || "",
-      status: "active",
-      profileCompleted: false,
-      createdAt: serverTimestamp(),
-    }, { merge: true });
+    });
+    // Create role-specific document
+    await createRoleDocument(uid, role as UserRole, extra);
   };
 
   // ─── Email/Password ───
