@@ -14,6 +14,7 @@ import DocumentUpload from "./pages/DocumentUpload";
 import ActiveTrip from "./pages/ActiveTrip";
 import ClientHome from "./pages/ClientHome";
 import AdminLayout from "./components/AdminLayout";
+import AdminGuard from "./components/AdminGuard";
 import AdminDashboardPage from "./pages/admin/Dashboard";
 import AdminRideRequests from "./pages/admin/RideRequests";
 import AdminDrivers from "./pages/admin/Drivers";
