@@ -113,14 +113,20 @@ const DriverDelivery = () => {
 
   // ── Actions ──
   const acceptOrder = async () => {
-    if (!order) return;
-    await supabase.from("delivery_orders").update({
-      status: "accepted",
-      accepted_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }).eq("id", order.id);
-    setStage("to_restaurant");
-    toast({ title: "تم قبول الطلب ✅" });
+    console.log("[DriverDelivery] acceptOrder called, order:", order?.id, "status:", order?.status);
+    if (!order) { console.log("[DriverDelivery] No order, returning"); return; }
+    try {
+      const result = await supabase.from("delivery_orders").update({
+        status: "accepted",
+        accepted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }).eq("id", order.id);
+      console.log("[DriverDelivery] acceptOrder result:", JSON.stringify(result));
+      setStage("to_restaurant");
+      toast({ title: "تم قبول الطلب ✅" });
+    } catch (e) {
+      console.error("[DriverDelivery] acceptOrder error:", e);
+    }
   };
 
   const rejectOrder = async () => {
