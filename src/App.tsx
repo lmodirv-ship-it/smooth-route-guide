@@ -73,6 +73,7 @@ import Tickets from "./pages/callcenter/Tickets";
 import Emergency from "./pages/callcenter/Emergency";
 import CallHistory from "./pages/callcenter/CallHistory";
 import CCReports from "./pages/callcenter/CCReports";
+import DeliveryOrdersCC from "./pages/callcenter/DeliveryOrdersCC";
 
 // AI
 import AgentHub from "./pages/ai/AgentHub";
