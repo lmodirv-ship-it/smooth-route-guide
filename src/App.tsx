@@ -172,6 +172,7 @@ const App = () => (
             <Route path="tickets" element={<Tickets />} />
             <Route path="delivery" element={<DeliveryOrdersCC />} />
             <Route path="restaurants" element={<RestaurantsCC />} />
+            <Route path="auto-import" element={<AutoImport />} />
             <Route path="emergency" element={<Emergency />} />
             <Route path="history" element={<CallHistory />} />
             <Route path="reports" element={<CCReports />} />

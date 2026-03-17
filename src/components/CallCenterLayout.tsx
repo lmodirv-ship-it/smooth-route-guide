@@ -20,6 +20,7 @@ const navItems = [
   { path: "/call-center/tickets", icon: FileText, label: "التذاكر" },
   { path: "/call-center/emergency", icon: AlertTriangle, label: "الطوارئ" },
   { path: "/call-center/restaurants", icon: UtensilsCrossed, label: "المطاعم" },
+  { path: "/call-center/auto-import", icon: Download, label: "استيراد تلقائي" },
   { path: "/call-center/history", icon: Clock, label: "سجل المكالمات" },
   { path: "/call-center/reports", icon: BarChart, label: "التقارير" },
 ];
