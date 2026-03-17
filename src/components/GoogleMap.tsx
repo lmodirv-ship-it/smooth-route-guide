@@ -42,6 +42,7 @@ const GoogleMapWrapper = ({
 }: GoogleMapProps) => {
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    libraries: LIBRARIES,
   });
 
   const mapCenter = useMemo(() => center || DEFAULT_CENTER, [center]);
