@@ -8,7 +8,7 @@ import { CartProvider } from "@/contexts/CartContext";
 // Core pages
 import Splash from "./pages/Splash";
 import Welcome from "./pages/Welcome";
-import Login from "./pages/Login";
+import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 
 // Driver pages
