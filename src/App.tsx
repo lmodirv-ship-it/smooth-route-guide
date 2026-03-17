@@ -45,6 +45,9 @@ import CourierSend from "./pages/delivery/CourierSend";
 import CourierAddress from "./pages/delivery/CourierAddress";
 import CourierTrack from "./pages/delivery/CourierTrack";
 import DeliverySupport from "./pages/delivery/DeliverySupport";
+import RestaurantsList from "./pages/delivery/RestaurantsList";
+import RestaurantMenu from "./pages/delivery/RestaurantMenu";
+import Cart from "./pages/delivery/Cart";
 
 // Admin
 import AdminLayout from "./components/AdminLayout";
