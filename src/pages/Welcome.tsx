@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, User, Headphones, Shield } from "lucide-react";
+import { Car, User, Headphones, Shield, Package } from "lucide-react";
 import logo from "@/assets/hn-driver-logo.png";
 
 const Welcome = () => {
@@ -24,6 +24,15 @@ const Welcome = () => {
       path: "/login?role=client",
       glowClass: "glow-ring-blue",
       iconColor: "text-info",
+    },
+    {
+      id: "delivery",
+      icon: Package,
+      title: "توصيل",
+      desc: "أرسل طرودك بسرعة وأمان",
+      path: "/login?role=delivery",
+      glowClass: "glow-ring-green",
+      iconColor: "text-success",
     },
   ];
 
