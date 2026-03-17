@@ -7,13 +7,18 @@ import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 const Welcome = () => {
   const navigate = useNavigate();
 
+  const handleRoleSelect = (roleId: string, path: string) => {
+    localStorage.setItem("hn_user_role", roleId);
+    navigate(path);
+  };
+
   const roles = [
     {
       id: "driver",
       icon: Car,
       title: "سائق",
       desc: "سجل كسائق وابدأ بالربح",
-      path: "/login?role=driver",
+      path: "/driver",
       glowClass: "glow-ring-orange",
       iconColor: "text-primary",
     },
@@ -22,7 +27,7 @@ const Welcome = () => {
       icon: User,
       title: "عميل",
       desc: "اطلب رحلة بسهولة وأمان",
-      path: "/login?role=client",
+      path: "/client",
       glowClass: "glow-ring-blue",
       iconColor: "text-info",
     },
@@ -32,7 +37,7 @@ const Welcome = () => {
       customLogo: deliveryLogo,
       title: "توصيل",
       desc: "أرسل طرودك بسرعة وأمان",
-      path: "/login?role=delivery",
+      path: "/delivery",
       glowClass: "glow-ring-green",
       iconColor: "text-success",
     },
