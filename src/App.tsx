@@ -71,6 +71,7 @@ import AdminDeliveryOrders from "./pages/admin/DeliveryOrders";
 import AdminSettings from "./pages/admin/Settings";
 import AdminRestaurants from "./pages/admin/AdminRestaurants";
 import RegisteredUsers from "./pages/admin/RegisteredUsers";
+import SetupAdmin from "./pages/admin/SetupAdmin";
 
 // Call Center
 import CallCenterLayout from "./components/CallCenterLayout";
@@ -111,6 +112,7 @@ const App = () => (
           <Route path="/auth/:role" element={<AuthPage />} />
           <Route path="/complete-profile" element={<CompleteProfile />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/setup-admin" element={<SetupAdmin />} />
 
           {/* Driver App - Protected */}
           <Route path="/driver" element={<AuthGuard requiredRole="driver"><DriverDashboard /></AuthGuard>} />
