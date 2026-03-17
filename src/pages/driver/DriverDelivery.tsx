@@ -132,6 +132,10 @@ const DriverDelivery = () => {
 
   const arrivedAtRestaurant = async () => {
     if (!order) return;
+    await supabase.from("delivery_orders").update({
+      status: "arrived_restaurant",
+      updated_at: new Date().toISOString(),
+    }).eq("id", order.id);
     setStage("at_restaurant");
     toast({ title: "تم تسجيل وصولك للمطعم 📍" });
   };
