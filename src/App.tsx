@@ -136,6 +136,8 @@ const App = () => (
           <Route path="/delivery/restaurants" element={<RestaurantsList />} />
           <Route path="/delivery/restaurant/:id" element={<RestaurantMenu />} />
           <Route path="/delivery/cart" element={<Cart />} />
+          <Route path="/delivery/order/:id" element={<OrderTracking />} />
+          <Route path="/delivery/order" element={<OrderTracking />} />
           <Route path="/delivery/:category" element={<DeliveryCategory />} />
 
           {/* Admin Dashboard */}

@@ -56,7 +56,7 @@ const Cart = () => {
 
       clearCart();
       toast({ title: "تم إرسال طلبك بنجاح ✅", description: `المجموع: ${grandTotal} DH` });
-      navigate("/delivery/tracking");
+      navigate(`/delivery/order/${order.id}`);
     } catch (err: any) {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
     } finally {
