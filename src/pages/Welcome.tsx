@@ -53,8 +53,25 @@ const Welcome = () => {
         className="flex flex-col items-center pt-8 relative z-10"
       >
         <div className="relative">
-          <img src={logo} alt="HN Driver" className="w-48 h-48 mb-3" />
-          <div className="absolute inset-0 w-48 h-48 rounded-full bg-primary/15 blur-2xl" />
+          <motion.img
+            src={logo}
+            alt="HN Driver"
+            className="w-48 h-48 mb-3 drop-shadow-2xl"
+            animate={{
+              scale: [1, 1.06, 1],
+              filter: [
+                "drop-shadow(0 0 20px hsl(32, 95%, 55%, 0.3))",
+                "drop-shadow(0 0 40px hsl(32, 95%, 55%, 0.6))",
+                "drop-shadow(0 0 20px hsl(32, 95%, 55%, 0.3))",
+              ],
+            }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute inset-0 w-48 h-48 rounded-full bg-primary/15 blur-2xl"
+            animate={{ scale: [1, 1.3, 1], opacity: [0.15, 0.3, 0.15] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          />
         </div>
         <h1 className="text-3xl font-bold font-display text-gradient-primary">HN Driver</h1>
         <p className="text-muted-foreground mt-1 text-sm">اختر نوع حسابك للمتابعة</p>
