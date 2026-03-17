@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Package, CheckCircle, Bike, MapPin, Clock, Phone, ChefHat, Store, User, UtensilsCrossed } from "lucide-react";
+import { ArrowRight, Package, CheckCircle, Bike, MapPin, Clock, Phone, ChefHat, Store, User, UtensilsCrossed, Car, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 const steps = [
   { key: "pending", label: "قيد المراجعة", sublabel: "مركز الاتصال يراجع طلبك", icon: Clock, color: "bg-amber-500" },
   { key: "confirmed", label: "تم التأكيد", sublabel: "تم تأكيد الطلب مع المطعم", icon: CheckCircle, color: "bg-blue-500" },
-  { key: "preparing", label: "قيد التحضير", sublabel: "المطعم يحضر طلبك", icon: ChefHat, color: "bg-orange-500" },
-  { key: "ready", label: "جاهز للاستلام", sublabel: "بانتظار السائق", icon: UtensilsCrossed, color: "bg-purple-500" },
-  { key: "picked_up", label: "تم الاستلام", sublabel: "السائق في الطريق إليك", icon: Bike, color: "bg-primary" },
+  { key: "driver_assigned", label: "تعيين سائق", sublabel: "تم تعيين سائق لطلبك", icon: Car, color: "bg-cyan-500" },
+  { key: "picked_up", label: "تم الاستلام", sublabel: "السائق استلم الطلب من المطعم", icon: Package, color: "bg-purple-500" },
+  { key: "in_transit", label: "في الطريق", sublabel: "السائق في الطريق إليك", icon: Bike, color: "bg-primary" },
   { key: "delivered", label: "تم التوصيل", sublabel: "وصل طلبك بالسلامة!", icon: MapPin, color: "bg-emerald-500" },
 ];
 
@@ -19,6 +19,14 @@ const OrderTracking = () => {
   const { id } = useParams<{ id: string }>();
   const [order, setOrder] = useState<any>(null);
   const [driverProfile, setDriverProfile] = useState<any>(null);
+
+  const fetchDriverProfile = async (driverId: string) => {
+    const { data: driver } = await supabase.from("drivers").select("user_id").eq("id", driverId).single();
+    if (driver) {
+      const { data: profile } = await supabase.from("profiles").select("name, phone").eq("id", driver.user_id).single();
+      setDriverProfile(profile);
+    }
+  };
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -33,22 +41,27 @@ const OrderTracking = () => {
       const { data } = await query.single();
       if (data) {
         setOrder(data);
-        if (data.driver_id) {
-          const { data: driver } = await supabase.from("drivers").select("user_id").eq("id", data.driver_id).single();
-          if (driver) {
-            const { data: profile } = await supabase.from("profiles").select("name, phone").eq("id", driver.user_id).single();
-            setDriverProfile(profile);
-          }
-        }
+        if (data.driver_id) fetchDriverProfile(data.driver_id);
       }
     };
     fetchOrder();
 
+    // Realtime subscription for live status updates
     const channel = supabase
       .channel("order-tracking-rt")
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "delivery_orders" }, (payload) => {
         if (!id || payload.new.id === id) {
-          setOrder((prev: any) => prev?.id === payload.new.id ? payload.new : prev);
+          setOrder((prev: any) => {
+            if (prev?.id === payload.new.id) {
+              const updated = payload.new;
+              // Fetch driver info if newly assigned
+              if (updated.driver_id && updated.driver_id !== prev?.driver_id) {
+                fetchDriverProfile(updated.driver_id);
+              }
+              return updated;
+            }
+            return prev;
+          });
         }
       })
       .subscribe();
@@ -126,7 +139,7 @@ const OrderTracking = () => {
           )}
 
           {/* Driver Info */}
-          {driverProfile && order.status !== "pending" && order.status !== "confirmed" && (
+          {driverProfile && currentStep >= 2 && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
               className="bg-card rounded-2xl border border-border p-4 mb-4">
               <div className="flex items-center justify-between">
@@ -152,7 +165,6 @@ const OrderTracking = () => {
               className="bg-card rounded-2xl border border-border p-5">
               <h3 className="font-bold text-foreground mb-5">مسار الطلب</h3>
               <div className="relative">
-                {/* Vertical line */}
                 <div className="absolute right-[19px] top-5 bottom-5 w-0.5 bg-border" />
                 <div className="absolute right-[19px] top-5 w-0.5 bg-primary transition-all duration-700"
                   style={{ height: `${Math.max(0, currentStep) * 20}%` }} />
@@ -196,6 +208,7 @@ const OrderTracking = () => {
 
           {isCancelled && (
             <div className="bg-destructive/5 border border-destructive/20 rounded-2xl p-5 text-center">
+              <XCircle className="w-10 h-10 text-destructive mx-auto mb-2" />
               <p className="text-destructive font-bold">تم إلغاء هذا الطلب</p>
               <Button onClick={() => navigate("/delivery/restaurants")} variant="outline" className="mt-3 rounded-xl">
                 اطلب مرة أخرى
