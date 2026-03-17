@@ -132,6 +132,9 @@ const App = () => (
           <Route path="/delivery/courier/address" element={<CourierAddress />} />
           <Route path="/delivery/courier/track" element={<CourierTrack />} />
           <Route path="/delivery/support" element={<DeliverySupport />} />
+          <Route path="/delivery/restaurants" element={<RestaurantsList />} />
+          <Route path="/delivery/restaurant/:id" element={<RestaurantMenu />} />
+          <Route path="/delivery/cart" element={<Cart />} />
           <Route path="/delivery/:category" element={<DeliveryCategory />} />
 
           {/* Admin Dashboard */}
