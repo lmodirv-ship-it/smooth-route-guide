@@ -11,11 +11,27 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { url, city } = await req.json();
+    let { url, city } = await req.json();
 
     if (!url) {
       return new Response(
         JSON.stringify({ success: false, error: 'URL is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Normalize URL: add protocol if missing
+    url = url.trim();
+    if (!/^https?:\/\//i.test(url)) {
+      url = 'https://' + url;
+    }
+
+    // Validate URL format
+    try {
+      new URL(url);
+    } catch {
+      return new Response(
+        JSON.stringify({ success: false, error: `عنوان URL غير صالح: "${url}". يرجى إدخال رابط موقع صحيح مثل https://example.com` }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
