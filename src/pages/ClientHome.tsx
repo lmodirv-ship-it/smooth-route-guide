@@ -5,6 +5,7 @@ import {
   MapPin, Search, Bell, Menu, Star, Clock, Navigation,
   ChevronLeft, Car, Heart, User, Home, Phone, MessageCircle, Bot
 } from "lucide-react";
+import RoleSwitcher from "@/components/RoleSwitcher";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
