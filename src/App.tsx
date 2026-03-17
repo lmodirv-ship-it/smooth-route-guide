@@ -82,6 +82,7 @@ import CallHistory from "./pages/callcenter/CallHistory";
 import CCReports from "./pages/callcenter/CCReports";
 import DeliveryOrdersCC from "./pages/callcenter/DeliveryOrdersCC";
 import RestaurantsCC from "./pages/callcenter/RestaurantsCC";
+import AutoImport from "./pages/callcenter/AutoImport";
 
 // AI
 import AgentHub from "./pages/ai/AgentHub";
