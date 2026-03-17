@@ -118,7 +118,7 @@ const GoogleMapsImport = () => {
     setSelected(new Set());
     try {
       const { data, error } = await supabase.functions.invoke("google-places-search", {
-        body: { city, type: type === "all" ? "restaurants" : type, useGoogle: true },
+        body: { city, type: type === "all" ? "restaurants" : type, useGoogle: true, area: area !== "all" ? area : undefined },
       });
       if (error) throw error;
       setResults(data.restaurants || []);
