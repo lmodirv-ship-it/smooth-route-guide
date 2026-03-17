@@ -96,6 +96,22 @@ const AutoImport = () => {
       return;
     }
 
+    // Validate URL format on client side
+    let normalizedUrl = url.trim();
+    if (!/^https?:\/\//i.test(normalizedUrl)) {
+      normalizedUrl = 'https://' + normalizedUrl;
+    }
+    try {
+      const parsed = new URL(normalizedUrl);
+      // Must have a valid domain with a dot (e.g. example.com)
+      if (!parsed.hostname.includes('.') || /\s/.test(parsed.hostname)) {
+        throw new Error('invalid');
+      }
+    } catch {
+      toast.error("رابط غير صالح. أدخل رابط موقع حقيقي مثل https://www.glovo.com");
+      return;
+    }
+
     setIsLoading(true);
     setExtractedData(null);
 
