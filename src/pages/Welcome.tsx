@@ -1,15 +1,32 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Car, User, Headphones, Shield } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 
 const Welcome = () => {
   const navigate = useNavigate();
+  const [checking, setChecking] = useState(false);
 
-  const handleRoleSelect = (roleId: string, path: string) => {
+  const handleRoleSelect = async (roleId: string, path: string) => {
     localStorage.setItem("hn_user_role", roleId);
-    navigate(path);
+    setChecking(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // Already logged in — go to dashboard
+        navigate(path);
+      } else {
+        // Not logged in — go to login with role
+        navigate(`/login?role=${roleId}`);
+      }
+    } catch {
+      navigate(`/login?role=${roleId}`);
+    } finally {
+      setChecking(false);
+    }
   };
 
   const roles = [
