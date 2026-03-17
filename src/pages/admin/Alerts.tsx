@@ -32,7 +32,7 @@ const AdminAlerts = () => {
         const { data: profiles } = await supabase.from("profiles").select("id, name").in("id", uids);
         const driverUserMap = new Map(drivers.map((d: any) => [d.id, d.user_id]));
         const profMap = new Map(profiles?.map(p => [p.id, p.name]) || []);
-        driverIds.forEach(did => nameMap.set(did, profMap.get(driverUserMap.get(did) || "") || "سائق"));
+        driverIds.forEach(did => nameMap.set(did as string, profMap.get(driverUserMap.get(did as string) || "") || "سائق"));
       }
     }
     setAlerts(data.map(a => ({ ...a, driverName: nameMap.get(a.driver_id) || "—" })));
