@@ -612,6 +612,67 @@ const GoogleMapsImport = () => {
           </DialogHeader>
           {detailRestaurant && (
             <div className="space-y-6">
+              {/* AI Generate Button */}
+              <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-info/10 rounded-xl p-4 border border-primary/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-primary" />
+                      توليد المنيو بالذكاء الاصطناعي
+                    </h3>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      سيتم توليد فئات ومنتجات وأسعار واقعية تلقائياً
+                    </p>
+                  </div>
+                  <Button onClick={generateMenuAI} disabled={aiLoading} size="sm" className="gap-1.5">
+                    {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                    {aiLoading ? "جاري التوليد..." : "توليد تلقائي"}
+                  </Button>
+                </div>
+
+                {/* AI Preview */}
+                {aiPreview && (
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Badge className="bg-primary/20 text-primary text-xs">
+                        <Sparkles className="w-3 h-3 ml-1" />
+                        معاينة AI - {aiPreview.length} فئات
+                      </Badge>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setAiPreview(null)}>
+                          إلغاء
+                        </Button>
+                        <Button size="sm" className="h-7 text-xs gap-1" onClick={saveAiMenu} disabled={aiLoading}>
+                          {aiLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                          حفظ الكل
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-2 max-h-60 overflow-auto">
+                      {aiPreview.map((cat: any, ci: number) => (
+                        <div key={ci} className="bg-card/60 rounded-lg border border-border p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold text-info">{cat.name_ar}</span>
+                            <span className="text-[10px] text-muted-foreground">{cat.name_fr}</span>
+                          </div>
+                          <div className="space-y-1">
+                            {cat.items?.map((item: any, ii: number) => (
+                              <div key={ii} className="flex items-center justify-between text-xs bg-secondary/30 rounded px-2 py-1.5">
+                                <div>
+                                  <span className="font-medium text-foreground">{item.name_ar}</span>
+                                  <span className="text-muted-foreground mr-1.5">{item.name_fr}</span>
+                                </div>
+                                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{item.price} DH</Badge>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Categories Section */}
               <div>
                 <h3 className="text-sm font-bold mb-2 flex items-center gap-1">
@@ -673,8 +734,8 @@ const GoogleMapsImport = () => {
                     </Button>
                   </div>
                 )}
-                {categories.length === 0 && (
-                  <p className="text-xs text-muted-foreground">أضف فئة أولاً لتتمكن من إضافة المنتجات</p>
+                {categories.length === 0 && !aiPreview && (
+                  <p className="text-xs text-muted-foreground">أضف فئة يدوياً أو استخدم التوليد التلقائي بالذكاء الاصطناعي</p>
                 )}
               </div>
             </div>
