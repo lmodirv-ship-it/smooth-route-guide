@@ -1,5 +1,5 @@
 import { GoogleMap as GoogleMapComponent, useJsApiLoader, Marker } from "@react-google-maps/api";
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { Navigation } from "lucide-react";
 
 // Publishable key for client-side map rendering (restricted by HTTP referrer in Google Cloud Console)
@@ -23,12 +23,26 @@ const darkMapStyle = [
   { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
 ];
 
+const DRIVER_MARKER_SVG = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <circle cx="24" cy="24" r="22" fill="#F97316" stroke="#fff" stroke-width="3"/>
+  <circle cx="24" cy="24" r="8" fill="#fff" opacity="0.9"/>
+  <circle cx="24" cy="24" r="4" fill="#F97316"/>
+  <circle cx="24" cy="24" r="22" fill="none" stroke="#F97316" stroke-width="2" opacity="0.3">
+    <animate attributeName="r" from="22" to="30" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" from="0.3" to="0" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+</svg>
+`)}`;
+
 interface GoogleMapProps {
   center?: { lat: number; lng: number };
   zoom?: number;
   className?: string;
   showMarker?: boolean;
   markerPosition?: { lat: number; lng: number };
+  driverLocation?: { lat: number; lng: number } | null;
+  panToDriver?: boolean;
   children?: React.ReactNode;
 }
 
@@ -38,6 +52,8 @@ const GoogleMapWrapper = ({
   className = "w-full h-full",
   showMarker = true,
   markerPosition,
+  driverLocation,
+  panToDriver = false,
   children,
 }: GoogleMapProps) => {
   const { isLoaded, loadError } = useJsApiLoader({
@@ -45,7 +61,13 @@ const GoogleMapWrapper = ({
     libraries: LIBRARIES,
   });
 
-  const mapCenter = useMemo(() => center || DEFAULT_CENTER, [center]);
+  const mapRef = useRef<google.maps.Map | null>(null);
+
+  const mapCenter = useMemo(() => {
+    if (driverLocation && panToDriver) return driverLocation;
+    return center || DEFAULT_CENTER;
+  }, [center, driverLocation, panToDriver]);
+
   const markerPos = useMemo(() => markerPosition || mapCenter, [markerPosition, mapCenter]);
 
   const mapOptions = useMemo(
@@ -59,6 +81,22 @@ const GoogleMapWrapper = ({
     }),
     []
   );
+
+  // Smooth pan to driver location
+  useEffect(() => {
+    if (mapRef.current && driverLocation && panToDriver) {
+      mapRef.current.panTo(driverLocation);
+    }
+  }, [driverLocation, panToDriver]);
+
+  const driverIcon = useMemo(() => {
+    if (!isLoaded || !driverLocation) return undefined;
+    return {
+      url: DRIVER_MARKER_SVG,
+      scaledSize: new google.maps.Size(48, 48),
+      anchor: new google.maps.Point(24, 24),
+    };
+  }, [isLoaded, driverLocation]);
 
   if (loadError) {
     return (
@@ -89,8 +127,15 @@ const GoogleMapWrapper = ({
         center={mapCenter}
         zoom={zoom}
         options={mapOptions}
+        onLoad={(map) => { mapRef.current = map; }}
       >
-        {showMarker && <Marker position={markerPos} />}
+        {showMarker && !driverLocation && <Marker position={markerPos} />}
+        {driverLocation && (
+          <Marker
+            position={driverLocation}
+            icon={driverIcon}
+          />
+        )}
       </GoogleMapComponent>
       {children}
     </div>

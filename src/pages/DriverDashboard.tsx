@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
 import IncomingRideRequest from "@/components/IncomingRideRequest";
 import { useIncomingRideRequests } from "@/hooks/useIncomingRideRequests";
+import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DriverDashboard = () => {
@@ -16,6 +17,7 @@ const DriverDashboard = () => {
   const [isOnline, setIsOnline] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
   const { requests, accepting, acceptRequest, rejectRequest } = useIncomingRideRequests(isOnline);
+  const { location: driverLocation, permissionDenied, loading: gpsLoading } = useDriverGeolocation(isOnline);
 
   const stats = [
     { icon: DollarSign, label: "أرباح اليوم", value: "٢٥٠ ر.س", color: "text-primary", glow: "glow-ring-orange" },
