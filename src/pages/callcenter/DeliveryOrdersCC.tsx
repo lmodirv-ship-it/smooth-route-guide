@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Package, Clock, CheckCircle, XCircle, Phone, MapPin, Search, User,
   ChefHat, UtensilsCrossed, Bike, UserPlus, Eye, MessageCircle,
-  ArrowRight, PhoneCall, Star, Navigation, X, Loader2, Edit, Truck
+  ArrowRight, PhoneCall, Star, Navigation, X, Loader2, Edit, Truck, Car
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
