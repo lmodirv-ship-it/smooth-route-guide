@@ -59,6 +59,30 @@ const AdminDeliveryOrders = () => {
     fetchOrders();
   };
 
+  const handleConfirmAndAssign = async (order: any) => {
+    // First confirm the order
+    await supabase.from("delivery_orders").update({ 
+      status: "confirmed", 
+      updated_at: new Date().toISOString() 
+    }).eq("id", order.id);
+    
+    toast({ title: "تم تأكيد الطلب ✅ جاري البحث عن سائق..." });
+
+    // Auto-assign nearest driver
+    const pickupLat = order.pickup_lat ? Number(order.pickup_lat) : 35.7595;
+    const pickupLng = order.pickup_lng ? Number(order.pickup_lng) : -5.834;
+
+    const assigned = await assignNearestDriver(order.id, pickupLat, pickupLng);
+    
+    if (assigned) {
+      toast({ title: `تم تعيين السائق: ${assigned.fullName || "سائق"} (${assigned.distance.toFixed(1)} كم)` });
+    } else {
+      toast({ title: "لا يوجد سائق متاح حالياً", description: "الطلب مؤكد وينتظر سائق", variant: "destructive" });
+    }
+    
+    fetchOrders();
+  };
+
   const filtered = orders.filter(o =>
     o.userName?.includes(search) || o.store_name?.includes(search) || o.pickup_address?.includes(search) || o.delivery_address?.includes(search)
   );
