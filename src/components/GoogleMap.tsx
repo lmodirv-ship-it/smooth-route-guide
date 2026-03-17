@@ -71,6 +71,7 @@ const GoogleMapWrapper = ({
   markerPosition,
   driverLocation,
   panToDriver = false,
+  nearbyDrivers = [],
   children,
 }: GoogleMapProps) => {
   const { isLoaded, loadError } = useJsApiLoader({
