@@ -116,6 +116,15 @@ const GoogleMapWrapper = ({
     };
   }, [isLoaded, driverLocation]);
 
+  const carIcon = useMemo(() => {
+    if (!isLoaded) return undefined;
+    return {
+      url: CAR_MARKER_SVG,
+      scaledSize: new google.maps.Size(36, 36),
+      anchor: new google.maps.Point(18, 18),
+    };
+  }, [isLoaded]);
+
   if (loadError) {
     return (
       <div className={`${className} bg-secondary/50 flex items-center justify-center`}>
