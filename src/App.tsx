@@ -15,6 +15,7 @@ import ActiveTrip from "./pages/ActiveTrip";
 import ClientHome from "./pages/ClientHome";
 import AdminDashboard from "./pages/AdminDashboard";
 import CallCenter from "./pages/CallCenter";
+import AIAssistant from "./pages/AIAssistant";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
