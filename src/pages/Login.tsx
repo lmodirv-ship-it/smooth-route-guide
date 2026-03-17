@@ -5,7 +5,13 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight, User as UserIcon, Phone, Loader2 }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+} from "firebase/auth";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import logo from "@/assets/hn-driver-logo.png";
 
 const getRoleHome = (role: string) => {
@@ -29,23 +35,14 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    let active = true;
-
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (active && session) {
-        navigate(getRoleHome(role), { replace: true });
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        const userRole = snap.exists() ? snap.data().role : role;
+        navigate(getRoleHome(userRole), { replace: true });
       }
-    };
-
-    void checkSession();
-
-    return () => {
-      active = false;
-    };
+    });
+    return unsub;
   }, [navigate, role]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,23 +55,16 @@ const Login = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        const snap = await getDoc(doc(db, "users", cred.user.uid));
+        const userRole = snap.exists() ? snap.data().role : role;
 
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) throw new Error("لم يتم العثور على المستخدم");
-
-        const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
-        const userRoles = roles?.map((r) => r.role) || [];
-
-        if (userRoles.includes("admin")) {
+        if (userRole === "admin") {
           navigate("/admin");
-        } else if (userRoles.includes("driver")) {
+        } else if (userRole === "driver") {
           navigate("/driver");
         } else {
-          navigate(getRoleHome(role));
+          navigate(getRoleHome(userRole));
         }
 
         toast({ title: "تم تسجيل الدخول بنجاح ✅" });
@@ -84,23 +74,25 @@ const Login = () => {
           setLoading(false);
           return;
         }
-        const { error } = await supabase.auth.signUp({
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        // Save user to Firestore "users" collection
+        await setDoc(doc(db, "users", cred.user.uid), {
+          uid: cred.user.uid,
+          name,
           email,
-          password,
-          options: {
-            data: { name, phone },
-            emailRedirectTo: window.location.origin,
-          },
+          phone,
+          role,
+          createdAt: serverTimestamp(),
         });
-        if (error) throw error;
-        toast({ title: "تم إنشاء الحساب ✅", description: "يرجى التحقق من بريدك الإلكتروني لتفعيل الحساب" });
-        setIsLogin(true);
+        toast({ title: "تم إنشاء الحساب بنجاح ✅" });
+        // onAuthStateChanged will handle redirect
       }
     } catch (error: any) {
       let msg = error.message;
-      if (msg.includes("Invalid login")) msg = "بريد إلكتروني أو كلمة مرور غير صحيحة";
-      if (msg.includes("already registered")) msg = "هذا البريد مسجل مسبقاً";
-      if (msg.includes("Password should be")) msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+      if (msg.includes("email-already-in-use")) msg = "هذا البريد مسجل مسبقاً";
+      if (msg.includes("wrong-password") || msg.includes("invalid-credential")) msg = "بريد أو كلمة مرور غير صحيحة";
+      if (msg.includes("weak-password")) msg = "كلمة المرور ضعيفة (6 أحرف على الأقل)";
+      if (msg.includes("invalid-email")) msg = "بريد إلكتروني غير صالح";
       toast({ title: "خطأ", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
