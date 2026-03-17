@@ -64,6 +64,7 @@ const navItems = [
   { path: "/admin/map", icon: MapPin, label: "Live Map" },
   { path: "/admin/alerts", icon: AlertTriangle, label: "Alerts" },
   { path: "/admin/documents", icon: FileCheck, label: "Documents" },
+  { path: "/admin/delivery", icon: Send, label: "Delivery" },
   { path: "/admin/call-center", icon: Headphones, label: "Call Center" },
   { path: "/admin/settings", icon: Settings, label: "Settings" },
 ];

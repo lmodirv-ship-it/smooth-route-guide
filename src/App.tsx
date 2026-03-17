@@ -153,6 +153,7 @@ const App = () => (
             <Route path="drivers" element={<DriverSearchCC />} />
             <Route path="complaints" element={<Complaints />} />
             <Route path="tickets" element={<Tickets />} />
+            <Route path="delivery" element={<DeliveryOrdersCC />} />
             <Route path="emergency" element={<Emergency />} />
             <Route path="history" element={<CallHistory />} />
             <Route path="reports" element={<CCReports />} />
