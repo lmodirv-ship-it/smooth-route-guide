@@ -66,7 +66,7 @@ const Cart = () => {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4" dir="rtl">
+      <div className="min-h-screen delivery-bg flex flex-col items-center justify-center gap-4" dir="rtl">
         <ShoppingBag className="w-16 h-16 text-muted-foreground/30" />
         <p className="text-lg font-bold text-muted-foreground">السلة فارغة</p>
         <Button onClick={() => navigate("/delivery/restaurants")} variant="outline" className="rounded-xl">
