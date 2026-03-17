@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Car, User, Headphones, Shield } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import logo from "@/assets/hn-driver-logo.png";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 
@@ -23,13 +25,16 @@ const Welcome = () => {
     setChecking(true);
 
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      navigate(session ? roleDashboardPaths[roleId] : `/auth/${roleId}`);
-    } catch (error) {
-      console.error("Role navigation failed:", error);
+      const user = auth.currentUser;
+      if (user) {
+        // Check Firestore role
+        const snap = await getDoc(doc(db, "users", user.uid));
+        const savedRole = snap.exists() ? (snap.data().role as RoleId) : roleId;
+        navigate(roleDashboardPaths[savedRole] || roleDashboardPaths[roleId]);
+      } else {
+        navigate(`/auth/${roleId}`);
+      }
+    } catch {
       navigate(`/auth/${roleId}`);
     } finally {
       setChecking(false);
@@ -116,11 +121,11 @@ const Welcome = () => {
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.3 + i * 0.15 }}
-            whileTap={{ scale: 0.98 }}
+            whileTap={{ scale: 0.96 }}
             onClick={() => void handleRoleSelect(role.id)}
             disabled={checking}
             style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
-            className="group relative z-10 w-full overflow-hidden rounded-2xl p-5 text-right gradient-card border border-border hover:border-primary/40 transition-all duration-300 disabled:opacity-50 cursor-pointer select-none"
+            className="group relative z-10 w-full overflow-hidden rounded-2xl p-5 text-right gradient-card border border-border hover:border-primary/40 transition-all duration-300 disabled:opacity-50 cursor-pointer select-none active:scale-[0.97]"
             aria-label={`الدخول كـ ${role.title}`}
           >
             <div className="absolute inset-0 gradient-primary opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none" />
