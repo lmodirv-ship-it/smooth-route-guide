@@ -36,7 +36,8 @@ const ClientBooking = () => {
   const priceLabel = ride.price > 0 ? `${ride.price} DH` : "يُحدد لاحقاً";
 
   const handleConfirmBooking = async () => {
-    console.info("[ride-booking] starting_request", ride);
+    console.log("[ride-booking] ===== START =====");
+    console.log("[ride-booking] step 1: ride data", JSON.stringify(ride));
     setStep("searching");
 
     let timeoutId: number | null = null;
@@ -49,14 +50,17 @@ const ClientBooking = () => {
     };
 
     try {
+      console.log("[ride-booking] step 2: getting current user...");
       const { data: { user }, error: userError } = await supabase.auth.getUser();
+      console.log("[ride-booking] step 2 result: user=", user?.id || "null", "error=", userError);
 
       if (userError) {
-        console.error("[ride-booking] auth_error", userError);
+        console.error("[ride-booking] AUTH ERROR:", JSON.stringify(userError));
         throw new Error("تعذر التحقق من حسابك حالياً. يرجى تسجيل الدخول مرة أخرى.");
       }
 
       if (!user) {
+        console.warn("[ride-booking] NO USER - redirecting to login");
         toast({ title: "يجب تسجيل الدخول أولاً", variant: "destructive" });
         setStep("confirm");
         navigate("/login?role=client");
@@ -74,7 +78,7 @@ const ClientBooking = () => {
         status: "pending",
       };
 
-      console.info("[ride-booking] creating_request", requestPayload);
+      console.log("[ride-booking] step 3: inserting to ride_requests", JSON.stringify(requestPayload));
 
       const { data: request, error } = await supabase
         .from("ride_requests")
@@ -82,12 +86,14 @@ const ClientBooking = () => {
         .select("id, user_id, pickup, destination, price, status, created_at")
         .single();
 
+      console.log("[ride-booking] step 4: insert result", "data=", JSON.stringify(request), "error=", JSON.stringify(error));
+
       if (error || !request) {
-        console.error("[ride-booking] create_request_failed", error, "payload:", requestPayload, "collection: ride_requests");
+        console.error("[ride-booking] INSERT FAILED!", "error:", JSON.stringify(error), "request:", JSON.stringify(request));
         throw new Error("تعذر إرسال طلب الرحلة حالياً. حاول مرة أخرى بعد قليل.");
       }
 
-      console.info("[ride-booking] request_saved", request);
+      console.log("[ride-booking] step 5: request saved successfully, id=", request.id);
 
       channel = supabase
         .channel(`booking-${request.id}`)
