@@ -80,7 +80,7 @@ const ClientBooking = () => {
         .single();
 
       if (error || !request) {
-        console.error("[ride-booking] create_request_failed", error);
+        console.error("[ride-booking] create_request_failed", error, "payload:", requestPayload, "collection: ride_requests");
         throw new Error("تعذر إرسال طلب الرحلة حالياً. حاول مرة أخرى بعد قليل.");
       }
 
