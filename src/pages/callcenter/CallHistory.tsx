@@ -1,98 +1,170 @@
-import { useState } from "react";
-import { Clock, Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, User, Search, Filter } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Clock, Phone, PhoneIncoming, PhoneOutgoing, PhoneMissed, User, Search, Loader2, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const CallHistory = () => {
-  const [filter, setFilter] = useState<"all" | "answered" | "missed" | "outgoing">("all");
+  const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
+  const [calls, setCalls] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showNew, setShowNew] = useState(false);
+  const [newCall, setNewCall] = useState({ callerName: "", callerPhone: "", reason: "", callType: "incoming" });
 
-  const calls = [
-    { id: 1, caller: "عبدالله أحمد", phone: "+212 661-001", type: "واردة", status: "تم الرد", duration: "4:32", agent: "سارة", time: "14:30", date: "اليوم", subject: "طلب رحلة" },
-    { id: 2, caller: "فاطمة محمد", phone: "+212 662-002", type: "واردة", status: "تم الرد", duration: "6:15", agent: "أحمد", time: "13:45", date: "اليوم", subject: "شكوى" },
-    { id: 3, caller: "خالد العمري", phone: "+212 663-003", type: "واردة", status: "فائتة", duration: "-", agent: "-", time: "12:20", date: "اليوم", subject: "-" },
-    { id: 4, caller: "نورة السعيد", phone: "+212 664-004", type: "صادرة", status: "تم الرد", duration: "2:48", agent: "سارة", time: "11:30", date: "اليوم", subject: "متابعة شكوى" },
-    { id: 5, caller: "محمد البكري", phone: "+212 665-005", type: "واردة", status: "تم الرد", duration: "1:15", agent: "يوسف", time: "10:00", date: "اليوم", subject: "استفسار" },
-    { id: 6, caller: "عائشة المنصوري", phone: "+212 666-006", type: "واردة", status: "فائتة", duration: "-", agent: "-", time: "09:30", date: "اليوم", subject: "-" },
-    { id: 7, caller: "سعيد بنعمر", phone: "+212 667-007", type: "صادرة", status: "تم الرد", duration: "3:20", agent: "أحمد", time: "18:00", date: "أمس", subject: "تأكيد موعد" },
-    { id: 8, caller: "كريمة العلوي", phone: "+212 668-008", type: "واردة", status: "تم الرد", duration: "5:42", agent: "ليلى", time: "16:30", date: "أمس", subject: "مشكلة دفع" },
-  ];
+  const fetchCalls = useCallback(async () => {
+    const { data } = await supabase.from("call_logs").select("*").order("created_at", { ascending: false }).limit(100);
+    setCalls(data || []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchCalls();
+    const ch = supabase.channel("cc-calls-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "call_logs" }, fetchCalls)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [fetchCalls]);
 
   const filtered = calls.filter(c => {
-    if (filter === "answered" && c.status !== "تم الرد") return false;
-    if (filter === "missed" && c.status !== "فائتة") return false;
-    if (filter === "outgoing" && c.type !== "صادرة") return false;
-    if (query && !c.caller.includes(query) && !c.phone.includes(query)) return false;
+    if (filter === "answered" && c.status !== "answered" && c.status !== "completed") return false;
+    if (filter === "missed" && c.status !== "missed") return false;
+    if (filter === "outgoing" && c.call_type !== "outgoing") return false;
+    if (query && !c.caller_name?.includes(query) && !c.caller_phone?.includes(query) && !c.reason?.includes(query)) return false;
     return true;
   });
 
   const getIcon = (type: string, status: string) => {
-    if (status === "فائتة") return <PhoneMissed className="w-4 h-4 text-destructive" />;
-    if (type === "صادرة") return <PhoneOutgoing className="w-4 h-4 text-info" />;
+    if (status === "missed") return <PhoneMissed className="w-4 h-4 text-destructive" />;
+    if (type === "outgoing") return <PhoneOutgoing className="w-4 h-4 text-info" />;
+    if (type === "system") return <Clock className="w-4 h-4 text-muted-foreground" />;
     return <PhoneIncoming className="w-4 h-4 text-success" />;
   };
 
-  return (
-    <div>
-      <h1 className="text-xl font-bold text-foreground mb-4">سجل المكالمات</h1>
+  const getStatusLabel = (status: string) => {
+    const map: Record<string, { label: string; color: string }> = {
+      answered: { label: "تم الرد", color: "text-success" },
+      completed: { label: "مكتمل", color: "text-success" },
+      missed: { label: "فائتة", color: "text-destructive" },
+      pending: { label: "معلّقة", color: "text-amber-400" },
+    };
+    return map[status] || { label: status, color: "text-muted-foreground" };
+  };
 
-      <div className="flex flex-col md:flex-row gap-3 mb-4">
+  const addCall = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { error } = await supabase.from("call_logs").insert({
+      caller_name: newCall.callerName,
+      caller_phone: newCall.callerPhone,
+      reason: newCall.reason,
+      call_type: newCall.callType,
+      status: "answered",
+      user_id: user.id,
+    });
+    if (error) { toast({ title: "خطأ", variant: "destructive" }); return; }
+    toast({ title: "تم تسجيل المكالمة ✅" });
+    setShowNew(false);
+    setNewCall({ callerName: "", callerPhone: "", reason: "", callType: "incoming" });
+  };
+
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Button size="sm" onClick={() => setShowNew(true)} className="rounded-lg gap-1">
+          <Plus className="w-4 h-4" /> تسجيل مكالمة
+        </Button>
+        <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+          <Phone className="w-5 h-5 text-info" />
+          سجل المكالمات
+        </h1>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input value={query} onChange={e => setQuery(e.target.value)} placeholder="ابحث بالاسم أو الرقم..." className="bg-secondary border-border rounded-xl pr-9 text-right" />
+          <Input value={query} onChange={e => setQuery(e.target.value)}
+            placeholder="بحث بالاسم أو الرقم..." className="bg-card border-border rounded-xl pr-9 text-right h-10" />
         </div>
         <div className="flex gap-2">
           {([["all", "الكل"], ["answered", "تم الرد"], ["missed", "فائتة"], ["outgoing", "صادرة"]] as const).map(([key, label]) => (
             <button key={key} onClick={() => setFilter(key)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                filter === key ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                filter === key ? "gradient-primary text-primary-foreground" : "bg-card text-muted-foreground"
               }`}>{label}</button>
           ))}
         </div>
       </div>
 
-      <div className="gradient-card rounded-xl border border-border overflow-x-auto">
+      <div className="glass rounded-xl border border-border overflow-x-auto">
         <table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="border-b border-border text-muted-foreground text-xs">
-              <td className="p-3">الموضوع</td>
-              <td className="p-3">الوكيل</td>
+              <td className="p-3">السبب</td>
               <td className="p-3">المدة</td>
               <td className="p-3">الحالة</td>
+              <td className="p-3">النوع</td>
               <td className="p-3">الوقت</td>
               <td className="p-3">الهاتف</td>
               <td className="p-3 text-right">المتصل</td>
             </tr>
           </thead>
           <tbody>
-            {filtered.map(c => (
-              <tr key={c.id} className="border-b border-border last:border-0 hover:bg-secondary/20 transition-colors">
-                <td className="p-3 text-muted-foreground text-xs">{c.subject}</td>
-                <td className="p-3 text-foreground text-xs">{c.agent}</td>
-                <td className="p-3 text-muted-foreground text-xs">{c.duration}</td>
-                <td className="p-3">
-                  <div className="flex items-center gap-1.5">
-                    {getIcon(c.type, c.status)}
-                    <span className={`text-xs ${c.status === "فائتة" ? "text-destructive" : "text-foreground"}`}>{c.status}</span>
-                  </div>
-                </td>
-                <td className="p-3 text-muted-foreground text-xs">{c.date} {c.time}</td>
-                <td className="p-3 text-muted-foreground text-xs font-mono">{c.phone}</td>
-                <td className="p-3 text-right">
-                  <div className="flex items-center gap-2 justify-end">
-                    <span className="text-foreground text-xs font-medium">{c.caller}</span>
-                    <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center">
-                      <User className="w-3.5 h-3.5 text-muted-foreground" />
+            {filtered.length === 0 && <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">لا توجد مكالمات</td></tr>}
+            {filtered.map(c => {
+              const sl = getStatusLabel(c.status);
+              return (
+                <tr key={c.id} className="border-b border-border last:border-0 hover:bg-secondary/20 transition-colors">
+                  <td className="p-3 text-muted-foreground text-xs max-w-[200px] truncate">{c.reason || "—"}</td>
+                  <td className="p-3 text-muted-foreground text-xs">{c.duration ? `${Math.floor(c.duration / 60)}:${(c.duration % 60).toString().padStart(2, "0")}` : "—"}</td>
+                  <td className="p-3"><span className={`text-xs ${sl.color}`}>{sl.label}</span></td>
+                  <td className="p-3">{getIcon(c.call_type, c.status)}</td>
+                  <td className="p-3 text-muted-foreground text-[10px]">
+                    {new Date(c.created_at).toLocaleDateString("ar-SA")} {new Date(c.created_at).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" })}
+                  </td>
+                  <td className="p-3 text-muted-foreground text-xs font-mono">{c.caller_phone || "—"}</td>
+                  <td className="p-3 text-right">
+                    <div className="flex items-center gap-2 justify-end">
+                      <span className="text-foreground text-xs font-medium">{c.caller_name || "—"}</span>
+                      <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center">
+                        <User className="w-3.5 h-3.5 text-muted-foreground" />
+                      </div>
                     </div>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
-      {filtered.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground text-sm">لا توجد نتائج</div>
-      )}
+
+      {/* New Call Dialog */}
+      <Dialog open={showNew} onOpenChange={setShowNew}>
+        <DialogContent dir="rtl" className="max-w-sm">
+          <DialogHeader><DialogTitle>تسجيل مكالمة</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <Input value={newCall.callerName} onChange={e => setNewCall(f => ({ ...f, callerName: e.target.value }))}
+              placeholder="اسم المتصل" className="bg-card border-border text-right" />
+            <Input value={newCall.callerPhone} onChange={e => setNewCall(f => ({ ...f, callerPhone: e.target.value }))}
+              placeholder="رقم الهاتف" type="tel" className="bg-card border-border text-right" />
+            <Input value={newCall.reason} onChange={e => setNewCall(f => ({ ...f, reason: e.target.value }))}
+              placeholder="السبب" className="bg-card border-border text-right" />
+            <Select value={newCall.callType} onValueChange={v => setNewCall(f => ({ ...f, callType: v }))}>
+              <SelectTrigger className="bg-card border-border"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="incoming">واردة</SelectItem>
+                <SelectItem value="outgoing">صادرة</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button onClick={addCall} className="w-full rounded-xl">تسجيل</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
