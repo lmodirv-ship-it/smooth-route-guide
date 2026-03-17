@@ -67,7 +67,7 @@ const RestaurantMenu = () => {
 
   if (!store) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen delivery-bg flex items-center justify-center" dir="rtl">
         <p className="text-muted-foreground">المطعم غير موجود</p>
       </div>
     );
