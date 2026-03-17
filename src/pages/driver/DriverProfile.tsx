@@ -5,7 +5,7 @@ import { User, Star, Phone, Mail, MapPin, Car, Shield, Edit2, Camera, ChevronLef
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DriverProfile = () => {

@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/firestoreClient";
 import { toast } from "@/hooks/use-toast";
 import logo from "@/assets/hn-driver-logo.png";
 
