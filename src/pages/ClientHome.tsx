@@ -11,6 +11,7 @@ import GoogleMapWrapper from "@/components/GoogleMap";
 import PlacesAutocomplete from "@/components/PlacesAutocomplete";
 import PriceEstimateCard from "@/components/PriceEstimateCard";
 import { useTripPricing } from "@/hooks/useTripPricing";
+import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import logo from "@/assets/hn-driver-logo.png";
 
 const ClientHome = () => {
@@ -19,6 +20,7 @@ const ClientHome = () => {
   const [destination, setDestination] = useState("");
   const [showEstimate, setShowEstimate] = useState(false);
   const { getEstimate, estimate, loading, error, reset } = useTripPricing("DH");
+  const { drivers: nearbyDriversData } = useNearbyDrivers();
 
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -145,10 +147,14 @@ const ClientHome = () => {
           zoom={14}
           showMarker={!!userLocation}
           markerPosition={userLocation || undefined}
+          nearbyDrivers={nearbyDriversData}
         >
-          <div className="absolute top-3 right-3 z-10 glass px-3 py-1.5 rounded-full text-xs text-foreground">
-            ٣ سائقين بالقرب منك
-          </div>
+          {nearbyDriversData.length > 0 && (
+            <div className="absolute top-3 right-3 z-10 glass px-3 py-1.5 rounded-full text-xs text-foreground flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
+              {nearbyDriversData.length} سائق بالقرب منك
+            </div>
+          )}
         </GoogleMapWrapper>
       </div>
 

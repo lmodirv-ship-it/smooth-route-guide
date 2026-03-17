@@ -35,6 +35,22 @@ const DRIVER_MARKER_SVG = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent
 </svg>
 `)}`;
 
+const CAR_MARKER_SVG = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+  <rect x="4" y="8" width="32" height="24" rx="8" fill="#1a1d2e" stroke="#F97316" stroke-width="2"/>
+  <rect x="8" y="12" width="24" height="8" rx="4" fill="#F97316" opacity="0.9"/>
+  <circle cx="12" cy="30" r="3" fill="#F97316"/>
+  <circle cx="28" cy="30" r="3" fill="#F97316"/>
+  <rect x="16" y="14" width="8" height="4" rx="1" fill="#fff" opacity="0.8"/>
+</svg>
+`)}`;
+
+interface NearbyDriverMarker {
+  id: string;
+  lat: number;
+  lng: number;
+}
+
 interface GoogleMapProps {
   center?: { lat: number; lng: number };
   zoom?: number;
@@ -43,6 +59,7 @@ interface GoogleMapProps {
   markerPosition?: { lat: number; lng: number };
   driverLocation?: { lat: number; lng: number } | null;
   panToDriver?: boolean;
+  nearbyDrivers?: NearbyDriverMarker[];
   children?: React.ReactNode;
 }
 
@@ -54,6 +71,7 @@ const GoogleMapWrapper = ({
   markerPosition,
   driverLocation,
   panToDriver = false,
+  nearbyDrivers = [],
   children,
 }: GoogleMapProps) => {
   const { isLoaded, loadError } = useJsApiLoader({
@@ -98,6 +116,15 @@ const GoogleMapWrapper = ({
     };
   }, [isLoaded, driverLocation]);
 
+  const carIcon = useMemo(() => {
+    if (!isLoaded) return undefined;
+    return {
+      url: CAR_MARKER_SVG,
+      scaledSize: new google.maps.Size(36, 36),
+      anchor: new google.maps.Point(18, 18),
+    };
+  }, [isLoaded]);
+
   if (loadError) {
     return (
       <div className={`${className} bg-secondary/50 flex items-center justify-center`}>
@@ -131,11 +158,15 @@ const GoogleMapWrapper = ({
       >
         {showMarker && !driverLocation && <Marker position={markerPos} />}
         {driverLocation && (
-          <Marker
-            position={driverLocation}
-            icon={driverIcon}
-          />
+          <Marker position={driverLocation} icon={driverIcon} />
         )}
+        {nearbyDrivers.map((d) => (
+          <Marker
+            key={d.id}
+            position={{ lat: d.lat, lng: d.lng }}
+            icon={carIcon}
+          />
+        ))}
       </GoogleMapComponent>
       {children}
     </div>
