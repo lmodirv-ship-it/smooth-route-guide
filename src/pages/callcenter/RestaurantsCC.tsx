@@ -373,9 +373,16 @@ const RestaurantsCC = () => {
                   <Input value={storeForm.address} onChange={e => setStoreForm(p => ({ ...p, address: e.target.value }))} className="bg-secondary/60 border-border mt-1" />
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">رقم الهاتف</Label>
-                  <Input value={storeForm.phone} onChange={e => setStoreForm(p => ({ ...p, phone: e.target.value }))} className="bg-secondary/60 border-border mt-1" />
+                  <Label className="text-xs text-muted-foreground">المنطقة</Label>
+                  <Select value={storeForm.zone_id} onValueChange={v => setStoreForm(p => ({ ...p, zone_id: v }))}>
+                    <SelectTrigger className="bg-secondary/60 border-border mt-1"><SelectValue placeholder="اختر المنطقة" /></SelectTrigger>
+                    <SelectContent>{zones.map(z => <SelectItem key={z.id} value={z.id}>{z.name_ar} ({z.city})</SelectItem>)}</SelectContent>
+                  </Select>
                 </div>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">رقم الهاتف</Label>
+                <Input value={storeForm.phone} onChange={e => setStoreForm(p => ({ ...p, phone: e.target.value }))} className="bg-secondary/60 border-border mt-1" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
