@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react";
-import { Settings, Save, DollarSign, MapPin, Bell, Shield } from "lucide-react";
+import { Settings, Save, DollarSign, MapPin, Bell, Shield, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminSettings = () => {
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState({
     baseFare: "5",
-    perKmRate: "2.5",
+    perKmRate: "3",
     perMinRate: "0.5",
     minFare: "10",
     maxRadius: "50",
@@ -18,16 +21,52 @@ const AdminSettings = () => {
     maintenanceMode: false,
   });
 
-  const handleSave = () => {
-    // In production, save to a settings table
-    localStorage.setItem("admin_settings", JSON.stringify(settings));
-    toast({ title: "تم حفظ الإعدادات بنجاح" });
-  };
-
   useEffect(() => {
-    const saved = localStorage.getItem("admin_settings");
-    if (saved) setSettings(JSON.parse(saved));
+    const load = async () => {
+      const { data } = await supabase.from("app_settings").select("key, value");
+      if (data) {
+        const map = new Map(data.map(s => [s.key, s.value]));
+        if (map.has("pricing")) {
+          const p = map.get("pricing") as any;
+          setSettings(s => ({ ...s, baseFare: p.baseFare || s.baseFare, perKmRate: p.perKmRate || s.perKmRate, perMinRate: p.perMinRate || s.perMinRate, minFare: p.minFare || s.minFare }));
+        }
+        if (map.has("general")) {
+          const g = map.get("general") as any;
+          setSettings(s => ({ ...s, maxRadius: g.maxRadius || s.maxRadius, autoAssign: g.autoAssign ?? s.autoAssign, maintenanceMode: g.maintenanceMode ?? s.maintenanceMode }));
+        }
+        if (map.has("notifications")) {
+          const n = map.get("notifications") as any;
+          setSettings(s => ({ ...s, emailNotifications: n.email ?? s.emailNotifications, pushNotifications: n.push ?? s.pushNotifications }));
+        }
+      }
+      setLoading(false);
+    };
+    load();
   }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    const uid = user?.id;
+
+    const upsert = async (key: string, value: any) => {
+      const { data: existing } = await supabase.from("app_settings").select("id").eq("key", key).maybeSingle();
+      if (existing) {
+        await supabase.from("app_settings").update({ value, updated_at: new Date().toISOString(), updated_by: uid }).eq("key", key);
+      } else {
+        await supabase.from("app_settings").insert({ key, value, updated_by: uid });
+      }
+    };
+
+    await Promise.all([
+      upsert("pricing", { baseFare: settings.baseFare, perKmRate: settings.perKmRate, perMinRate: settings.perMinRate, minFare: settings.minFare }),
+      upsert("general", { maxRadius: settings.maxRadius, autoAssign: settings.autoAssign, maintenanceMode: settings.maintenanceMode }),
+      upsert("notifications", { email: settings.emailNotifications, push: settings.pushNotifications }),
+    ]);
+
+    toast({ title: "تم حفظ الإعدادات بنجاح" });
+    setSaving(false);
+  };
 
   const Section = ({ title, icon: Icon, children }: { title: string; icon: any; children: React.ReactNode }) => (
     <div className="gradient-card rounded-xl border border-border p-6">
@@ -39,10 +78,15 @@ const AdminSettings = () => {
     </div>
   );
 
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Button onClick={handleSave} className="gradient-primary text-primary-foreground"><Save className="w-4 h-4 ml-2" />حفظ الإعدادات</Button>
+        <Button onClick={handleSave} disabled={saving} className="gradient-primary text-primary-foreground">
+          {saving ? <Loader2 className="w-4 h-4 ml-2 animate-spin" /> : <Save className="w-4 h-4 ml-2" />}
+          حفظ الإعدادات
+        </Button>
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold text-foreground">إعدادات المنصة</h1>
           <Settings className="w-6 h-6 text-primary" />
@@ -53,18 +97,15 @@ const AdminSettings = () => {
         <Section title="التسعيرة" icon={DollarSign}>
           <div className="space-y-4">
             {[
-              { label: "التسعيرة الأساسية (ر.س)", key: "baseFare" },
-              { label: "سعر الكيلومتر (ر.س)", key: "perKmRate" },
-              { label: "سعر الدقيقة (ر.س)", key: "perMinRate" },
-              { label: "الحد الأدنى للأجرة (ر.س)", key: "minFare" },
+              { label: "التسعيرة الأساسية (DH)", key: "baseFare" },
+              { label: "سعر الكيلومتر (DH)", key: "perKmRate" },
+              { label: "سعر الدقيقة (DH)", key: "perMinRate" },
+              { label: "الحد الأدنى للأجرة (DH)", key: "minFare" },
             ].map(field => (
               <div key={field.key} className="flex items-center justify-between gap-4">
-                <Input
-                  value={settings[field.key as keyof typeof settings] as string}
+                <Input value={settings[field.key as keyof typeof settings] as string}
                   onChange={e => setSettings(s => ({ ...s, [field.key]: e.target.value }))}
-                  className="bg-secondary/60 border-border h-9 w-32 text-sm text-center"
-                  type="number"
-                />
+                  className="bg-secondary/60 border-border h-9 w-32 text-sm text-center" type="number" />
                 <label className="text-sm text-foreground">{field.label}</label>
               </div>
             ))}
@@ -74,12 +115,9 @@ const AdminSettings = () => {
         <Section title="المناطق" icon={MapPin}>
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-4">
-              <Input
-                value={settings.maxRadius}
+              <Input value={settings.maxRadius}
                 onChange={e => setSettings(s => ({ ...s, maxRadius: e.target.value }))}
-                className="bg-secondary/60 border-border h-9 w-32 text-sm text-center"
-                type="number"
-              />
+                className="bg-secondary/60 border-border h-9 w-32 text-sm text-center" type="number" />
               <label className="text-sm text-foreground">نطاق الخدمة (كم)</label>
             </div>
             <div className="flex items-center justify-between">
