@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, User, Headphones, Shield } from "lucide-react";
-import { onAuthStateChanged } from "firebase/auth";
+import { Car, User, Headphones, Shield, LogOut } from "lucide-react";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import logo from "@/assets/hn-driver-logo.png";
@@ -19,6 +19,36 @@ const roleDashboardPaths: Record<RoleId, string> = {
 const Welcome = () => {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<RoleId | null>(null);
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setCurrentUser(user);
+        try {
+          const snap = await getDoc(doc(db, "users", user.uid));
+          if (snap.exists()) {
+            setUserRole(snap.data().role as RoleId);
+          }
+        } catch {
+          // ignore
+        }
+      } else {
+        setCurrentUser(null);
+        setUserRole(null);
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    localStorage.removeItem("hn_user_role");
+    setCurrentUser(null);
+    setUserRole(null);
+  };
 
   const handleRoleSelect = async (roleId: RoleId) => {
     localStorage.setItem("hn_user_role", roleId);
@@ -27,7 +57,7 @@ const Welcome = () => {
     try {
       const user = auth.currentUser;
       if (user) {
-        // Check Firestore role
+        // User is logged in, redirect to dashboard based on role
         const snap = await getDoc(doc(db, "users", user.uid));
         const savedRole = snap.exists() ? (snap.data().role as RoleId) : roleId;
         navigate(roleDashboardPaths[savedRole] || roleDashboardPaths[roleId]);
