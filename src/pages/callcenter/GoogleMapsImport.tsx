@@ -252,6 +252,74 @@ const GoogleMapsImport = () => {
     setMenuItems(prev => prev.filter(i => i.category_id !== id));
   };
 
+  const generateMenuAI = async () => {
+    if (!detailRestaurant) return;
+    setAiLoading(true);
+    setAiPreview(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-menu", {
+        body: {
+          restaurantName: detailRestaurant.name,
+          restaurantCategory: detailRestaurant.category || "restaurant",
+          restaurantAddress: detailRestaurant.address,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.menu?.categories) {
+        setAiPreview(data.menu.categories);
+        toast.success(`🤖 تم توليد ${data.menu.categories.length} فئات بالذكاء الاصطناعي`);
+      }
+    } catch (e: any) {
+      toast.error("خطأ في توليد المنيو: " + e.message);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const saveAiMenu = async () => {
+    if (!detailRestaurant || !aiPreview) return;
+    setAiLoading(true);
+    try {
+      let totalItems = 0;
+      for (const cat of aiPreview) {
+        const { data: catData, error: catErr } = await supabase.from("menu_categories").insert({
+          store_id: detailRestaurant.id,
+          name_ar: cat.name_ar,
+          name_fr: cat.name_fr,
+        }).select().single();
+        if (catErr) throw catErr;
+        
+        setCategories(prev => [...prev, catData]);
+
+        if (cat.items?.length > 0) {
+          const itemRows = cat.items.map((item: any) => ({
+            store_id: detailRestaurant.id,
+            category_id: catData.id,
+            name_ar: item.name_ar,
+            name_fr: item.name_fr,
+            description_ar: item.description_ar || "",
+            description_fr: item.description_fr || "",
+            price: item.price,
+            image_url: "",
+          }));
+          const { data: itemsData, error: itemsErr } = await supabase.from("menu_items").insert(itemRows).select();
+          if (itemsErr) throw itemsErr;
+          if (itemsData) {
+            setMenuItems(prev => [...prev, ...(itemsData as any)]);
+            totalItems += itemsData.length;
+          }
+        }
+      }
+      toast.success(`✅ تم حفظ ${aiPreview.length} فئات و ${totalItems} منتج`);
+      setAiPreview(null);
+    } catch (e: any) {
+      toast.error("خطأ في الحفظ: " + e.message);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6" dir="rtl">
       {/* Header */}
