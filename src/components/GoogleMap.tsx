@@ -2,7 +2,7 @@ import { GoogleMap as GoogleMapComponent, useJsApiLoader, Marker } from "@react-
 import { useMemo } from "react";
 import { Navigation } from "lucide-react";
 
-const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY";
+const GOOGLE_MAPS_API_KEY = "AIzaSyCBJ8vvBa875cIsAYfik4xYw-A8hj0LwaY";
 
 // Riyadh default center
 const DEFAULT_CENTER = { lat: 24.7136, lng: 46.6753 };
