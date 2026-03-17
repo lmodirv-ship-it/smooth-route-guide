@@ -167,7 +167,7 @@ const App = () => (
           </Route>
 
           {/* Call Center */}
-          <Route path="/call-center" element={<CallCenterLayout />}>
+          <Route path="/call-center" element={<CallCenterGuard><CallCenterLayout /></CallCenterGuard>}>
             <Route index element={<CCDashboard />} />
             <Route path="incoming" element={<IncomingCalls />} />
             <Route path="manual-booking" element={<ManualBooking />} />
