@@ -48,6 +48,7 @@ import DeliverySupport from "./pages/delivery/DeliverySupport";
 import RestaurantsList from "./pages/delivery/RestaurantsList";
 import RestaurantMenu from "./pages/delivery/RestaurantMenu";
 import Cart from "./pages/delivery/Cart";
+import OrderTracking from "./pages/delivery/OrderTracking";
 
 // Admin
 import AdminLayout from "./components/AdminLayout";
@@ -135,6 +136,8 @@ const App = () => (
           <Route path="/delivery/restaurants" element={<RestaurantsList />} />
           <Route path="/delivery/restaurant/:id" element={<RestaurantMenu />} />
           <Route path="/delivery/cart" element={<Cart />} />
+          <Route path="/delivery/order/:id" element={<OrderTracking />} />
+          <Route path="/delivery/order" element={<OrderTracking />} />
           <Route path="/delivery/:category" element={<DeliveryCategory />} />
 
           {/* Admin Dashboard */}
