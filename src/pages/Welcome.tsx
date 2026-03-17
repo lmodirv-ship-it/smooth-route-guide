@@ -87,7 +87,7 @@ const Welcome = () => {
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           />
         </div>
-        <h1 className="text-3xl font-bold font-display text-gradient-primary">HN Driver</h1>
+        <h1 className="text-4xl font-bold font-display text-gradient-primary mt-4 tracking-wider">HN DRIVER</h1>
         <p className="text-muted-foreground mt-1 text-sm">اختر نوع حسابك للمتابعة</p>
       </motion.div>
 
