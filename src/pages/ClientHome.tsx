@@ -19,6 +19,7 @@ import logo from "@/assets/hn-driver-logo.png";
 
 const ClientHome = () => {
   const navigate = useNavigate();
+  const logout = useFirebaseLogout();
   const [activeTab, setActiveTab] = useState("home");
   const [destination, setDestination] = useState("");
   const [destinationCoords, setDestinationCoords] = useState<string | null>(null);
