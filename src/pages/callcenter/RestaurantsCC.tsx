@@ -30,6 +30,7 @@ const STORE_CATEGORIES = [
 const RestaurantsCC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [stores, setStores] = useState<any[]>([]);
+  const [zones, setZones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedStore, setSelectedStore] = useState<any>(null);
@@ -40,7 +41,7 @@ const RestaurantsCC = () => {
   const [storeForm, setStoreForm] = useState({
     name: "", category: "restaurant", address: "", phone: "",
     delivery_time_min: 20, delivery_time_max: 40, is_open: true,
-    description: "", delivery_fee: 10, min_order: 0,
+    description: "", delivery_fee: 10, min_order: 0, zone_id: "",
   });
   const [storeImageFile, setStoreImageFile] = useState<File | null>(null);
   const [savingStore, setSavingStore] = useState(false);
@@ -64,8 +65,12 @@ const RestaurantsCC = () => {
   // Fetch stores
   const fetchStores = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase.from("stores").select("*").order("created_at", { ascending: false });
-    setStores(data || []);
+    const [storesRes, zonesRes] = await Promise.all([
+      supabase.from("stores").select("*").order("created_at", { ascending: false }),
+      supabase.from("zones").select("*").order("name_ar"),
+    ]);
+    setStores(storesRes.data || []);
+    setZones(zonesRes.data || []);
     setLoading(false);
   }, []);
 
@@ -114,7 +119,7 @@ const RestaurantsCC = () => {
       const url = await uploadImage(storeImageFile, "stores");
       if (url) image_url = url;
     }
-    const payload = { ...storeForm, image_url };
+    const payload = { ...storeForm, image_url, zone_id: storeForm.zone_id || null };
     if (editingStore) {
       await supabase.from("stores").update(payload).eq("id", editingStore.id);
       toast({ title: "تم تحديث المطعم ✅" });
@@ -146,11 +151,11 @@ const RestaurantsCC = () => {
         phone: store.phone || "", delivery_time_min: store.delivery_time_min || 20,
         delivery_time_max: store.delivery_time_max || 40, is_open: store.is_open,
         description: store.description || "", delivery_fee: store.delivery_fee || 10,
-        min_order: store.min_order || 0,
+        min_order: store.min_order || 0, zone_id: store.zone_id || "",
       });
     } else {
       setEditingStore(null);
-      setStoreForm({ name: "", category: "restaurant", address: "", phone: "", delivery_time_min: 20, delivery_time_max: 40, is_open: true, description: "", delivery_fee: 10, min_order: 0 });
+      setStoreForm({ name: "", category: "restaurant", address: "", phone: "", delivery_time_min: 20, delivery_time_max: 40, is_open: true, description: "", delivery_fee: 10, min_order: 0, zone_id: "" });
     }
     setStoreImageFile(null);
     setStoreDialog(true);
@@ -255,9 +260,9 @@ const RestaurantsCC = () => {
             </h1>
             <p className="text-sm text-muted-foreground mt-1">إضافة وتعديل المطاعم والقوائم</p>
           </div>
-          <Button onClick={() => openStoreForm()} className="gap-2">
-            <Plus className="w-4 h-4" />
-            إضافة مطعم
+          <Button onClick={() => openStoreForm()} className="gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all text-sm font-bold px-6 h-11">
+            <Plus className="w-5 h-5" />
+            ➕ إضافة مطعم
           </Button>
         </div>
 
@@ -368,9 +373,16 @@ const RestaurantsCC = () => {
                   <Input value={storeForm.address} onChange={e => setStoreForm(p => ({ ...p, address: e.target.value }))} className="bg-secondary/60 border-border mt-1" />
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">رقم الهاتف</Label>
-                  <Input value={storeForm.phone} onChange={e => setStoreForm(p => ({ ...p, phone: e.target.value }))} className="bg-secondary/60 border-border mt-1" />
+                  <Label className="text-xs text-muted-foreground">المنطقة</Label>
+                  <Select value={storeForm.zone_id} onValueChange={v => setStoreForm(p => ({ ...p, zone_id: v }))}>
+                    <SelectTrigger className="bg-secondary/60 border-border mt-1"><SelectValue placeholder="اختر المنطقة" /></SelectTrigger>
+                    <SelectContent>{zones.map(z => <SelectItem key={z.id} value={z.id}>{z.name_ar} ({z.city})</SelectItem>)}</SelectContent>
+                  </Select>
                 </div>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">رقم الهاتف</Label>
+                <Input value={storeForm.phone} onChange={e => setStoreForm(p => ({ ...p, phone: e.target.value }))} className="bg-secondary/60 border-border mt-1" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -414,10 +426,13 @@ const RestaurantsCC = () => {
                   <Switch checked={storeForm.is_open} onCheckedChange={v => setStoreForm(p => ({ ...p, is_open: v }))} />
                 </div>
               </div>
-              <Button onClick={handleSaveStore} disabled={savingStore} className="w-full gap-2">
-                {savingStore ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                {editingStore ? "حفظ التعديلات" : "إضافة المطعم"}
-              </Button>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setStoreDialog(false)} className="flex-1">إلغاء</Button>
+                <Button onClick={handleSaveStore} disabled={savingStore} className="flex-1 gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground">
+                  {savingStore ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                  {editingStore ? "حفظ التعديلات" : "حفظ"}
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
