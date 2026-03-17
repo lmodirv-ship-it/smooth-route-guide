@@ -60,7 +60,7 @@ const OrderTracking = () => {
   const isCancelled = order?.status === "cancelled";
 
   return (
-    <div className="min-h-screen bg-background px-5 pt-6 pb-10" dir="rtl">
+    <div className="min-h-screen delivery-bg px-5 pt-6 pb-10" dir="rtl">
       <div className="flex items-center justify-between mb-6">
         <button onClick={() => navigate("/delivery")} className="p-2 rounded-xl bg-secondary">
           <ArrowRight className="w-5 h-5 text-foreground" />

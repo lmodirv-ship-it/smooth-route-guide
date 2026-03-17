@@ -56,7 +56,7 @@ const RestaurantMenu = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-5 space-y-4" dir="rtl">
+      <div className="min-h-screen delivery-bg p-5 space-y-4" dir="rtl">
         <Skeleton className="h-40 rounded-2xl" />
         <Skeleton className="h-10 rounded-xl" />
         <Skeleton className="h-24 rounded-2xl" />
@@ -67,14 +67,14 @@ const RestaurantMenu = () => {
 
   if (!store) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen delivery-bg flex items-center justify-center" dir="rtl">
         <p className="text-muted-foreground">المطعم غير موجود</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pb-28" dir="rtl">
+    <div className="min-h-screen delivery-bg pb-28" dir="rtl">
       {/* Store Header */}
       <div className="bg-gradient-to-br from-primary/70 via-accent/50 to-secondary pt-6 pb-6 px-5 rounded-b-3xl">
         <div className="flex items-center justify-between mb-4">

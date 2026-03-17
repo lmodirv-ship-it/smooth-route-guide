@@ -91,7 +91,7 @@ const DeliveryHome = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden" dir="rtl">
+    <div className="min-h-screen delivery-bg relative overflow-hidden" dir="rtl">
       {/* Gradient Header */}
       <div className="relative bg-gradient-to-br from-primary/90 via-accent/80 to-primary/70 pt-6 pb-16 px-5 rounded-b-[2.5rem]">
         <div className="absolute inset-0 overflow-hidden rounded-b-[2.5rem]">

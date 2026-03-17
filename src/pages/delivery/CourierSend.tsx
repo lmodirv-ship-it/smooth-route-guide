@@ -58,7 +58,7 @@ const CourierSend = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen delivery-bg" dir="rtl">
       {/* Header */}
       <div className="bg-gradient-to-br from-primary/80 via-accent/60 to-primary/50 pt-6 pb-10 px-5 rounded-b-3xl relative overflow-hidden">
         <div className="absolute inset-0">
