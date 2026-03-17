@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
 import PriceEstimateCard from "@/components/PriceEstimateCard";
-import { useDistanceMatrix } from "@/hooks/useDistanceMatrix";
+import { useTripPricing } from "@/hooks/useTripPricing";
 import logo from "@/assets/hn-driver-logo.png";
 
 const ClientHome = () => {
@@ -17,30 +17,43 @@ const ClientHome = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [destination, setDestination] = useState("");
   const [showEstimate, setShowEstimate] = useState(false);
-  const { getEstimate, estimate, loading, error, reset } = useDistanceMatrix("SAR");
+  const { getEstimate, estimate, loading, error, reset } = useTripPricing("DH");
+
+  // Simulated locations (in production: real GPS)
+  const driverLocation = "24.7236,46.6853"; // nearest driver
+  const customerLocation = "24.7136,46.6753"; // customer's GPS
 
   const quickLocations = [
-    { icon: Home, label: "المنزل", address: "حي الملقا" },
-    { icon: Navigation, label: "العمل", address: "طريق الملك فهد" },
+    { icon: Home, label: "المنزل", address: "حي الملقا، الرياض" },
+    { icon: Navigation, label: "العمل", address: "طريق الملك فهد، الرياض" },
   ];
 
   const nearbyDrivers = [
-    { name: "أحمد محمد", rating: 4.9, car: "تويوتا كامري", distance: "٣ دقائق", price: "٢٥ ر.س" },
-    { name: "خالد العمري", rating: 4.7, car: "هونداي سوناتا", distance: "٥ دقائق", price: "٣٠ ر.س" },
-    { name: "سعد الحربي", rating: 4.8, car: "كيا أوبتيما", distance: "٧ دقائق", price: "٢٢ ر.س" },
+    { name: "أحمد محمد", rating: 4.9, car: "تويوتا كامري", distance: "٣ دقائق", price: "٢٥ د.م" },
+    { name: "خالد العمري", rating: 4.7, car: "هونداي سوناتا", distance: "٥ دقائق", price: "٣٠ د.م" },
+    { name: "سعد الحربي", rating: 4.8, car: "كيا أوبتيما", distance: "٧ دقائق", price: "٢٢ د.م" },
   ];
+
+  // Re-calculate when destination changes
+  useEffect(() => {
+    if (showEstimate && destination.trim()) {
+      const timer = setTimeout(() => {
+        getEstimate(driverLocation, customerLocation, destination);
+      }, 600); // debounce
+      return () => clearTimeout(timer);
+    }
+  }, [destination]);
 
   const handleSearch = async () => {
     if (!destination.trim()) return;
     setShowEstimate(true);
-    // Using Riyadh center as origin (would be user's real location in production)
-    await getEstimate("24.7136,46.6753", destination);
+    await getEstimate(driverLocation, customerLocation, destination);
   };
 
   const handleQuickLocation = async (address: string) => {
     setDestination(address);
     setShowEstimate(true);
-    await getEstimate("24.7136,46.6753", address);
+    await getEstimate(driverLocation, customerLocation, address);
   };
 
   const handleCancelEstimate = () => {
@@ -50,7 +63,6 @@ const ClientHome = () => {
   };
 
   const handleBook = () => {
-    // Future: navigate to booking confirmation
     navigate("/driver/trip");
   };
 
@@ -64,7 +76,7 @@ const ClientHome = () => {
             value={destination}
             onChange={(e) => setDestination(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            className="bg-secondary/80 border-border text-foreground h-14 rounded-2xl pr-12 pl-12 text-right text-base placeholder:text-muted-foreground"
+            className="bg-secondary/80 border-border text-foreground h-14 rounded-2xl pr-12 pl-16 text-right text-base placeholder:text-muted-foreground"
           />
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
           <button
