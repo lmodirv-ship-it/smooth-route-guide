@@ -116,6 +116,7 @@ const App = () => (
           <Route path="/auth/:role" element={<AuthPage />} />
           <Route path="/complete-profile" element={<SessionGuard><CompleteProfile /></SessionGuard>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/setup-admin" element={<SessionGuard><SetupAdmin /></SessionGuard>} />
 
           {/* Driver App - Protected */}

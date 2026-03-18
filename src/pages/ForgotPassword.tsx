@@ -23,7 +23,9 @@ const ForgotPassword = () => {
     }
     setLoading(true);
     try {
-      await sendPasswordResetEmail(auth, email);
+      await sendPasswordResetEmail(auth, email, {
+        url: `${window.location.origin}/reset-password`,
+      });
       setSent(true);
       toast({ title: "تم إرسال رابط إعادة التعيين ✅" });
     } catch (err: any) {

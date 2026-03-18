@@ -2,7 +2,7 @@ import { LogOut } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 
-const hiddenPrefixes = ["/login", "/auth", "/welcome", "/forgot-password", "/setup-admin", "/"];
+const hiddenPrefixes = ["/login", "/auth", "/welcome", "/forgot-password", "/reset-password", "/setup-admin", "/"];
 
 const GlobalLogoutButton = () => {
   const location = useLocation();
