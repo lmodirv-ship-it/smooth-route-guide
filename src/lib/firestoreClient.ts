@@ -7,7 +7,6 @@ import {
   collection,
   doc,
   getDocs,
-  getDoc,
   addDoc,
   updateDoc,
   deleteDoc,
@@ -17,77 +16,41 @@ import {
   limit as fbLimit,
   setDoc,
   serverTimestamp,
-  onSnapshot,
   QueryConstraint,
-  DocumentData,
-  WhereFilterOp,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, auth, storage } from "./firebase";
-
-// Map old Supabase table names to Firebase collection names
-const COLLECTION_MAP: Record<string, string> = {
-  stores: "restaurants",
-  menu_categories: "restaurant_categories",
-  menu_items: "menu_items",
-  delivery_orders: "orders",
-  order_items: "order_items",
-  ride_requests: "ride_requests",
-  trips: "trips",
-  drivers: "drivers",
-  profiles: "users",
-  notifications: "notifications",
-  alerts: "notifications",
-  complaints: "orders",
-  tickets: "orders",
-  call_center: "call_center_agents",
-  call_logs: "order_status_history",
-  earnings: "orders",
-  payments: "orders",
-  promotions: "app_settings",
-  ratings: "orders",
-  vehicles: "drivers",
-  wallet: "users",
-  zones: "app_settings",
-  app_settings: "app_settings",
-  documents: "drivers",
-  user_roles: "users",
-  chat_conversations: "notifications",
-  chat_messages: "notifications",
-  import_logs: "app_settings",
-  trip_status_history: "order_status_history",
-};
-
-const resolveCollection = (name: string) => COLLECTION_MAP[name] || name;
+import {
+  isFirestoreTableReadOnly,
+  normalizeFirestoreRow,
+  resolveFirestoreCollection,
+  serializeFirestoreRow,
+} from "./firestoreAdapters";
 
 type OrderDir = "asc" | "desc";
 
-// ---------- Query Builder ----------
 class FirestoreQueryBuilder<T = any> {
+  private _table: string;
   private _collection: string;
   private _constraints: QueryConstraint[] = [];
-  private _selectFields: string | null = null;
   private _single = false;
   private _maybeSingle = false;
   private _limitVal: number | null = null;
   private _orderField: string | null = null;
   private _orderDir: OrderDir = "desc";
-  // For insert / update / delete
   private _mode: "select" | "insert" | "update" | "delete" | "upsert" = "select";
   private _payload: any = null;
   private _eqFilters: Array<{ field: string; value: any }> = [];
   private _neqFilters: Array<{ field: string; value: any }> = [];
   private _inFilters: Array<{ field: string; values: any[] }> = [];
   private _notNullFields: string[] = [];
-  private _headOnly = false;
 
-  constructor(collectionName: string) {
-    this._collection = resolveCollection(collectionName);
+  constructor(tableName: string) {
+    this._table = tableName;
+    this._collection = resolveFirestoreCollection(tableName);
   }
 
-  select(fields?: string, opts?: { count?: string; head?: boolean }) {
-    this._selectFields = fields || "*";
-    if (opts?.head) this._headOnly = true;
+  select(_fields?: string, _opts?: { count?: string; head?: boolean }) {
     return this;
   }
 
@@ -150,10 +113,7 @@ class FirestoreQueryBuilder<T = any> {
   }
 
   not(field: string, op: string, value: any) {
-    // 'is' null → not null
-    if (op === "is" && value === null) {
-      this._notNullFields.push(field);
-    }
+    if (op === "is" && value === null) this._notNullFields.push(field);
     return this;
   }
 
@@ -178,7 +138,6 @@ class FirestoreQueryBuilder<T = any> {
     return this;
   }
 
-  // ---- Execute ----
   async then(
     resolve: (value: { data: any; error: any; count?: number }) => void,
     reject?: (reason?: any) => void
@@ -209,52 +168,38 @@ class FirestoreQueryBuilder<T = any> {
           return await this._execSelect();
       }
     } catch (error: any) {
-      console.error(`Firestore ${this._mode} error on ${this._collection}:`, error);
+      console.error(`Firestore ${this._mode} error on ${this._table}:`, error);
       return { data: null, error: { message: error.message || "Firestore error" } };
     }
   }
 
-  private async _execSelect() {
-    const ref = collection(db, this._collection);
-    const constraints: QueryConstraint[] = [];
+  private buildConstraints() {
+    const constraints: QueryConstraint[] = [...this._constraints];
 
-    // eq filters
-    for (const f of this._eqFilters) {
-      constraints.push(where(f.field, "==", f.value));
-    }
-    // neq filters
-    for (const f of this._neqFilters) {
-      constraints.push(where(f.field, "!=", f.value));
-    }
-    // in filters (Firestore 'in' max 30 items)
+    for (const f of this._eqFilters) constraints.push(where(f.field, "==", f.value));
+    for (const f of this._neqFilters) constraints.push(where(f.field, "!=", f.value));
     for (const f of this._inFilters) {
-      if (f.values.length > 0) {
-        // Split into chunks of 30 for Firestore 'in' limit
-        if (f.values.length <= 30) {
-          constraints.push(where(f.field, "in", f.values));
-        }
-      }
+      if (f.values.length > 0 && f.values.length <= 30) constraints.push(where(f.field, "in", f.values));
     }
+    if (this._orderField) constraints.push(orderBy(this._orderField, this._orderDir));
+    if (this._limitVal) constraints.push(fbLimit(this._limitVal));
 
-    // Order
-    if (this._orderField) {
-      constraints.push(orderBy(this._orderField, this._orderDir));
-    }
+    return constraints;
+  }
 
-    // Limit
-    if (this._limitVal) {
-      constraints.push(fbLimit(this._limitVal));
-    }
+  private normalizeSnapshot(snapshot: Awaited<ReturnType<typeof getDocs>>) {
+    let data = snapshot.docs.map((d) => {
+      const row = Object.assign({ id: d.id }, d.data() as Record<string, any>);
+      return normalizeFirestoreRow(this._table, row);
+    });
+    for (const field of this._notNullFields) data = data.filter((item: any) => item[field] != null);
+    data = data.filter((item: any) => !item.__skip);
+    return data;
+  }
 
-    const q = query(ref, ...constraints);
-    const snapshot = await getDocs(q);
-
-    let data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-    // Filter not-null fields (can't always do in Firestore query)
-    for (const field of this._notNullFields) {
-      data = data.filter((item: any) => item[field] != null);
-    }
+  private async _execSelect() {
+    const snapshot = await getDocs(query(collection(db, this._collection), ...this.buildConstraints()));
+    const data = this.normalizeSnapshot(snapshot);
 
     if (this._single) {
       return { data: data[0] || null, error: data.length === 0 ? { message: "Not found" } : null };
@@ -267,107 +212,100 @@ class FirestoreQueryBuilder<T = any> {
   }
 
   private async _execInsert() {
+    if (isFirestoreTableReadOnly(this._table)) {
+      return { data: null, error: { message: `Table ${this._table} is read-only` } };
+    }
+
     const ref = collection(db, this._collection);
     const items = Array.isArray(this._payload) ? this._payload : [this._payload];
     const results: any[] = [];
 
     for (const item of items) {
+      const baseId = item.id || doc(ref).id;
       const docData = {
-        ...item,
+        ...serializeFirestoreRow(this._table, item, baseId),
+        id: baseId,
         created_at: item.created_at || new Date().toISOString(),
         createdAt: item.createdAt || serverTimestamp(),
       };
-      
-      // If item has an 'id' field, use it as document ID
-      if (item.id) {
-        const docRef = doc(db, this._collection, item.id);
-        await setDoc(docRef, docData);
-        results.push({ id: item.id, ...docData });
-      } else {
-        const docRef = await addDoc(ref, docData);
-        results.push({ id: docRef.id, ...docData });
-      }
+
+      await setDoc(doc(db, this._collection, baseId), docData, { merge: true });
+      results.push(normalizeFirestoreRow(this._table, { id: baseId, ...docData }));
     }
 
-    return {
-      data: Array.isArray(this._payload) ? results : results[0],
-      error: null,
-    };
+    return { data: Array.isArray(this._payload) ? results : results[0], error: null };
   }
 
   private async _execUpdate() {
-    // Need eq filters to identify documents
+    if (isFirestoreTableReadOnly(this._table)) {
+      return { data: null, error: { message: `Table ${this._table} is read-only` } };
+    }
     if (this._eqFilters.length === 0) {
       return { data: null, error: { message: "Update requires at least one eq filter" } };
     }
 
-    // If filtering by 'id', update directly
     const idFilter = this._eqFilters.find((f) => f.field === "id");
+    const payload = serializeFirestoreRow(this._table, this._payload, idFilter?.value);
+
     if (idFilter) {
       const docRef = doc(db, this._collection, idFilter.value);
-      await updateDoc(docRef, { ...this._payload, updated_at: new Date().toISOString() });
-      return { data: { id: idFilter.value, ...this._payload }, error: null };
+      await updateDoc(docRef, { ...payload, updated_at: new Date().toISOString() });
+      return { data: { id: idFilter.value, ...payload }, error: null };
     }
 
-    // Otherwise query then update
-    const ref = collection(db, this._collection);
-    const constraints: QueryConstraint[] = this._eqFilters.map((f) =>
-      where(f.field, "==", f.value)
-    );
-    const q = query(ref, ...constraints);
-    const snapshot = await getDocs(q);
-
+    const snapshot = await getDocs(query(collection(db, this._collection), ...this._eqFilters.map((f) => where(f.field, "==", f.value))));
     const results: any[] = [];
+
     for (const d of snapshot.docs) {
-      await updateDoc(d.ref, { ...this._payload, updated_at: new Date().toISOString() });
-      results.push({ id: d.id, ...d.data(), ...this._payload });
+      await updateDoc(d.ref, { ...payload, updated_at: new Date().toISOString() });
+      const existingData = d.data() as Record<string, any>;
+      const mergedData = Object.assign({ id: d.id }, existingData, payload as Record<string, any>);
+      results.push(normalizeFirestoreRow(this._table, mergedData));
     }
 
     return { data: results, error: null };
   }
 
   private async _execUpsert() {
+    if (isFirestoreTableReadOnly(this._table)) {
+      return { data: null, error: { message: `Table ${this._table} is read-only` } };
+    }
+
     const items = Array.isArray(this._payload) ? this._payload : [this._payload];
     const results: any[] = [];
 
     for (const item of items) {
       const id = item.id || doc(collection(db, this._collection)).id;
       const docRef = doc(db, this._collection, id);
-      await setDoc(docRef, { ...item, id, updated_at: new Date().toISOString() }, { merge: true });
-      results.push({ id, ...item });
+      const payload = {
+        ...serializeFirestoreRow(this._table, item, id),
+        id,
+        updated_at: new Date().toISOString(),
+      };
+      await setDoc(docRef, payload, { merge: true });
+      results.push(normalizeFirestoreRow(this._table, { id, ...payload }));
     }
 
-    return {
-      data: Array.isArray(this._payload) ? results : results[0],
-      error: null,
-    };
+    return { data: Array.isArray(this._payload) ? results : results[0], error: null };
   }
 
   private async _execDelete() {
+    if (isFirestoreTableReadOnly(this._table)) {
+      return { data: null, error: { message: `Table ${this._table} is read-only` } };
+    }
+
     const idFilter = this._eqFilters.find((f) => f.field === "id");
     if (idFilter) {
-      const docRef = doc(db, this._collection, idFilter.value);
-      await deleteDoc(docRef);
+      await deleteDoc(doc(db, this._collection, idFilter.value));
       return { data: null, error: null };
     }
 
-    // Query then delete
-    const ref = collection(db, this._collection);
-    const constraints: QueryConstraint[] = this._eqFilters.map((f) =>
-      where(f.field, "==", f.value)
-    );
-    const q = query(ref, ...constraints);
-    const snapshot = await getDocs(q);
-
-    for (const d of snapshot.docs) {
-      await deleteDoc(d.ref);
-    }
-
+    const snapshot = await getDocs(query(collection(db, this._collection), ...this._eqFilters.map((f) => where(f.field, "==", f.value))));
+    for (const d of snapshot.docs) await deleteDoc(d.ref);
     return { data: null, error: null };
   }
 }
 
-// ---------- Auth wrapper ----------
 const firebaseAuthWrapper = {
   getUser: async () => {
     const user = auth.currentUser;
@@ -377,9 +315,7 @@ const firebaseAuthWrapper = {
         user: {
           id: user.uid,
           email: user.email,
-          user_metadata: {
-            name: user.displayName,
-          },
+          user_metadata: { name: user.displayName },
         },
       },
       error: null,
@@ -389,32 +325,16 @@ const firebaseAuthWrapper = {
     const user = auth.currentUser;
     if (!user) return { data: { session: null }, error: null };
     return {
-      data: {
-        session: {
-          user: {
-            id: user.uid,
-            email: user.email,
-          },
-        },
-      },
+      data: { session: { user: { id: user.uid, email: user.email } } },
       error: null,
     };
   },
   onAuthStateChange: (callback: (event: string, session: any) => void) => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        callback("SIGNED_IN", {
-          user: { id: user.uid, email: user.email },
-        });
-      } else {
-        callback("SIGNED_OUT", null);
-      }
+      if (user) callback("SIGNED_IN", { user: { id: user.uid, email: user.email } });
+      else callback("SIGNED_OUT", null);
     });
-    return {
-      data: {
-        subscription: { unsubscribe },
-      },
-    };
+    return { data: { subscription: { unsubscribe } } };
   },
   signOut: async () => {
     await auth.signOut();
@@ -424,29 +344,22 @@ const firebaseAuthWrapper = {
     const { signInWithEmailAndPassword } = await import("firebase/auth");
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
-      return {
-        data: { user: { id: cred.user.uid, email: cred.user.email } },
-        error: null,
-      };
+      return { data: { user: { id: cred.user.uid, email: cred.user.email } }, error: null };
     } catch (e: any) {
       return { data: { user: null }, error: { message: e.message } };
     }
   },
-  signUp: async ({ email, password, options }: any) => {
+  signUp: async ({ email, password }: any) => {
     const { createUserWithEmailAndPassword } = await import("firebase/auth");
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
-      return {
-        data: { user: { id: cred.user.uid, email: cred.user.email } },
-        error: null,
-      };
+      return { data: { user: { id: cred.user.uid, email: cred.user.email } }, error: null };
     } catch (e: any) {
       return { data: { user: null }, error: { message: e.message } };
     }
   },
 };
 
-// ---------- Realtime wrapper (no-op for now, logs warning) ----------
 class RealtimeChannel {
   private _name: string;
   constructor(name: string) {
@@ -461,7 +374,6 @@ class RealtimeChannel {
   }
 }
 
-// ---------- Storage wrapper (Firebase Storage) ----------
 const storageWrapper = {
   from: (bucket: string) => ({
     upload: async (path: string, file: File) => {
@@ -475,7 +387,6 @@ const storageWrapper = {
       }
     },
     getPublicUrl: (path: string) => {
-      // For Firebase Storage, we construct the URL
       const projectId = "hn-driver-18963";
       const encodedPath = encodeURIComponent(`${bucket}/${path}`);
       const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${projectId}.firebasestorage.app/o/${encodedPath}?alt=media`;
@@ -484,10 +395,8 @@ const storageWrapper = {
   }),
 };
 
-// ---------- Functions wrapper ----------
 const functionsWrapper = {
   invoke: async (name: string, opts?: { body?: any }) => {
-    // Edge functions still go through Supabase
     const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
     const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
@@ -509,7 +418,6 @@ const functionsWrapper = {
   },
 };
 
-// ---------- Main Client ----------
 export const firestoreDB = {
   from: (table: string) => new FirestoreQueryBuilder(table),
   auth: firebaseAuthWrapper,
@@ -519,5 +427,4 @@ export const firestoreDB = {
   functions: functionsWrapper,
 };
 
-// Default export as 'supabase' alias for easy migration
 export { firestoreDB as supabase };
