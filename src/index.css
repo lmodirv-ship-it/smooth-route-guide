@@ -128,6 +128,9 @@
   .glow-ring-blue {
     box-shadow: 0 0 0 3px hsl(205, 78%, 56%, 0.2), 0 0 15px hsl(205, 78%, 56%, 0.15);
   }
+  .glow-ring-green {
+    box-shadow: 0 0 0 3px hsl(var(--success) / 0.2), 0 0 15px hsl(var(--success) / 0.15);
+  }
   .glass {
     background: hsl(220, 18%, 11%, 0.8);
     backdrop-filter: blur(12px);
@@ -145,7 +148,6 @@
     background-clip: text;
   }
 
-  /* Particle background */
   .particles-bg {
     position: relative;
     overflow: hidden;
@@ -179,4 +181,11 @@
   .icon-circle-blue {
     @apply icon-circle glow-ring-blue;
   }
+  .safe-mobile-bottom {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+  .safe-mobile-top {
+    padding-top: max(1.5rem, env(safe-area-inset-top));
+  }
 }
+
