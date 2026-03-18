@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, DollarSign, Calendar, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { TrendingUp, DollarSign, Calendar, ArrowUpRight } from "lucide-react";
 import { supabase } from "@/lib/firestoreClient";
 
 const SimpleBarChart = ({ data, color }: { data: { label: string; value: number }[]; color: string }) => {
@@ -15,8 +15,8 @@ const SimpleBarChart = ({ data, color }: { data: { label: string; value: number 
         return (
           <g key={i}>
             <rect x={x} y={h - bh} width={bw} height={bh} rx={4} fill={color} opacity={0.85} style={{ transition: "all 0.5s ease" }} />
-            <text x={x + bw / 2} y={h + 18} textAnchor="middle" fill="hsl(220, 10%, 45%)" fontSize="10">{d.label}</text>
-            <text x={x + bw / 2} y={h - bh - 6} textAnchor="middle" fill="hsl(40, 20%, 90%)" fontSize="9">{d.value}</text>
+            <text x={x + bw / 2} y={h + 18} textAnchor="middle" fill="hsl(var(--muted-foreground))" fontSize="10">{d.label}</text>
+            <text x={x + bw / 2} y={h - bh - 6} textAnchor="middle" fill="hsl(var(--foreground))" fontSize="9">{d.value}</text>
           </g>
         );
       })}
@@ -52,25 +52,38 @@ const AdminEarnings = () => {
 
   const chartData = useMemo(() => {
     if (range === "daily") {
-      return ["٦ص", "٩ص", "١٢", "٣م", "٦م", "٩م"].map(l => ({ label: l, value: Math.floor(Math.random() * 800 + 100) }));
-    } else if (range === "weekly") {
-      const days = ["سبت", "أحد", "إثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة"];
-      const grouped = new Map<string, number>();
-      earningsData.forEach(e => {
-        const dayIdx = new Date(e.date).getDay();
-        const key = days[dayIdx] || days[0];
-        grouped.set(key, (grouped.get(key) || 0) + Number(e.amount));
-      });
-      return days.map(d => ({ label: d, value: grouped.get(d) || 0 }));
-    } else {
-      const weeks = ["أسبوع 1", "أسبوع 2", "أسبوع 3", "أسبوع 4"];
-      return weeks.map((w, i) => {
-        const start = i * 7;
-        const end = start + 7;
-        const total = earningsData.slice(start, end).reduce((s, e) => s + Number(e.amount), 0);
-        return { label: w, value: total || Math.floor(Math.random() * 3000 + 500) };
+      const hours = ["00", "04", "08", "12", "16", "20"];
+      return hours.map((hour) => {
+        const total = earningsData
+          .filter((entry) => entry.date === new Date().toISOString().slice(0, 10))
+          .filter((entry) => {
+            const date = new Date(`${entry.date}T${hour}:00:00`);
+            return date.getHours() === Number(hour);
+          })
+          .reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+        return { label: `${hour}:00`, value: total };
       });
     }
+
+    if (range === "weekly") {
+      const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+      const grouped = new Map<number, number>();
+      earningsData.forEach((e) => {
+        const dayIdx = new Date(e.date).getDay();
+        grouped.set(dayIdx, (grouped.get(dayIdx) || 0) + Number(e.amount));
+      });
+      return days.map((label, index) => ({ label: label.slice(0, 3), value: grouped.get(index) || 0 }));
+    }
+
+    const currentMonth = new Date().getMonth();
+    const monthly = Array.from({ length: 4 }, (_, index) => {
+      const monthIndex = currentMonth - (3 - index);
+      const total = earningsData
+        .filter((entry) => new Date(entry.date).getMonth() === monthIndex)
+        .reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+      return { label: `ش ${index + 1}`, value: total };
+    });
+    return monthly;
   }, [range, earningsData]);
 
   return (
@@ -83,12 +96,11 @@ const AdminEarnings = () => {
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { label: "أرباح اليوم", value: todayTotal, icon: DollarSign, color: "text-success", trend: "+12%" },
-          { label: "أرباح الأسبوع", value: weekTotal, icon: Calendar, color: "text-info", trend: "+8%" },
-          { label: "أرباح الشهر", value: monthTotal, icon: TrendingUp, color: "text-primary", trend: "+15%" },
+          { label: "أرباح اليوم", value: todayTotal, icon: DollarSign, color: "text-success", trend: "+" },
+          { label: "أرباح الأسبوع", value: weekTotal, icon: Calendar, color: "text-info", trend: "+" },
+          { label: "أرباح الشهر", value: monthTotal, icon: TrendingUp, color: "text-primary", trend: "+" },
         ].map((card, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
             className="gradient-card rounded-xl p-5 border border-border">
@@ -96,7 +108,7 @@ const AdminEarnings = () => {
               <div className="flex items-center gap-1 text-xs text-success">
                 <ArrowUpRight className="w-3 h-3" />{card.trend}
               </div>
-              <div className={`w-10 h-10 rounded-xl bg-secondary flex items-center justify-center`}>
+              <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
                 <card.icon className={`w-5 h-5 ${card.color}`} />
               </div>
             </div>
@@ -106,7 +118,6 @@ const AdminEarnings = () => {
         ))}
       </div>
 
-      {/* Chart */}
       <div className="gradient-card rounded-xl border border-border p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex gap-2">
@@ -120,7 +131,7 @@ const AdminEarnings = () => {
           <h3 className="font-bold text-foreground">الرسم البياني</h3>
         </div>
         <div className="h-64">
-          <SimpleBarChart data={chartData} color="hsl(32, 95%, 55%)" />
+          <SimpleBarChart data={chartData} color="hsl(var(--primary))" />
         </div>
       </div>
     </div>
