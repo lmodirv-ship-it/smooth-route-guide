@@ -188,7 +188,10 @@ class FirestoreQueryBuilder<T = any> {
   }
 
   private normalizeSnapshot(snapshot: Awaited<ReturnType<typeof getDocs>>) {
-    let data = snapshot.docs.map((d) => normalizeFirestoreRow(this._table, { id: d.id, ...d.data() }));
+    let data = snapshot.docs.map((d) => {
+      const row = Object.assign({ id: d.id }, d.data() as Record<string, any>);
+      return normalizeFirestoreRow(this._table, row);
+    });
     for (const field of this._notNullFields) data = data.filter((item: any) => item[field] != null);
     data = data.filter((item: any) => !item.__skip);
     return data;
