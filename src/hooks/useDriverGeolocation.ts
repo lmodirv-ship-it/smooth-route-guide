@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { supabase } from '@/lib/firestoreClient';
+import { doc, setDoc } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
+import { auth, db } from '@/lib/firebase';
+import { syncDriverOrderMetrics } from '@/lib/orderService';
 
 interface DriverLocation {
   lat: number;
@@ -15,35 +17,33 @@ export function useDriverGeolocation(isOnline: boolean) {
   const lastDbUpdateRef = useRef<number>(0);
 
   const updateLocationInDb = useCallback(async (lat: number, lng: number) => {
-    // Throttle DB updates to every 10 seconds
+    const user = auth.currentUser;
+    if (!user) return;
+
     const now = Date.now();
     if (now - lastDbUpdateRef.current < 10000) return;
     lastDbUpdateRef.current = now;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      await setDoc(doc(db, 'drivers', user.uid), {
+        uid: user.uid,
+        currentLat: lat,
+        currentLng: lng,
+        current_lat: lat,
+        current_lng: lng,
+        isOnline: true,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
 
-      await supabase
-        .from('drivers')
-        .update({
-          current_lat: lat,
-          current_lng: lng,
-          location_updated_at: new Date().toISOString(),
-        } as any)
-        .eq('user_id', user.id);
-    } catch (err) {
-      // Silent fail for DB updates
+      await syncDriverOrderMetrics(user.uid, lat, lng);
+    } catch {
+      // silent fail
     }
   }, []);
 
   const startWatching = useCallback(() => {
     if (!navigator.geolocation) {
-      toast({
-        title: 'خطأ',
-        description: 'المتصفح لا يدعم تحديد الموقع',
-        variant: 'destructive',
-      });
+      toast({ title: 'خطأ', description: 'المتصفح لا يدعم تحديد الموقع', variant: 'destructive' });
       return;
     }
 
@@ -52,10 +52,7 @@ export function useDriverGeolocation(isOnline: boolean) {
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
-        const newLocation = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
+        const newLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
         setLocation(newLocation);
         setLoading(false);
         updateLocationInDb(newLocation.lat, newLocation.lng);
@@ -71,11 +68,7 @@ export function useDriverGeolocation(isOnline: boolean) {
           });
         }
       },
-      {
-        enableHighAccuracy: true,
-        maximumAge: 5000,
-        timeout: 15000,
-      }
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
     );
   }, [updateLocationInDb]);
 
@@ -86,28 +79,26 @@ export function useDriverGeolocation(isOnline: boolean) {
     }
     setLocation(null);
 
-    // Clear location in DB
+    const user = auth.currentUser;
+    if (!user) return;
+
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase
-          .from('drivers')
-          .update({
-            current_lat: null,
-            current_lng: null,
-            location_updated_at: null,
-          } as any)
-          .eq('user_id', user.id);
-      }
-    } catch (err) { /* silent */ }
+      await setDoc(doc(db, 'drivers', user.uid), {
+        currentLat: null,
+        currentLng: null,
+        current_lat: null,
+        current_lng: null,
+        isOnline: false,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+    } catch {
+      // silent fail
+    }
   }, []);
 
   useEffect(() => {
-    if (isOnline) {
-      startWatching();
-    } else {
-      stopWatching();
-    }
+    if (isOnline) startWatching();
+    else stopWatching();
 
     return () => {
       if (watchIdRef.current !== null) {
