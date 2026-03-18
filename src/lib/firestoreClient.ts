@@ -371,7 +371,11 @@ class RealtimeChannel {
     this._name = name;
   }
 
-  on(_event: string, opts: { event?: string; table?: string }, callback: (payload: any) => void) {
+  on(
+    _event: string,
+    opts: { event?: string; table?: string; schema?: string; [key: string]: any },
+    callback: (payload: any) => void
+  ) {
     if (!opts?.table) return this;
     this._listeners.push({
       table: opts.table,
