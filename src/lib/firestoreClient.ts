@@ -7,7 +7,6 @@ import {
   collection,
   doc,
   getDocs,
-  addDoc,
   updateDoc,
   deleteDoc,
   query,
@@ -16,7 +15,9 @@ import {
   limit as fbLimit,
   setDoc,
   serverTimestamp,
-  QueryConstraint,
+  onSnapshot,
+  type QueryConstraint,
+  type Unsubscribe,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, auth, storage } from "./firebase";
@@ -28,6 +29,7 @@ import {
 } from "./firestoreAdapters";
 
 type OrderDir = "asc" | "desc";
+type RealtimeEvent = "*" | "INSERT" | "UPDATE" | "DELETE";
 
 class FirestoreQueryBuilder<T = any> {
   private _table: string;
@@ -362,15 +364,70 @@ const firebaseAuthWrapper = {
 
 class RealtimeChannel {
   private _name: string;
+  private _listeners: Array<{ table: string; event: RealtimeEvent; callback: (payload: any) => void }> = [];
+  private _unsubscribes: Unsubscribe[] = [];
+
   constructor(name: string) {
     this._name = name;
   }
-  on(_event: string, _opts: any, _callback: any) {
+
+  on(
+    _event: string,
+    opts: { event?: string; table?: string; schema?: string; [key: string]: any },
+    callback: (payload: any) => void
+  ) {
+    if (!opts?.table) return this;
+    this._listeners.push({
+      table: opts.table,
+      event: ((opts.event || "*").toUpperCase() as RealtimeEvent),
+      callback,
+    });
     return this;
   }
+
   subscribe() {
-    console.log(`[Firestore Realtime] Channel "${this._name}" subscribed (polling fallback)`);
+    const tables = [...new Set(this._listeners.map((listener) => listener.table))];
+
+    tables.forEach((table) => {
+      const collectionName = resolveFirestoreCollection(table);
+      let initialized = false;
+
+      const unsubscribe = onSnapshot(collection(db, collectionName), (snapshot) => {
+        if (!initialized) {
+          initialized = true;
+          return;
+        }
+
+        snapshot.docChanges().forEach((change) => {
+          const eventType = change.type === "added" ? "INSERT" : change.type === "modified" ? "UPDATE" : "DELETE";
+          const nextRow =
+            change.type === "removed"
+              ? null
+              : normalizeFirestoreRow(table, { id: change.doc.id, ...(change.doc.data() as Record<string, any>) });
+
+          const payload = {
+            eventType,
+            table,
+            new: nextRow,
+            old: null,
+          };
+
+          this._listeners
+            .filter((listener) => listener.table === table && (listener.event === "*" || listener.event === eventType))
+            .forEach((listener) => listener.callback(payload));
+        });
+      });
+
+      this._unsubscribes.push(unsubscribe);
+    });
+
+    console.log(`[Firestore Realtime] Channel "${this._name}" subscribed`);
     return this;
+  }
+
+  unsubscribeAll() {
+    this._unsubscribes.forEach((unsubscribe) => unsubscribe());
+    this._unsubscribes = [];
   }
 }
 
@@ -422,7 +479,7 @@ export const firestoreDB = {
   from: (table: string) => new FirestoreQueryBuilder(table),
   auth: firebaseAuthWrapper,
   channel: (name: string) => new RealtimeChannel(name),
-  removeChannel: (_channel: any) => {},
+  removeChannel: (channel: { unsubscribeAll?: () => void }) => channel?.unsubscribeAll?.(),
   storage: storageWrapper,
   functions: functionsWrapper,
 };

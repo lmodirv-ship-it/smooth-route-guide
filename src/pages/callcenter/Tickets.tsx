@@ -1,27 +1,117 @@
-import { useState } from "react";
-import { FileText, Clock, CheckCircle, AlertCircle, Plus, User, Car, MapPin, Link, Filter } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Plus, User, Car, Link as LinkIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { supabase } from "@/lib/firestoreClient";
+
+const statusMap: Record<string, string> = {
+  open: "مفتوح",
+  in_progress: "جاري",
+  closed: "مغلق",
+};
 
 const Tickets = () => {
   const [showNew, setShowNew] = useState(false);
   const [filter, setFilter] = useState<"all" | "open" | "progress" | "closed">("all");
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    user_id: "",
+    driver_id: "",
+    trip_id: "",
+    priority: "high",
+    category: "client",
+  });
 
-  const tickets = [
-    { id: "T-001", subject: "مشكلة في الدفع", desc: "العميل يبلغ بخصم مزدوج من حسابه", client: "عبدالله أحمد", linkedTo: "رحلة R-042", status: "مفتوح", priority: "عالي", created: "اليوم 10:30", agent: "سارة", type: "عميل" },
-    { id: "T-002", subject: "تطبيق لا يعمل", desc: "السائق لا يستطيع قبول الطلبات", client: "أحمد الفاسي", linkedTo: "سائق D-012", status: "جاري", priority: "متوسط", created: "أمس 14:00", agent: "أحمد", type: "سائق" },
-    { id: "T-003", subject: "استرجاع مبلغ", desc: "طلب استرجاع 35 DH بسبب إلغاء من السائق", client: "خالد العمري", linkedTo: "رحلة R-038", status: "مغلق", priority: "منخفض", created: "12/03", agent: "سارة", type: "عميل" },
-    { id: "T-004", subject: "حساب محظور", desc: "العميل يطلب إعادة تفعيل حسابه بعد الحظر", client: "نورة السعيد", linkedTo: "عميل C-055", status: "مفتوح", priority: "عالي", created: "اليوم 09:15", agent: "غير معين", type: "عميل" },
-    { id: "T-005", subject: "وثائق منتهية", desc: "السائق لديه تأمين منتهي الصلاحية", client: "خالد المنصوري", linkedTo: "سائق D-008", status: "جاري", priority: "عالي", created: "اليوم 08:00", agent: "يوسف", type: "سائق" },
-  ];
+  const fetchTickets = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase.from("tickets").select("*").order("updated_at", { ascending: false }).limit(100);
+    const rows = data || [];
 
-  const filtered = filter === "all" ? tickets :
-    filter === "open" ? tickets.filter(t => t.status === "مفتوح") :
-    filter === "progress" ? tickets.filter(t => t.status === "جاري") :
-    tickets.filter(t => t.status === "مغلق");
+    const userIds = [...new Set(rows.flatMap((ticket: any) => [ticket.user_id, ticket.agent_id].filter(Boolean)))];
+    const driverIds = [...new Set(rows.map((ticket: any) => ticket.driver_id).filter(Boolean))];
+
+    const [profilesRes, driversRes] = await Promise.all([
+      userIds.length ? supabase.from("profiles").select("id, name").in("id", userIds) : Promise.resolve({ data: [] }),
+      driverIds.length ? supabase.from("drivers").select("id, user_id").in("id", driverIds) : Promise.resolve({ data: [] }),
+    ]);
+
+    const profilesMap = new Map((profilesRes.data || []).map((profile: any) => [profile.id, profile.name]));
+    const driversMap = new Map((driversRes.data || []).map((driver: any) => [driver.id, profilesMap.get(driver.user_id) || driver.id.slice(0, 6)]));
+
+    setTickets(rows.map((ticket: any) => ({
+      ...ticket,
+      statusLabel: statusMap[ticket.status] || ticket.status,
+      createdLabel: ticket.created_at ? new Date(ticket.created_at).toLocaleString("ar-MA", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "—",
+      linkedTo: ticket.trip_id
+        ? `رحلة ${ticket.trip_id.slice(0, 6)}`
+        : ticket.driver_id
+          ? `سائق ${driversMap.get(ticket.driver_id) || ticket.driver_id.slice(0, 6)}`
+          : ticket.user_id
+            ? `عميل ${profilesMap.get(ticket.user_id) || ticket.user_id.slice(0, 6)}`
+            : "عام",
+      ownerName: ticket.driver_id
+        ? driversMap.get(ticket.driver_id) || "سائق"
+        : ticket.user_id
+          ? profilesMap.get(ticket.user_id) || "عميل"
+          : "غير محدد",
+      agentName: ticket.agent_id ? profilesMap.get(ticket.agent_id) || "وكيل" : "غير معين",
+      typeLabel: ticket.driver_id ? "سائق" : "عميل",
+    })));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void fetchTickets();
+    const channel = supabase
+      .channel("tickets-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "tickets" }, fetchTickets)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchTickets]);
+
+  const filtered = useMemo(() => {
+    if (filter === "all") return tickets;
+    if (filter === "open") return tickets.filter((ticket) => ticket.status === "open");
+    if (filter === "progress") return tickets.filter((ticket) => ticket.status === "in_progress");
+    return tickets.filter((ticket) => ticket.status === "closed");
+  }, [filter, tickets]);
+
+  const handleCreate = async () => {
+    if (!form.title.trim() || !form.description.trim()) {
+      toast({ title: "يرجى تعبئة الموضوع والتفاصيل", variant: "destructive" });
+      return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    setSubmitting(true);
+    await supabase.from("tickets").insert({
+      title: form.title.trim(),
+      description: form.description.trim(),
+      priority: form.priority,
+      category: form.category,
+      status: "open",
+      user_id: form.user_id.trim() || null,
+      driver_id: form.driver_id.trim() || null,
+      trip_id: form.trip_id.trim() || null,
+      agent_id: user?.id || null,
+      updated_at: new Date().toISOString(),
+    });
+    setSubmitting(false);
+    setShowNew(false);
+    setForm({ title: "", description: "", user_id: "", driver_id: "", trip_id: "", priority: "high", category: "client" });
+    toast({ title: "✅ تم إنشاء التذكرة" });
+    await fetchTickets();
+  };
 
   return (
     <div>
@@ -33,90 +123,84 @@ const Tickets = () => {
       </div>
 
       {showNew && (
-        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
-          className="gradient-card rounded-xl p-4 border border-border mb-4 space-y-3">
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="gradient-card rounded-xl p-4 border border-border mb-4 space-y-3">
           <h3 className="text-foreground font-bold text-sm">إنشاء تذكرة جديدة</h3>
-          <Input placeholder="الموضوع" className="bg-secondary border-border rounded-lg text-right text-sm" />
+          <Input value={form.title} onChange={(e) => setForm((current) => ({ ...current, title: e.target.value }))} placeholder="الموضوع" className="bg-secondary border-border rounded-lg text-right text-sm" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Input placeholder="ربط بعميل (اختياري)" className="bg-secondary border-border rounded-lg text-right text-sm" />
-            <Input placeholder="ربط بسائق (اختياري)" className="bg-secondary border-border rounded-lg text-right text-sm" />
-            <Input placeholder="ربط برحلة (اختياري)" className="bg-secondary border-border rounded-lg text-right text-sm" />
+            <Input value={form.user_id} onChange={(e) => setForm((current) => ({ ...current, user_id: e.target.value }))} placeholder="UID العميل (اختياري)" className="bg-secondary border-border rounded-lg text-right text-sm" />
+            <Input value={form.driver_id} onChange={(e) => setForm((current) => ({ ...current, driver_id: e.target.value }))} placeholder="UID السائق (اختياري)" className="bg-secondary border-border rounded-lg text-right text-sm" />
+            <Input value={form.trip_id} onChange={(e) => setForm((current) => ({ ...current, trip_id: e.target.value }))} placeholder="UID الرحلة (اختياري)" className="bg-secondary border-border rounded-lg text-right text-sm" />
           </div>
           <div className="flex gap-2">
-            <select className="flex-1 bg-secondary border border-border rounded-lg text-sm text-foreground p-2 text-right">
-              <option>عالي</option><option>متوسط</option><option>منخفض</option>
+            <select value={form.priority} onChange={(e) => setForm((current) => ({ ...current, priority: e.target.value }))} className="flex-1 bg-secondary border border-border rounded-lg text-sm text-foreground p-2 text-right">
+              <option value="high">عالي</option>
+              <option value="medium">متوسط</option>
+              <option value="low">منخفض</option>
             </select>
-            <select className="flex-1 bg-secondary border border-border rounded-lg text-sm text-foreground p-2 text-right">
-              <option>عميل</option><option>سائق</option><option>نظام</option>
+            <select value={form.category} onChange={(e) => setForm((current) => ({ ...current, category: e.target.value }))} className="flex-1 bg-secondary border border-border rounded-lg text-sm text-foreground p-2 text-right">
+              <option value="client">عميل</option>
+              <option value="driver">سائق</option>
+              <option value="system">نظام</option>
             </select>
           </div>
-          <Textarea placeholder="تفاصيل التذكرة..." className="bg-secondary border-border rounded-lg text-right min-h-[60px] text-sm" />
+          <Textarea value={form.description} onChange={(e) => setForm((current) => ({ ...current, description: e.target.value }))} placeholder="تفاصيل التذكرة..." className="bg-secondary border-border rounded-lg text-right min-h-[60px] text-sm" />
           <div className="flex gap-2">
-            <Button size="sm" className="gradient-primary text-primary-foreground rounded-lg" onClick={() => { setShowNew(false); toast({ title: "✅ تم إنشاء التذكرة" }); }}>إنشاء</Button>
+            <Button size="sm" className="gradient-primary text-primary-foreground rounded-lg" onClick={() => void handleCreate()} disabled={submitting}>إنشاء</Button>
             <Button size="sm" variant="outline" className="border-border rounded-lg" onClick={() => setShowNew(false)}>إلغاء</Button>
           </div>
         </motion.div>
       )}
 
-      {/* Filter */}
       <div className="flex gap-2 mb-4">
-        {([["all", "الكل"], ["open", "مفتوح"], ["progress", "جاري"], ["closed", "مغلق"]] as const).map(([key, label]) => (
-          <button key={key} onClick={() => setFilter(key)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              filter === key ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-            }`}>{label}</button>
+        {([ ["all", "الكل"], ["open", "مفتوح"], ["progress", "جاري"], ["closed", "مغلق"] ] as const).map(([key, label]) => (
+          <button key={key} onClick={() => setFilter(key)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filter === key ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>{label}</button>
         ))}
       </div>
 
-      {/* Tickets Table */}
       <div className="gradient-card rounded-xl border border-border overflow-x-auto">
-        <table className="w-full text-sm min-w-[700px]">
-          <thead>
-            <tr className="border-b border-border text-muted-foreground text-xs">
-              <td className="p-3">الوكيل</td>
-              <td className="p-3">الأولوية</td>
-              <td className="p-3">الحالة</td>
-              <td className="p-3">مرتبط بـ</td>
-              <td className="p-3">العميل/السائق</td>
-              <td className="p-3">التاريخ</td>
-              <td className="p-3">الموضوع</td>
-              <td className="p-3 text-right">#</td>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map(t => (
-              <tr key={t.id} className="border-b border-border last:border-0 hover:bg-secondary/20 transition-colors">
-                <td className="p-3 text-muted-foreground text-xs">{t.agent}</td>
-                <td className="p-3">
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    t.priority === "عالي" ? "bg-destructive/10 text-destructive" :
-                    t.priority === "متوسط" ? "bg-warning/10 text-warning" :
-                    "bg-info/10 text-info"
-                  }`}>{t.priority}</span>
-                </td>
-                <td className="p-3">
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    t.status === "مفتوح" ? "bg-warning/10 text-warning" :
-                    t.status === "جاري" ? "bg-info/10 text-info" :
-                    "bg-success/10 text-success"
-                  }`}>{t.status}</span>
-                </td>
-                <td className="p-3 text-xs text-muted-foreground flex items-center gap-1">
-                  <Link className="w-3 h-3" /> {t.linkedTo}
-                </td>
-                <td className="p-3 text-foreground text-xs">
-                  <div className="flex items-center gap-1">
-                    {t.type === "عميل" ? <User className="w-3 h-3 text-info" /> : <Car className="w-3 h-3 text-primary" />}
-                    {t.client}
-                  </div>
-                </td>
-                <td className="p-3 text-muted-foreground text-xs">{t.created}</td>
-                <td className="p-3 text-foreground text-xs font-medium">{t.subject}</td>
-                <td className="p-3 text-right text-muted-foreground font-mono text-xs">{t.id}</td>
+        {loading ? (
+          <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+        ) : (
+          <table className="w-full text-sm min-w-[700px]">
+            <thead>
+              <tr className="border-b border-border text-muted-foreground text-xs">
+                <td className="p-3">الوكيل</td>
+                <td className="p-3">الأولوية</td>
+                <td className="p-3">الحالة</td>
+                <td className="p-3">مرتبط بـ</td>
+                <td className="p-3">العميل/السائق</td>
+                <td className="p-3">التاريخ</td>
+                <td className="p-3">الموضوع</td>
+                <td className="p-3 text-right">#</td>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filtered.map((ticket) => (
+                <tr key={ticket.id} className="border-b border-border last:border-0 hover:bg-secondary/20 transition-colors">
+                  <td className="p-3 text-muted-foreground text-xs">{ticket.agentName}</td>
+                  <td className="p-3">
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${ticket.priority === "high" ? "bg-destructive/10 text-destructive" : ticket.priority === "medium" ? "bg-warning/10 text-warning" : "bg-info/10 text-info"}`}>{ticket.priority}</span>
+                  </td>
+                  <td className="p-3">
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${ticket.status === "open" ? "bg-warning/10 text-warning" : ticket.status === "in_progress" ? "bg-info/10 text-info" : "bg-success/10 text-success"}`}>{ticket.statusLabel}</span>
+                  </td>
+                  <td className="p-3 text-xs text-muted-foreground flex items-center gap-1">
+                    <LinkIcon className="w-3 h-3" /> {ticket.linkedTo}
+                  </td>
+                  <td className="p-3 text-foreground text-xs">
+                    <div className="flex items-center gap-1">
+                      {ticket.typeLabel === "عميل" ? <User className="w-3 h-3 text-info" /> : <Car className="w-3 h-3 text-primary" />}
+                      {ticket.ownerName}
+                    </div>
+                  </td>
+                  <td className="p-3 text-muted-foreground text-xs">{ticket.createdLabel}</td>
+                  <td className="p-3 text-foreground text-xs font-medium">{ticket.title}</td>
+                  <td className="p-3 text-right text-muted-foreground font-mono text-xs">{ticket.id.slice(0, 8)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );
