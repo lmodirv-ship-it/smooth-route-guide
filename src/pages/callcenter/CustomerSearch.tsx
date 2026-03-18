@@ -1,46 +1,134 @@
-import { useState } from "react";
-import { Search, User, Phone, Mail, MapPin, Car, Clock, Wallet, Star, AlertTriangle, Shield } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Search, User, Phone, Mail, Car, Wallet, Star, AlertTriangle, Shield, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/lib/firestoreClient";
+import { toast } from "@/hooks/use-toast";
+
+const formatJoinedDate = (value?: string | null) => {
+  if (!value) return "—";
+  return new Date(value).toLocaleDateString("ar-MA", { month: "long", year: "numeric" });
+};
 
 const CustomerSearch = () => {
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<number | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const customers = [
-    { id: 1, name: "عبدالله أحمد", phone: "+212 661-XXX-001", email: "abd@hn.ma", trips: 24, wallet: "350 DH", rating: 4.8, status: "نشط", joined: "يناير 2025",
-      complaints: [{ id: "C-1", desc: "تأخر السائق", date: "12/03", status: "محلول" }],
-      recentTrips: [
-        { from: "المعاريف", to: "كازا فوياجور", date: "اليوم", price: "35 DH" },
-        { from: "الحسني", to: "عين الشق", date: "أمس", price: "28 DH" },
-      ]
-    },
-    { id: 2, name: "فاطمة محمد", phone: "+212 662-XXX-002", email: "fat@hn.ma", trips: 12, wallet: "120 DH", rating: 4.9, status: "نشط", joined: "فبراير 2025",
-      complaints: [],
-      recentTrips: [
-        { from: "محطة القطار", to: "المطار", date: "أمس", price: "52 DH" },
-      ]
-    },
-    { id: 3, name: "خالد العمري", phone: "+212 663-XXX-003", email: "kh@hn.ma", trips: 45, wallet: "0 DH", rating: 3.2, status: "محظور", joined: "ديسمبر 2024",
-      complaints: [
-        { id: "C-2", desc: "سلوك غير لائق", date: "10/03", status: "مفتوح" },
-        { id: "C-3", desc: "عدم الدفع", date: "08/03", status: "مصعّد" },
-      ],
-      recentTrips: []
-    },
-    { id: 4, name: "نورة السعيد", phone: "+212 664-XXX-004", email: "nr@hn.ma", trips: 8, wallet: "500 DH", rating: 5.0, status: "نشط", joined: "مارس 2025",
-      complaints: [],
-      recentTrips: [
-        { from: "حي السلام", to: "المدينة القديمة", date: "13/03", price: "22 DH" },
-      ]
-    },
-  ];
+  const fetchCustomers = useCallback(async () => {
+    setLoading(true);
+    const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(100);
+    const ids = (profiles || []).map((profile: any) => profile.id);
 
-  const filtered = query
-    ? customers.filter(c => c.name.includes(query) || c.phone.includes(query) || c.email.includes(query))
-    : customers;
+    if (ids.length === 0) {
+      setCustomers([]);
+      setSelected(null);
+      setLoading(false);
+      return;
+    }
 
-  const selectedCustomer = customers.find(c => c.id === selected);
+    const [tripsRes, walletsRes, complaintsRes, ratingsRes] = await Promise.all([
+      supabase.from("trips").select("*").in("user_id", ids).order("created_at", { ascending: false }),
+      supabase.from("wallet").select("user_id, balance").in("user_id", ids),
+      supabase.from("complaints").select("*").in("user_id", ids).order("created_at", { ascending: false }),
+      supabase.from("ratings").select("user_id, score").in("user_id", ids),
+    ]);
+
+    const tripMap = new Map<string, any[]>();
+    (tripsRes.data || []).forEach((trip: any) => {
+      if (!tripMap.has(trip.user_id)) tripMap.set(trip.user_id, []);
+      tripMap.get(trip.user_id)!.push(trip);
+    });
+
+    const walletMap = new Map<string, number>((walletsRes.data || []).map((wallet: any) => [wallet.user_id, Number(wallet.balance || 0)]));
+
+    const complaintsMap = new Map<string, any[]>();
+    (complaintsRes.data || []).forEach((complaint: any) => {
+      if (!complaintsMap.has(complaint.user_id)) complaintsMap.set(complaint.user_id, []);
+      complaintsMap.get(complaint.user_id)!.push(complaint);
+    });
+
+    const ratingsMap = new Map<string, number[]>();
+    (ratingsRes.data || []).forEach((rating: any) => {
+      if (!ratingsMap.has(rating.user_id)) ratingsMap.set(rating.user_id, []);
+      ratingsMap.get(rating.user_id)!.push(Number(rating.score || 0));
+    });
+
+    const nextCustomers = (profiles || []).map((profile: any) => {
+      const customerTrips = tripMap.get(profile.id) || [];
+      const customerComplaints = complaintsMap.get(profile.id) || [];
+      const customerRatings = ratingsMap.get(profile.id) || [];
+      const averageRating = customerRatings.length
+        ? customerRatings.reduce((sum, score) => sum + score, 0) / customerRatings.length
+        : 5;
+
+      return {
+        id: profile.id,
+        name: profile.name || profile.fullName || "عميل",
+        phone: profile.phone || "—",
+        email: profile.email || "—",
+        trips: customerTrips.length,
+        wallet: `${Number(walletMap.get(profile.id) || 0).toFixed(2)} DH`,
+        rating: averageRating,
+        status: profile.status === "blocked" ? "محظور" : "نشط",
+        joined: formatJoinedDate(profile.created_at),
+        complaints: customerComplaints.map((complaint: any) => ({
+          id: complaint.id,
+          desc: complaint.description,
+          date: complaint.created_at ? new Date(complaint.created_at).toLocaleDateString("ar-MA") : "—",
+          status: complaint.status === "closed" ? "محلول" : complaint.status === "open" ? "مفتوح" : complaint.status,
+        })),
+        recentTrips: customerTrips.slice(0, 5).map((trip: any) => ({
+          from: trip.start_location || "—",
+          to: trip.end_location || "—",
+          date: trip.created_at ? new Date(trip.created_at).toLocaleDateString("ar-MA") : "—",
+          price: `${Number(trip.fare || 0)} DH`,
+        })),
+      };
+    });
+
+    setCustomers(nextCustomers);
+    setSelected((current) => (current && nextCustomers.some((customer) => customer.id === current) ? current : nextCustomers[0]?.id || null));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void fetchCustomers();
+    const channel = supabase
+      .channel("customer-search-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, fetchCustomers)
+      .on("postgres_changes", { event: "*", schema: "public", table: "trips" }, fetchCustomers)
+      .on("postgres_changes", { event: "*", schema: "public", table: "wallet" }, fetchCustomers)
+      .on("postgres_changes", { event: "*", schema: "public", table: "complaints" }, fetchCustomers)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchCustomers]);
+
+  const filtered = useMemo(() => {
+    if (!query.trim()) return customers;
+    const normalized = query.toLowerCase();
+    return customers.filter((customer) =>
+      [customer.name, customer.phone, customer.email].some((value) => String(value || "").toLowerCase().includes(normalized))
+    );
+  }, [customers, query]);
+
+  const selectedCustomer = customers.find((customer) => customer.id === selected) || null;
+
+  const handleToggleStatus = async () => {
+    if (!selectedCustomer) return;
+    const nextStatus = selectedCustomer.status === "نشط" ? "blocked" : "active";
+    await supabase.from("profiles").update({ status: nextStatus }).eq("id", selectedCustomer.id);
+    toast({ title: selectedCustomer.status === "نشط" ? "تم حظر العميل" : "تم تفعيل العميل" });
+    await fetchCustomers();
+  };
+
+  if (loading) {
+    return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+  }
 
   return (
     <div>
@@ -49,45 +137,38 @@ const CustomerSearch = () => {
         <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           value={query}
-          onChange={e => setQuery(e.target.value)}
+          onChange={(e) => setQuery(e.target.value)}
           placeholder="ابحث بالاسم أو رقم الهاتف أو البريد..."
           className="bg-secondary border-border rounded-xl pr-9 text-right"
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Customer List */}
         <div className="space-y-2">
-          {filtered.map(c => (
-            <button key={c.id} onClick={() => setSelected(c.id)}
+          {filtered.map((customer) => (
+            <button key={customer.id} onClick={() => setSelected(customer.id)}
               className={`w-full gradient-card rounded-xl p-4 border text-right transition-all ${
-                selected === c.id ? "border-primary glow-ring-orange" : "border-border hover:border-primary/20"
+                selected === customer.id ? "border-primary glow-ring-orange" : "border-border hover:border-primary/20"
               }`}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-info/10 flex items-center justify-center flex-shrink-0">
                   <User className="w-5 h-5 text-info" />
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                      c.status === "نشط" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-                    }`}>{c.status}</span>
-                    <p className="text-sm font-medium text-foreground">{c.name}</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${customer.status === "نشط" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>{customer.status}</span>
+                    <p className="text-sm font-medium text-foreground">{customer.name}</p>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">{c.phone}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{customer.phone}</p>
                 </div>
               </div>
             </button>
           ))}
-          {filtered.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground text-sm">لا توجد نتائج</div>
-          )}
+          {filtered.length === 0 && <div className="text-center py-8 text-muted-foreground text-sm">لا توجد نتائج</div>}
         </div>
 
-        {/* Customer Details */}
         {selectedCustomer ? (
           <div className="lg:col-span-2 space-y-4">
-            {/* Profile Card */}
             <div className="gradient-card rounded-xl p-5 border border-border">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-16 h-16 rounded-full bg-info/10 flex items-center justify-center">
@@ -95,18 +176,16 @@ const CustomerSearch = () => {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-bold text-foreground">{selectedCustomer.name}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      selectedCustomer.status === "نشط" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-                    }`}>{selectedCustomer.status}</span>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${selectedCustomer.status === "نشط" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>{selectedCustomer.status}</span>
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Star className="w-3 h-3 text-warning fill-warning" /> {selectedCustomer.rating}
+                      <Star className="w-3 h-3 text-warning fill-warning" /> {selectedCustomer.rating.toFixed(1)}
                     </span>
                     <span className="text-xs text-muted-foreground">عضو منذ {selectedCustomer.joined}</span>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="border-border rounded-lg text-xs">
+                  <Button size="sm" variant="outline" className="border-border rounded-lg text-xs" onClick={() => void handleToggleStatus()}>
                     {selectedCustomer.status === "نشط" ? "حظر" : "تفعيل"}
                   </Button>
                 </div>
@@ -118,8 +197,8 @@ const CustomerSearch = () => {
                   { icon: Mail, label: "البريد", value: selectedCustomer.email },
                   { icon: Car, label: "الرحلات", value: `${selectedCustomer.trips} رحلة` },
                   { icon: Wallet, label: "الرصيد", value: selectedCustomer.wallet },
-                ].map((item, i) => (
-                  <div key={i} className="bg-secondary/30 rounded-lg p-3 text-center">
+                ].map((item, index) => (
+                  <div key={index} className="bg-secondary/30 rounded-lg p-3 text-center">
                     <item.icon className="w-4 h-4 text-primary mx-auto mb-1" />
                     <p className="text-xs text-muted-foreground">{item.label}</p>
                     <p className="text-sm font-medium text-foreground mt-0.5">{item.value}</p>
@@ -128,19 +207,18 @@ const CustomerSearch = () => {
               </div>
             </div>
 
-            {/* Recent Trips */}
             <div className="gradient-card rounded-xl p-4 border border-border">
               <h3 className="text-foreground font-bold text-sm mb-3 flex items-center gap-2">
                 <Car className="w-4 h-4 text-primary" /> سجل الرحلات
               </h3>
               {selectedCustomer.recentTrips.length > 0 ? (
                 <div className="space-y-2">
-                  {selectedCustomer.recentTrips.map((t, i) => (
-                    <div key={i} className="flex items-center justify-between text-sm bg-secondary/30 rounded-lg p-3">
-                      <span className="text-primary font-bold">{t.price}</span>
+                  {selectedCustomer.recentTrips.map((trip: any, index: number) => (
+                    <div key={`${selectedCustomer.id}-${index}`} className="flex items-center justify-between text-sm bg-secondary/30 rounded-lg p-3">
+                      <span className="text-primary font-bold">{trip.price}</span>
                       <div className="text-right">
-                        <span className="text-foreground">{t.from} → {t.to}</span>
-                        <p className="text-xs text-muted-foreground">{t.date}</p>
+                        <span className="text-foreground">{trip.from} → {trip.to}</span>
+                        <p className="text-xs text-muted-foreground">{trip.date}</p>
                       </div>
                     </div>
                   ))}
@@ -150,21 +228,20 @@ const CustomerSearch = () => {
               )}
             </div>
 
-            {/* Complaints */}
             <div className="gradient-card rounded-xl p-4 border border-border">
               <h3 className="text-foreground font-bold text-sm mb-3 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-warning" /> الشكاوى ({selectedCustomer.complaints.length})
               </h3>
               {selectedCustomer.complaints.length > 0 ? (
                 <div className="space-y-2">
-                  {selectedCustomer.complaints.map((c) => (
-                    <div key={c.id} className="flex items-center justify-between text-sm bg-secondary/30 rounded-lg p-3">
+                  {selectedCustomer.complaints.map((complaint: any) => (
+                    <div key={complaint.id} className="flex items-center justify-between text-sm bg-secondary/30 rounded-lg p-3">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        c.status === "محلول" ? "bg-success/10 text-success" : c.status === "مفتوح" ? "bg-warning/10 text-warning" : "bg-destructive/10 text-destructive"
-                      }`}>{c.status}</span>
+                        complaint.status === "محلول" ? "bg-success/10 text-success" : complaint.status === "مفتوح" ? "bg-warning/10 text-warning" : "bg-destructive/10 text-destructive"
+                      }`}>{complaint.status}</span>
                       <div className="text-right">
-                        <span className="text-foreground">{c.desc}</span>
-                        <p className="text-xs text-muted-foreground">{c.date} • {c.id}</p>
+                        <span className="text-foreground">{complaint.desc}</span>
+                        <p className="text-xs text-muted-foreground">{complaint.date} • {complaint.id.slice(0, 6)}</p>
                       </div>
                     </div>
                   ))}
