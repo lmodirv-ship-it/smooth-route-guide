@@ -15,6 +15,7 @@ import Welcome from "./pages/Welcome";
 import AuthPage from "./pages/AuthPage";
 import CompleteProfile from "./pages/CompleteProfile";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 // Driver pages
@@ -115,6 +116,7 @@ const App = () => (
           <Route path="/auth/:role" element={<AuthPage />} />
           <Route path="/complete-profile" element={<SessionGuard><CompleteProfile /></SessionGuard>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/setup-admin" element={<SessionGuard><SetupAdmin /></SessionGuard>} />
 
           {/* Driver App - Protected */}
