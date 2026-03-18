@@ -128,7 +128,7 @@ const DriverProfile = () => {
         </div>
 
         <Button variant="outline" className="w-full mt-6 border-destructive/30 text-destructive hover:bg-destructive/10 rounded-xl"
-          onClick={async () => { await supabase.auth.signOut(); navigate("/login"); }}>
+          onClick={logout}>
           <LogOut className="w-4 h-4 ml-2" /> تسجيل الخروج
         </Button>
       </div>
