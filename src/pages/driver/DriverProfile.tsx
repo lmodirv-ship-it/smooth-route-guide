@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/firestoreClient";
-import logo from "@/assets/hn-driver-logo.png";
+import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 
 const DriverProfile = () => {
   const navigate = useNavigate();
