@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, User, Headphones, Shield, LogOut } from "lucide-react";
+import { Car, User, Headphones, Shield, LogOut, Download, Smartphone } from "lucide-react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
@@ -24,7 +24,6 @@ const Welcome = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userRole, setUserRole] = useState<RoleId | null>(null);
 
-  // Check if user is already logged in
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -59,7 +58,6 @@ const Welcome = () => {
     try {
       const user = auth.currentUser;
       if (user) {
-        // User is logged in, redirect to dashboard based on role
         const snap = await getDoc(doc(db, "users", user.uid));
         const savedRole = snap.exists() ? (snap.data().role as RoleId) : roleId;
         navigate(roleDashboardPaths[savedRole] || roleDashboardPaths[roleId]);
@@ -71,6 +69,10 @@ const Welcome = () => {
     } finally {
       setChecking(false);
     }
+  };
+
+  const scrollToMobileDownload = () => {
+    document.getElementById("mobile-download")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const roles = [
@@ -101,8 +103,19 @@ const Welcome = () => {
     },
   ];
 
+  const mobilePlatforms = [
+    {
+      title: "Android APK",
+      desc: "جاهز بعد بناء نسخة Android من المشروع ومزامنتها.",
+    },
+    {
+      title: "iPhone / iOS",
+      desc: "جاهز للنشر كتطبيق iPhone عبر Xcode وApple App Store.",
+    },
+  ];
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-between px-6 py-10 gradient-hero particles-bg relative">
+    <div className="flex min-h-screen flex-col items-center justify-between px-6 py-10 gradient-hero particles-bg relative gap-8">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -143,6 +156,16 @@ const Welcome = () => {
         </div>
         <h1 className="text-4xl font-bold font-display text-gradient-primary mt-4 tracking-wider">HN DRIVER</h1>
         <p className="text-muted-foreground mt-1 text-sm">اختر نوع حسابك للمتابعة</p>
+
+        <button
+          type="button"
+          onClick={scrollToMobileDownload}
+          className="mt-5 inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-5 py-2.5 text-sm font-semibold text-foreground shadow-lg shadow-primary/10 transition-all hover:border-primary/40 hover:bg-card"
+        >
+          <Download className="h-4 w-4 text-primary" />
+          تحميل التطبيق للجوال
+        </button>
+
         {currentUser && (
           <motion.div
             initial={{ opacity: 0, y: 5 }}
@@ -196,6 +219,39 @@ const Welcome = () => {
           </motion.button>
         ))}
       </div>
+
+      <motion.section
+        id="mobile-download"
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.55 }}
+        className="relative z-10 w-full max-w-sm rounded-3xl border border-border bg-card/75 p-5 shadow-2xl shadow-primary/10 backdrop-blur"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10">
+            <Smartphone className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-foreground">نسخة Native للهاتف</h2>
+            <p className="text-xs text-muted-foreground">تم تجهيز المشروع ليعمل على Android و iPhone.</p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3">
+          {mobilePlatforms.map((platform) => (
+            <div key={platform.title} className="rounded-2xl border border-border bg-background/70 p-4">
+              <p className="text-sm font-semibold text-foreground">{platform.title}</p>
+              <p className="mt-1 text-xs leading-6 text-muted-foreground">{platform.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-4">
+          <p className="text-xs leading-6 text-muted-foreground">
+            لتوليد النسخ الفعلية: Export to GitHub ← npm install ← npx cap add android أو ios ← npm run build ← npx cap sync.
+          </p>
+        </div>
+      </motion.section>
 
       <motion.div
         initial={{ opacity: 0 }}
