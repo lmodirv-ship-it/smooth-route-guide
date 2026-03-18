@@ -255,7 +255,9 @@ class FirestoreQueryBuilder<T = any> {
 
     for (const d of snapshot.docs) {
       await updateDoc(d.ref, { ...payload, updated_at: new Date().toISOString() });
-      results.push(normalizeFirestoreRow(this._table, { id: d.id, ...d.data(), ...payload }));
+      const existingData = d.data() as Record<string, any>;
+      const mergedData = Object.assign({ id: d.id }, existingData, payload as Record<string, any>);
+      results.push(normalizeFirestoreRow(this._table, mergedData));
     }
 
     return { data: results, error: null };
