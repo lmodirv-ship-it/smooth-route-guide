@@ -8,6 +8,7 @@ import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 
 const ClientProfile = () => {
   const navigate = useNavigate();
+  const logout = useFirebaseLogout();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState({ name: "", email: "", phone: "", tripCount: 0, balance: 0 });
 
