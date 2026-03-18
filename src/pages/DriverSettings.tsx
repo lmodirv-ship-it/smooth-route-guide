@@ -4,9 +4,11 @@ import {
   ArrowRight, User, Phone, Car, FileText, Shield, Bell,
   Globe, Moon, LogOut, ChevronLeft, HelpCircle, Star
 } from "lucide-react";
+import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 
 const DriverSettings = () => {
   const navigate = useNavigate();
+  const logout = useFirebaseLogout();
 
   const sections = [
     {
@@ -103,7 +105,7 @@ const DriverSettings = () => {
       {/* Logout */}
       <div className="px-4 mt-6">
         <button
-          onClick={() => navigate("/welcome")}
+          onClick={logout}
           className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors"
         >
           <span>تسجيل الخروج</span>

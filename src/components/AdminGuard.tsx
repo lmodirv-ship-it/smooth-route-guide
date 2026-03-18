@@ -47,7 +47,7 @@ const AdminGuard = ({ children }: AdminGuardProps) => {
   }
 
   if (state === "unauthenticated") {
-    return <Navigate to="/welcome" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   if (state === "unauthorized") {

@@ -66,7 +66,7 @@ const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
     );
   }
 
-  if (state === "no-auth") return <Navigate to="/welcome" replace />;
+  if (state === "no-auth") return <Navigate to="/login" replace />;
   if (state === "wrong-role" && userRole) return <Navigate to={roleDashboard[userRole]} replace />;
   if (state === "incomplete-profile") return <Navigate to="/complete-profile" replace />;
 

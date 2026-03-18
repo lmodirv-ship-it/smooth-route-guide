@@ -53,7 +53,7 @@ const CallCenterGuard = ({ children }: CallCenterGuardProps) => {
   }
 
   if (state === "unauthenticated") {
-    return <Navigate to="/welcome" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   if (state === "unauthorized") {

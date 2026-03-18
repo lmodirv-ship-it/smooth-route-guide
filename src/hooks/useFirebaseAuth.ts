@@ -10,10 +10,9 @@ export const useFirebaseLogout = () => {
     try {
       await signOut(auth);
       localStorage.removeItem("hn_user_role");
-      navigate("/welcome", { replace: true });
+      navigate("/login", { replace: true });
     } catch {
-      // Force navigate even on error
-      navigate("/welcome", { replace: true });
+      navigate("/login", { replace: true });
     }
   }, [navigate]);
 

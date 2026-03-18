@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/firestoreClient";
-import logo from "@/assets/hn-driver-logo.png";
+import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 
 const DriverProfile = () => {
   const navigate = useNavigate();
+  const logout = useFirebaseLogout();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState({ name: "", phone: "", email: "", rating: 0, trips: 0, license: "", status: "" });
@@ -128,7 +129,7 @@ const DriverProfile = () => {
         </div>
 
         <Button variant="outline" className="w-full mt-6 border-destructive/30 text-destructive hover:bg-destructive/10 rounded-xl"
-          onClick={async () => { await supabase.auth.signOut(); navigate("/login"); }}>
+          onClick={logout}>
           <LogOut className="w-4 h-4 ml-2" /> تسجيل الخروج
         </Button>
       </div>

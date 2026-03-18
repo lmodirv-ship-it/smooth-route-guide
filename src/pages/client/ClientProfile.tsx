@@ -4,9 +4,11 @@ import { motion } from "framer-motion";
 import { User, ArrowRight, Phone, Mail, Car, Wallet, Clock, Star, Heart, Settings, LogOut, ChevronLeft, HelpCircle, Bot, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/firestoreClient";
+import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 
 const ClientProfile = () => {
   const navigate = useNavigate();
+  const logout = useFirebaseLogout();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState({ name: "", email: "", phone: "", tripCount: 0, balance: 0 });
 
@@ -87,7 +89,7 @@ const ClientProfile = () => {
         ))}
 
         <Button variant="outline" className="w-full mt-4 border-destructive/30 text-destructive hover:bg-destructive/10 rounded-xl"
-          onClick={async () => { await supabase.auth.signOut(); navigate("/login"); }}>
+          onClick={logout}>
           <LogOut className="w-4 h-4 ml-2" /> تسجيل الخروج
         </Button>
       </div>
