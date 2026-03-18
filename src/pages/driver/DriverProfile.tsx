@@ -11,6 +11,7 @@ import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 const DriverProfile = () => {
   const navigate = useNavigate();
   const logout = useFirebaseLogout();
+  const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState({ name: "", phone: "", email: "", rating: 0, trips: 0, license: "", status: "" });
   const [editForm, setEditForm] = useState({ name: "", phone: "", email: "" });
