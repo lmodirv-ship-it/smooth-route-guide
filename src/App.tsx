@@ -106,15 +106,16 @@ const App = () => (
       <Sonner />
       <CartProvider>
       <BrowserRouter>
+        <GlobalLogoutButton />
         <Routes>
           {/* Core */}
           <Route path="/" element={<Splash />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/login" element={<AuthPage />} />
           <Route path="/auth/:role" element={<AuthPage />} />
-          <Route path="/complete-profile" element={<CompleteProfile />} />
+          <Route path="/complete-profile" element={<SessionGuard><CompleteProfile /></SessionGuard>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/setup-admin" element={<SetupAdmin />} />
+          <Route path="/setup-admin" element={<SessionGuard><SetupAdmin /></SessionGuard>} />
 
           {/* Driver App - Protected */}
           <Route path="/driver" element={<AuthGuard requiredRole="driver"><DriverDashboard /></AuthGuard>} />
@@ -194,8 +195,8 @@ const App = () => (
           </Route>
 
           {/* AI Agents */}
-          <Route path="/ai" element={<AgentHub />} />
-          <Route path="/assistant" element={<AIAssistant />} />
+          <Route path="/ai" element={<SessionGuard><AgentHub /></SessionGuard>} />
+          <Route path="/assistant" element={<SessionGuard><AIAssistant /></SessionGuard>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
