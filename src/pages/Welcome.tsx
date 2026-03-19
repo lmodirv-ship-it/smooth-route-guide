@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Car, User, Headphones, Shield, LogOut, Download, Smartphone } from "lucide-react";
+import QRCode from "react-qr-code";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
@@ -17,6 +18,8 @@ const roleDashboardPaths: Record<string, string> = {
   call_center: "/call-center",
   admin: "/admin",
 };
+
+const downloadPageUrl = "https://smooth-route-guide.lovable.app/welcome#mobile-download";
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -115,7 +118,7 @@ const Welcome = () => {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-between px-6 py-10 gradient-hero particles-bg relative gap-8">
+    <div className="flex min-h-screen flex-col items-center justify-between px-6 py-10 gradient-hero particles-bg relative gap-8 safe-mobile-top safe-mobile-bottom">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -250,6 +253,29 @@ const Welcome = () => {
           <p className="text-xs leading-6 text-muted-foreground">
             لتوليد النسخ الفعلية: Export to GitHub ← npm install ← npx cap add android أو ios ← npm run build ← npx cap sync.
           </p>
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-center">
+          <p className="text-sm font-semibold text-foreground">امسح الكود بالجوال</p>
+          <p className="mt-1 text-xs leading-6 text-muted-foreground">
+            افتح صفحة التحميل مباشرة على هاتفك من خلال QR code.
+          </p>
+          <div className="mx-auto mt-4 flex w-fit rounded-2xl bg-background p-3 shadow-lg shadow-primary/10">
+            <QRCode
+              value={downloadPageUrl}
+              size={132}
+              bgColor="hsl(var(--background))"
+              fgColor="hsl(var(--foreground))"
+            />
+          </div>
+          <a
+            href={downloadPageUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 inline-flex text-xs text-primary underline-offset-4 hover:underline"
+          >
+            فتح رابط التحميل
+          </a>
         </div>
       </motion.section>
 
