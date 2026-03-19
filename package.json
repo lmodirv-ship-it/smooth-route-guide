@@ -1,8 +1,9 @@
 {
   "name": "vite_react_shadcn_ts",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "main": "electron/main.mjs",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -14,11 +15,19 @@
     "test:watch": "vitest",
     "mobile:sync": "cap sync",
     "mobile:android": "cap open android",
-    "mobile:ios": "cap open ios"
+    "mobile:ios": "cap open ios",
+    "native:android": "vite build && cap sync android",
+    "native:ios": "vite build && cap sync ios",
+    "desktop:dist": "vite build && electron-builder",
+    "desktop:win": "vite build && electron-builder --win",
+    "desktop:mac": "vite build && electron-builder --mac",
+    "desktop:linux": "vite build && electron-builder --linux"
   },
   "dependencies": {
+    "@capacitor/android": "^8.2.0",
     "@capacitor/cli": "^8.2.0",
     "@capacitor/core": "^8.2.0",
+    "@capacitor/ios": "^8.2.0",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -54,6 +63,8 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^3.6.0",
+    "electron": "^38.3.0",
+    "electron-builder": "^26.0.12",
     "embla-carousel-react": "^8.6.0",
     "firebase": "^12.10.0",
     "framer-motion": "^12.37.0",
@@ -100,5 +111,37 @@
     "typescript-eslint": "^8.38.0",
     "vite": "^8.0.0",
     "vitest": "^4.1.0"
+  },
+  "build": {
+    "appId": "app.lovable.871f375973ef45798f089a7c52b1611d",
+    "productName": "smooth-route-guide",
+    "directories": {
+      "output": "native-dist",
+      "buildResources": "public"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "smooth-route-guide-windows-setup.${ext}"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "artifactName": "smooth-route-guide-macos.${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "artifactName": "smooth-route-guide-linux.${ext}"
+    }
   }
 }
