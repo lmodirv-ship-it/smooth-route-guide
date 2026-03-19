@@ -1,22 +1,15 @@
-import { useState, useEffect, createElement, type ComponentType } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, User, Headphones, Shield, LogOut, Download, Smartphone } from "lucide-react";
-import QRCodeImport from "react-qr-code";
+import { Car, User, Headphones, Shield, LogOut, Download } from "lucide-react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import logo from "@/assets/hn-driver-logo.png";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
+import NativeDownloadSection from "@/components/welcome/NativeDownloadSection";
 
 type RoleId = "driver" | "client" | "delivery";
-
-type QRCodeProps = {
-  value: string;
-  size?: number;
-  bgColor?: string;
-  fgColor?: string;
-};
 
 const roleDashboardPaths: Record<string, string> = {
   driver: "/driver",
@@ -25,25 +18,6 @@ const roleDashboardPaths: Record<string, string> = {
   call_center: "/call-center",
   admin: "/admin",
 };
-const downloadPageUrl = "https://smooth-route-guide.lovable.app/welcome#mobile-download";
-
-const resolveQrCodeComponent = (moduleValue: unknown): ComponentType<QRCodeProps> | null => {
-  if (typeof moduleValue === "function") {
-    return moduleValue as ComponentType<QRCodeProps>;
-  }
-
-  if (moduleValue && typeof moduleValue === "object") {
-    const candidate =
-      (moduleValue as { default?: unknown; QRCode?: unknown }).default ??
-      (moduleValue as { default?: unknown; QRCode?: unknown }).QRCode;
-
-    return resolveQrCodeComponent(candidate);
-  }
-
-  return null;
-};
-
-const QRCodeComponent = resolveQrCodeComponent(QRCodeImport);
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -127,27 +101,6 @@ const Welcome = () => {
       desc: "أرسل طرودك بسرعة وأمان",
       glowClass: "glow-ring-green",
       iconColor: "text-success",
-    },
-  ];
-
-  const mobilePlatforms = [
-    {
-      title: "Android APK",
-      desc: "جاهز بعد بناء نسخة Android من المشروع ومزامنتها.",
-      badge: "APK",
-      available: true,
-    },
-    {
-      title: "iPhone / iOS",
-      desc: "جاهز للنشر كتطبيق iPhone عبر Xcode وApple App Store.",
-      badge: "iOS",
-      available: true,
-    },
-    {
-      title: "Windows EXE",
-      desc: "نسخة Windows قابلة للتحميل بصيغة .exe ستظهر هنا فور تجهيز ملف التثبيت.",
-      badge: "EXE",
-      available: false,
     },
   ];
 
@@ -257,73 +210,7 @@ const Welcome = () => {
         ))}
       </div>
 
-      <motion.section
-        id="mobile-download"
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.55 }}
-        className="relative z-10 w-full max-w-sm rounded-3xl border border-border bg-card/75 p-5 shadow-2xl shadow-primary/10 backdrop-blur"
-      >
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10">
-            <Smartphone className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-base font-bold text-foreground">نسخة Native للهاتف</h2>
-            <p className="text-xs text-muted-foreground">تم تجهيز المشروع ليعمل على Android و iPhone.</p>
-          </div>
-        </div>
-
-        <div className="mt-4 grid gap-3">
-          {mobilePlatforms.map((platform) => (
-            <div key={platform.title} className="rounded-2xl border border-border bg-background/70 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold text-foreground">{platform.title}</p>
-                <span className="rounded-full border border-border bg-card px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                  {platform.badge}
-                </span>
-              </div>
-              <p className="mt-1 text-xs leading-6 text-muted-foreground">{platform.desc}</p>
-              <p className="mt-2 text-[11px] font-medium text-muted-foreground">
-                {platform.available ? "Disponible après export/build" : "Bientôt disponible"}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-4 rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-4">
-          <p className="text-xs leading-6 text-muted-foreground">
-            لتوليد النسخ الفعلية: Export to GitHub ← npm install ← npx cap add android أو ios ← npm run build ← npx cap sync.
-          </p>
-        </div>
-
-        <div className="mt-4 rounded-2xl border border-border bg-background/70 p-4 text-center">
-          <p className="text-sm font-semibold text-foreground">امسح الكود بالجوال</p>
-          <p className="mt-1 text-xs leading-6 text-muted-foreground">
-            افتح صفحة التحميل مباشرة على هاتفك من خلال QR code.
-          </p>
-          <div className="mx-auto mt-4 flex w-fit rounded-2xl bg-background p-3 shadow-lg shadow-primary/10">
-            {QRCodeComponent ? (
-              createElement(QRCodeComponent, {
-                value: downloadPageUrl,
-                size: 132,
-                bgColor: "hsl(var(--background))",
-                fgColor: "hsl(var(--foreground))",
-              })
-            ) : (
-              <p className="text-xs text-muted-foreground">تعذر تحميل رمز QR حالياً.</p>
-            )}
-          </div>
-          <a
-            href={downloadPageUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-3 inline-flex text-xs text-primary underline-offset-4 hover:underline"
-          >
-            فتح رابط التحميل
-          </a>
-        </div>
-      </motion.section>
+      <NativeDownloadSection />
 
       <motion.div
         initial={{ opacity: 0 }}
