@@ -13,6 +13,7 @@ import IncomingRideRequest from "@/components/IncomingRideRequest";
 import LocationPermissionPrompt from "@/components/driver/LocationPermissionPrompt";
 import { useIncomingRideRequests } from "@/hooks/useIncomingRideRequests";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
+import { openAppSettings } from "@/lib/nativeApp";
 import { supabase } from "@/lib/firestoreClient";
 import logo from "@/assets/hn-driver-logo.png";
 
