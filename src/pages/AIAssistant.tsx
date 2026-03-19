@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/lib/firestoreClient";
+import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
+import { sanitizePlainText } from "@/lib/inputSecurity";
 import logo from "@/assets/hn-driver-logo.png";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -17,11 +19,12 @@ async function streamChat({
 }: {
   messages: Msg[]; onDelta: (text: string) => void; onDone: () => void; onError: (err: string) => void;
 }) {
+  const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : null;
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
     },
     body: JSON.stringify({ messages }),
   });
@@ -152,20 +155,19 @@ const AIAssistant = () => {
   };
 
   const send = async (text: string) => {
-    if (!text.trim() || isLoading) return;
-    const userMsg: Msg = { role: "user", content: text.trim() };
+    const safeText = sanitizePlainText(text, 4000);
+    if (!safeText || isLoading) return;
+    const userMsg: Msg = { role: "user", content: safeText };
     setMessages((p) => [...p, userMsg]);
     setInput("");
     setIsLoading(true);
 
-    // Create or reuse conversation
     let convId = conversationId;
     if (!convId && userId) {
-      convId = await createConversation(text.trim());
+      convId = await createConversation(safeText);
     }
 
-    // Save user message
-    if (convId) saveMessage(convId, "user", text.trim());
+    if (convId) saveMessage(convId, "user", safeText);
 
     let assistantSoFar = "";
     const upsert = (chunk: string) => {
@@ -184,7 +186,6 @@ const AIAssistant = () => {
       onDelta: upsert,
       onDone: () => {
         setIsLoading(false);
-        // Save assistant response
         if (convId && assistantSoFar) saveMessage(convId, "assistant", assistantSoFar);
       },
       onError: (err) => {
@@ -312,7 +313,7 @@ const AIAssistant = () => {
         <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="flex gap-2">
           <Input
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => setInput(sanitizePlainText(e.target.value, 4000))}
             placeholder="اكتب رسالتك..."
             className="flex-1 bg-secondary/80 border-border rounded-xl text-right"
             disabled={isLoading}

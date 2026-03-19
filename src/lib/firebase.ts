@@ -4,7 +4,7 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDv3EP3G9EYQ5o_dg5n6JQQ5V1JLzYB_sg",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "hn-driver-18963.firebaseapp.com",
   projectId: "hn-driver-18963",
   storageBucket: "hn-driver-18963.firebasestorage.app",

@@ -2,8 +2,7 @@ import { GoogleMap as GoogleMapComponent, useJsApiLoader, Marker } from "@react-
 import { useMemo, useEffect, useRef } from "react";
 import { Navigation } from "lucide-react";
 
-// Publishable key for client-side map rendering (restricted by HTTP referrer in Google Cloud Console)
-export const GOOGLE_MAPS_API_KEY = "AIzaSyDpJ8TfGwfOa0XvwOyvmFpg-pdkYNSKoRM";
+export const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 
 const LIBRARIES: ("places")[] = ["places"];
 
