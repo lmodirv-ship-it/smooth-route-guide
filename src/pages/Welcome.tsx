@@ -134,10 +134,20 @@ const Welcome = () => {
     {
       title: "Android APK",
       desc: "جاهز بعد بناء نسخة Android من المشروع ومزامنتها.",
+      badge: "APK",
+      available: true,
     },
     {
       title: "iPhone / iOS",
       desc: "جاهز للنشر كتطبيق iPhone عبر Xcode وApple App Store.",
+      badge: "iOS",
+      available: true,
+    },
+    {
+      title: "Windows EXE",
+      desc: "نسخة Windows قابلة للتحميل بصيغة .exe ستظهر هنا فور تجهيز ملف التثبيت.",
+      badge: "EXE",
+      available: false,
     },
   ];
 
@@ -267,8 +277,16 @@ const Welcome = () => {
         <div className="mt-4 grid gap-3">
           {mobilePlatforms.map((platform) => (
             <div key={platform.title} className="rounded-2xl border border-border bg-background/70 p-4">
-              <p className="text-sm font-semibold text-foreground">{platform.title}</p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-foreground">{platform.title}</p>
+                <span className="rounded-full border border-border bg-card px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                  {platform.badge}
+                </span>
+              </div>
               <p className="mt-1 text-xs leading-6 text-muted-foreground">{platform.desc}</p>
+              <p className="mt-2 text-[11px] font-medium text-muted-foreground">
+                {platform.available ? "Disponible après export/build" : "Bientôt disponible"}
+              </p>
             </div>
           ))}
         </div>
