@@ -26,6 +26,7 @@ const DriverDashboard = () => {
   const {
     location: driverLocation,
     permissionDenied,
+    requiresSettings,
     loading: gpsLoading,
     retryLocationAccess,
   } = useDriverGeolocation(isOnline);
