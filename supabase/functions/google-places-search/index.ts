@@ -1,11 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { corsHeaders, enforceRateLimit, handleError, parseJson, sanitizePlainText, z } from "../_shared/security.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const requestSchema = z.object({
+  city: z.string().trim().max(80).optional(),
+  type: z.string().trim().max(40).optional(),
+  useGoogle: z.boolean().optional(),
+  area: z.string().trim().max(80).optional(),
+});
 
-// Mock data for Tanger restaurants when API key is not available or for testing
 const MOCK_RESTAURANTS = [
   {
     name: "Restaurant El Korsan",
@@ -166,83 +168,77 @@ const MOCK_RESTAURANTS = [
 ];
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { city, type, useGoogle, area } = await req.json();
-    const GOOGLE_MAPS_API_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY');
+    await enforceRateLimit(req, "google-places-search", 20, 60);
+    const { city, type, useGoogle, area } = await parseJson(req, requestSchema);
+    const googleMapsApiKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
+    const safeCity = sanitizePlainText(city || "Tanger", 80);
+    const safeType = sanitizePlainText(type || "restaurants", 40);
+    const safeArea = area ? sanitizePlainText(area, 80) : "";
 
-    // Try Google Places API if key exists and useGoogle is true
-    if (useGoogle && GOOGLE_MAPS_API_KEY) {
-      const areaQuery = area ? `${type || 'restaurants'} in ${area}, ${city || 'Tanger'}, Morocco` : `${type || 'restaurants'} in ${city || 'Tanger'}, Morocco`;
-      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(areaQuery)}&key=${GOOGLE_MAPS_API_KEY}&language=fr`;
+    if (useGoogle && googleMapsApiKey) {
+      const areaQuery = safeArea
+        ? `${safeType} in ${safeArea}, ${safeCity}, Morocco`
+        : `${safeType} in ${safeCity}, Morocco`;
+      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(areaQuery)}&key=${googleMapsApiKey}&language=fr`;
 
       const response = await fetch(url);
       const data = await response.json();
 
-      if (data.status === 'OK' && data.results?.length > 0) {
+      if (data.status === "OK" && data.results?.length > 0) {
         const restaurants = data.results.map((place: any) => {
-          // Extract area from address components
-          const addressParts = (place.formatted_address || '').split(',');
-          const area = addressParts.length > 1 ? addressParts[addressParts.length - 2]?.trim() : '';
-
-          // Build photo URL
-          let image_url = '';
-          if (place.photos?.[0]?.photo_reference) {
-            image_url = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${place.photos[0].photo_reference}&key=${GOOGLE_MAPS_API_KEY}`;
-          }
+          const addressParts = (place.formatted_address || "").split(",");
+          const areaLabel = addressParts.length > 1 ? addressParts[addressParts.length - 2]?.trim() : "";
 
           return {
-            name: place.name,
-            address: place.formatted_address || '',
-            area,
-            lat: place.geometry?.location?.lat || 0,
-            lng: place.geometry?.location?.lng || 0,
-            phone: '',
-            rating: place.rating || 0,
-            image_url,
+            name: sanitizePlainText(place.name || "", 120),
+            address: sanitizePlainText(place.formatted_address || "", 220),
+            area: sanitizePlainText(areaLabel || "", 80),
+            lat: Number(place.geometry?.location?.lat || 0),
+            lng: Number(place.geometry?.location?.lng || 0),
+            phone: "",
+            rating: Number(place.rating || 0),
+            image_url: "",
             is_open: place.opening_hours?.open_now ?? true,
-            google_place_id: place.place_id || '',
-            category: 'restaurant',
+            google_place_id: sanitizePlainText(place.place_id || "", 160),
+            category: "restaurant",
           };
         });
 
-        return new Response(JSON.stringify({ 
-          restaurants, 
-          source: 'google',
-          total: restaurants.length 
+        return new Response(JSON.stringify({
+          restaurants,
+          source: "google",
+          total: restaurants.length,
         }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
     }
 
-    // Fallback to mock data
-    let filtered = MOCK_RESTAURANTS.filter(r => {
-      if (type && type !== 'all' && type !== 'restaurants') {
-        return r.category.toLowerCase().includes(type.toLowerCase());
+    let filtered = MOCK_RESTAURANTS.filter((restaurant) => {
+      if (safeType && safeType !== "all" && safeType !== "restaurants") {
+        return restaurant.category.toLowerCase().includes(safeType.toLowerCase());
       }
       return true;
     });
-    // Filter by area if specified
-    if (area) {
-      filtered = filtered.filter(r => r.area.toLowerCase().includes(area.toLowerCase()));
+
+    if (safeArea) {
+      filtered = filtered.filter((restaurant) => restaurant.area.toLowerCase().includes(safeArea.toLowerCase()));
     }
 
-    return new Response(JSON.stringify({ 
-      restaurants: filtered, 
-      source: 'mock',
-      total: filtered.length 
+    return new Response(JSON.stringify({
+      restaurants: filtered,
+      source: "mock",
+      total: filtered.length,
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error('Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.error("google-places-search error:", error);
+    return handleError(error);
   }
 });

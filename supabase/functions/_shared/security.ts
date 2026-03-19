@@ -106,8 +106,11 @@ function getAdminClient() {
 
 function getClientIdentifier(req: Request) {
   const authHeader = req.headers.get("authorization");
-  if (authHeader) {
-    return `auth:${authHeader.slice(-48)}`;
+  const bearerToken = authHeader?.replace(/^Bearer\s+/i, "").trim();
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY");
+
+  if (bearerToken && anonKey && bearerToken !== anonKey) {
+    return `auth:${bearerToken.slice(-48)}`;
   }
 
   const forwardedFor = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
