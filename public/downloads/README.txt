@@ -1,16 +1,12 @@
-ضع ملفات التثبيت النهائية هنا بهذه الأسماء الدقيقة لتفعيل أزرار التحميل في صفحة Welcome:
+ضع ملف Android النهائي هنا بهذا الاسم لتفعيل زر التحميل الحقيقي:
 
 - smooth-route-guide-android.apk
-- smooth-route-guide-ios.ipa
-- smooth-route-guide-windows-setup.exe
-- smooth-route-guide-macos.dmg
-- smooth-route-guide-linux.AppImage
 
-الأوامر:
-- Android: npm run native:android
-- iPhone: npm run native:ios
-- Windows: npm run desktop:win
-- macOS: npm run desktop:mac
-- Linux: npm run desktop:linux
+أوامر Android:
+1) npm install
+2) npm run native:android
+3) npx cap add android   (مرة واحدة فقط إذا لم يكن مجلد android موجوداً)
+4) npx cap open android
+5) من Android Studio: Build > Build APK(s)
 
-بعد توليد ملفات التثبيت، انسخها إلى هذا المجلد ثم انشر الواجهة ليظهر التحميل الحقيقي للمستخدمين.
+بعد توليد APK انسخه إلى هذا المجلد ثم انشر الواجهة ليظهر زر التحميل الحقيقي.

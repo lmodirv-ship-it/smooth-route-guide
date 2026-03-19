@@ -17,6 +17,7 @@
     "mobile:android": "cap open android",
     "mobile:ios": "cap open ios",
     "native:android": "vite build && cap sync android",
+    "native:android:apk": "vite build && cap sync android && cap open android",
     "native:ios": "vite build && cap sync ios",
     "desktop:dist": "vite build && electron-builder",
     "desktop:win": "vite build && electron-builder --win",
@@ -25,9 +26,12 @@
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",
+    "@capacitor/app": "^8.0.1",
     "@capacitor/cli": "^8.2.0",
     "@capacitor/core": "^8.2.0",
     "@capacitor/ios": "^8.2.0",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.1",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -126,21 +130,15 @@
     ],
     "asar": true,
     "win": {
-      "target": [
-        "nsis"
-      ],
+      "target": ["nsis"],
       "artifactName": "smooth-route-guide-windows-setup.${ext}"
     },
     "mac": {
-      "target": [
-        "dmg"
-      ],
+      "target": ["dmg"],
       "artifactName": "smooth-route-guide-macos.${ext}"
     },
     "linux": {
-      "target": [
-        "AppImage"
-      ],
+      "target": ["AppImage"],
       "artifactName": "smooth-route-guide-linux.${ext}"
     }
   }
