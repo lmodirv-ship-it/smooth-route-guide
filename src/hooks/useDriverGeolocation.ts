@@ -6,6 +6,7 @@ import { syncDriverOrderMetrics } from '@/lib/orderService';
 import {
   DriverCoordinates,
   DriverLocationWatchId,
+  getDriverCurrentPosition,
   requestDriverLocationPermission,
   startDriverLocationWatch,
   stopDriverLocationWatch,
@@ -98,6 +99,8 @@ export function useDriverGeolocation(isOnline: boolean) {
         return;
       }
 
+      const currentPosition = await getDriverCurrentPosition();
+      handleLocationSuccess(currentPosition);
       watchIdRef.current = await startDriverLocationWatch(handleLocationSuccess, handleLocationError);
     } catch (error) {
       handleLocationError(error instanceof Error ? error : new Error('LOCATION_REQUEST_FAILED'));

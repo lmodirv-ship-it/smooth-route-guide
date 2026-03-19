@@ -29,6 +29,30 @@ export const requestDriverLocationPermission = async () => {
   return permissions.location;
 };
 
+export const getDriverCurrentPosition = async (): Promise<DriverCoordinates> => {
+  if (isNativePlatform) {
+    const position = await Geolocation.getCurrentPosition(nativeOptions);
+
+    return {
+      lat: position.coords.latitude,
+      lng: position.coords.longitude,
+    };
+  }
+
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      },
+      reject,
+      browserOptions,
+    );
+  });
+};
+
 export const startDriverLocationWatch = async (
   onSuccess: (coords: DriverCoordinates) => void,
   onError: (error: GeolocationPositionError | Error) => void,
