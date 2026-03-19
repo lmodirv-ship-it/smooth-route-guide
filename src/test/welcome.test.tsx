@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 
@@ -30,14 +30,14 @@ import Welcome from "@/pages/Welcome";
 
 describe("Welcome", () => {
   it("renders the QR section without crashing when the QR module is wrapped in nested default exports", () => {
-    render(
+    const { getByText, getByTestId } = render(
       <MemoryRouter>
         <Welcome />
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("امسح الكود بالجوال")).toBeInTheDocument();
-    expect(screen.getByTestId("qr-code")).toHaveAttribute(
+    expect(getByText("امسح الكود بالجوال")).toBeInTheDocument();
+    expect(getByTestId("qr-code")).toHaveAttribute(
       "data-value",
       "https://smooth-route-guide.lovable.app/welcome#mobile-download",
     );
