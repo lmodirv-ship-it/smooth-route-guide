@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createElement, type ComponentType } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Car, User, Headphones, Shield, LogOut, Download, Smartphone } from "lucide-react";
-import QRCode from "react-qr-code";
+import QRCodeImport from "react-qr-code";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
@@ -10,6 +10,13 @@ import logo from "@/assets/hn-driver-logo.png";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 
 type RoleId = "driver" | "client" | "delivery";
+
+type QRCodeProps = {
+  value: string;
+  size?: number;
+  bgColor?: string;
+  fgColor?: string;
+};
 
 const roleDashboardPaths: Record<string, string> = {
   driver: "/driver",
@@ -19,6 +26,24 @@ const roleDashboardPaths: Record<string, string> = {
   admin: "/admin",
 };
 const downloadPageUrl = "https://smooth-route-guide.lovable.app/welcome#mobile-download";
+
+const resolveQrCodeComponent = (moduleValue: unknown): ComponentType<QRCodeProps> | null => {
+  if (typeof moduleValue === "function") {
+    return moduleValue as ComponentType<QRCodeProps>;
+  }
+
+  if (moduleValue && typeof moduleValue === "object") {
+    const candidate =
+      (moduleValue as { default?: unknown; QRCode?: unknown }).default ??
+      (moduleValue as { default?: unknown; QRCode?: unknown }).QRCode;
+
+    return resolveQrCodeComponent(candidate);
+  }
+
+  return null;
+};
+
+const QRCodeComponent = resolveQrCodeComponent(QRCodeImport);
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -260,12 +285,16 @@ const Welcome = () => {
             افتح صفحة التحميل مباشرة على هاتفك من خلال QR code.
           </p>
           <div className="mx-auto mt-4 flex w-fit rounded-2xl bg-background p-3 shadow-lg shadow-primary/10">
-            <QRCode
-              value={downloadPageUrl}
-              size={132}
-              bgColor="hsl(var(--background))"
-              fgColor="hsl(var(--foreground))"
-            />
+            {QRCodeComponent ? (
+              createElement(QRCodeComponent, {
+                value: downloadPageUrl,
+                size: 132,
+                bgColor: "hsl(var(--background))",
+                fgColor: "hsl(var(--foreground))",
+              })
+            ) : (
+              <p className="text-xs text-muted-foreground">تعذر تحميل رمز QR حالياً.</p>
+            )}
           </div>
           <a
             href={downloadPageUrl}
