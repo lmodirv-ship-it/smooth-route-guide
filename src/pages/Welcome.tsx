@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Car, User, Headphones, Shield, LogOut, Download, Smartphone } from "lucide-react";
-import QRCode from "react-qr-code";
+import { QRCode } from "react-qr-code";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
