@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Car, User, Headphones, Shield, LogOut, Download, Smartphone } from "lucide-react";
-import { QRCode } from "react-qr-code";
+import * as QRCodeModule from "react-qr-code";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
@@ -18,6 +18,15 @@ const roleDashboardPaths: Record<string, string> = {
   call_center: "/call-center",
   admin: "/admin",
 };
+
+const QRCode = ((QRCodeModule as unknown as { default?: unknown; QRCode?: unknown }).default ??
+  (QRCodeModule as unknown as { default?: unknown; QRCode?: unknown }).QRCode ??
+  QRCodeModule) as React.ComponentType<{
+  value: string;
+  size?: number;
+  bgColor?: string;
+  fgColor?: string;
+}>;
 
 const downloadPageUrl = "https://smooth-route-guide.lovable.app/welcome#mobile-download";
 
