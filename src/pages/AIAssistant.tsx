@@ -124,20 +124,19 @@ const AIAssistant = () => {
   };
 
   const send = async (text: string) => {
-    if (!text.trim() || isLoading) return;
-    const userMsg: Msg = { role: "user", content: text.trim() };
+    const safeText = sanitizePlainText(text, 4000);
+    if (!safeText || isLoading) return;
+    const userMsg: Msg = { role: "user", content: safeText };
     setMessages((p) => [...p, userMsg]);
     setInput("");
     setIsLoading(true);
 
-    // Create or reuse conversation
     let convId = conversationId;
     if (!convId && userId) {
-      convId = await createConversation(text.trim());
+      convId = await createConversation(safeText);
     }
 
-    // Save user message
-    if (convId) saveMessage(convId, "user", text.trim());
+    if (convId) saveMessage(convId, "user", safeText);
 
     let assistantSoFar = "";
     const upsert = (chunk: string) => {
@@ -156,7 +155,6 @@ const AIAssistant = () => {
       onDelta: upsert,
       onDone: () => {
         setIsLoading(false);
-        // Save assistant response
         if (convId && assistantSoFar) saveMessage(convId, "assistant", assistantSoFar);
       },
       onError: (err) => {
