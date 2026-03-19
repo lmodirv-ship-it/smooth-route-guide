@@ -5,6 +5,8 @@ import { Bot, Send, ArrowRight, User, Loader2, Sparkles, Car, Headphones, Shield
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
+import { auth } from "@/lib/firebase";
+import { sanitizePlainText } from "@/lib/inputSecurity";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -29,17 +31,22 @@ const AgentHub = () => {
   }, [messages]);
 
   const sendMessage = async (text: string) => {
-    if (!text.trim() || loading) return;
-    const userMsg: Msg = { role: "user", content: text.trim() };
+    const safeText = sanitizePlainText(text, 4000);
+    if (!safeText || loading) return;
+    const userMsg: Msg = { role: "user", content: safeText };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setLoading(true);
 
     let assistantSoFar = "";
     try {
+      const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : null;
       const resp = await fetch(AI_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+        headers: {
+          "Content-Type": "application/json",
+          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+        },
         body: JSON.stringify({ messages: [...messages, userMsg] }),
       });
       if (!resp.ok || !resp.body) throw new Error("خطأ");
