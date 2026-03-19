@@ -15,11 +15,11 @@ export const nativeDownloads: NativeDownload[] = [
   {
     id: "android",
     title: "Android APK",
-    desc: "نسخة Android Native فعلية جاهزة للتحميل فور وضع ملف APK النهائي داخل مجلد التنزيلات.",
+    desc: "نسخة Android حقيقية بدون شريط متصفح، جاهزة للتحميل فور وضع ملف APK النهائي داخل مجلد التنزيلات.",
     badge: "APK",
     href: "/downloads/smooth-route-guide-android.apk",
     fileName: "smooth-route-guide-android.apk",
-    buildCommand: "npm run native:android",
+    buildCommand: "npm run native:android:apk",
     platform: "mobile",
   },
   {
