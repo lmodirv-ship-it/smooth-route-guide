@@ -454,17 +454,23 @@ const storageWrapper = {
 
 const functionsWrapper = {
   invoke: async (name: string, opts?: { body?: any }) => {
-    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-    const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
     try {
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
+      const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : null;
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        apikey: supabaseKey,
+      };
+
+      if (idToken) {
+        headers.Authorization = `Bearer ${idToken}`;
+      }
+
+      const res = await fetch(`${supabaseUrl}/functions/v1/${name}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          apikey: SUPABASE_KEY,
-        },
+        headers,
         body: opts?.body ? JSON.stringify(opts.body) : undefined,
       });
       const data = await res.json();

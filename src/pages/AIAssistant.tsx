@@ -282,7 +282,7 @@ const AIAssistant = () => {
         <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="flex gap-2">
           <Input
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => setInput(sanitizePlainText(e.target.value, 4000))}
             placeholder="اكتب رسالتك..."
             className="flex-1 bg-secondary/80 border-border rounded-xl text-right"
             disabled={isLoading}
