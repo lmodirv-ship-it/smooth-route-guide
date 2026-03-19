@@ -132,7 +132,14 @@ const DriverDashboard = () => {
       </div>
 
       {isOnline && permissionDenied ? (
-        <LocationPermissionPrompt busy={gpsLoading} onRetry={retryLocationAccess} />
+        <LocationPermissionPrompt
+          busy={gpsLoading}
+          onRetry={retryLocationAccess}
+          showOpenSettings={requiresSettings}
+          onOpenSettings={() => {
+            void openAppSettings();
+          }}
+        />
       ) : null}
 
       <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-44 relative">

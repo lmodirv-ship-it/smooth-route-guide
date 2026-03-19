@@ -6,6 +6,7 @@ import { syncDriverOrderMetrics } from '@/lib/orderService';
 import {
   DriverCoordinates,
   DriverLocationWatchId,
+  checkDriverLocationPermission,
   getDriverCurrentPosition,
   requestDriverLocationPermission,
   startDriverLocationWatch,
@@ -25,6 +26,7 @@ const isPermissionDeniedError = (error: GeolocationPositionError | Error) => {
 export function useDriverGeolocation(isOnline: boolean) {
   const [location, setLocation] = useState<DriverLocation | null>(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
+  const [requiresSettings, setRequiresSettings] = useState(false);
   const [loading, setLoading] = useState(false);
   const watchIdRef = useRef<DriverLocationWatchId | null>(null);
   const lastDbUpdateRef = useRef<number>(0);
@@ -63,6 +65,7 @@ export function useDriverGeolocation(isOnline: boolean) {
     setLocation(coords);
     setLoading(false);
     setPermissionDenied(false);
+    setRequiresSettings(false);
     void updateLocationInDb(coords.lat, coords.lng);
   }, [updateLocationInDb]);
 
@@ -90,10 +93,26 @@ export function useDriverGeolocation(isOnline: boolean) {
     await clearWatch();
     setLoading(true);
     setPermissionDenied(false);
+    setRequiresSettings(false);
 
     try {
+      const existingPermissionState = await checkDriverLocationPermission();
+      if (existingPermissionState === 'denied') {
+        setLoading(false);
+        setPermissionDenied(true);
+        setRequiresSettings(true);
+        return;
+      }
+
       const permissionState = await requestDriverLocationPermission();
-      if (permissionState === 'denied' || permissionState === 'prompt-with-rationale') {
+      if (permissionState === 'denied') {
+        setLoading(false);
+        setPermissionDenied(true);
+        setRequiresSettings(true);
+        return;
+      }
+
+      if (permissionState === 'prompt-with-rationale') {
         setLoading(false);
         setPermissionDenied(true);
         return;
@@ -116,6 +135,7 @@ export function useDriverGeolocation(isOnline: boolean) {
     setLocation(null);
     setLoading(false);
     setPermissionDenied(false);
+    setRequiresSettings(false);
 
     const user = auth.currentUser;
     if (!user) return;
@@ -146,6 +166,6 @@ export function useDriverGeolocation(isOnline: boolean) {
     };
   }, [clearWatch, isOnline, startWatching, stopWatching]);
 
-  return { location, permissionDenied, loading, retryLocationAccess };
+  return { location, permissionDenied, requiresSettings, loading, retryLocationAccess };
 }
 

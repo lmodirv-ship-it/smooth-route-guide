@@ -7,6 +7,7 @@ export interface DriverCoordinates {
 }
 
 export type DriverLocationWatchId = number | string;
+export type DriverLocationPermissionState = Awaited<ReturnType<typeof Geolocation.checkPermissions>>["location"] | null;
 
 const nativeOptions = {
   enableHighAccuracy: true,
@@ -21,6 +22,13 @@ const browserOptions: PositionOptions = {
 };
 
 export const isNativePlatform = Capacitor.isNativePlatform();
+
+export const checkDriverLocationPermission = async (): Promise<DriverLocationPermissionState> => {
+  if (!isNativePlatform) return null;
+
+  const permissions = await Geolocation.checkPermissions();
+  return permissions.location;
+};
 
 export const requestDriverLocationPermission = async () => {
   if (!isNativePlatform) return null;

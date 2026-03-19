@@ -1,10 +1,12 @@
-import { AlertTriangle, RefreshCw, ShieldCheck, Smartphone } from "lucide-react";
+import { AlertTriangle, ExternalLink, RefreshCw, ShieldCheck, Smartphone } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
 type LocationPermissionPromptProps = {
   busy?: boolean;
   onRetry: () => void;
+  onOpenSettings?: () => void;
+  showOpenSettings?: boolean;
 };
 
 const steps = [
@@ -13,7 +15,12 @@ const steps = [
   "إذا رفضت الإذن سابقًا، افتح إعدادات التطبيق ثم فعّل الموقع.",
 ];
 
-const LocationPermissionPrompt = ({ busy = false, onRetry }: LocationPermissionPromptProps) => {
+const LocationPermissionPrompt = ({
+  busy = false,
+  onRetry,
+  onOpenSettings,
+  showOpenSettings = false,
+}: LocationPermissionPromptProps) => {
   return (
     <Alert className="mx-4 mt-4 overflow-hidden rounded-3xl border border-destructive/30 bg-card/95 p-0 shadow-2xl shadow-destructive/10">
       <div className="border-b border-destructive/15 bg-destructive/10 px-4 py-3">
@@ -64,10 +71,17 @@ const LocationPermissionPrompt = ({ busy = false, onRetry }: LocationPermissionP
             <RefreshCw className={`h-4 w-4 ${busy ? "animate-spin" : ""}`} />
             {busy ? "جارٍ طلب الموقع..." : "إعادة المحاولة"}
           </Button>
-          <p className="flex-1 self-center text-center text-xs leading-6 text-muted-foreground sm:text-right">
-            بعد السماح بالموقع سيظهر وضعك كـ <span className="font-semibold text-foreground">متصل</span> وتتحرك الخريطة إلى موقعك الحالي.
-          </p>
+          {showOpenSettings && onOpenSettings ? (
+            <Button onClick={onOpenSettings} variant="outline" className="flex-1 gap-2 rounded-2xl">
+              <ExternalLink className="h-4 w-4" />
+              فتح الإعدادات
+            </Button>
+          ) : null}
         </div>
+
+        <p className="text-center text-xs leading-6 text-muted-foreground sm:text-right">
+          بعد السماح بالموقع سيظهر وضعك كـ <span className="font-semibold text-foreground">متصل</span> وتتحرك الخريطة إلى موقعك الحالي.
+        </p>
       </div>
     </Alert>
   );
