@@ -105,8 +105,9 @@ const AdminLayout = () => {
   }, []);
 
   const sendAiMessage = async (text: string) => {
-    if (!text.trim() || aiLoading) return;
-    const userMsg: AiMsg = { role: "user", content: text.trim() };
+    const safeText = sanitizePlainText(text, 4000);
+    if (!safeText || aiLoading) return;
+    const userMsg: AiMsg = { role: "user", content: safeText };
     setAiMessages(prev => [...prev, userMsg]);
     setAiInput("");
     setAiLoading(true);
