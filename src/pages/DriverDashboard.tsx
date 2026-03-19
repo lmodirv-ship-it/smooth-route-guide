@@ -13,6 +13,7 @@ import IncomingRideRequest from "@/components/IncomingRideRequest";
 import LocationPermissionPrompt from "@/components/driver/LocationPermissionPrompt";
 import { useIncomingRideRequests } from "@/hooks/useIncomingRideRequests";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
+import { openAppSettings } from "@/lib/nativeApp";
 import { supabase } from "@/lib/firestoreClient";
 import logo from "@/assets/hn-driver-logo.png";
 
@@ -25,6 +26,7 @@ const DriverDashboard = () => {
   const {
     location: driverLocation,
     permissionDenied,
+    requiresSettings,
     loading: gpsLoading,
     retryLocationAccess,
   } = useDriverGeolocation(isOnline);
@@ -130,7 +132,14 @@ const DriverDashboard = () => {
       </div>
 
       {isOnline && permissionDenied ? (
-        <LocationPermissionPrompt busy={gpsLoading} onRetry={retryLocationAccess} />
+        <LocationPermissionPrompt
+          busy={gpsLoading}
+          onRetry={retryLocationAccess}
+          showOpenSettings={requiresSettings}
+          onOpenSettings={() => {
+            void openAppSettings();
+          }}
+        />
       ) : null}
 
       <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-44 relative">
