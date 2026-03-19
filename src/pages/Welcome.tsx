@@ -134,10 +134,20 @@ const Welcome = () => {
     {
       title: "Android APK",
       desc: "جاهز بعد بناء نسخة Android من المشروع ومزامنتها.",
+      badge: "APK",
+      available: true,
     },
     {
       title: "iPhone / iOS",
       desc: "جاهز للنشر كتطبيق iPhone عبر Xcode وApple App Store.",
+      badge: "iOS",
+      available: true,
+    },
+    {
+      title: "Windows EXE",
+      desc: "نسخة Windows قابلة للتحميل بصيغة .exe ستظهر هنا فور تجهيز ملف التثبيت.",
+      badge: "EXE",
+      available: false,
     },
   ];
 
