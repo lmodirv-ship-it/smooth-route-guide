@@ -10,6 +10,7 @@ import RoleSwitcher from "@/components/RoleSwitcher";
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
 import IncomingRideRequest from "@/components/IncomingRideRequest";
+import LocationPermissionPrompt from "@/components/driver/LocationPermissionPrompt";
 import { useIncomingRideRequests } from "@/hooks/useIncomingRideRequests";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
 import { supabase } from "@/lib/firestoreClient";
@@ -21,7 +22,12 @@ const DriverDashboard = () => {
   const [isOnline, setIsOnline] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
   const { requests, accepting, acceptRequest, rejectRequest } = useIncomingRideRequests(isOnline);
-  const { location: driverLocation, permissionDenied, loading: gpsLoading } = useDriverGeolocation(isOnline);
+  const {
+    location: driverLocation,
+    permissionDenied,
+    loading: gpsLoading,
+    retryLocationAccess,
+  } = useDriverGeolocation(isOnline);
 
   const [stats, setStats] = useState({ todayEarnings: 0, todayTrips: 0, rating: 0, hoursOnline: "0:00" });
   const [recentTrips, setRecentTrips] = useState<any[]>([]);
@@ -71,10 +77,10 @@ const DriverDashboard = () => {
     if (!user) return;
     const newStatus = isOnline ? "inactive" : "active";
     const newOnline = !isOnline;
-    
+
     // Update Supabase-compatible driver record
     await supabase.from("drivers").update({ status: newStatus }).eq("user_id", user.id);
-    
+
     // Also update Firebase drivers collection with isOnline/isAvailable
     try {
       const { doc: fbDoc, updateDoc: fbUpdate } = await import("firebase/firestore");
@@ -88,7 +94,7 @@ const DriverDashboard = () => {
     } catch (e) {
       console.warn("[Driver] Firebase update failed:", e);
     }
-    
+
     setIsOnline(newOnline);
   };
 
@@ -123,6 +129,10 @@ const DriverDashboard = () => {
         </motion.button>
       </div>
 
+      {isOnline && permissionDenied ? (
+        <LocationPermissionPrompt busy={gpsLoading} onRetry={retryLocationAccess} />
+      ) : null}
+
       <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-44 relative">
         <GoogleMapWrapper zoom={15} driverLocation={driverLocation} panToDriver={isOnline} showMarker={!isOnline}>
           {isOnline && (
@@ -135,7 +145,6 @@ const DriverDashboard = () => {
 
       <IncomingRideRequest requests={requests} accepting={accepting} onAccept={acceptRequest} onReject={rejectRequest} />
 
-      {/* Delivery shortcut */}
       {isOnline && (
         <div className="px-4 mt-3">
           <motion.button whileTap={{ scale: 0.97 }} onClick={() => navigate("/driver/delivery")}
@@ -255,3 +264,4 @@ const DriverDashboard = () => {
 };
 
 export default DriverDashboard;
+
