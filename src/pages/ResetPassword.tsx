@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { auth } from "@/lib/firebase";
+import { passwordSchema, sanitizePlainText, sanitizeSearchParam } from "@/lib/inputSecurity";
 import logo from "@/assets/hn-driver-logo.png";
 
 const ResetPassword = () => {
@@ -21,7 +22,7 @@ const ResetPassword = () => {
   const [isCodeValid, setIsCodeValid] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const oobCode = useMemo(() => searchParams.get("oobCode") || "", [searchParams]);
+  const oobCode = useMemo(() => sanitizeSearchParam(searchParams.get("oobCode"), 256), [searchParams]);
 
   useEffect(() => {
     const checkCode = async () => {
@@ -47,24 +48,27 @@ const ResetPassword = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!password || !confirmPassword) {
+    const cleanPassword = sanitizePlainText(password, 128);
+    const cleanConfirmPassword = sanitizePlainText(confirmPassword, 128);
+
+    if (!cleanPassword || !cleanConfirmPassword) {
       toast({ title: "يرجى ملء جميع الحقول", variant: "destructive" });
       return;
     }
 
-    if (password.length < 6) {
-      toast({ title: "كلمة المرور ضعيفة", description: "يجب أن تكون 6 أحرف على الأقل", variant: "destructive" });
+    if (!passwordSchema.safeParse(cleanPassword).success) {
+      toast({ title: "كلمة المرور ضعيفة", description: "يجب أن تكون 8 أحرف على الأقل", variant: "destructive" });
       return;
     }
 
-    if (password !== confirmPassword) {
+    if (cleanPassword !== cleanConfirmPassword) {
       toast({ title: "كلمتا المرور غير متطابقتين", variant: "destructive" });
       return;
     }
 
     setLoading(true);
     try {
-      await confirmPasswordReset(auth, oobCode, password);
+      await confirmPasswordReset(auth, oobCode, cleanPassword);
       setSent(true);
       toast({ title: "تم تحديث كلمة المرور بنجاح ✅" });
     } catch (err: any) {
@@ -156,7 +160,7 @@ const ResetPassword = () => {
             <div className="relative">
               <Input
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => setPassword(sanitizePlainText(e.target.value, 128))}
                 placeholder="••••••••"
                 type={showPassword ? "text" : "password"}
                 className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 pl-11"
@@ -177,7 +181,7 @@ const ResetPassword = () => {
             <div className="relative">
               <Input
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => setConfirmPassword(sanitizePlainText(e.target.value, 128))}
                 placeholder="••••••••"
                 type={showConfirmPassword ? "text" : "password"}
                 className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 pl-11"

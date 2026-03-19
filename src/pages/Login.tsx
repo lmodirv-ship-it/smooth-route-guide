@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, User as UserIcon, Phone, Loader2 } from "lucide-react";
@@ -12,7 +12,10 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { emailSchema, passwordSchema, sanitizeEmail, sanitizePlainText, sanitizeSearchParam } from "@/lib/inputSecurity";
 import logo from "@/assets/hn-driver-logo.png";
+
+const ALLOWED_ROLES = new Set(["admin", "driver", "delivery", "client"]);
 
 const getRoleHome = (role: string) => {
   if (role === "admin") return "/admin";
@@ -25,7 +28,10 @@ const Login = () => {
   const navigate = useNavigate();
   const { role: roleParam } = useParams();
   const [searchParams] = useSearchParams();
-  const role = searchParams.get("role") || roleParam || "driver";
+  const role = useMemo(() => {
+    const requestedRole = sanitizeSearchParam(searchParams.get("role") || roleParam || "driver", 24).toLowerCase();
+    return ALLOWED_ROLES.has(requestedRole) ? requestedRole : "driver";
+  }, [roleParam, searchParams]);
   const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -47,15 +53,34 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+
+    const cleanEmail = sanitizeEmail(email);
+    const cleanPassword = sanitizePlainText(password, 128);
+    const cleanName = sanitizePlainText(name, 120);
+    const cleanPhone = sanitizePlainText(phone, 30);
+
+    if (!cleanEmail || !cleanPassword) {
       toast({ title: "يرجى ملء جميع الحقول", variant: "destructive" });
       return;
     }
+
+    const emailValidation = emailSchema.safeParse(cleanEmail);
+    if (!emailValidation.success) {
+      toast({ title: "بريد إلكتروني غير صالح", variant: "destructive" });
+      return;
+    }
+
+    const passwordValidation = passwordSchema.safeParse(cleanPassword);
+    if (!passwordValidation.success) {
+      toast({ title: "كلمة المرور يجب أن تكون 8 أحرف على الأقل", variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
 
     try {
       if (isLogin) {
-        const cred = await signInWithEmailAndPassword(auth, email, password);
+        const cred = await signInWithEmailAndPassword(auth, cleanEmail, cleanPassword);
         const snap = await getDoc(doc(db, "users", cred.user.uid));
         const userRole = snap.exists() ? snap.data().role : role;
 
@@ -69,31 +94,30 @@ const Login = () => {
 
         toast({ title: "تم تسجيل الدخول بنجاح ✅" });
       } else {
-        if (!name) {
+        if (!cleanName) {
           toast({ title: "يرجى إدخال الاسم", variant: "destructive" });
           setLoading(false);
           return;
         }
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        // Save user to Firestore "users" collection
+
+        const cred = await createUserWithEmailAndPassword(auth, cleanEmail, cleanPassword);
         await setDoc(doc(db, "users", cred.user.uid), {
           uid: cred.user.uid,
-          fullName: name,
-          email,
-          phone,
+          fullName: cleanName,
+          email: cleanEmail,
+          phone: cleanPhone,
           role,
           status: "active",
           profileCompleted: false,
           createdAt: serverTimestamp(),
         });
         toast({ title: "تم إنشاء الحساب بنجاح ✅" });
-        // onAuthStateChanged will handle redirect
       }
     } catch (error: any) {
       let msg = error.message;
       if (msg.includes("email-already-in-use")) msg = "هذا البريد مسجل مسبقاً";
       if (msg.includes("wrong-password") || msg.includes("invalid-credential")) msg = "بريد أو كلمة مرور غير صحيحة";
-      if (msg.includes("weak-password")) msg = "كلمة المرور ضعيفة (6 أحرف على الأقل)";
+      if (msg.includes("weak-password")) msg = "كلمة المرور ضعيفة (8 أحرف على الأقل)";
       if (msg.includes("invalid-email")) msg = "بريد إلكتروني غير صالح";
       toast({ title: "خطأ", description: msg, variant: "destructive" });
     } finally {
@@ -136,7 +160,7 @@ const Login = () => {
             <div className="space-y-2">
               <label className="text-sm text-muted-foreground text-right block">الاسم الكامل</label>
               <div className="relative">
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="أدخل اسمك"
+                <Input value={name} onChange={(e) => setName(sanitizePlainText(e.target.value, 120))} placeholder="أدخل اسمك"
                   className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right" />
                 <UserIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               </div>
@@ -144,7 +168,7 @@ const Login = () => {
             <div className="space-y-2">
               <label className="text-sm text-muted-foreground text-right block">رقم الهاتف</label>
               <div className="relative">
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05XXXXXXXX" type="tel"
+                <Input value={phone} onChange={(e) => setPhone(sanitizePlainText(e.target.value, 30))} placeholder="05XXXXXXXX" type="tel"
                   className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right" />
                 <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               </div>
@@ -155,7 +179,7 @@ const Login = () => {
         <div className="space-y-2">
           <label className="text-sm text-muted-foreground text-right block">البريد الإلكتروني</label>
           <div className="relative">
-            <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@email.com" type="email"
+            <Input value={email} onChange={(e) => setEmail(sanitizeEmail(e.target.value))} placeholder="example@email.com" type="email"
               className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right" />
             <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           </div>
@@ -164,7 +188,7 @@ const Login = () => {
         <div className="space-y-2">
           <label className="text-sm text-muted-foreground text-right block">كلمة المرور</label>
           <div className="relative">
-            <Input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
+            <Input value={password} onChange={(e) => setPassword(sanitizePlainText(e.target.value, 128))} placeholder="••••••••"
               type={showPassword ? "text" : "password"}
               className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right" />
             <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />

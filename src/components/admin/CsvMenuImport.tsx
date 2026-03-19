@@ -3,6 +3,7 @@ import { supabase } from "@/lib/firestoreClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
+import { sanitizePlainText } from "@/lib/inputSecurity";
 import { Upload, FileSpreadsheet, Loader2, Download } from "lucide-react";
 
 interface CsvMenuImportProps {
@@ -25,7 +26,7 @@ const CsvMenuImport = ({ storeId, storeName, categories, onImportComplete }: Csv
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `menu_template_${storeName}.csv`;
+    a.download = `menu_template_${sanitizePlainText(storeName, 60) || "store"}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -36,7 +37,7 @@ const CsvMenuImport = ({ storeId, storeName, categories, onImportComplete }: Csv
     return lines.slice(1).map((line) => {
       const values = line.split(",").map((v) => v.trim());
       const obj: any = {};
-      headers.forEach((h, i) => (obj[h] = values[i] || ""));
+      headers.forEach((h, i) => (obj[h] = sanitizePlainText(values[i] || "", 500)));
       return obj;
     });
   };
@@ -62,14 +63,15 @@ const CsvMenuImport = ({ storeId, storeName, categories, onImportComplete }: Csv
         .filter((row) => row.name_ar && row.price)
         .map((row, i) => ({
           store_id: storeId,
-          name_ar: row.name_ar,
-          name_fr: row.name_fr || "",
-          description_ar: row.description_ar || "",
-          price: parseFloat(row.price) || 0,
-          category_id: catMap.get(row.category_name_ar) || categories[0]?.id,
-          is_available: row.is_available !== "false",
+          name_ar: sanitizePlainText(row.name_ar, 120),
+          name_fr: sanitizePlainText(row.name_fr || "", 120),
+          description_ar: sanitizePlainText(row.description_ar || "", 500),
+          price: Math.max(0, Number.parseFloat(row.price) || 0),
+          category_id: catMap.get(sanitizePlainText(row.category_name_ar, 120)) || categories[0]?.id,
+          is_available: sanitizePlainText(row.is_available, 10).toLowerCase() !== "false",
           sort_order: i,
-        }));
+        }))
+        .filter((item) => item.name_ar && item.category_id);
 
       if (!items.length) {
         toast({ title: "لا توجد بيانات صالحة للاستيراد", variant: "destructive" });
