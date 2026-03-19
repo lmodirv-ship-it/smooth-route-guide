@@ -5,32 +5,63 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/lib/firestoreClient";
+import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { sanitizePlainText } from "@/lib/inputSecurity";
 import logo from "@/assets/hn-driver-logo.png";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/hn-assistant`;
+
 async function streamChat({
   messages, onDelta, onDone, onError,
 }: {
   messages: Msg[]; onDelta: (text: string) => void; onDone: () => void; onError: (err: string) => void;
 }) {
-  const { data, error } = await supabase.functions.invoke("hn-assistant", {
-    body: { messages },
+  const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : null;
+  const resp = await fetch(CHAT_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+    },
+    body: JSON.stringify({ messages }),
   });
 
-  if (error) {
-    onError(error.message || "Erreur du service");
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({ error: "Erreur réseau" }));
+    onError(err.error || "Erreur du service");
     return;
   }
+  if (!resp.body) { onError("Pas de réponse"); return; }
 
-  if (data?.error) {
-    onError(data.error);
-    return;
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let idx: number;
+    while ((idx = buffer.indexOf("\n")) !== -1) {
+      let line = buffer.slice(0, idx);
+      buffer = buffer.slice(idx + 1);
+      if (line.endsWith("\r")) line = line.slice(0, -1);
+      if (!line.startsWith("data: ")) continue;
+      const json = line.slice(6).trim();
+      if (json === "[DONE]") { onDone(); return; }
+      try {
+        const parsed = JSON.parse(json);
+        const content = parsed.choices?.[0]?.delta?.content;
+        if (content) onDelta(content);
+      } catch {
+        buffer = line + "\n" + buffer;
+        break;
+      }
+    }
   }
-
-  onError("Le streaming direct n'est pas disponible via ce connecteur.");
   onDone();
 }
 
