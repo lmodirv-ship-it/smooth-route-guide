@@ -73,6 +73,10 @@ export function normalizeUrl(value: unknown) {
     throw new HttpError(400, "invalid_url_protocol");
   }
 
+  if (parsed.username || parsed.password) {
+    throw new HttpError(400, "credentials_in_url_not_allowed");
+  }
+
   if (PRIVATE_HOST_PATTERNS.some((pattern) => pattern.test(parsed.hostname))) {
     throw new HttpError(400, "private_urls_not_allowed");
   }
