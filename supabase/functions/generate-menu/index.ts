@@ -1,21 +1,24 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { corsHeaders, enforceRateLimit, handleError, parseJson, sanitizePlainText, z } from "../_shared/security.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const requestSchema = z.object({
+  restaurantName: z.string().trim().min(1).max(120),
+  restaurantCategory: z.string().trim().max(80).optional(),
+  restaurantAddress: z.string().trim().max(200).optional(),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { restaurantName, restaurantCategory, restaurantAddress } = await req.json();
+    await enforceRateLimit(req, "generate-menu", 10, 60);
+    const { restaurantName, restaurantCategory, restaurantAddress } = await parseJson(req, requestSchema);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const prompt = `Tu es un expert en restauration marocaine, spécialisé dans les restaurants de Tanger.
 
-Génère un menu RÉALISTE pour le restaurant "${restaurantName}" (catégorie: ${restaurantCategory || "restaurant"}, adresse: ${restaurantAddress || "Tanger, Maroc"}).
+Génère un menu RÉALISTE pour le restaurant "${sanitizePlainText(restaurantName, 120)}" (catégorie: ${sanitizePlainText(restaurantCategory || "restaurant", 80)}, adresse: ${sanitizePlainText(restaurantAddress || "Tanger, Maroc", 200)}).
 
 IMPORTANT:
 - Les prix doivent être en DH (Dirhams marocains) et réalistes pour Tanger
@@ -101,7 +104,7 @@ Utilise le tool generate_menu pour retourner les données.`;
 
     const data = await response.json();
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    
+
     if (!toolCall?.function?.arguments) {
       throw new Error("No structured response from AI");
     }
@@ -113,8 +116,6 @@ Utilise le tool generate_menu pour retourner les données.`;
     });
   } catch (e) {
     console.error("generate-menu error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return handleError(e);
   }
 });

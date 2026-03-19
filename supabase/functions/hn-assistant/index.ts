@@ -1,9 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders, enforceRateLimit, handleError, parseJson, z } from "../_shared/security.ts";
 
 const SYSTEM_PROMPT = `Tu es un assistant intelligent pour l'application de transport HN Driver.
 
@@ -26,11 +22,22 @@ Exemples de réponses:
 - "Le trajet estimé est de 15 minutes, le tarif sera d'environ 35 د.م."
 - "Votre réclamation a été enregistrée, notre équipe vous contactera sous 24h."`;
 
+const requestSchema = z.object({
+  messages: z.array(
+    z.object({
+      role: z.enum(["user", "assistant", "system"]),
+      content: z.string().trim().min(1).max(4000),
+    }),
+  ).min(1).max(30),
+});
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    await enforceRateLimit(req, "hn-assistant", 20, 60);
+    const { messages } = await parseJson(req, requestSchema);
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -73,8 +80,6 @@ serve(async (req) => {
     });
   } catch (e) {
     console.error("hn-assistant error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Erreur inconnue" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return handleError(e);
   }
 });
