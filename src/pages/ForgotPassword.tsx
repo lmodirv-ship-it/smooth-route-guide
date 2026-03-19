@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { emailSchema, getSafeWindowOrigin, sanitizeEmail } from "@/lib/inputSecurity";
 import logo from "@/assets/hn-driver-logo.png";
 
 const ForgotPassword = () => {
@@ -17,15 +18,24 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) {
+    const cleanEmail = sanitizeEmail(email);
+
+    if (!cleanEmail) {
       toast({ title: "يرجى إدخال البريد الإلكتروني", variant: "destructive" });
       return;
     }
+
+    if (!emailSchema.safeParse(cleanEmail).success) {
+      toast({ title: "بريد إلكتروني غير صالح", variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
     try {
-      await sendPasswordResetEmail(auth, email, {
-        url: `${window.location.origin}/reset-password`,
+      await sendPasswordResetEmail(auth, cleanEmail, {
+        url: `${getSafeWindowOrigin()}/reset-password`,
       });
+      setEmail(cleanEmail);
       setSent(true);
       toast({ title: "تم إرسال رابط إعادة التعيين ✅" });
     } catch (err: any) {
@@ -94,7 +104,7 @@ const ForgotPassword = () => {
             <div className="relative">
               <Input
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(sanitizeEmail(e.target.value))}
                 placeholder="example@email.com"
                 type="email"
                 className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11"

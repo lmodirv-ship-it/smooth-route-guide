@@ -52,6 +52,36 @@ export type Database = {
           },
         ]
       }
+      api_rate_limits: {
+        Row: {
+          created_at: string
+          id: string
+          key_hash: string
+          request_count: number
+          route_name: string
+          updated_at: string
+          window_bucket: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key_hash: string
+          request_count?: number
+          route_name: string
+          updated_at?: string
+          window_bucket: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key_hash?: string
+          request_count?: number
+          route_name?: string
+          updated_at?: string
+          window_bucket?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           id: string
@@ -1176,6 +1206,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      enforce_rate_limit: {
+        Args: {
+          p_key: string
+          p_max_requests: number
+          p_route_name: string
+          p_window_seconds: number
+        }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
