@@ -149,9 +149,13 @@ const AI_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-ai-agent
 async function streamAdminAI({ messages, onDelta, onDone, onError }: {
   messages: AiMsg[]; onDelta: (t: string) => void; onDone: () => void; onError: (e: string) => void;
 }) {
+  const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : null;
   const resp = await fetch(AI_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+    headers: {
+      "Content-Type": "application/json",
+      ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+    },
     body: JSON.stringify({ messages }),
   });
   if (!resp.ok) {
