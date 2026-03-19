@@ -16,6 +16,12 @@ type QRCodeProps = {
   fgColor?: string;
 };
 
+type DownloadMeta = {
+  ready: boolean;
+  sizeLabel?: string;
+  lastUpdatedLabel?: string;
+};
+
 const resolveQrCodeComponent = (moduleValue: unknown): ComponentType<QRCodeProps> | null => {
   if (typeof moduleValue === "function") {
     return moduleValue as ComponentType<QRCodeProps>;
@@ -34,42 +40,92 @@ const resolveQrCodeComponent = (moduleValue: unknown): ComponentType<QRCodeProps
 
 const QRCodeComponent = resolveQrCodeComponent(QRCodeImport);
 
-const NativeDownloadCard = ({ item, ready }: { item: NativeDownload; ready: boolean }) => (
-  <div className="rounded-2xl border border-border bg-background/70 p-4">
-    <div className="flex items-center justify-between gap-3">
-      <p className="text-sm font-semibold text-foreground">{item.title}</p>
-      <span className="rounded-full border border-border bg-card px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-        {item.badge}
-      </span>
+const formatFileSize = (bytes: number) => {
+  if (bytes < 1024) return `${bytes} B`;
+
+  const units = ["KB", "MB", "GB"];
+  let value = bytes / 1024;
+  let unitIndex = 0;
+
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+
+  return `${value.toFixed(value >= 10 ? 0 : 1)} ${units[unitIndex]}`;
+};
+
+const formatLastUpdated = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return undefined;
+
+  return new Intl.DateTimeFormat("ar", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(date);
+};
+
+const NativeDownloadCard = ({ item, meta }: { item: NativeDownload; meta?: DownloadMeta }) => {
+  const ready = Boolean(meta?.ready);
+
+  return (
+    <div className="rounded-2xl border border-border bg-background/70 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-semibold text-foreground">{item.title}</p>
+        <div className="flex items-center gap-2">
+          {item.version ? (
+            <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-bold tracking-[0.16em] text-primary">
+              {item.version}
+            </span>
+          ) : null}
+          <span className="rounded-full border border-border bg-card px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+            {item.badge}
+          </span>
+        </div>
+      </div>
+
+      <p className="mt-1 text-xs leading-6 text-muted-foreground">{item.desc}</p>
+      <p className="mt-2 text-[11px] font-medium text-muted-foreground">{item.fileName}</p>
+      <p className="mt-1 text-[11px] text-muted-foreground">{item.buildCommand}</p>
+
+      {item.id === "android" && ready ? (
+        <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl border border-border bg-card/70 p-3">
+          <div>
+            <p className="text-[10px] font-semibold text-muted-foreground">الحجم</p>
+            <p className="mt-1 text-xs font-medium text-foreground">{meta?.sizeLabel ?? "—"}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-semibold text-muted-foreground">آخر تحديث</p>
+            <p className="mt-1 text-xs font-medium text-foreground">{meta?.lastUpdatedLabel ?? "—"}</p>
+          </div>
+        </div>
+      ) : null}
+
+      {ready ? (
+        <a
+          href={item.href}
+          download
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          <Download className="h-3.5 w-3.5" />
+          تحميل الآن
+        </a>
+      ) : (
+        <button
+          type="button"
+          disabled
+          className="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground opacity-80"
+        >
+          بانتظار ملف التثبيت
+        </button>
+      )}
     </div>
-
-    <p className="mt-1 text-xs leading-6 text-muted-foreground">{item.desc}</p>
-    <p className="mt-2 text-[11px] font-medium text-muted-foreground">{item.fileName}</p>
-    <p className="mt-1 text-[11px] text-muted-foreground">{item.buildCommand}</p>
-
-    {ready ? (
-      <a
-        href={item.href}
-        download
-        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-      >
-        <Download className="h-3.5 w-3.5" />
-        تحميل الآن
-      </a>
-    ) : (
-      <button
-        type="button"
-        disabled
-        className="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground opacity-80"
-      >
-        بانتظار ملف التثبيت
-      </button>
-    )}
-  </div>
-);
+  );
+};
 
 const NativeDownloadSection = () => {
-  const [availability, setAvailability] = useState<Record<string, boolean>>({});
+  const [downloadMeta, setDownloadMeta] = useState<Record<string, DownloadMeta>>({});
 
   const allDownloads = useMemo(() => [...mobileDownloads, ...desktopDownloads], []);
 
@@ -83,15 +139,25 @@ const NativeDownloadSection = () => {
         allDownloads.map(async (item) => {
           try {
             const response = await fetch(new URL(item.href, baseUrl), { method: "HEAD" });
-            return [item.id, response.ok] as const;
+            const contentLength = response.headers.get("content-length");
+            const lastModified = response.headers.get("last-modified");
+
+            return [
+              item.id,
+              {
+                ready: response.ok,
+                sizeLabel: response.ok && contentLength ? formatFileSize(Number(contentLength)) : undefined,
+                lastUpdatedLabel: response.ok && lastModified ? formatLastUpdated(lastModified) : undefined,
+              },
+            ] as const;
           } catch {
-            return [item.id, false] as const;
+            return [item.id, { ready: false }] as const;
           }
         }),
       );
 
       if (mounted) {
-        setAvailability(Object.fromEntries(entries));
+        setDownloadMeta(Object.fromEntries(entries));
       }
     };
 
@@ -127,7 +193,7 @@ const NativeDownloadSection = () => {
         </div>
         <div className="grid gap-3">
           {mobileDownloads.map((item) => (
-            <NativeDownloadCard key={item.id} item={item} ready={Boolean(availability[item.id])} />
+            <NativeDownloadCard key={item.id} item={item} meta={downloadMeta[item.id]} />
           ))}
         </div>
       </div>
@@ -139,7 +205,7 @@ const NativeDownloadSection = () => {
         </div>
         <div className="grid gap-3">
           {desktopDownloads.map((item) => (
-            <NativeDownloadCard key={item.id} item={item} ready={Boolean(availability[item.id])} />
+            <NativeDownloadCard key={item.id} item={item} meta={downloadMeta[item.id]} />
           ))}
         </div>
       </div>
