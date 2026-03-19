@@ -7,6 +7,7 @@ export type NativeDownload = {
   fileName: string;
   buildCommand: string;
   platform: "mobile" | "desktop";
+  version?: string;
 };
 
 export const nativeDownloadPageUrl = "https://smooth-route-guide.lovable.app/welcome#mobile-download";
@@ -21,6 +22,7 @@ export const nativeDownloads: NativeDownload[] = [
     fileName: "smooth-route-guide-android.apk",
     buildCommand: "npm run native:android:apk",
     platform: "mobile",
+    version: "v1.0.0",
   },
   {
     id: "ios",
