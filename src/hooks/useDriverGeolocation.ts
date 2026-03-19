@@ -16,6 +16,13 @@ export function useDriverGeolocation(isOnline: boolean) {
   const watchIdRef = useRef<number | null>(null);
   const lastDbUpdateRef = useRef<number>(0);
 
+  const clearWatch = useCallback(() => {
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+  }, []);
+
   const updateLocationInDb = useCallback(async (lat: number, lng: number) => {
     const user = auth.currentUser;
     if (!user) return;
@@ -43,10 +50,11 @@ export function useDriverGeolocation(isOnline: boolean) {
 
   const startWatching = useCallback(() => {
     if (!navigator.geolocation) {
-      toast({ title: 'خطأ', description: 'المتصفح لا يدعم تحديد الموقع', variant: 'destructive' });
+      toast({ title: 'خطأ', description: 'هذا الجهاز لا يدعم تحديد الموقع.', variant: 'destructive' });
       return;
     }
 
+    clearWatch();
     setLoading(true);
     setPermissionDenied(false);
 
@@ -55,29 +63,36 @@ export function useDriverGeolocation(isOnline: boolean) {
         const newLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
         setLocation(newLocation);
         setLoading(false);
+        setPermissionDenied(false);
         updateLocationInDb(newLocation.lat, newLocation.lng);
       },
       (error) => {
         setLoading(false);
+
         if (error.code === error.PERMISSION_DENIED) {
           setPermissionDenied(true);
-          toast({
-            title: 'إذن الموقع مطلوب',
-            description: 'يجب تفعيل إذن الموقع ليظهر مكان السائق على الخريطة',
-            variant: 'destructive',
-          });
+          return;
         }
+
+        toast({
+          title: 'تعذر تحديد الموقع',
+          description: 'تأكد من تشغيل GPS ثم اضغط إعادة المحاولة.',
+          variant: 'destructive',
+        });
       },
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
     );
-  }, [updateLocationInDb]);
+  }, [clearWatch, updateLocationInDb]);
+
+  const retryLocationAccess = useCallback(() => {
+    startWatching();
+  }, [startWatching]);
 
   const stopWatching = useCallback(async () => {
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
-    }
+    clearWatch();
     setLocation(null);
+    setLoading(false);
+    setPermissionDenied(false);
 
     const user = auth.currentUser;
     if (!user) return;
@@ -94,19 +109,17 @@ export function useDriverGeolocation(isOnline: boolean) {
     } catch {
       // silent fail
     }
-  }, []);
+  }, [clearWatch]);
 
   useEffect(() => {
     if (isOnline) startWatching();
     else stopWatching();
 
     return () => {
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-        watchIdRef.current = null;
-      }
+      clearWatch();
     };
-  }, [isOnline, startWatching, stopWatching]);
+  }, [clearWatch, isOnline, startWatching, stopWatching]);
 
-  return { location, permissionDenied, loading };
+  return { location, permissionDenied, loading, retryLocationAccess };
 }
+
