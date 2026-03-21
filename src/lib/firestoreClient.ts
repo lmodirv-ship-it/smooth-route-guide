@@ -358,7 +358,7 @@ const firebaseAuthWrapper = {
     return cloudSupabase.auth.signOut();
   },
   signInWithPassword: async ({ email, password }: { email: string; password: string }) => {
-    if (!auth) {
+    if (typeof auth?.app !== "object") {
       return cloudSupabase.auth.signInWithPassword({ email, password });
     }
 
@@ -371,7 +371,7 @@ const firebaseAuthWrapper = {
     }
   },
   signUp: async ({ email, password, options }: any) => {
-    if (!auth) {
+    if (typeof auth?.app !== "object") {
       return cloudSupabase.auth.signUp({ email, password, options });
     }
 
