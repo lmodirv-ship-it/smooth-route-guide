@@ -1,39 +1,36 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 
-interface AdminGuardProps {
-  children: React.ReactNode;
-}
-
-const AdminGuard = ({ children }: AdminGuardProps) => {
+const AdminGuard = ({ children }: { children: React.ReactNode }) => {
   const [state, setState] = useState<"loading" | "authorized" | "unauthorized" | "unauthenticated">("loading");
-  const logout = useFirebaseLogout();
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
+    const check = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         setState("unauthenticated");
         return;
       }
-      try {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        if (snap.exists() && snap.data().role === "admin") {
-          setState("authorized");
-        } else {
-          setState("unauthorized");
-        }
-      } catch {
-        setState("unauthorized");
-      }
-    });
-    return () => unsub();
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id);
+
+      const isAdmin = roles?.some(r => r.role === "admin");
+      setState(isAdmin ? "authorized" : "unauthorized");
+    };
+
+    check();
   }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  };
 
   if (state === "loading") {
     return (
@@ -46,9 +43,7 @@ const AdminGuard = ({ children }: AdminGuardProps) => {
     );
   }
 
-  if (state === "unauthenticated") {
-    return <Navigate to="/login" replace />;
-  }
+  if (state === "unauthenticated") return <Navigate to="/login" replace />;
 
   if (state === "unauthorized") {
     return (
@@ -58,14 +53,10 @@ const AdminGuard = ({ children }: AdminGuardProps) => {
             <ShieldOff className="w-10 h-10 text-destructive" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">غير مصرح</h1>
-          <p className="text-muted-foreground">ليس لديك صلاحية الوصول إلى لوحة التحكم. يجب أن يكون لديك دور "مسؤول" للدخول.</p>
+          <p className="text-muted-foreground">ليس لديك صلاحية الوصول إلى لوحة التحكم.</p>
           <div className="flex gap-3 justify-center pt-4">
-            <Button variant="outline" onClick={() => window.history.back()} className="border-border">
-              رجوع
-            </Button>
-            <Button onClick={logout} className="gradient-primary text-primary-foreground">
-              تسجيل الخروج
-            </Button>
+            <Button variant="outline" onClick={() => window.history.back()} className="border-border">رجوع</Button>
+            <Button onClick={handleLogout} className="gradient-primary text-primary-foreground">تسجيل الخروج</Button>
           </div>
         </div>
       </div>

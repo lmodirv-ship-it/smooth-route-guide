@@ -1,14 +1,13 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useFirebaseLogout = () => {
   const navigate = useNavigate();
 
   const logout = useCallback(async () => {
     try {
-      await signOut(auth);
+      await supabase.auth.signOut();
       localStorage.removeItem("hn_user_role");
       navigate("/login", { replace: true });
     } catch {

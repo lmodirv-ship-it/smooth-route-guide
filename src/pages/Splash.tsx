@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { supabase } from "@/integrations/supabase/client";
 import splashLogo from "@/assets/designs/iindex.jpeg";
 
 const Splash = () => {
@@ -13,28 +11,32 @@ const Splash = () => {
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(1), 300);
     const t2 = setTimeout(() => setPhase(2), 1200);
-    const t3 = setTimeout(() => {
-      const unsub = onAuthStateChanged(auth, async (user) => {
-        unsub();
+    const t3 = setTimeout(async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
         const savedRole = localStorage.getItem("hn_user_role");
 
-        if (!user) {
+        if (!session) {
           navigate(savedRole ? `/auth/${savedRole}` : "/welcome", { replace: true });
           return;
         }
 
-        try {
-          const snap = await getDoc(doc(db, "users", user.uid));
-          const role = snap.exists() ? snap.data().role : savedRole || "client";
-          if (role === "driver") navigate("/driver", { replace: true });
-          else if (role === "delivery") navigate("/delivery", { replace: true });
-          else if (role === "admin") navigate("/admin", { replace: true });
-          else if (role === "call_center") navigate("/call-center", { replace: true });
-          else navigate("/client", { replace: true });
-        } catch {
-          navigate("/welcome", { replace: true });
-        }
-      });
+        // Check user role from user_roles table
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .limit(1);
+
+        const role = roles?.[0]?.role || savedRole || "user";
+
+        if (role === "driver") navigate("/driver", { replace: true });
+        else if (role === "admin") navigate("/admin", { replace: true });
+        else if (role === "agent") navigate("/call-center", { replace: true });
+        else navigate("/client", { replace: true });
+      } catch {
+        navigate("/welcome", { replace: true });
+      }
     }, 3500);
 
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
