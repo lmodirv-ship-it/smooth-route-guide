@@ -123,13 +123,30 @@ const LiveOrderMap = ({ className = "w-full h-full", driverPosition, targetPosit
     }
   }, [smoothedDriver, isLoaded, targetPosition, directions]);
 
-  if (loadError) {
+  // Auto-fallback to Leaflet
+  useEffect(() => {
+    if (loadError) setGoogleFailed(true);
+  }, [loadError]);
+
+  if (googleFailed) {
     return (
-      <div className={`${className} bg-secondary/50 flex items-center justify-center`}>
-        <div className="text-center">
-          <Navigation className="w-10 h-10 text-primary mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">تعذر تحميل الخريطة</p>
-        </div>
+      <div className={className}>
+        <LeafletMap
+          center={smoothedDriver || targetPosition || undefined}
+          zoom={14}
+          className="w-full h-full"
+          showMarker={!!targetPosition}
+          markerPosition={targetPosition || undefined}
+          driverLocation={smoothedDriver}
+        />
+        {targetPosition && (
+          <NavigationLinks
+            lat={targetPosition.lat}
+            lng={targetPosition.lng}
+            label="الوجهة"
+            className="absolute bottom-2 left-2 right-2 z-[1000]"
+          />
+        )}
       </div>
     );
   }
