@@ -37,6 +37,8 @@ import DriverDelivery from "./pages/driver/DriverDelivery";
 // Client pages
 import ClientHome from "./pages/ClientHome";
 import ClientBooking from "./pages/client/ClientBooking";
+import CustomerPage from "./pages/CustomerPage";
+import DriverPage from "./pages/DriverPage";
 import RideTracking from "./pages/client/RideTracking";
 import ClientPayment from "./pages/client/ClientPayment";
 import ClientWallet from "./pages/client/ClientWallet";
@@ -118,6 +120,10 @@ const App = () => (
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/setup-admin" element={<SessionGuard><SetupAdmin /></SessionGuard>} />
+
+          {/* New Clean Customer/Driver Pages (Supabase only) */}
+          <Route path="/customer" element={<SessionGuard><CustomerPage /></SessionGuard>} />
+          <Route path="/driver-panel" element={<SessionGuard><DriverPage /></SessionGuard>} />
 
           {/* Driver App - Protected */}
           <Route path="/driver" element={<AuthGuard requiredRole="driver"><DriverDashboard /></AuthGuard>} />
