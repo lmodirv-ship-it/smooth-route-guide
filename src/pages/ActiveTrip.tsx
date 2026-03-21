@@ -12,7 +12,7 @@ import {
   Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import GoogleMapWrapper from "@/components/GoogleMap";
+import LeafletMap from "@/components/LeafletMap";
 import NavigationLinks from "@/components/NavigationLinks";
 import { supabase } from "@/lib/firestoreClient";
 

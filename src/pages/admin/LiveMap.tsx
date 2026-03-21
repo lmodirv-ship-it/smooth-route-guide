@@ -2,7 +2,7 @@ import { useState } from "react";
 import { MapPin, Car, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
-import GoogleMapWrapper from "@/components/GoogleMap";
+import LeafletMap from "@/components/LeafletMap";
 
 const AdminLiveMap = () => {
   const { drivers } = useNearbyDrivers();

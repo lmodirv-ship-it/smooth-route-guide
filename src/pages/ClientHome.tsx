@@ -21,7 +21,7 @@ import {
 import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Button } from "@/components/ui/button";
-import GoogleMapWrapper from "@/components/GoogleMap";
+import LeafletMap from "@/components/LeafletMap";
 import PlacesAutocomplete from "@/components/PlacesAutocomplete";
 import PriceEstimateCard from "@/components/PriceEstimateCard";
 import { useTripPricing } from "@/hooks/useTripPricing";
