@@ -37,6 +37,8 @@ import DriverDelivery from "./pages/driver/DriverDelivery";
 // Client pages
 import ClientHome from "./pages/ClientHome";
 import ClientBooking from "./pages/client/ClientBooking";
+import CustomerPage from "./pages/CustomerPage";
+import DriverPage from "./pages/DriverPage";
 import RideTracking from "./pages/client/RideTracking";
 import ClientPayment from "./pages/client/ClientPayment";
 import ClientWallet from "./pages/client/ClientWallet";
