@@ -78,11 +78,16 @@ const LiveOrderMap = ({ className = "w-full h-full", driverPosition, targetPosit
     };
   }, [isLoaded, targetPosition]);
 
+  // Throttle directions requests to every 10s
   useEffect(() => {
     if (!isLoaded || !driverPosition || !targetPosition) {
       setDirections(null);
       return;
     }
+
+    const now = Date.now();
+    if (now - lastRouteReqRef.current < 10000 && directions) return;
+    lastRouteReqRef.current = now;
 
     const service = new google.maps.DirectionsService();
     service.route(
@@ -105,13 +110,13 @@ const LiveOrderMap = ({ className = "w-full h-full", driverPosition, targetPosit
     if (!mapRef.current || !isLoaded) return;
     const bounds = new google.maps.LatLngBounds();
 
-    if (driverPosition) bounds.extend(driverPosition);
+    if (smoothedDriver) bounds.extend(smoothedDriver);
     if (targetPosition) bounds.extend(targetPosition);
 
-    if (driverPosition || targetPosition) {
+    if (smoothedDriver || targetPosition) {
       mapRef.current.fitBounds(bounds, 64);
     }
-  }, [driverPosition, isLoaded, targetPosition, directions]);
+  }, [smoothedDriver, isLoaded, targetPosition, directions]);
 
   if (loadError) {
     return (
