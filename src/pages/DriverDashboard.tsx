@@ -183,20 +183,68 @@ const DriverDashboard = () => {
       <IncomingRideRequest requests={requests} accepting={accepting} onAccept={acceptRequest} onReject={rejectRequest} />
 
       {isOnline && (
-        <div className="px-4 mt-3">
-          <motion.button whileTap={{ scale: 0.97 }} onClick={() => navigate("/driver/delivery")}
-            className="w-full gradient-card rounded-xl p-3 border border-primary/20 flex items-center justify-between">
-            <ChevronLeft className="w-5 h-5 text-primary" />
-            <div className="flex items-center gap-3">
-              <div>
-                <p className="font-bold text-foreground text-sm text-right">طلبات التوصيل</p>
-                <p className="text-xs text-muted-foreground text-right">اطلع على طلبات المطاعم</p>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Package className="w-5 h-5 text-primary" />
-              </div>
+        <div className="px-4 mt-4">
+          <div className="flex items-center justify-between mb-3">
+            <button onClick={() => navigate("/driver/delivery")} className="text-primary text-sm flex items-center gap-1">
+              عرض الكل <ChevronLeft className="w-4 h-4" />
+            </button>
+            <h2 className="font-bold text-foreground flex items-center gap-2">
+              <Package className="w-4 h-4 text-primary" /> طلبات التوصيل
+              {ordersWithDistance.length > 0 && (
+                <span className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">{ordersWithDistance.length}</span>
+              )}
+            </h2>
+          </div>
+
+          {ordersWithDistance.length === 0 ? (
+            <div className="gradient-card rounded-xl p-6 border border-border text-center text-muted-foreground">
+              <Package className="w-10 h-10 mx-auto mb-2 text-muted-foreground/30" />
+              <p className="text-sm">لا توجد طلبات متاحة حالياً</p>
+              <p className="text-xs mt-1">ستظهر الطلبات الجديدة هنا فور وصولها</p>
             </div>
-          </motion.button>
+          ) : (
+            <div className="gradient-card rounded-xl border border-border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-right text-xs font-bold text-muted-foreground">الوجهة</TableHead>
+                    <TableHead className="text-right text-xs font-bold text-muted-foreground">الاستلام</TableHead>
+                    <TableHead className="text-center text-xs font-bold text-muted-foreground">المسافة</TableHead>
+                    <TableHead className="text-center text-xs font-bold text-muted-foreground">المبلغ</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {ordersWithDistance.map((order) => (
+                    <TableRow key={order.id} className="border-border cursor-pointer hover:bg-primary/5 transition-colors"
+                      onClick={() => navigate("/driver/delivery")}>
+                      <TableCell className="text-right py-3">
+                        <p className="text-sm text-foreground truncate max-w-[120px]">{order.deliveryAddress || "—"}</p>
+                        <p className="text-xs text-muted-foreground">{order.clientName || "عميل"}</p>
+                      </TableCell>
+                      <TableCell className="text-right py-3">
+                        <p className="text-sm text-foreground truncate max-w-[120px]">{order.pickupAddress || "—"}</p>
+                      </TableCell>
+                      <TableCell className="text-center py-3">
+                        {order.distFromDriver != null ? (
+                          <div>
+                            <p className="text-sm font-bold text-info">{order.distFromDriver} كم</p>
+                            <p className="text-xs text-muted-foreground">{order.etaFromDriver} د</p>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center py-3">
+                        <span className="text-sm font-bold text-primary">
+                          {order.price ? `${order.price} DH` : "—"}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </div>
       )}
 
