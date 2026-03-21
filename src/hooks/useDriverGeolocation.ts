@@ -170,6 +170,20 @@ export function useDriverGeolocation(isOnline: boolean) {
     } catch {
       // silent fail
     }
+
+    try {
+      await supabase
+        .from('drivers')
+        .update({
+          current_lat: null,
+          current_lng: null,
+          status: 'inactive',
+          location_updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user.uid);
+    } catch {
+      // silent fail
+    }
   }, [clearWatch]);
 
   useEffect(() => {
