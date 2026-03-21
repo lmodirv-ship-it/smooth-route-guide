@@ -142,7 +142,7 @@ const ActiveTrip = () => {
   return (
     <div className="min-h-screen gradient-dark flex flex-col">
       <div className="flex-1 relative min-h-[40vh]">
-        <GoogleMapWrapper zoom={15}>
+        <LeafletMap zoom={15}>
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 glass px-4 py-2 rounded-full flex items-center gap-2">
             <span className="text-foreground text-sm font-medium">{clientInfo.eta}</span>
             <Clock className="w-4 h-4 text-primary" />
@@ -160,7 +160,7 @@ const ActiveTrip = () => {
           >
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
-        </GoogleMapWrapper>
+        </LeafletMap>
       </div>
 
       <motion.div

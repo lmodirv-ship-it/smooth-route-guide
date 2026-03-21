@@ -304,7 +304,7 @@ const ClientHome = () => {
       )}
 
       <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-48 relative">
-        <GoogleMapWrapper
+        <LeafletMap
           center={userLocation || undefined}
           zoom={14}
           showMarker={!!userLocation}
@@ -317,7 +317,7 @@ const ClientHome = () => {
               {nearbyDriversData.length} سائق بالقرب منك
             </div>
           )}
-        </GoogleMapWrapper>
+        </LeafletMap>
       </div>
 
       <div className="px-4 mt-6">

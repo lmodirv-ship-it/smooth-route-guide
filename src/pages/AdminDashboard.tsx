@@ -528,7 +528,7 @@ const AdminDashboard = () => {
                 <h3 className="font-bold text-foreground">Driver Status</h3>
               </div>
               <div className="h-72">
-                <GoogleMapWrapper zoom={11} showMarker={false} nearbyDrivers={nearbyDrivers.map(d => ({ id: d.id, lat: d.lat, lng: d.lng }))} />
+                <LeafletMap zoom={11} showMarker={false} nearbyDrivers={nearbyDrivers.map(d => ({ id: d.id, lat: d.lat, lng: d.lng }))} />
               </div>
             </div>
           </div>

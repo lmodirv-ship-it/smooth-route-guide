@@ -83,7 +83,7 @@ const ClientBooking = () => {
       </div>
 
       <div className="h-48 relative">
-        <GoogleMapWrapper zoom={14} showMarker nearbyDrivers={nearbyDrivers} />
+        <LeafletMap zoom={14} showMarker nearbyDrivers={nearbyDrivers} />
       </div>
 
       <div className="px-4 -mt-6 relative z-10">
