@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
+import NavigationLinks from "@/components/NavigationLinks";
 import { supabase } from "@/lib/firestoreClient";
 
 const ActiveTrip = () => {
