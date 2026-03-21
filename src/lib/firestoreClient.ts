@@ -20,6 +20,7 @@ import {
   type Unsubscribe,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { supabase as cloudSupabase } from "@/integrations/supabase/client";
 import { db, auth, storage } from "./firebase";
 import {
   isFirestoreTableReadOnly,
@@ -310,39 +311,57 @@ class FirestoreQueryBuilder<T = any> {
 
 const firebaseAuthWrapper = {
   getUser: async () => {
-    const user = auth.currentUser;
-    if (!user) return { data: { user: null }, error: null };
-    return {
-      data: {
-        user: {
-          id: user.uid,
-          email: user.email,
-          user_metadata: { name: user.displayName },
+    if (auth?.currentUser) {
+      const user = auth.currentUser;
+      return {
+        data: {
+          user: {
+            id: user.uid,
+            email: user.email,
+            user_metadata: { name: user.displayName },
+          },
         },
-      },
-      error: null,
-    };
+        error: null,
+      };
+    }
+
+    return cloudSupabase.auth.getUser();
   },
   getSession: async () => {
-    const user = auth.currentUser;
-    if (!user) return { data: { session: null }, error: null };
-    return {
-      data: { session: { user: { id: user.uid, email: user.email } } },
-      error: null,
-    };
+    if (auth?.currentUser) {
+      const user = auth.currentUser;
+      return {
+        data: { session: { user: { id: user.uid, email: user.email } } },
+        error: null,
+      };
+    }
+
+    return cloudSupabase.auth.getSession();
   },
   onAuthStateChange: (callback: (event: string, session: any) => void) => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) callback("SIGNED_IN", { user: { id: user.uid, email: user.email } });
-      else callback("SIGNED_OUT", null);
-    });
-    return { data: { subscription: { unsubscribe } } };
+    if (typeof auth?.onAuthStateChanged === "function") {
+      const unsubscribe = auth.onAuthStateChanged((user) => {
+        if (user) callback("SIGNED_IN", { user: { id: user.uid, email: user.email } });
+        else callback("SIGNED_OUT", null);
+      });
+      return { data: { subscription: { unsubscribe } } };
+    }
+
+    return cloudSupabase.auth.onAuthStateChange(callback);
   },
   signOut: async () => {
-    await auth.signOut();
-    return { error: null };
+    if (typeof auth?.signOut === "function") {
+      await auth.signOut();
+      return { error: null };
+    }
+
+    return cloudSupabase.auth.signOut();
   },
   signInWithPassword: async ({ email, password }: { email: string; password: string }) => {
+    if (!auth) {
+      return cloudSupabase.auth.signInWithPassword({ email, password });
+    }
+
     const { signInWithEmailAndPassword } = await import("firebase/auth");
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
@@ -351,7 +370,11 @@ const firebaseAuthWrapper = {
       return { data: { user: null }, error: { message: e.message } };
     }
   },
-  signUp: async ({ email, password }: any) => {
+  signUp: async ({ email, password, options }: any) => {
+    if (!auth) {
+      return cloudSupabase.auth.signUp({ email, password, options });
+    }
+
     const { createUserWithEmailAndPassword } = await import("firebase/auth");
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
@@ -454,27 +477,12 @@ const storageWrapper = {
 
 const functionsWrapper = {
   invoke: async (name: string, opts?: { body?: any }) => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
     try {
-      const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : null;
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        apikey: supabaseKey,
-      };
-
-      if (idToken) {
-        headers.Authorization = `Bearer ${idToken}`;
-      }
-
-      const res = await fetch(`${supabaseUrl}/functions/v1/${name}`, {
-        method: "POST",
-        headers,
-        body: opts?.body ? JSON.stringify(opts.body) : undefined,
+      const { data, error } = await cloudSupabase.functions.invoke(name, {
+        body: opts?.body,
       });
-      const data = await res.json();
-      return { data, error: null };
+
+      return { data, error };
     } catch (e: any) {
       return { data: null, error: { message: e.message } };
     }
