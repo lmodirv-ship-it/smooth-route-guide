@@ -1,5 +1,5 @@
 /* @refresh reset */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 import RoleSwitcher from "@/components/RoleSwitcher";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { subscribeDriverPendingOrders, calculateDistanceKm, estimateEtaMinutes, type OrderRecord } from "@/lib/orderService";
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
 import IncomingRideRequest from "@/components/IncomingRideRequest";
