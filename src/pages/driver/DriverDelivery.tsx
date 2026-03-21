@@ -7,6 +7,7 @@ import LiveOrderMap from "@/components/LiveOrderMap";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
 import { auth } from "@/lib/firebase";
 import { ORDER_STATUS_META, subscribeDriverActiveOrder, subscribeDriverPendingOrders, updateOrderStatus, type OrderRecord, type OrderStatus } from "@/lib/orderService";
+import NavigationLinks from "@/components/NavigationLinks";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DriverDelivery = () => {
