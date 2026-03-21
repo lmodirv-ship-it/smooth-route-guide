@@ -7,6 +7,7 @@ import LiveOrderMap from "@/components/LiveOrderMap";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
 import { auth } from "@/lib/firebase";
 import { ORDER_STATUS_META, subscribeDriverActiveOrder, subscribeDriverPendingOrders, updateOrderStatus, type OrderRecord, type OrderStatus } from "@/lib/orderService";
+import NavigationLinks from "@/components/NavigationLinks";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DriverDelivery = () => {
@@ -105,6 +106,16 @@ const DriverDelivery = () => {
               <a href={`tel:${activeOrder.clientPhone}`} className="flex items-center justify-center gap-2 w-full h-11 rounded-xl bg-info/10 text-info border border-info/20">
                 <Phone className="w-4 h-4" />اتصال بالعميل
               </a>
+            )}
+
+            {/* Navigation button with auto-fallback */}
+            {targetPosition && (
+              <NavigationLinks
+                lat={targetPosition.lat}
+                lng={targetPosition.lng}
+                label={["accepted", "on_the_way"].includes(activeOrder.status) ? activeOrder.pickupAddress : activeOrder.deliveryAddress}
+                compact
+              />
             )}
 
             <div className="grid gap-3">

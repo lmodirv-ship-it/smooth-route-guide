@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import GoogleMapWrapper from "@/components/GoogleMap";
+import NavigationLinks from "@/components/NavigationLinks";
 import { supabase } from "@/lib/firestoreClient";
 
 const ActiveTrip = () => {
@@ -211,6 +212,18 @@ const ActiveTrip = () => {
         </div>
 
         <AnimatePresence mode="wait">
+          {/* Navigation launcher for driver */}
+          {tripPhase !== "completed" && (
+            <div className="mb-3">
+              <NavigationLinks
+                lat={35.7595}
+                lng={-5.8340}
+                label={tripPhase === "arriving" ? clientInfo.pickup : clientInfo.dropoff}
+                compact
+              />
+            </div>
+          )}
+
           {tripPhase === "arriving" && (
             <motion.div key="arriving" exit={{ opacity: 0 }}>
               <Button
