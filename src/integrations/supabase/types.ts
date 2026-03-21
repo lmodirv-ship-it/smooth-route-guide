@@ -838,28 +838,49 @@ export type Database = {
       }
       ride_requests: {
         Row: {
+          accepted_at: string | null
           created_at: string
           destination: string
+          destination_lat: number | null
+          destination_lng: number | null
+          distance: number | null
+          driver_id: string | null
           id: string
           pickup: string
+          pickup_lat: number | null
+          pickup_lng: number | null
           price: number | null
           status: string
           user_id: string
         }
         Insert: {
+          accepted_at?: string | null
           created_at?: string
           destination?: string
+          destination_lat?: number | null
+          destination_lng?: number | null
+          distance?: number | null
+          driver_id?: string | null
           id?: string
           pickup?: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
           price?: number | null
           status?: string
           user_id: string
         }
         Update: {
+          accepted_at?: string | null
           created_at?: string
           destination?: string
+          destination_lat?: number | null
+          destination_lng?: number | null
+          distance?: number | null
+          driver_id?: string | null
           id?: string
           pickup?: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
           price?: number | null
           status?: string
           user_id?: string
