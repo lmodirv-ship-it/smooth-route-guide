@@ -8,20 +8,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-  type ConfirmationResult,
-} from "firebase/auth";
-import { doc, getDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
-import { createUserDocument, createRoleDocument, type UserRole } from "@/lib/firebaseServices";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";
 
 type RoleId = "driver" | "client" | "delivery" | "admin" | "agent";
+type StoredRole = RoleId | "user";
 
 const roleConfig: Record<string, { label: string; color: string; icon: any }> = {
   driver: { label: "حساب سائق", color: "text-primary", icon: Car },
@@ -31,13 +22,13 @@ const roleConfig: Record<string, { label: string; color: string; icon: any }> = 
   agent: { label: "حساب مركز اتصال", color: "text-warning", icon: Phone },
 };
 
-const roleDashboard: Record<string, string> = {
+const roleDashboard: Record<StoredRole, string> = {
   driver: "/driver",
   client: "/client",
   delivery: "/delivery",
   admin: "/admin",
   agent: "/call-center",
-  call_center: "/call-center",
+  user: "/client",
 };
 
 const AuthPage = () => {
@@ -50,62 +41,50 @@ const AuthPage = () => {
   const [authMethod, setAuthMethod] = useState<"email" | "phone">("email");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  // Email fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-
-  // Phone OTP fields
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [otp, setOtp] = useState("");
-  const [confirmResult, setConfirmResult] = useState<ConfirmationResult | null>(null);
-  const [otpSent, setOtpSent] = useState(false);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        if (snap.exists()) {
-          const data = snap.data();
-          const userRole = (data.role as RoleId) || role;
-          if (data.profileCompleted === false) {
-            navigate("/complete-profile", { replace: true });
-          } else {
-            navigate(roleDashboard[userRole] || roleDashboard.client, { replace: true });
-          }
-        } else {
-          navigate(roleDashboard[role], { replace: true });
-        }
+    const syncSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .limit(1);
+
+      const userRole = (roles?.[0]?.role as StoredRole | undefined) ?? "user";
+      navigate(roleDashboard[userRole] || roleDashboard.user, { replace: true });
+    };
+
+    void syncSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        void syncSession();
       }
     });
-    return unsub;
-  }, [navigate, role]);
 
-  const saveUserToFirestore = async (uid: string, extra: Record<string, any> = {}) => {
-    // Create main user document
-    await createUserDocument(uid, {
-      role: role as UserRole,
-      fullName: extra.fullName || "",
-      phone: extra.phone || "",
-      email: extra.email || "",
-    });
-    // Create role-specific document
-    await createRoleDocument(uid, role as UserRole, extra);
-  };
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
-  // ─── Email/Password ───
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       toast({ title: "يرجى ملء جميع الحقول", variant: "destructive" });
       return;
     }
+
     setLoading(true);
     try {
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
         toast({ title: "تم تسجيل الدخول بنجاح ✅" });
       } else {
         if (!name) {
@@ -113,70 +92,46 @@ const AuthPage = () => {
           setLoading(false);
           return;
         }
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        await saveUserToFirestore(cred.user.uid, { fullName: name, phone, email });
-        toast({ title: "تم إنشاء الحساب بنجاح ✅" });
+
+        const redirectTo = `${window.location.origin}/login`;
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: redirectTo,
+            data: { name, phone, requested_role: role },
+          },
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "تم إنشاء الحساب ✅",
+          description: "تحقق من بريدك الإلكتروني لتأكيد الحساب ثم سجّل الدخول.",
+        });
+        setIsLogin(true);
       }
-      // onAuthStateChanged will handle redirect
     } catch (err: any) {
-      let msg = err.message;
-      if (msg.includes("email-already-in-use")) msg = "هذا البريد مسجل مسبقاً";
-      if (msg.includes("wrong-password") || msg.includes("invalid-credential")) msg = "بريد أو كلمة مرور غير صحيحة";
-      if (msg.includes("weak-password")) msg = "كلمة المرور ضعيفة (6 أحرف على الأقل)";
-      if (msg.includes("invalid-email")) msg = "بريد إلكتروني غير صالح";
+      let msg = err?.message || "حدث خطأ غير متوقع";
+      if (msg.includes("Invalid login credentials")) msg = "بريد أو كلمة مرور غير صحيحة";
+      if (msg.includes("User already registered")) msg = "هذا البريد مسجل مسبقاً";
+      if (msg.includes("Password should be at least")) msg = "كلمة المرور ضعيفة";
       toast({ title: "خطأ", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
-  // ─── Phone OTP ───
-  const setupRecaptcha = () => {
-    if (!(window as any).recaptchaVerifier) {
-      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-        size: "invisible",
-      });
-    }
-  };
-
-  const handleSendOtp = async () => {
-    if (!phoneNumber || phoneNumber.length < 10) {
-      toast({ title: "أدخل رقم هاتف صحيح", variant: "destructive" });
-      return;
-    }
-    setLoading(true);
-    try {
-      setupRecaptcha();
-      const formatted = phoneNumber.startsWith("+") ? phoneNumber : `+213${phoneNumber.replace(/^0/, "")}`;
-      const result = await signInWithPhoneNumber(auth, formatted, (window as any).recaptchaVerifier);
-      setConfirmResult(result);
-      setOtpSent(true);
-      toast({ title: "تم إرسال رمز التحقق 📱" });
-    } catch (err: any) {
-      toast({ title: "خطأ", description: err.message, variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (!otp || !confirmResult) return;
-    setLoading(true);
-    try {
-      const cred = await confirmResult.confirm(otp);
-      await saveUserToFirestore(cred.user.uid, { phone: cred.user.phoneNumber || phoneNumber });
-      toast({ title: "تم التحقق بنجاح ✅" });
-    } catch (err: any) {
-      toast({ title: "رمز التحقق غير صحيح", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
+  const handlePhoneUnavailable = () => {
+    toast({
+      title: "غير متاح حالياً",
+      description: "تسجيل الدخول برقم الهاتف لم يتم ترحيله بعد، استخدم البريد الإلكتروني حالياً.",
+      variant: "destructive",
+    });
   };
 
   return (
     <div className="flex min-h-screen flex-col px-6 py-8 gradient-hero particles-bg relative">
-      <div id="recaptcha-container" />
-
       <button
         type="button"
         onClick={() => navigate("/welcome")}
@@ -201,11 +156,10 @@ const AuthPage = () => {
         <span className={`text-sm mt-1 font-medium ${config.color}`}>{config.label}</span>
       </motion.div>
 
-      {/* Method Tabs */}
       <div className="flex gap-2 w-full max-w-sm mx-auto mb-4 relative z-10">
         <button
           type="button"
-          onClick={() => { setAuthMethod("email"); setOtpSent(false); }}
+          onClick={() => setAuthMethod("email")}
           className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${authMethod === "email" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
           style={{ touchAction: "manipulation" }}
         >
@@ -214,7 +168,7 @@ const AuthPage = () => {
         </button>
         <button
           type="button"
-          onClick={() => setAuthMethod("phone")}
+          onClick={() => { setAuthMethod("phone"); handlePhoneUnavailable(); }}
           className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${authMethod === "phone" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
           style={{ touchAction: "manipulation" }}
         >
@@ -223,8 +177,7 @@ const AuthPage = () => {
         </button>
       </div>
 
-      {/* ─── Email Form ─── */}
-      {authMethod === "email" && (
+      {authMethod === "email" ? (
         <motion.form
           key="email-form"
           initial={{ opacity: 0, y: 20 }}
@@ -304,74 +257,35 @@ const AuthPage = () => {
             {isLogin ? "إنشاء حساب جديد" : "لدي حساب بالفعل"}
           </Button>
         </motion.form>
-      )}
-
-      {/* ─── Phone OTP Form ─── */}
-      {authMethod === "phone" && (
+      ) : (
         <motion.div
           key="phone-form"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col gap-4 w-full max-w-sm mx-auto relative z-10"
         >
-          {!otpSent ? (
-            <>
-              <div className="space-y-2">
-                <label className="text-sm text-muted-foreground text-right block">رقم الهاتف</label>
-                <div className="relative">
-                  <Input
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="0555123456"
-                    type="tel"
-                    className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right"
-                  />
-                  <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                </div>
-              </div>
-              <Button
-                type="button"
-                onClick={handleSendOtp}
-                disabled={loading}
-                className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-bold text-lg mt-2 hover:opacity-90 transition-opacity glow-primary"
-                style={{ touchAction: "manipulation" }}
-              >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "إرسال رمز التحقق"}
-              </Button>
-            </>
-          ) : (
-            <>
-              <div className="space-y-2">
-                <label className="text-sm text-muted-foreground text-right block">رمز التحقق (OTP)</label>
-                <Input
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  placeholder="123456"
-                  type="number"
-                  maxLength={6}
-                  className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl text-center text-xl tracking-[0.5em]"
-                />
-              </div>
-              <Button
-                type="button"
-                onClick={handleVerifyOtp}
-                disabled={loading}
-                className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-bold text-lg mt-2 hover:opacity-90 transition-opacity glow-primary"
-                style={{ touchAction: "manipulation" }}
-              >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "تحقق"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => { setOtpSent(false); setOtp(""); }}
-                className="w-full h-12 rounded-xl border-border text-foreground hover:bg-secondary"
-                style={{ touchAction: "manipulation" }}
-              >
-                تغيير الرقم
-              </Button>
-            </>
-          )}
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground text-right block">رقم الهاتف</label>
+            <div className="relative">
+              <Input
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="0555123456"
+                type="tel"
+                className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right"
+              />
+              <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            </div>
+          </div>
+          <Button
+            type="button"
+            onClick={handlePhoneUnavailable}
+            variant="outline"
+            className="w-full h-12 rounded-xl border-border text-foreground hover:bg-secondary"
+            style={{ touchAction: "manipulation" }}
+          >
+            تسجيل الهاتف غير متاح حالياً
+          </Button>
         </motion.div>
       )}
     </div>

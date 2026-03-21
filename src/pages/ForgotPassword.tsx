@@ -5,8 +5,7 @@ import { ArrowRight, Mail, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { supabase } from "@/integrations/supabase/client";
 import { emailSchema, getSafeWindowOrigin, sanitizeEmail } from "@/lib/inputSecurity";
 import logo from "@/assets/hn-driver-logo.png";
 
@@ -32,16 +31,15 @@ const ForgotPassword = () => {
 
     setLoading(true);
     try {
-      await sendPasswordResetEmail(auth, cleanEmail, {
-        url: `${getSafeWindowOrigin()}/reset-password`,
+      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo: `${getSafeWindowOrigin()}/reset-password`,
       });
+      if (error) throw error;
       setEmail(cleanEmail);
       setSent(true);
       toast({ title: "تم إرسال رابط إعادة التعيين ✅" });
     } catch (err: any) {
-      let msg = err.message;
-      if (msg.includes("user-not-found")) msg = "هذا البريد غير مسجل";
-      if (msg.includes("invalid-email")) msg = "بريد إلكتروني غير صالح";
+      const msg = err?.message || "تعذر إرسال رابط الاستعادة";
       toast({ title: "خطأ", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
