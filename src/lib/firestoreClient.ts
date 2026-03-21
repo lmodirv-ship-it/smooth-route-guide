@@ -477,27 +477,12 @@ const storageWrapper = {
 
 const functionsWrapper = {
   invoke: async (name: string, opts?: { body?: any }) => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
     try {
-      const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : null;
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        apikey: supabaseKey,
-      };
-
-      if (idToken) {
-        headers.Authorization = `Bearer ${idToken}`;
-      }
-
-      const res = await fetch(`${supabaseUrl}/functions/v1/${name}`, {
-        method: "POST",
-        headers,
-        body: opts?.body ? JSON.stringify(opts.body) : undefined,
+      const { data, error } = await cloudSupabase.functions.invoke(name, {
+        body: opts?.body,
       });
-      const data = await res.json();
-      return { data, error: null };
+
+      return { data, error };
     } catch (e: any) {
       return { data: null, error: { message: e.message } };
     }
