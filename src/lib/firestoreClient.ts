@@ -20,6 +20,7 @@ import {
   type Unsubscribe,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { supabase as cloudSupabase } from "@/integrations/supabase/client";
 import { db, auth, storage } from "./firebase";
 import {
   isFirestoreTableReadOnly,
