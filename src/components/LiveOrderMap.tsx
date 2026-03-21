@@ -2,6 +2,7 @@ import { DirectionsRenderer, GoogleMap, Marker, OverlayView, useJsApiLoader } fr
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin, Navigation } from "lucide-react";
 import { GOOGLE_MAPS_API_KEY } from "@/components/GoogleMap";
+import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 
 const LIBRARIES: ("places")[] = ["places"];
 const DEFAULT_CENTER = { lat: 35.7595, lng: -5.8340 };
