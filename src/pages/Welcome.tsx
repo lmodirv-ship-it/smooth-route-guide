@@ -2,51 +2,72 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Car, User, Headphones, Shield, LogOut, Download } from "lucide-react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 import NativeDownloadSection from "@/components/welcome/NativeDownloadSection";
 
 type RoleId = "driver" | "client" | "delivery";
+type StoredRole = RoleId | "admin" | "agent" | "user";
 
-const roleDashboardPaths: Record<string, string> = {
+const roleDashboardPaths: Record<StoredRole, string> = {
   driver: "/driver",
   client: "/client",
   delivery: "/delivery",
-  call_center: "/call-center",
   admin: "/admin",
+  agent: "/call-center",
+  user: "/client",
+};
+
+const roleLabelMap: Record<StoredRole, string> = {
+  driver: "سائق",
+  client: "عميل",
+  delivery: "توصيل",
+  admin: "مسؤول",
+  agent: "مركز اتصال",
+  user: "عميل",
 };
 
 const Welcome = () => {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [userRole, setUserRole] = useState<RoleId | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ email?: string | null; phone?: string | null } | null>(null);
+  const [userRole, setUserRole] = useState<StoredRole | null>(null);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setCurrentUser(user);
-        try {
-          const snap = await getDoc(doc(db, "users", user.uid));
-          if (snap.exists()) {
-            setUserRole(snap.data().role as RoleId);
-          }
-        } catch {
-          // ignore
-        }
-      } else {
+    const syncSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         setCurrentUser(null);
         setUserRole(null);
+        return;
       }
+
+      setCurrentUser({
+        email: session.user.email,
+        phone: session.user.phone,
+      });
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .limit(1);
+
+      setUserRole((roles?.[0]?.role as StoredRole | undefined) ?? null);
+    };
+
+    void syncSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      void syncSession();
     });
-    return () => unsub();
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await supabase.auth.signOut();
     localStorage.removeItem("hn_user_role");
     setCurrentUser(null);
     setUserRole(null);
@@ -57,16 +78,25 @@ const Welcome = () => {
     setChecking(true);
 
     try {
-      const user = auth.currentUser;
-      if (user) {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        const savedRole = snap.exists() ? (snap.data().role as RoleId) : roleId;
-        navigate(roleDashboardPaths[savedRole] || roleDashboardPaths[roleId]);
-      } else {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         navigate(`/auth/${roleId}`);
+        return;
       }
-    } catch {
-      navigate(`/auth/${roleId}`);
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .limit(1);
+
+      const savedRole = (roles?.[0]?.role as StoredRole | undefined) ?? null;
+      if (savedRole) {
+        navigate(roleDashboardPaths[savedRole] || roleDashboardPaths.user);
+        return;
+      }
+
+      navigate(roleId === "delivery" ? "/delivery" : roleId === "driver" ? "/driver" : "/client");
     } finally {
       setChecking(false);
     }
@@ -163,8 +193,8 @@ const Welcome = () => {
             className="mt-3 flex flex-col items-center gap-2"
           >
             <p className="text-xs text-success">
-              ✓ مسجل كـ {currentUser.email || currentUser.phoneNumber}
-              {userRole && ` (${userRole === "driver" ? "سائق" : userRole === "client" ? "عميل" : "توصيل"})`}
+              ✓ مسجل كـ {currentUser.email || currentUser.phone || "مستخدم"}
+              {userRole && ` (${roleLabelMap[userRole]})`}
             </p>
             <button
               onClick={handleLogout}

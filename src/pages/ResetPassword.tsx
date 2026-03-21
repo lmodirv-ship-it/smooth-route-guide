@@ -1,49 +1,43 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle, Eye, EyeOff, Loader2, Lock } from "lucide-react";
-import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { auth } from "@/lib/firebase";
-import { passwordSchema, sanitizePlainText, sanitizeSearchParam } from "@/lib/inputSecurity";
+import { supabase } from "@/integrations/supabase/client";
+import { passwordSchema, sanitizePlainText } from "@/lib/inputSecurity";
 import logo from "@/assets/hn-driver-logo.png";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkingCode, setCheckingCode] = useState(true);
-  const [isCodeValid, setIsCodeValid] = useState(false);
+  const [isRecoverySession, setIsRecoverySession] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const oobCode = useMemo(() => sanitizeSearchParam(searchParams.get("oobCode"), 256), [searchParams]);
-
   useEffect(() => {
-    const checkCode = async () => {
-      if (!oobCode) {
-        setIsCodeValid(false);
-        setCheckingCode(false);
-        return;
-      }
-
-      try {
-        await verifyPasswordResetCode(auth, oobCode);
-        setIsCodeValid(true);
-      } catch {
-        setIsCodeValid(false);
-      } finally {
-        setCheckingCode(false);
-      }
+    const checkRecoverySession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsRecoverySession(!!session);
+      setCheckingCode(false);
     };
 
-    void checkCode();
-  }, [oobCode]);
+    void checkRecoverySession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || !!session) {
+        setIsRecoverySession(true);
+      }
+      setCheckingCode(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,14 +62,12 @@ const ResetPassword = () => {
 
     setLoading(true);
     try {
-      await confirmPasswordReset(auth, oobCode, cleanPassword);
+      const { error } = await supabase.auth.updateUser({ password: cleanPassword });
+      if (error) throw error;
       setSent(true);
       toast({ title: "تم تحديث كلمة المرور بنجاح ✅" });
     } catch (err: any) {
-      let msg = err?.message || "تعذر إعادة تعيين كلمة المرور";
-      if (msg.includes("expired-action-code") || msg.includes("invalid-action-code")) {
-        msg = "رابط إعادة التعيين غير صالح أو منتهي الصلاحية";
-      }
+      const msg = err?.message || "تعذر إعادة تعيين كلمة المرور";
       toast({ title: "خطأ", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
@@ -128,7 +120,7 @@ const ResetPassword = () => {
             العودة إلى تسجيل الدخول
           </Button>
         </motion.div>
-      ) : !isCodeValid ? (
+      ) : !isRecoverySession ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -138,7 +130,7 @@ const ResetPassword = () => {
             <Lock className="w-10 h-10 text-destructive" />
           </div>
           <h2 className="text-lg font-bold text-foreground">الرابط غير صالح</h2>
-          <p className="text-sm text-muted-foreground">قد يكون الرابط منتهي الصلاحية أو تم استخدامه مسبقًا.</p>
+          <p className="text-sm text-muted-foreground">افتح صفحة الاستعادة من البريد الإلكتروني مرة أخرى.</p>
           <Button
             onClick={() => navigate("/forgot-password")}
             variant="outline"
