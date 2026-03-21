@@ -38,6 +38,30 @@ const DriverDashboard = () => {
   const [stats, setStats] = useState({ todayEarnings: 0, todayTrips: 0, rating: 0, hoursOnline: "0:00" });
   const [recentTrips, setRecentTrips] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
+  const [pendingOrders, setPendingOrders] = useState<OrderRecord[]>([]);
+
+  // Subscribe to pending delivery orders when online
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (!isOnline || !user) {
+      setPendingOrders([]);
+      return;
+    }
+    const unsub = subscribeDriverPendingOrders(user.uid, setPendingOrders);
+    return () => unsub();
+  }, [isOnline]);
+
+  // Calculate distance from driver to each pending order's pickup
+  const ordersWithDistance = useMemo(() => {
+    if (!driverLocation) return pendingOrders.map(o => ({ ...o, distFromDriver: null, etaFromDriver: null }));
+    return pendingOrders.map(order => {
+      if (order.pickupLat != null && order.pickupLng != null) {
+        const dist = calculateDistanceKm(driverLocation.lat, driverLocation.lng, order.pickupLat, order.pickupLng);
+        return { ...order, distFromDriver: dist, etaFromDriver: estimateEtaMinutes(dist) };
+      }
+      return { ...order, distFromDriver: null, etaFromDriver: null };
+    }).sort((a, b) => (a.distFromDriver ?? 999) - (b.distFromDriver ?? 999));
+  }, [pendingOrders, driverLocation]);
 
   const fetchData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
