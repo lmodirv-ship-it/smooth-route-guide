@@ -11,7 +11,7 @@ import RoleSwitcher from "@/components/RoleSwitcher";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { subscribeDriverPendingOrders, calculateDistanceKm, estimateEtaMinutes, type OrderRecord } from "@/lib/orderService";
 import { Button } from "@/components/ui/button";
-import GoogleMapWrapper from "@/components/GoogleMap";
+import LeafletMap from "@/components/LeafletMap";
 import IncomingRideRequest from "@/components/IncomingRideRequest";
 import LocationPermissionPrompt from "@/components/driver/LocationPermissionPrompt";
 import { useIncomingRideRequests } from "@/hooks/useIncomingRideRequests";
@@ -171,13 +171,13 @@ const DriverDashboard = () => {
       ) : null}
 
       <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-44 relative">
-        <GoogleMapWrapper zoom={15} driverLocation={driverLocation} panToDriver={isOnline} showMarker={!isOnline}>
+        <LeafletMap zoom={15} driverLocation={driverLocation} showMarker={!isOnline}>
           {isOnline && (
             <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-success/20 text-success px-3 py-1 rounded-full text-xs font-medium border border-success/20 backdrop-blur-sm">
               <div className="w-2 h-2 rounded-full bg-success animate-pulse" />متصل
             </div>
           )}
-        </GoogleMapWrapper>
+        </LeafletMap>
       </div>
 
       <IncomingRideRequest requests={requests} accepting={accepting} onAccept={acceptRequest} onReject={rejectRequest} />

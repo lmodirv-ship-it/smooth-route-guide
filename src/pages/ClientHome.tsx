@@ -21,7 +21,7 @@ import {
 import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Button } from "@/components/ui/button";
-import GoogleMapWrapper from "@/components/GoogleMap";
+import LeafletMap from "@/components/LeafletMap";
 import PlacesAutocomplete from "@/components/PlacesAutocomplete";
 import PriceEstimateCard from "@/components/PriceEstimateCard";
 import { useTripPricing } from "@/hooks/useTripPricing";
@@ -304,7 +304,7 @@ const ClientHome = () => {
       )}
 
       <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-48 relative">
-        <GoogleMapWrapper
+        <LeafletMap
           center={userLocation || undefined}
           zoom={14}
           showMarker={!!userLocation}
@@ -317,7 +317,7 @@ const ClientHome = () => {
               {nearbyDriversData.length} سائق بالقرب منك
             </div>
           )}
-        </GoogleMapWrapper>
+        </LeafletMap>
       </div>
 
       <div className="px-4 mt-6">

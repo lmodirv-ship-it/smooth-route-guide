@@ -2,7 +2,7 @@ import { useState } from "react";
 import { MapPin, Car, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
-import GoogleMapWrapper from "@/components/GoogleMap";
+import LeafletMap from "@/components/LeafletMap";
 
 const AdminLiveMap = () => {
   const { drivers } = useNearbyDrivers();
@@ -23,7 +23,7 @@ const AdminLiveMap = () => {
         {/* Map */}
         <div className="lg:col-span-3 gradient-card rounded-xl border border-border overflow-hidden">
           <div className="h-[600px]">
-            <GoogleMapWrapper zoom={11} showMarker={false} nearbyDrivers={drivers.map(d => ({ id: d.id, lat: d.lat, lng: d.lng }))} />
+            <LeafletMap zoom={11} showMarker={false} nearbyDrivers={drivers.map(d => ({ id: d.id, lat: d.lat, lng: d.lng }))} />
           </div>
         </div>
 

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, CreditCard, Loader2, Navigation, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import GoogleMapWrapper from "@/components/GoogleMap";
+import LeafletMap from "@/components/LeafletMap";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import { auth } from "@/lib/firebase";
 import { createDeliveryOrder } from "@/lib/orderService";
@@ -83,7 +83,7 @@ const ClientBooking = () => {
       </div>
 
       <div className="h-48 relative">
-        <GoogleMapWrapper zoom={14} showMarker nearbyDrivers={nearbyDrivers} />
+        <LeafletMap zoom={14} showMarker nearbyDrivers={nearbyDrivers} />
       </div>
 
       <div className="px-4 -mt-6 relative z-10">
