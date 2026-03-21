@@ -158,7 +158,7 @@ const LiveOrderMap = ({ className = "w-full h-full", driverPosition, targetPosit
           mapRef.current = map;
         }}
       >
-        {driverPosition && <Marker position={driverPosition} icon={driverIcon} />}
+        {smoothedDriver && <Marker position={smoothedDriver} icon={driverIcon} />}
         {targetPosition && <Marker position={targetPosition} icon={destinationIcon} />}
         {directions && (
           <>
