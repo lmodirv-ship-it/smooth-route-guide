@@ -17,6 +17,7 @@ import LocationPermissionPrompt from "@/components/driver/LocationPermissionProm
 import { useIncomingRideRequests } from "@/hooks/useIncomingRideRequests";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
 import { openAppSettings } from "@/lib/nativeApp";
+import { auth } from "@/lib/firebase";
 import { supabase } from "@/lib/firestoreClient";
 import logo from "@/assets/hn-driver-logo.png";
 
