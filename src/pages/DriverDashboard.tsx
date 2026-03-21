@@ -11,7 +11,7 @@ import RoleSwitcher from "@/components/RoleSwitcher";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { subscribeDriverPendingOrders, calculateDistanceKm, estimateEtaMinutes, type OrderRecord } from "@/lib/orderService";
 import { Button } from "@/components/ui/button";
-import GoogleMapWrapper from "@/components/GoogleMap";
+import LeafletMap from "@/components/LeafletMap";
 import IncomingRideRequest from "@/components/IncomingRideRequest";
 import LocationPermissionPrompt from "@/components/driver/LocationPermissionPrompt";
 import { useIncomingRideRequests } from "@/hooks/useIncomingRideRequests";
