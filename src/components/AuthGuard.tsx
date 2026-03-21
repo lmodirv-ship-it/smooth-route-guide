@@ -3,7 +3,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 
-type UserRole = "driver" | "client" | "delivery" | "admin" | "agent";
+type UserRole = "driver" | "client" | "delivery" | "admin" | "agent" | "user";
 
 const roleDashboard: Record<UserRole, string> = {
   driver: "/driver",
