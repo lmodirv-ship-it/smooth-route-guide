@@ -43,10 +43,11 @@ export function useDriverGeolocation(isOnline: boolean) {
     if (!user) return;
 
     const now = Date.now();
-    if (now - lastDbUpdateRef.current < 10000) return;
+    if (now - lastDbUpdateRef.current < 4000) return; // throttle to ~4s
     lastDbUpdateRef.current = now;
 
     try {
+      // Update Firestore (legacy / order metrics)
       await setDoc(doc(db, 'drivers', user.uid), {
         uid: user.uid,
         currentLat: lat,
@@ -59,7 +60,22 @@ export function useDriverGeolocation(isOnline: boolean) {
 
       await syncDriverOrderMetrics(user.uid, lat, lng);
     } catch {
-      // silent fail
+      // silent fail for Firestore
+    }
+
+    try {
+      // Update Supabase drivers table for realtime tracking
+      await supabase
+        .from('drivers')
+        .update({
+          current_lat: lat,
+          current_lng: lng,
+          location_updated_at: new Date().toISOString(),
+          status: 'active',
+        })
+        .eq('user_id', user.uid);
+    } catch {
+      // silent fail for Supabase
     }
   }, []);
 
