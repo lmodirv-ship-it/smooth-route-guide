@@ -40,14 +40,17 @@ interface LiveOrderMapProps {
 }
 
 const LiveOrderMap = ({ className = "w-full h-full", driverPosition, targetPosition }: LiveOrderMapProps) => {
+  const smoothedDriver = useSmoothedPosition(driverPosition);
+
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: LIBRARIES,
   });
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
+  const lastRouteReqRef = useRef<number>(0);
 
-  const center = useMemo(() => driverPosition || targetPosition || DEFAULT_CENTER, [driverPosition, targetPosition]);
+  const center = useMemo(() => smoothedDriver || targetPosition || DEFAULT_CENTER, [smoothedDriver, targetPosition]);
 
   const routeMeta = useMemo(() => {
     const leg = directions?.routes?.[0]?.legs?.[0];
