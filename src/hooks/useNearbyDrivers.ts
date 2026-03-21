@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/firestoreClient';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface NearbyDriver {
   id: string;
