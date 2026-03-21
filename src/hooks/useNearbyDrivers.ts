@@ -23,7 +23,12 @@ export function useNearbyDrivers() {
 
     if (error || !data) return;
 
-    const userIds = data.map((d: any) => d.user_id);
+    const userIds = data.map((d: any) => d.user_id).filter(Boolean);
+    if (userIds.length === 0) {
+      setDrivers([]);
+      return;
+    }
+
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, name')

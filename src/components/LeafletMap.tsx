@@ -1,5 +1,4 @@
-import { useMemo } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useEffect, useMemo, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -61,6 +60,13 @@ const LeafletMap = ({
   nearbyDrivers = [],
   children,
 }: LeafletMapProps) => {
+  const mapElementRef = useRef<HTMLDivElement | null>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const nearbyDriversLayerRef = useRef<L.LayerGroup | null>(null);
+  const staticMarkerRef = useRef<L.Marker | null>(null);
+  const driverMarkerRef = useRef<L.Marker | null>(null);
+
   const mapCenter = useMemo((): [number, number] => {
     if (driverLocation) return [driverLocation.lat, driverLocation.lng];
     if (center) return [center.lat, center.lng];
@@ -72,35 +78,83 @@ const LeafletMap = ({
     return mapCenter;
   }, [markerPosition, mapCenter]);
 
+  useEffect(() => {
+    if (!mapElementRef.current || mapInstanceRef.current) return;
+
+    const map = L.map(mapElementRef.current, {
+      zoomControl: false,
+      attributionControl: false,
+    }).setView(mapCenter, zoom);
+
+    const tileLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+      attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+    });
+
+    tileLayer.addTo(map);
+    nearbyDriversLayerRef.current = L.layerGroup().addTo(map);
+    mapInstanceRef.current = map;
+    tileLayerRef.current = tileLayer;
+
+    return () => {
+      staticMarkerRef.current = null;
+      driverMarkerRef.current = null;
+      nearbyDriversLayerRef.current = null;
+      tileLayerRef.current = null;
+      mapInstanceRef.current?.remove();
+      mapInstanceRef.current = null;
+    };
+  }, [mapCenter, zoom]);
+
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    mapInstanceRef.current.setView(mapCenter, zoom, { animate: false });
+  }, [mapCenter, zoom]);
+
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
+    if (showMarker && !driverLocation) {
+      if (!staticMarkerRef.current) {
+        staticMarkerRef.current = L.marker(markerPos, { icon: defaultIcon }).addTo(mapInstanceRef.current);
+      } else {
+        staticMarkerRef.current.setLatLng(markerPos);
+      }
+    } else if (staticMarkerRef.current) {
+      staticMarkerRef.current.remove();
+      staticMarkerRef.current = null;
+    }
+  }, [driverLocation, markerPos, showMarker]);
+
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
+    if (driverLocation) {
+      const position: L.LatLngExpression = [driverLocation.lat, driverLocation.lng];
+      if (!driverMarkerRef.current) {
+        driverMarkerRef.current = L.marker(position, { icon: driverIcon }).addTo(mapInstanceRef.current);
+        driverMarkerRef.current.bindPopup("موقع السائق");
+      } else {
+        driverMarkerRef.current.setLatLng(position);
+      }
+    } else if (driverMarkerRef.current) {
+      driverMarkerRef.current.remove();
+      driverMarkerRef.current = null;
+    }
+  }, [driverLocation]);
+
+  useEffect(() => {
+    const layer = nearbyDriversLayerRef.current;
+    if (!layer) return;
+
+    layer.clearLayers();
+    nearbyDrivers.forEach((driver) => {
+      L.marker([driver.lat, driver.lng], { icon: carIcon }).addTo(layer);
+    });
+  }, [nearbyDrivers]);
+
   return (
     <div className={`${className} relative`}>
-      <MapContainer
-        center={mapCenter}
-        zoom={zoom}
-        className="w-full h-full"
-        zoomControl={false}
-        attributionControl={false}
-        style={{ background: "#1a1d2e" }}
-      >
-        <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-        />
-
-        {showMarker && !driverLocation && (
-          <Marker position={markerPos} icon={defaultIcon} />
-        )}
-
-        {driverLocation && (
-          <Marker position={[driverLocation.lat, driverLocation.lng]} icon={driverIcon}>
-            <Popup>موقع السائق</Popup>
-          </Marker>
-        )}
-
-        {nearbyDrivers.map((d) => (
-          <Marker key={d.id} position={[d.lat, d.lng]} icon={carIcon} />
-        ))}
-      </MapContainer>
+      <div ref={mapElementRef} className="h-full w-full" />
 
       {/* OpenStreetMap badge */}
       <div className="absolute bottom-1 left-1 z-[1000] rounded bg-background/70 px-1.5 py-0.5 text-[10px] text-muted-foreground backdrop-blur-sm">
