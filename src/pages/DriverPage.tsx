@@ -152,9 +152,8 @@ const DriverPage = () => {
         <LeafletMap
           center={driverLocation || DEFAULT_LOCATION}
           zoom={14}
-          markers={[
-            ...(driverLocation ? [{ lat: driverLocation.lat, lng: driverLocation.lng, label: "موقعي", color: "green" as const }] : []),
-          ]}
+          showMarker
+          driverLocation={driverLocation}
         />
         <div className="absolute top-3 right-3 z-[1000] bg-emerald-500/20 text-emerald-300 px-3 py-1.5 rounded-full text-xs flex items-center gap-1.5 border border-emerald-500/30 backdrop-blur-sm">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />

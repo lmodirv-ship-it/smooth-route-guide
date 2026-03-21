@@ -107,12 +107,10 @@ const CustomerPage = () => {
       {/* Map */}
       <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-blue-500/20 h-56 relative">
         <LeafletMap
-          center={userLocation || DEFAULT_LOCATION}
+          center={destCoords || userLocation || DEFAULT_LOCATION}
           zoom={14}
-          markers={[
-            ...(userLocation ? [{ lat: userLocation.lat, lng: userLocation.lng, label: "موقعي", color: "blue" as const }] : []),
-            ...(destCoords ? [{ lat: destCoords.lat, lng: destCoords.lng, label: "الوجهة", color: "red" as const }] : []),
-          ]}
+          showMarker={!!userLocation}
+          markerPosition={userLocation || undefined}
         />
         {userLocation && (
           <div className="absolute top-3 right-3 z-[1000] bg-blue-500/20 text-blue-300 px-3 py-1.5 rounded-full text-xs flex items-center gap-1.5 border border-blue-500/30 backdrop-blur-sm">
