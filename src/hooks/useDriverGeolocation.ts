@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { auth, db } from '@/lib/firebase';
+import { supabase } from '@/integrations/supabase/client';
 import { syncDriverOrderMetrics } from '@/lib/orderService';
 import {
   DriverCoordinates,
