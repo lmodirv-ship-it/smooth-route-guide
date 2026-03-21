@@ -74,12 +74,20 @@ const GoogleMapWrapper = ({
   nearbyDrivers = [],
   children,
 }: GoogleMapProps) => {
+  const hasApiKey = !!GOOGLE_MAPS_API_KEY;
+
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: LIBRARIES,
   });
 
+  const [googleFailed, setGoogleFailed] = useState(!hasApiKey);
   const mapRef = useRef<google.maps.Map | null>(null);
+
+  // If Google Maps load fails, auto-switch to Leaflet
+  useEffect(() => {
+    if (loadError) setGoogleFailed(true);
+  }, [loadError]);
 
   const mapCenter = useMemo(() => {
     if (driverLocation && panToDriver) return driverLocation;
@@ -125,14 +133,20 @@ const GoogleMapWrapper = ({
     };
   }, [isLoaded]);
 
-  if (loadError) {
+  // Auto-fallback: use Leaflet/OSM when Google Maps is unavailable
+  if (googleFailed) {
     return (
-      <div className={`${className} bg-secondary/50 flex items-center justify-center`}>
-        <div className="text-center">
-          <Navigation className="w-10 h-10 text-primary mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">خطأ في تحميل الخريطة</p>
-        </div>
-      </div>
+      <LeafletMap
+        center={center}
+        zoom={zoom}
+        className={className}
+        showMarker={showMarker}
+        markerPosition={markerPosition}
+        driverLocation={driverLocation}
+        nearbyDrivers={nearbyDrivers}
+      >
+        {children}
+      </LeafletMap>
     );
   }
 
