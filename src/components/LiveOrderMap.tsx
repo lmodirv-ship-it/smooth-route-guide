@@ -2,6 +2,7 @@ import { DirectionsRenderer, GoogleMap, Marker, OverlayView, useJsApiLoader } fr
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin, Navigation } from "lucide-react";
 import { GOOGLE_MAPS_API_KEY } from "@/components/GoogleMap";
+import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 
 const LIBRARIES: ("places")[] = ["places"];
 const DEFAULT_CENTER = { lat: 35.7595, lng: -5.8340 };
@@ -39,14 +40,17 @@ interface LiveOrderMapProps {
 }
 
 const LiveOrderMap = ({ className = "w-full h-full", driverPosition, targetPosition }: LiveOrderMapProps) => {
+  const smoothedDriver = useSmoothedPosition(driverPosition);
+
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: LIBRARIES,
   });
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
+  const lastRouteReqRef = useRef<number>(0);
 
-  const center = useMemo(() => driverPosition || targetPosition || DEFAULT_CENTER, [driverPosition, targetPosition]);
+  const center = useMemo(() => smoothedDriver || targetPosition || DEFAULT_CENTER, [smoothedDriver, targetPosition]);
 
   const routeMeta = useMemo(() => {
     const leg = directions?.routes?.[0]?.legs?.[0];
@@ -74,11 +78,16 @@ const LiveOrderMap = ({ className = "w-full h-full", driverPosition, targetPosit
     };
   }, [isLoaded, targetPosition]);
 
+  // Throttle directions requests to every 10s
   useEffect(() => {
     if (!isLoaded || !driverPosition || !targetPosition) {
       setDirections(null);
       return;
     }
+
+    const now = Date.now();
+    if (now - lastRouteReqRef.current < 10000 && directions) return;
+    lastRouteReqRef.current = now;
 
     const service = new google.maps.DirectionsService();
     service.route(
@@ -101,13 +110,13 @@ const LiveOrderMap = ({ className = "w-full h-full", driverPosition, targetPosit
     if (!mapRef.current || !isLoaded) return;
     const bounds = new google.maps.LatLngBounds();
 
-    if (driverPosition) bounds.extend(driverPosition);
+    if (smoothedDriver) bounds.extend(smoothedDriver);
     if (targetPosition) bounds.extend(targetPosition);
 
-    if (driverPosition || targetPosition) {
+    if (smoothedDriver || targetPosition) {
       mapRef.current.fitBounds(bounds, 64);
     }
-  }, [driverPosition, isLoaded, targetPosition, directions]);
+  }, [smoothedDriver, isLoaded, targetPosition, directions]);
 
   if (loadError) {
     return (
@@ -149,7 +158,7 @@ const LiveOrderMap = ({ className = "w-full h-full", driverPosition, targetPosit
           mapRef.current = map;
         }}
       >
-        {driverPosition && <Marker position={driverPosition} icon={driverIcon} />}
+        {smoothedDriver && <Marker position={smoothedDriver} icon={driverIcon} />}
         {targetPosition && <Marker position={targetPosition} icon={destinationIcon} />}
         {directions && (
           <>

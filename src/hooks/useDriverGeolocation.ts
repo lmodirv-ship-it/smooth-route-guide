@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { auth, db } from '@/lib/firebase';
+import { supabase } from '@/integrations/supabase/client';
 import { syncDriverOrderMetrics } from '@/lib/orderService';
 import {
   DriverCoordinates,
@@ -42,10 +43,11 @@ export function useDriverGeolocation(isOnline: boolean) {
     if (!user) return;
 
     const now = Date.now();
-    if (now - lastDbUpdateRef.current < 10000) return;
+    if (now - lastDbUpdateRef.current < 4000) return; // throttle to ~4s
     lastDbUpdateRef.current = now;
 
     try {
+      // Update Firestore (legacy / order metrics)
       await setDoc(doc(db, 'drivers', user.uid), {
         uid: user.uid,
         currentLat: lat,
@@ -58,7 +60,22 @@ export function useDriverGeolocation(isOnline: boolean) {
 
       await syncDriverOrderMetrics(user.uid, lat, lng);
     } catch {
-      // silent fail
+      // silent fail for Firestore
+    }
+
+    try {
+      // Update Supabase drivers table for realtime tracking
+      await supabase
+        .from('drivers')
+        .update({
+          current_lat: lat,
+          current_lng: lng,
+          location_updated_at: new Date().toISOString(),
+          status: 'active',
+        })
+        .eq('user_id', user.uid);
+    } catch {
+      // silent fail for Supabase
     }
   }, []);
 
@@ -150,6 +167,20 @@ export function useDriverGeolocation(isOnline: boolean) {
         isOnline: false,
         updatedAt: new Date().toISOString(),
       }, { merge: true });
+    } catch {
+      // silent fail
+    }
+
+    try {
+      await supabase
+        .from('drivers')
+        .update({
+          current_lat: null,
+          current_lng: null,
+          status: 'inactive',
+          location_updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user.uid);
     } catch {
       // silent fail
     }
