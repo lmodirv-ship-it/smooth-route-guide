@@ -1,45 +1,36 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 
-interface CallCenterGuardProps {
-  children: React.ReactNode;
-}
-
-const CallCenterGuard = ({ children }: CallCenterGuardProps) => {
+const CallCenterGuard = ({ children }: { children: React.ReactNode }) => {
   const [state, setState] = useState<"loading" | "authorized" | "unauthorized" | "unauthenticated">("loading");
-  const logout = useFirebaseLogout();
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
+    const check = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         setState("unauthenticated");
         return;
       }
-      try {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        if (snap.exists()) {
-          const role = snap.data().role;
-          // Allow admin and agent roles
-          if (role === "admin" || role === "agent" || role === "call_center") {
-            setState("authorized");
-          } else {
-            setState("unauthorized");
-          }
-        } else {
-          setState("unauthorized");
-        }
-      } catch {
-        setState("unauthorized");
-      }
-    });
-    return () => unsub();
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id);
+
+      const isAllowed = roles?.some(r => ["admin", "agent"].includes(r.role));
+      setState(isAllowed ? "authorized" : "unauthorized");
+    };
+
+    check();
   }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  };
 
   if (state === "loading") {
     return (
@@ -52,9 +43,7 @@ const CallCenterGuard = ({ children }: CallCenterGuardProps) => {
     );
   }
 
-  if (state === "unauthenticated") {
-    return <Navigate to="/login" replace />;
-  }
+  if (state === "unauthenticated") return <Navigate to="/login" replace />;
 
   if (state === "unauthorized") {
     return (
@@ -66,12 +55,8 @@ const CallCenterGuard = ({ children }: CallCenterGuardProps) => {
           <h1 className="text-2xl font-bold text-foreground">غير مصرح</h1>
           <p className="text-muted-foreground">ليس لديك صلاحية الوصول إلى مركز الاتصال.</p>
           <div className="flex gap-3 justify-center pt-4">
-            <Button variant="outline" onClick={() => window.history.back()} className="border-border">
-              رجوع
-            </Button>
-            <Button onClick={logout} className="gradient-primary text-primary-foreground">
-              تسجيل الخروج
-            </Button>
+            <Button variant="outline" onClick={() => window.history.back()} className="border-border">رجوع</Button>
+            <Button onClick={handleLogout} className="gradient-primary text-primary-foreground">تسجيل الخروج</Button>
           </div>
         </div>
       </div>

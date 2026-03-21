@@ -1,62 +1,68 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
-import type { UserRole } from "@/lib/firebaseServices";
+
+type UserRole = "driver" | "client" | "delivery" | "admin" | "agent";
 
 const roleDashboard: Record<UserRole, string> = {
   driver: "/driver",
   client: "/client",
   delivery: "/delivery",
-  call_center: "/call-center",
+  agent: "/call-center",
   admin: "/admin",
 };
 
 interface AuthGuardProps {
   children: React.ReactNode;
-  requiredRole: UserRole;
+  requiredRole: string;
 }
 
 const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
-  const [state, setState] = useState<"loading" | "ok" | "no-auth" | "wrong-role" | "incomplete-profile">("loading");
+  const [state, setState] = useState<"loading" | "ok" | "no-auth" | "wrong-role">("loading");
   const [userRole, setUserRole] = useState<UserRole | null>(null);
-  const location = useLocation();
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
+    const check = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         setState("no-auth");
         return;
       }
-      try {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        if (!snap.exists()) {
-          setState("no-auth");
-          return;
-        }
-        const data = snap.data();
-        const role = data.role as UserRole;
-        setUserRole(role);
 
-        if (role !== requiredRole) {
-          setState("wrong-role");
-          return;
-        }
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .limit(1);
 
-        if (data.profileCompleted === false && !location.pathname.includes("complete-profile")) {
-          setState("incomplete-profile");
-          return;
-        }
-
-        setState("ok");
-      } catch {
+      const role = roles?.[0]?.role as UserRole | undefined;
+      if (!role) {
         setState("no-auth");
+        return;
       }
+
+      setUserRole(role);
+
+      // Map requiredRole to match db roles
+      const mappedRequired = requiredRole === "call_center" ? "agent" : requiredRole === "delivery" ? "user" : requiredRole;
+      
+      if (role !== mappedRequired && !(requiredRole === "client" && role === "user") && !(requiredRole === "delivery" && role === "user")) {
+        setState("wrong-role");
+        return;
+      }
+
+      setState("ok");
+    };
+
+    check();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      check();
     });
-    return () => unsub();
-  }, [requiredRole, location.pathname]);
+
+    return () => subscription.unsubscribe();
+  }, [requiredRole]);
 
   if (state === "loading") {
     return (
@@ -68,7 +74,6 @@ const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
 
   if (state === "no-auth") return <Navigate to="/login" replace />;
   if (state === "wrong-role" && userRole) return <Navigate to={roleDashboard[userRole]} replace />;
-  if (state === "incomplete-profile") return <Navigate to="/complete-profile" replace />;
 
   return <>{children}</>;
 };
