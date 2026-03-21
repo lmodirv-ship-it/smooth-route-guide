@@ -108,6 +108,16 @@ const DriverDelivery = () => {
               </a>
             )}
 
+            {/* Navigation button with auto-fallback */}
+            {targetPosition && (
+              <NavigationLinks
+                lat={targetPosition.lat}
+                lng={targetPosition.lng}
+                label={["accepted", "on_the_way"].includes(activeOrder.status) ? activeOrder.pickupAddress : activeOrder.deliveryAddress}
+                compact
+              />
+            )}
+
             <div className="grid gap-3">
               {activeOrder.status === "accepted" && <ActionButton icon={Navigation} label="في الطريق" onClick={() => setStatus("on_the_way", "السائق في الطريق إلى نقطة الاستلام")} />}
               {(activeOrder.status === "accepted" || activeOrder.status === "on_the_way") && <ActionButton icon={Store} label="وصلت" onClick={() => setStatus("arrived", "وصل السائق إلى نقطة الاستلام")} />}
