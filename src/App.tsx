@@ -121,6 +121,10 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/setup-admin" element={<SessionGuard><SetupAdmin /></SessionGuard>} />
 
+          {/* New Clean Customer/Driver Pages (Supabase only) */}
+          <Route path="/customer" element={<SessionGuard><CustomerPage /></SessionGuard>} />
+          <Route path="/driver-panel" element={<SessionGuard><DriverPage /></SessionGuard>} />
+
           {/* Driver App - Protected */}
           <Route path="/driver" element={<AuthGuard requiredRole="driver"><DriverDashboard /></AuthGuard>} />
           <Route path="/driver/history" element={<AuthGuard requiredRole="driver"><DriverHistory /></AuthGuard>} />
