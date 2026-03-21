@@ -25,6 +25,16 @@ const AdminGuard = ({ children }: { children: React.ReactNode }) => {
     };
 
     check();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        setState("unauthenticated");
+      } else {
+        check();
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleLogout = async () => {
