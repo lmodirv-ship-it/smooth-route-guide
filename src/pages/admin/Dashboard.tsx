@@ -4,7 +4,7 @@ import { FileText, Car, DollarSign, Zap, MapPin, Clock, BatteryLow, Package } fr
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
-import GoogleMapWrapper from "@/components/GoogleMap";
+import LeafletMap from "@/components/LeafletMap";
 
 interface DashboardStats {
   requestsToday: number;
@@ -284,7 +284,7 @@ const AdminDashboardPage = () => {
             <h3 className="font-bold text-foreground">الخريطة المباشرة</h3>
           </div>
           <div className="h-72">
-            <GoogleMapWrapper zoom={11} showMarker={false} nearbyDrivers={nearbyDrivers.map((driver) => ({ id: driver.id, lat: driver.lat, lng: driver.lng }))} />
+            <LeafletMap zoom={11} showMarker={false} nearbyDrivers={nearbyDrivers.map((driver) => ({ id: driver.id, lat: driver.lat, lng: driver.lng }))} />
           </div>
         </div>
 
