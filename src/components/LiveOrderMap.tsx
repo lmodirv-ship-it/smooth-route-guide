@@ -43,11 +43,14 @@ interface LiveOrderMapProps {
 
 const LiveOrderMap = ({ className = "w-full h-full", driverPosition, targetPosition }: LiveOrderMapProps) => {
   const smoothedDriver = useSmoothedPosition(driverPosition);
+  const hasApiKey = !!GOOGLE_MAPS_API_KEY;
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: LIBRARIES,
   });
+
+  const [googleFailed, setGoogleFailed] = useState(!hasApiKey);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const lastRouteReqRef = useRef<number>(0);
