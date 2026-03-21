@@ -11,6 +11,7 @@ const roleDashboard: Record<UserRole, string> = {
   delivery: "/delivery",
   agent: "/call-center",
   admin: "/admin",
+  user: "/client",
 };
 
 interface AuthGuardProps {
