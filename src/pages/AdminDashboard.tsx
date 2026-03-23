@@ -769,12 +769,19 @@ const AdminDashboard = () => {
             {/* AI Messages */}
             <div ref={aiScrollRef} className="flex-1 overflow-auto p-3 space-y-3">
               {aiMessages.length === 0 && (
-                <div className="text-center pt-8 space-y-3">
+                <div className="text-center pt-6 space-y-3">
                   <Bot className="w-12 h-12 text-primary mx-auto" />
-                  <p className="text-sm text-foreground font-semibold">مساعد الأدمن الذكي</p>
-                  <p className="text-xs text-muted-foreground">أحلل البيانات وأقترح أفضل القرارات</p>
-                  <div className="space-y-2 pt-2">
-                    {["ما حالة النظام الآن؟", "اقترح أفضل سائق للطلبات", "ما المشاكل الحالية؟"].map((q, i) => (
+                  <p className="text-sm text-foreground font-semibold">المساعد الذكي الخارق 🔥</p>
+                  <p className="text-xs text-muted-foreground">صلاحيات كاملة: قاعدة البيانات • الإعدادات • الإشعارات • تحليل الصور</p>
+                  <div className="space-y-1.5 pt-2">
+                    {[
+                      "📊 أعطني إحصائيات المنصة الآن",
+                      "👥 اعرض جميع المستخدمين المسجلين",
+                      "🔔 أرسل إشعار لجميع السائقين: يوجد طلبات جديدة",
+                      "⚙️ اعرض إعدادات المنصة الحالية",
+                      "🖼️ أرسل لقطة شاشة وسأحللها لك",
+                      "🎫 أنشئ كود خصم 20% باسم WELCOME2024",
+                    ].map((q, i) => (
                       <button key={i} onClick={() => sendAiMessage(q)} className="w-full text-right text-xs p-2 rounded-lg bg-secondary/50 hover:bg-secondary text-foreground transition-colors">
                         {q}
                       </button>
