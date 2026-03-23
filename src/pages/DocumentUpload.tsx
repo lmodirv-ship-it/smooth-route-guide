@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Upload, FileText, CheckCircle, Clock, Camera, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 type DocStatus = "pending" | "approved" | "rejected" | "empty";

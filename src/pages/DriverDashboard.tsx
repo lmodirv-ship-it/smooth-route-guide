@@ -18,7 +18,7 @@ import { useIncomingRideRequests } from "@/hooks/useIncomingRideRequests";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
 import { openAppSettings } from "@/lib/nativeApp";
 import { auth } from "@/lib/firebase";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DriverDashboard = () => {

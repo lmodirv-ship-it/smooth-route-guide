@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Search, Car, Star, MapPin, Phone, MessageCircle, Clock, User, Bike, Navigation, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 
 const DriverSearchCC = () => {
   const [query, setQuery] = useState("");

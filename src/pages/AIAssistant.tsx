@@ -4,7 +4,7 @@ import { Send, Bot, User, ArrowRight, Loader2, Plus, History, Trash2 } from "luc
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ReactMarkdown from "react-markdown";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { sanitizePlainText, validateChatMessage } from "@/lib/inputSecurity";

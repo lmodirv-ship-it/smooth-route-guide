@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Search, Star, Clock, MapPin, ChevronLeft, UtensilsCrossed } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/contexts/CartContext";
 import { Badge } from "@/components/ui/badge";

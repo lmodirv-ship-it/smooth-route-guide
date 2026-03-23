@@ -27,7 +27,7 @@ import PriceEstimateCard from "@/components/PriceEstimateCard";
 import { useTripPricing } from "@/hooks/useTripPricing";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };

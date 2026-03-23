@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, DollarSign, TrendingUp, Calendar, Car, Loader2 } from "lucide-react";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 
 const DriverEarnings = () => {
   const navigate = useNavigate();

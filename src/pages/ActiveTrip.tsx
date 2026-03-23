@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import LeafletMap from "@/components/LeafletMap";
 import NavigationLinks from "@/components/NavigationLinks";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 
 const ActiveTrip = () => {
   const navigate = useNavigate();

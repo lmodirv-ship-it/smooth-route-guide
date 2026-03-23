@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Car, MapPin, Star, Check, ArrowLeftRight, Clock, Navigation, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 import { useFirestoreCollection } from "@/hooks/useFirestoreCollection";
 
 const RideAssign = () => {

@@ -19,7 +19,7 @@ import {
 import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 
 const CATEGORY_META = [

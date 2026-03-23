@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { User, ArrowRight, Phone, Mail, Car, Wallet, Clock, Star, Heart, Settings, LogOut, ChevronLeft, HelpCircle, Bot, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
 
 const ClientProfile = () => {
