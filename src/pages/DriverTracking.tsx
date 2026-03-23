@@ -11,6 +11,7 @@ import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 
 const PRICE_PER_KM = 3;
 const BASE_FARE = 5;
+const MIN_FARE = 10;
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = (v: number) => (v * Math.PI) / 180;
@@ -155,7 +156,7 @@ const DriverTracking = () => {
       pickupToDest = haversineKm({ lat: ride.pickup_lat, lng: ride.pickup_lng }, { lat: ride.destination_lat, lng: ride.destination_lng });
     }
     const totalDist = driverToPickup + pickupToDest;
-    return totalDist > 0 ? Math.round(BASE_FARE + totalDist * PRICE_PER_KM) : (ride.price || null);
+    return totalDist > 0 ? Math.max(MIN_FARE, Math.round(BASE_FARE + totalDist * PRICE_PER_KM)) : (ride.price || null);
   }, [ride, driverLocation]);
 
   const etaMinutes = distanceToTarget ? Math.max(1, Math.round(distanceToTarget * 2.5)) : null;

@@ -465,6 +465,8 @@ const ClientHome = () => {
       <div className="w-full mt-6 space-y-3">
         {[
           { label: "الملف الشخصي", icon: User, action: () => navigate("/client/profile") },
+          { label: "المحفظة", icon: Heart, action: () => navigate("/client/wallet") },
+          { label: "سجل الرحلات", icon: Car, action: () => navigate("/client/history") },
           { label: "الدعم والمساعدة", icon: Phone, action: () => navigate("/client/support") },
           { label: `الإشعارات غير المقروءة (${unreadNotifications})`, icon: MessageCircle, action: () => {} },
         ].map((item, i) => (

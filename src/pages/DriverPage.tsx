@@ -11,6 +11,7 @@ const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 const PRICE_PER_KM = 3;
 const BASE_FARE = 5;
 const MAX_RADIUS_KM = 10;
+const MIN_FARE = 10;
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = (v: number) => (v * Math.PI) / 180;
@@ -176,7 +177,7 @@ const DriverPage = () => {
         ).toFixed(2));
       }
       const totalDistance = (distToPickup || 0) + (rideDistance || 0);
-      const totalPrice = totalDistance > 0 ? Math.round(BASE_FARE + totalDistance * PRICE_PER_KM) : (order.price || 0);
+      const totalPrice = totalDistance > 0 ? Math.max(MIN_FARE, Math.round(BASE_FARE + totalDistance * PRICE_PER_KM)) : (order.price || 0);
       return { ...order, distToPickup, eta, totalDistance: parseFloat(totalDistance.toFixed(1)), totalPrice, rideDistance };
     })
     .filter((o) => o.distToPickup === null || o.distToPickup <= MAX_RADIUS_KM)
