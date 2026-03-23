@@ -348,7 +348,7 @@ const DriverTracking = () => {
               <p className="text-white/40 text-sm mt-1">
                 الأجرة: <span className="text-orange-400 font-bold">{totalTripPrice || ride.price || "—"} DH</span>
               </p>
-              <Button onClick={() => navigate("/driver-panel")}
+              <Button onClick={() => navigate("/driver")}
                 className="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold">
                 العودة للطلبات
               </Button>
