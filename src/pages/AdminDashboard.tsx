@@ -210,7 +210,9 @@ const AdminDashboard = () => {
   const [aiMessages, setAiMessages] = useState<AiMsg[]>([]);
   const [aiInput, setAiInput] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiAttachments, setAiAttachments] = useState<{ type: "image" | "video"; url: string; name: string }[]>([]);
   const aiScrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     aiScrollRef.current?.scrollTo({ top: aiScrollRef.current.scrollHeight, behavior: "smooth" });
