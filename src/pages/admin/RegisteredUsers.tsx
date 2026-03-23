@@ -38,6 +38,11 @@ const ROLE_COLORS: Record<string, string> = {
 const RegisteredUsers = () => {
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
+  }, []);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -102,9 +107,16 @@ const RegisteredUsers = () => {
     setRoleDialogOpen(true);
   };
 
+  const isSelf = selectedUser?.id === currentUserId;
+
   const toggleRole = (role: string) => {
     setSelectedRoles(prev => {
       if (prev.includes(role)) {
+        // Prevent removing admin from self
+        if (role === "admin" && isSelf) {
+          toast({ title: "⚠️ لا يمكنك إزالة دور المسؤول عن نفسك", variant: "destructive" });
+          return prev;
+        }
         if (prev.length === 1) return prev; // Must have at least one role
         return prev.filter(r => r !== role);
       }
@@ -114,6 +126,12 @@ const RegisteredUsers = () => {
 
   const handleSaveRoles = async () => {
     if (!selectedUser || saving) return;
+
+    // Prevent admin from removing admin role from themselves
+    if (selectedUser.id === currentUserId && !selectedRoles.includes("admin")) {
+      toast({ title: "⚠️ لا يمكنك إزالة دور المسؤول عن نفسك", variant: "destructive" });
+      return;
+    }
     
     // Check if roles actually changed
     const sortedOld = [...selectedUser.roles].sort().join(",");
