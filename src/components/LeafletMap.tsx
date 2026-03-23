@@ -33,10 +33,33 @@ const carIcon = L.divIcon({
   iconAnchor: [16, 16],
 });
 
+const pickupIcon = L.divIcon({
+  className: "",
+  html: `<div style="width:28px;height:28px;border-radius:50%;background:#10b981;border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.4)">
+    <div style="width:8px;height:8px;border-radius:50%;background:#fff"></div>
+  </div>`,
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+});
+
+const destinationIcon = L.divIcon({
+  className: "",
+  html: `<div style="width:28px;height:28px;border-radius:50%;background:#f97316;border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.4)">
+    <div style="width:8px;height:8px;border-radius:50%;background:#fff"></div>
+  </div>`,
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+});
+
 interface NearbyDriverMarker {
   id: string;
   lat: number;
   lng: number;
+}
+
+interface RoutePoints {
+  pickup: { lat: number; lng: number };
+  destination: { lat: number; lng: number };
 }
 
 interface LeafletMapProps {
@@ -47,6 +70,7 @@ interface LeafletMapProps {
   markerPosition?: { lat: number; lng: number };
   driverLocation?: { lat: number; lng: number } | null;
   nearbyDrivers?: NearbyDriverMarker[];
+  route?: RoutePoints | null;
   children?: React.ReactNode;
 }
 
