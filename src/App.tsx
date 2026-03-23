@@ -8,6 +8,7 @@ import AuthGuard from "@/components/AuthGuard";
 import CallCenterGuard from "@/components/CallCenterGuard";
 import SessionGuard from "@/components/SessionGuard";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
+import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 
 // Core pages
 import Splash from "./pages/Splash";
