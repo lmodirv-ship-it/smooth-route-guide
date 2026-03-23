@@ -130,6 +130,21 @@ const DriverTracking = () => {
     return haversineKm(driverLocation, targetPosition);
   }, [driverLocation, targetPosition]);
 
+  // السعر الإجمالي = 5 + (مسافة السائق→الزبون + مسافة الزبون→الوجهة) × 3
+  const totalTripPrice = useMemo(() => {
+    if (!ride) return ride?.price || null;
+    let driverToPickup = 0;
+    if (driverLocation && ride.pickup_lat && ride.pickup_lng) {
+      driverToPickup = haversineKm(driverLocation, { lat: ride.pickup_lat, lng: ride.pickup_lng });
+    }
+    let pickupToDest = ride.distance || 0;
+    if (!pickupToDest && ride.pickup_lat && ride.pickup_lng && ride.destination_lat && ride.destination_lng) {
+      pickupToDest = haversineKm({ lat: ride.pickup_lat, lng: ride.pickup_lng }, { lat: ride.destination_lat, lng: ride.destination_lng });
+    }
+    const totalDist = driverToPickup + pickupToDest;
+    return totalDist > 0 ? Math.round(BASE_FARE + totalDist * PRICE_PER_KM) : (ride.price || null);
+  }, [ride, driverLocation]);
+
   const etaMinutes = distanceToTarget ? Math.max(1, Math.round(distanceToTarget * 2.5)) : null;
 
   const mapCenter = useMemo(
@@ -239,7 +254,7 @@ const DriverTracking = () => {
 
         {/* Price */}
         <div className="flex justify-between items-center text-sm px-1">
-          <span className="text-emerald-400 font-bold text-lg">{ride.price || "—"} DH</span>
+          <span className="text-emerald-400 font-bold text-lg">{totalTripPrice || ride.price || "—"} DH</span>
           <span className="text-emerald-300/60">{ride.distance ? `${ride.distance} كم` : ""}</span>
         </div>
 

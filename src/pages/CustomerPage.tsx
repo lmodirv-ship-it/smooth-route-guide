@@ -55,8 +55,11 @@ const CustomerPage = () => {
     setDestCoords({ lat: base.lat + 0.02, lng: base.lng + 0.015 });
   }, [destination, userLocation]);
 
-  const distance = userLocation && destCoords ? haversineKm(userLocation, destCoords) : null;
-  const price = distance ? Math.round(BASE_FARE + distance * PRICE_PER_KM) : null;
+  const rideDistance = userLocation && destCoords ? haversineKm(userLocation, destCoords) : null;
+  // السعر = 5 (رسوم ثابتة) + (المسافة الإجمالية × 3)
+  // ملاحظة: مسافة السائق→الزبون تُضاف عند حسابها في صفحة السائق
+  const price = rideDistance ? Math.round(BASE_FARE + rideDistance * PRICE_PER_KM) : null;
+  const distance = rideDistance;
 
   const handleCreateRequest = async () => {
     const { data: { user } } = await supabase.auth.getUser();
