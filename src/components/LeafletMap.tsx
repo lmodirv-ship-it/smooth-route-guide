@@ -126,6 +126,7 @@ const LeafletMap = ({
       staticMarkerRef.current = null;
       driverMarkerRef.current = null;
       nearbyDriversLayerRef.current = null;
+      routeLayerRef.current = null;
       tileLayerRef.current = null;
       mapInstanceRef.current?.remove();
       mapInstanceRef.current = null;
