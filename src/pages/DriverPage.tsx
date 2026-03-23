@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star } from "lucide-react";
+import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -54,8 +54,9 @@ const DriverPage = () => {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [todayStats, setTodayStats] = useState({ trips: 0, earnings: 0, rating: 0 });
   const [driverName, setDriverName] = useState("السائق");
+  const [activeRideId, setActiveRideId] = useState<string | null>(null);
 
-  // Fetch today's stats
+  // Check for active ride & fetch stats
   useEffect(() => {
     const fetchStats = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -64,6 +65,20 @@ const DriverPage = () => {
       // Get profile name
       const { data: profile } = await supabase.from("profiles").select("name").eq("id", user.id).single();
       if (profile?.name) setDriverName(profile.name);
+
+      // Check if driver has an active (non-completed/cancelled) ride
+      const { data: activeRides } = await supabase
+        .from("ride_requests")
+        .select("id, status")
+        .eq("driver_id", user.id)
+        .in("status", ["accepted", "in_progress", "arriving"])
+        .limit(1);
+
+      if (activeRides && activeRides.length > 0) {
+        setActiveRideId(activeRides[0].id);
+      } else {
+        setActiveRideId(null);
+      }
 
       // Today's completed rides
       const todayStart = new Date();
@@ -179,6 +194,11 @@ const DriverPage = () => {
   }, [selectedOrder]);
 
   const handleAccept = async (orderId: string) => {
+    if (activeRideId) {
+      toast({ title: "لديك رحلة نشطة بالفعل", description: "أكمل الرحلة الحالية أولاً", variant: "destructive" });
+      navigate(`/driver-tracking?id=${activeRideId}`);
+      return;
+    }
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { toast({ title: "يجب تسجيل الدخول", variant: "destructive" }); return; }
     setAccepting(orderId);
@@ -187,6 +207,7 @@ const DriverPage = () => {
         .update({ status: "accepted", driver_id: user.id, accepted_at: new Date().toISOString() })
         .eq("id", orderId).eq("status", "pending");
       if (error) throw error;
+      setActiveRideId(orderId);
       toast({ title: "تم قبول الطلب ✅" });
       navigate(`/driver-tracking?id=${orderId}`);
     } catch (err: any) {
@@ -257,6 +278,27 @@ const DriverPage = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto">
+          {/* Active ride banner */}
+          {activeRideId && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mx-4 mt-3 p-3 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-between"
+            >
+              <Button
+                size="sm"
+                onClick={() => navigate(`/driver-tracking?id=${activeRideId}`)}
+                className="h-8 px-4 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold"
+              >
+                <Navigation className="w-3.5 h-3.5 ml-1" />
+                متابعة الرحلة
+              </Button>
+              <div className="text-right">
+                <p className="text-orange-400 font-bold text-sm">لديك رحلة نشطة</p>
+                <p className="text-white/40 text-[11px]">أكمل الرحلة الحالية لقبول طلبات جديدة</p>
+              </div>
+            </motion.div>
+          )}
           {nearbyOrders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-3 border border-emerald-500/15">
@@ -327,7 +369,7 @@ const DriverPage = () => {
                         <Button
                           size="sm"
                           onClick={(e) => { e.stopPropagation(); handleAccept(order.id); }}
-                          disabled={accepting === order.id}
+                          disabled={accepting === order.id || !!activeRideId}
                           className="h-7 px-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-bold shadow-[0_2px_10px_hsl(155,70%,40%,0.25)]"
                         >
                           {accepting === order.id ? (

@@ -38,6 +38,7 @@ const DriverDashboard = () => {
   const [recentTrips, setRecentTrips] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
   const [pendingOrders, setPendingOrders] = useState<OrderRecord[]>([]);
+  const [activeRideId, setActiveRideId] = useState<string | null>(null);
 
   // Subscribe to pending delivery orders when online
   useEffect(() => {
@@ -70,6 +71,15 @@ const DriverDashboard = () => {
   const fetchData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    // Check for active ride
+    const { data: activeRides } = await supabase
+      .from("ride_requests")
+      .select("id")
+      .eq("driver_id", user.id)
+      .in("status", ["accepted", "in_progress", "arriving"])
+      .limit(1);
+    setActiveRideId(activeRides && activeRides.length > 0 ? activeRides[0].id : null);
 
     // Profile
     const { data: prof } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
@@ -184,7 +194,31 @@ const DriverDashboard = () => {
         </LeafletMap>
       </div>
 
-      <IncomingRideRequest requests={requests} accepting={accepting} onAccept={acceptRequest} onReject={rejectRequest} />
+      {/* Active ride banner */}
+      {activeRideId && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-4 mt-4 p-4 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-between"
+        >
+          <Button
+            size="sm"
+            onClick={() => navigate(`/driver-tracking?id=${activeRideId}`)}
+            className="gradient-primary text-primary-foreground font-bold"
+          >
+            <Navigation className="w-4 h-4 ml-1" />
+            متابعة الرحلة
+          </Button>
+          <div className="text-right">
+            <p className="text-primary font-bold">لديك رحلة نشطة</p>
+            <p className="text-muted-foreground text-xs">أكمل الرحلة الحالية أولاً</p>
+          </div>
+        </motion.div>
+      )}
+
+      {!activeRideId && (
+        <IncomingRideRequest requests={requests} accepting={accepting} onAccept={acceptRequest} onReject={rejectRequest} />
+      )}
 
       {isOnline && (
         <div className="px-4 mt-4">
