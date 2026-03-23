@@ -207,7 +207,7 @@ const CustomerPage = () => {
           )}
 
           {/* Submit button */}
-          {destCoords && !submitted && (
+          {destCoords && (
             <Button
               onClick={handleCreateRequest}
               disabled={submitting}
@@ -222,28 +222,6 @@ const CustomerPage = () => {
                 </>
               )}
             </Button>
-          )}
-
-          {submitted && (
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-              className="text-center p-6 customer-card rounded-2xl border border-blue-400/30">
-              <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-3">
-                <Navigation className="w-8 h-8 text-blue-400" />
-              </div>
-              <p className="text-white font-bold text-lg">تم إرسال الطلب!</p>
-              <p className="text-blue-300/70 text-sm mt-1">في انتظار قبول سائق...</p>
-              <Button
-                onClick={() => {
-                  setSubmitted(false);
-                  setDestination("");
-                  setDestCoords(null);
-                }}
-                variant="outline"
-                className="mt-4 border-blue-500/30 text-blue-300 hover:bg-blue-500/10"
-              >
-                طلب جديد
-              </Button>
-            </motion.div>
           )}
         </motion.div>
       </div>
