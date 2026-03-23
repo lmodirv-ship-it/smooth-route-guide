@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle, Clock, MapPin, Phone, User, Navigation } from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, MapPin, Phone, User, Navigation, Car, Route as RouteIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
@@ -35,13 +35,13 @@ interface RideData {
   driver_id: string | null;
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  pending: { label: "في انتظار سائق...", color: "bg-yellow-500" },
-  accepted: { label: "السائق قبل الطلب", color: "bg-blue-500" },
-  in_progress: { label: "السائق في الطريق إليك", color: "bg-blue-500" },
-  arriving: { label: "السائق وصل!", color: "bg-emerald-500" },
-  completed: { label: "تم التوصيل بنجاح ✅", color: "bg-green-500" },
-  cancelled: { label: "تم إلغاء الرحلة", color: "bg-red-500" },
+const STATUS_CONFIG: Record<string, { label: string; color: string; icon: string }> = {
+  pending: { label: "في انتظار سائق...", color: "bg-amber-500", icon: "⏳" },
+  accepted: { label: "السائق قبل الطلب", color: "bg-blue-500", icon: "✅" },
+  in_progress: { label: "السائق في الطريق", color: "bg-blue-500", icon: "🚗" },
+  arriving: { label: "السائق وصل!", color: "bg-emerald-500", icon: "📍" },
+  completed: { label: "تم التوصيل", color: "bg-green-500", icon: "🎉" },
+  cancelled: { label: "تم الإلغاء", color: "bg-red-500", icon: "❌" },
 };
 
 const CustomerTracking = () => {
@@ -52,86 +52,54 @@ const CustomerTracking = () => {
   const [driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [driverName, setDriverName] = useState<string | null>(null);
   const [driverPhone, setDriverPhone] = useState<string | null>(null);
+  const [vehicleInfo, setVehicleInfo] = useState<string | null>(null);
 
-  // Fetch ride + realtime subscription
+  // Fetch ride + realtime
   useEffect(() => {
     if (!rideId) return;
-
     const fetchRide = async () => {
-      const { data } = await supabase
-        .from("ride_requests")
-        .select("*")
-        .eq("id", rideId)
-        .single();
+      const { data } = await supabase.from("ride_requests").select("*").eq("id", rideId).single();
       if (data) setRide(data as RideData);
     };
     fetchRide();
-
     const channel = supabase
       .channel(`customer-ride-${rideId}`)
-      .on("postgres_changes", {
-        event: "UPDATE",
-        schema: "public",
-        table: "ride_requests",
-        filter: `id=eq.${rideId}`,
-      }, (payload) => {
-        setRide(payload.new as RideData);
-      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "ride_requests", filter: `id=eq.${rideId}` },
+        (payload) => setRide(payload.new as RideData))
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, [rideId]);
 
-  // When driver is assigned, subscribe to driver location + fetch driver info
+  // Driver info + realtime location
   useEffect(() => {
     if (!ride?.driver_id) {
-      setDriverLocation(null);
-      setDriverName(null);
-      setDriverPhone(null);
+      setDriverLocation(null); setDriverName(null); setDriverPhone(null); setVehicleInfo(null);
       return;
     }
-
     const fetchDriver = async () => {
       const { data: driver } = await supabase
-        .from("drivers")
-        .select("user_id, current_lat, current_lng")
-        .eq("id", ride.driver_id!)
-        .single();
-
-      if (driver) {
-        if (driver.current_lat && driver.current_lng) {
-          setDriverLocation({ lat: Number(driver.current_lat), lng: Number(driver.current_lng) });
-        }
-        // Get driver profile
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("name, phone")
-          .eq("id", driver.user_id)
-          .single();
-        if (profile) {
-          setDriverName(profile.name || null);
-          setDriverPhone(profile.phone || null);
-        }
+        .from("drivers").select("user_id, current_lat, current_lng, car_id")
+        .eq("id", ride.driver_id!).single();
+      if (!driver) return;
+      if (driver.current_lat && driver.current_lng) {
+        setDriverLocation({ lat: Number(driver.current_lat), lng: Number(driver.current_lng) });
+      }
+      const { data: profile } = await supabase.from("profiles").select("name, phone").eq("id", driver.user_id).single();
+      if (profile) { setDriverName(profile.name || null); setDriverPhone(profile.phone || null); }
+      if (driver.car_id) {
+        const { data: vehicle } = await supabase.from("vehicles").select("brand, model, plate_no, color").eq("id", driver.car_id).single();
+        if (vehicle) setVehicleInfo(`${vehicle.brand} ${vehicle.model} — ${vehicle.plate_no}`);
       }
     };
     fetchDriver();
-
-    // Realtime driver location
     const channel = supabase
       .channel(`driver-loc-${ride.driver_id}`)
-      .on("postgres_changes", {
-        event: "UPDATE",
-        schema: "public",
-        table: "drivers",
-        filter: `id=eq.${ride.driver_id}`,
-      }, (payload) => {
-        const d = payload.new as any;
-        if (d.current_lat && d.current_lng) {
-          setDriverLocation({ lat: Number(d.current_lat), lng: Number(d.current_lng) });
-        }
-      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "drivers", filter: `id=eq.${ride.driver_id}` },
+        (payload) => {
+          const d = payload.new as any;
+          if (d.current_lat && d.current_lng) setDriverLocation({ lat: Number(d.current_lat), lng: Number(d.current_lng) });
+        })
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, [ride?.driver_id]);
 
@@ -147,164 +115,197 @@ const CustomerTracking = () => {
     return null;
   }, [ride]);
 
-  // Show pickup when waiting, destination when in_progress
-  const targetOnMap = useMemo(() => {
-    if (ride?.status === "in_progress" && destPos) return destPos;
-    return pickupPos;
-  }, [ride?.status, pickupPos, destPos]);
+  // Route line for the map
+  const mapRoute = useMemo(() => {
+    if (!pickupPos || !destPos) return null;
+    return { pickup: pickupPos, destination: destPos };
+  }, [pickupPos, destPos]);
 
-  const distanceDriverToTarget = useMemo(() => {
-    if (!smoothedDriver || !targetOnMap) return null;
-    return haversineKm(smoothedDriver, targetOnMap);
-  }, [smoothedDriver, targetOnMap]);
+  const distDriverToPickup = useMemo(() => {
+    if (!smoothedDriver || !pickupPos) return null;
+    return haversineKm(smoothedDriver, pickupPos);
+  }, [smoothedDriver, pickupPos]);
 
-  const etaMinutes = distanceDriverToTarget ? Math.max(1, Math.round(distanceDriverToTarget * 2.5)) : null;
+  const distPickupToDest = useMemo(() => {
+    if (!pickupPos || !destPos) return ride?.distance ? Number(ride.distance) : null;
+    return haversineKm(pickupPos, destPos);
+  }, [pickupPos, destPos, ride?.distance]);
 
-  // Total price calculation
+  const totalRouteKm = useMemo(() => {
+    return (distDriverToPickup || 0) + (distPickupToDest || 0);
+  }, [distDriverToPickup, distPickupToDest]);
+
+  const etaMinutes = distDriverToPickup ? Math.max(1, Math.round(distDriverToPickup * 2.5)) : null;
+
   const totalPrice = useMemo(() => {
     if (!ride) return null;
-    let driverToPickup = 0;
-    if (smoothedDriver && pickupPos) {
-      driverToPickup = haversineKm(smoothedDriver, pickupPos);
-    }
-    const rideDistance = ride.distance || (pickupPos && destPos ? haversineKm(pickupPos, destPos) : 0);
-    const total = driverToPickup + rideDistance;
+    const total = totalRouteKm;
     return total > 0 ? Math.round(BASE_FARE + total * PRICE_PER_KM) : (ride.price || 0);
-  }, [ride, smoothedDriver, pickupPos, destPos]);
+  }, [ride, totalRouteKm]);
 
   const mapCenter = useMemo(
     () => smoothedDriver || pickupPos || { lat: 35.7595, lng: -5.834 },
     [smoothedDriver, pickupPos]
   );
 
-  const statusInfo = ride ? (STATUS_LABELS[ride.status] || STATUS_LABELS.pending) : STATUS_LABELS.pending;
+  const statusInfo = ride ? (STATUS_CONFIG[ride.status] || STATUS_CONFIG.pending) : STATUS_CONFIG.pending;
   const isCompleted = ride?.status === "completed";
   const isCancelled = ride?.status === "cancelled";
+  const isActive = ride && !isCompleted && !isCancelled;
 
   if (!ride) {
     return (
-      <div className="min-h-screen customer-bg flex items-center justify-center" dir="rtl">
-        <div className="text-blue-300 animate-pulse">جارٍ التحميل...</div>
+      <div className="h-screen bg-[#0a0f1a] flex items-center justify-center" dir="rtl">
+        <div className="text-blue-300 animate-pulse text-lg">جارٍ التحميل...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen customer-bg flex flex-col" dir="rtl">
-      {/* Header */}
-      <div className="customer-header sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
-        <button onClick={() => navigate("/customer")} className="p-2">
-          <ArrowRight className="w-5 h-5 text-blue-300" />
+    <div className="h-screen flex flex-col bg-[#0a0f1a] overflow-hidden" dir="rtl">
+      {/* ─── Header ─── */}
+      <div className="shrink-0 bg-[#0a0f1a]/90 backdrop-blur-sm border-b border-white/5 px-4 py-2.5 flex items-center justify-between z-50">
+        <button onClick={() => navigate("/customer")} className="p-2 rounded-full hover:bg-white/5">
+          <ArrowRight className="w-5 h-5 text-white/70" />
         </button>
-        <span className="font-bold text-lg text-white">تتبع رحلتك</span>
+        <span className="font-bold text-white">تتبع رحلتك</span>
         <div className="w-9" />
       </div>
 
-      {/* Map */}
-      <div className="flex-1 relative min-h-[45vh]">
+      {/* ─── Map (fills available space) ─── */}
+      <div className="flex-1 relative min-h-0">
         <LeafletMap
           center={mapCenter}
-          zoom={15}
+          zoom={14}
           className="w-full h-full"
-          showMarker={!!targetOnMap}
-          markerPosition={targetOnMap || undefined}
+          showMarker={!!pickupPos}
+          markerPosition={pickupPos || undefined}
           driverLocation={smoothedDriver}
+          route={mapRoute}
         />
 
-        {/* Status badge */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-blue-600/90 text-white px-4 py-2 rounded-full text-sm font-bold backdrop-blur-sm flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${ride.status === "pending" ? "bg-yellow-400 animate-pulse" : "bg-white animate-pulse"}`} />
-          {statusInfo.label}
+        {/* Status pill */}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000]">
+          <motion.div
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className={`${statusInfo.color}/90 text-white px-5 py-2 rounded-full text-sm font-bold backdrop-blur-sm flex items-center gap-2 shadow-lg`}
+          >
+            <div className={`w-2 h-2 rounded-full bg-white ${isActive ? "animate-pulse" : ""}`} />
+            {statusInfo.icon} {statusInfo.label}
+          </motion.div>
         </div>
 
-        {/* Distance/ETA overlay */}
-        {ride.status !== "pending" && distanceDriverToTarget != null && etaMinutes != null && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[1000] bg-black/70 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm flex items-center gap-3">
-            <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{distanceDriverToTarget.toFixed(1)} كم</span>
-            <span className="text-blue-300/50">|</span>
-            <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{etaMinutes} دقيقة</span>
+        {/* Live KM counter overlay */}
+        {ride.status !== "pending" && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2">
+            {distDriverToPickup != null && (
+              <div className="bg-black/70 backdrop-blur-sm text-white px-3 py-2 rounded-xl text-xs flex items-center gap-2 border border-white/10">
+                <Car className="w-3.5 h-3.5 text-orange-400" />
+                <span className="text-white/60">بُعد السائق:</span>
+                <span className="text-orange-400 font-bold text-sm">{distDriverToPickup.toFixed(1)} كم</span>
+              </div>
+            )}
+            {etaMinutes != null && (
+              <div className="bg-black/70 backdrop-blur-sm text-white px-3 py-2 rounded-xl text-xs flex items-center gap-2 border border-white/10">
+                <Clock className="w-3.5 h-3.5 text-blue-400" />
+                <span className="text-blue-400 font-bold text-sm">{etaMinutes} د</span>
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* Bottom panel */}
+      {/* ─── Bottom Panel (compact, no scroll needed) ─── */}
       <motion.div
-        initial={{ y: 100 }}
+        initial={{ y: 60 }}
         animate={{ y: 0 }}
-        className="bg-[hsl(var(--card))] border-t border-blue-500/20 rounded-t-3xl p-5 space-y-4"
+        className="shrink-0 bg-[#0d1320] border-t border-white/5 rounded-t-2xl"
       >
-        {/* Driver info or waiting */}
-        {ride.status === "pending" ? (
-          <div className="text-center py-4">
-            <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-3">
-              <Navigation className="w-8 h-8 text-blue-400 animate-pulse" />
+        {/* Pending state */}
+        {ride.status === "pending" && (
+          <div className="text-center py-6 px-4">
+            <div className="w-14 h-14 rounded-full bg-amber-500/15 flex items-center justify-center mx-auto mb-3 border border-amber-500/20">
+              <Navigation className="w-7 h-7 text-amber-400 animate-pulse" />
             </div>
-            <p className="text-white font-bold text-lg">جارٍ البحث عن سائق...</p>
-            <p className="text-blue-300/70 text-sm mt-1">يرجى الانتظار، سيتم تعيين سائق قريباً</p>
+            <p className="text-white font-bold">جارٍ البحث عن سائق...</p>
+            <p className="text-white/40 text-sm mt-1">سيتم تعيين أقرب سائق</p>
           </div>
-        ) : (
-          <div className="flex items-center justify-between">
-            <div className="flex gap-2">
-              {driverPhone && (
-                <a href={`tel:${driverPhone}`} className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
-                  <Phone className="w-5 h-5 text-blue-400" />
-                </a>
-              )}
+        )}
+
+        {/* Active ride info */}
+        {isActive && ride.status !== "pending" && (
+          <div className="p-4 space-y-3">
+            {/* Driver card */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {driverPhone && (
+                  <a href={`tel:${driverPhone}`} className="w-10 h-10 rounded-full bg-blue-500/15 flex items-center justify-center border border-blue-500/25">
+                    <Phone className="w-5 h-5 text-blue-400" />
+                  </a>
+                )}
+              </div>
+              <div className="text-right">
+                <p className="text-white font-bold flex items-center gap-2 justify-end">
+                  <User className="w-4 h-4 text-blue-400" />
+                  {driverName || "السائق"}
+                </p>
+                {vehicleInfo && <p className="text-white/40 text-[11px]">{vehicleInfo}</p>}
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-white font-bold flex items-center gap-2 justify-end">
-                <User className="w-4 h-4 text-blue-400" />
-                {driverName || "السائق"}
-              </p>
-              <p className="text-blue-300/60 text-xs">
-                {ride.status === "accepted" ? "في الطريق إليك" : "الرحلة جارية"}
-              </p>
+
+            {/* Route summary */}
+            <div className="flex items-center gap-2 text-xs">
+              <div className="flex-1 flex items-center gap-2 p-2 rounded-lg bg-blue-500/8 border border-blue-500/10">
+                <div className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
+                <span className="text-white/70 truncate">{ride.pickup || "موقعك"}</span>
+              </div>
+              <RouteIcon className="w-3.5 h-3.5 text-white/20 shrink-0" />
+              <div className="flex-1 flex items-center gap-2 p-2 rounded-lg bg-orange-500/8 border border-orange-500/10">
+                <div className="w-2 h-2 rounded-full bg-orange-400 shrink-0" />
+                <span className="text-white/70 truncate">{ride.destination || "الوجهة"}</span>
+              </div>
+            </div>
+
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="text-center p-2 rounded-xl bg-white/[0.03] border border-white/[0.04]">
+                <p className="text-[10px] text-white/40">المسافة الكلية</p>
+                <p className="text-blue-400 font-black text-base mt-0.5">{totalRouteKm.toFixed(1)} <span className="text-[9px] font-normal">كم</span></p>
+              </div>
+              <div className="text-center p-2 rounded-xl bg-white/[0.03] border border-white/[0.04]">
+                <p className="text-[10px] text-white/40">الوقت المتوقع</p>
+                <p className="text-emerald-400 font-black text-base mt-0.5">{etaMinutes || "—"} <span className="text-[9px] font-normal">دقيقة</span></p>
+              </div>
+              <div className="text-center p-2 rounded-xl bg-white/[0.03] border border-white/[0.04]">
+                <p className="text-[10px] text-white/40">السعر</p>
+                <p className="text-orange-400 font-black text-base mt-0.5">{totalPrice || "—"} <span className="text-[9px] font-normal">DH</span></p>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Route info */}
-        <div className="space-y-2 text-sm">
-          <div className="flex items-center gap-3 p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/15">
-            <div className="w-3 h-3 rounded-full bg-blue-400" />
-            <span className="text-white flex-1">{ride.pickup || "موقعك"}</span>
-          </div>
-          <div className="flex items-center gap-3 p-2.5 rounded-xl bg-red-500/10 border border-red-500/15">
-            <div className="w-3 h-3 rounded-full bg-red-400" />
-            <span className="text-white flex-1">{ride.destination || "الوجهة"}</span>
-          </div>
-        </div>
-
-        {/* Price & distance */}
-        <div className="flex justify-between items-center px-1">
-          <div>
-            <p className="text-xs text-blue-300/70">السعر الإجمالي</p>
-            <p className="text-2xl font-bold text-blue-400">{totalPrice || ride.price || "—"} DH</p>
-          </div>
-          <div className="text-left">
-            <p className="text-xs text-blue-300/70">المسافة</p>
-            <p className="text-lg font-bold text-blue-300">{ride.distance ? `${ride.distance} كم` : "—"}</p>
-          </div>
-        </div>
-
         {/* Completed */}
         {isCompleted && (
-          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-            className="text-center p-6 rounded-2xl bg-green-500/10 border border-green-500/30">
-            <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-3" />
-            <p className="text-white font-bold text-lg">تم التوصيل بنجاح!</p>
-            <p className="text-blue-300/70 text-sm mt-1">شكراً لاستخدامك التطبيق</p>
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+            className="text-center p-6">
+            <CheckCircle className="w-14 h-14 text-emerald-400 mx-auto mb-3" />
+            <p className="text-white font-bold text-lg">تم التوصيل بنجاح! 🎉</p>
+            <p className="text-white/40 text-sm mt-1">
+              الأجرة: <span className="text-orange-400 font-bold">{totalPrice || ride.price || "—"} DH</span>
+            </p>
             <Button onClick={() => navigate("/customer")}
-              className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl">
+              className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold">
               العودة للرئيسية
             </Button>
           </motion.div>
         )}
 
+        {/* Cancelled */}
         {isCancelled && (
-          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-            className="text-center p-6 rounded-2xl bg-red-500/10 border border-red-500/30">
-            <p className="text-white font-bold text-lg">تم إلغاء الرحلة</p>
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+            className="text-center p-6">
+            <p className="text-white font-bold text-lg">تم إلغاء الرحلة ❌</p>
             <Button onClick={() => navigate("/customer")} variant="outline"
               className="mt-4 border-blue-500/30 text-blue-300 hover:bg-blue-500/10 rounded-xl">
               طلب جديد
@@ -313,8 +314,8 @@ const CustomerTracking = () => {
         )}
       </motion.div>
 
-      {/* Chat with driver */}
-      {rideId && !isCompleted && !isCancelled && ride.status !== "pending" && (
+      {/* Chat */}
+      {rideId && isActive && ride.status !== "pending" && (
         <RideChat rideId={rideId} role="customer" />
       )}
     </div>
