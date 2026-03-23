@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
+import BottomNav from "@/components/BottomNav";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import { useReverseGeocode } from "@/hooks/useReverseGeocode";
 import { tangierLocations, locationCategories, TangierLocation } from "@/data/tangierLocations";
@@ -442,6 +443,8 @@ const CustomerPage = () => {
         {showPickupPicker && <LocationPicker type="pickup" onClose={() => { setShowPickupPicker(false); setSearchQuery(""); setActiveCategory("all"); }} />}
         {showDestPicker && <LocationPicker type="dest" onClose={() => { setShowDestPicker(false); setSearchQuery(""); setActiveCategory("all"); }} />}
       </AnimatePresence>
+
+      <BottomNav role="client" />
     </div>
   );
 };

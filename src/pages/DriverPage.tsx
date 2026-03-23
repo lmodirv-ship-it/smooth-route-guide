@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
+import BottomNav from "@/components/BottomNav";
 import { notifyNewOrder, unlockAudio } from "@/lib/notificationSound";
 import { driverNetEarnings, COMMISSION_RATE } from "@/lib/pricing";
 
@@ -427,6 +428,8 @@ const DriverPage = () => {
           )}
         </div>
       </div>
+
+      <BottomNav role="driver" />
     </div>
   );
 };
