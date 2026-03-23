@@ -19,7 +19,6 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 // Driver pages
-import DriverDashboard from "./pages/DriverDashboard";
 import DriverHistory from "./pages/DriverHistory";
 import DriverNotifications from "./pages/DriverNotifications";
 import DriverSettings from "./pages/DriverSettings";
@@ -33,15 +32,13 @@ import DriverSupport from "./pages/driver/DriverSupport";
 import DriverStatus from "./pages/driver/DriverStatus";
 import DriverEarnings from "./pages/driver/DriverEarnings";
 import DriverDelivery from "./pages/driver/DriverDelivery";
-
-// Client pages
-import ClientHome from "./pages/ClientHome";
-import ClientBooking from "./pages/client/ClientBooking";
-import CustomerPage from "./pages/CustomerPage";
-import CustomerTracking from "./pages/CustomerTracking";
 import DriverPage from "./pages/DriverPage";
 import DriverTracking from "./pages/DriverTracking";
-import RideTracking from "./pages/client/RideTracking";
+
+// Client pages
+import CustomerPage from "./pages/CustomerPage";
+import CustomerTracking from "./pages/CustomerTracking";
+import ClientBooking from "./pages/client/ClientBooking";
 import ClientPayment from "./pages/client/ClientPayment";
 import ClientWallet from "./pages/client/ClientWallet";
 import ClientHistory from "./pages/client/ClientHistory";
