@@ -241,7 +241,7 @@ const DriverPage = () => {
   const cityName = driverLocation ? detectCity(driverLocation) : "جارٍ التحديد...";
 
   return (
-    <div className="h-screen flex flex-col bg-[#0a0f1a]" dir="rtl">
+    <div className="h-screen flex flex-col bg-[#0a0f1a]" dir="rtl" onClick={() => unlockAudio()}>
       {/* Map */}
       <div className="relative h-[30vh] min-h-[200px] shrink-0">
         <LeafletMap
