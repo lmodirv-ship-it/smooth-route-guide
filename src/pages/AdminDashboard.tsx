@@ -353,20 +353,16 @@ const AdminDashboard = () => {
     setAiMessages(prev => [...prev, userMsg]);
     setAiInput("");
     setAiLoading(true);
-    let assistantSoFar = "";
-    const upsert = (chunk: string) => {
-      assistantSoFar += chunk;
-      setAiMessages(prev => {
-        const last = prev[prev.length - 1];
-        if (last?.role === "assistant") return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantSoFar } : m);
-        return [...prev, { role: "assistant", content: assistantSoFar }];
-      });
-    };
-    await streamAdminAI({
+    await callAdminAI({
       messages: [...aiMessages, userMsg],
-      onDelta: upsert,
-      onDone: () => setAiLoading(false),
-      onError: (err) => { setAiMessages(p => [...p, { role: "assistant", content: `❌ ${err}` }]); setAiLoading(false); },
+      onResult: (reply) => {
+        setAiMessages(prev => [...prev, { role: "assistant", content: reply }]);
+        setAiLoading(false);
+      },
+      onError: (err) => {
+        setAiMessages(p => [...p, { role: "assistant", content: `❌ ${err}` }]);
+        setAiLoading(false);
+      },
     });
   };
 
