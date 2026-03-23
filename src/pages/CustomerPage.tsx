@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MapPin, Navigation, Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
