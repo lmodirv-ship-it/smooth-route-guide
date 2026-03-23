@@ -180,7 +180,7 @@ const LeafletMap = ({
     });
   }, [nearbyDrivers]);
 
-  // Route rendering (pickup → destination line + markers)
+  // Route rendering with real OSRM road routing
   useEffect(() => {
     const layer = routeLayerRef.current;
     const map = mapInstanceRef.current;
@@ -196,14 +196,34 @@ const LeafletMap = ({
     L.marker(pickupLatLng, { icon: pickupIcon }).bindPopup("نقطة الانطلاق").addTo(layer);
     L.marker(destLatLng, { icon: destinationIcon }).bindPopup("الوجهة").addTo(layer);
 
-    L.polyline([pickupLatLng, destLatLng], {
-      color: "#10b981",
-      weight: 4,
-      opacity: 0.8,
-      dashArray: "10, 8",
-    }).addTo(layer);
+    // Fetch real road route from OSRM
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${pickup.lng},${pickup.lat};${destination.lng},${destination.lat}?overview=full&geometries=geojson`;
 
-    map.fitBounds(L.latLngBounds([pickupLatLng, destLatLng]).pad(0.3));
+    fetch(osrmUrl)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.routes && data.routes.length > 0) {
+          const coords = data.routes[0].geometry.coordinates.map(
+            (c: [number, number]) => [c[1], c[0]] as L.LatLngExpression
+          );
+          L.polyline(coords, {
+            color: "#10b981",
+            weight: 5,
+            opacity: 0.9,
+          }).addTo(layer);
+          map.fitBounds(L.latLngBounds(coords as L.LatLngExpression[]).pad(0.2));
+        }
+      })
+      .catch(() => {
+        // Fallback to straight line
+        L.polyline([pickupLatLng, destLatLng], {
+          color: "#10b981",
+          weight: 4,
+          opacity: 0.8,
+          dashArray: "10, 8",
+        }).addTo(layer);
+        map.fitBounds(L.latLngBounds([pickupLatLng, destLatLng]).pad(0.3));
+      });
   }, [route]);
 
   return (
