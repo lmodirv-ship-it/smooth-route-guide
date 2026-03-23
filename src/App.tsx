@@ -77,6 +77,7 @@ import AdminCallCenter from "./pages/admin/AdminCallCenter";
 import AdminDeliveryOrders from "./pages/admin/DeliveryOrders";
 import AdminSettings from "./pages/admin/Settings";
 import AdminRestaurants from "./pages/admin/AdminRestaurants";
+import ZonesManagement from "./pages/admin/ZonesManagement";
 import RegisteredUsers from "./pages/admin/RegisteredUsers";
 import SetupAdmin from "./pages/admin/SetupAdmin";
 
@@ -184,6 +185,7 @@ const App = () => (
             <Route path="delivery" element={<AdminDeliveryOrders />} />
             <Route path="call-center" element={<AdminCallCenter />} />
             <Route path="restaurants" element={<AdminRestaurants />} />
+            <Route path="zones" element={<ZonesManagement />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
 

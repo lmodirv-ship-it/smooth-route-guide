@@ -52,6 +52,7 @@ const navItems = [
   { path: "/admin/delivery", icon: Send, label: "Delivery" },
   { path: "/admin/call-center", icon: Headphones, label: "Call Center" },
   { path: "/admin/restaurants", icon: UtensilsCrossed, label: "Restaurants" },
+  { path: "/admin/zones", icon: MapPin, label: "Zones & Pricing" },
   { path: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 
