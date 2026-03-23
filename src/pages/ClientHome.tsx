@@ -457,7 +457,7 @@ const ClientHome = () => {
         {[
           { label: "الملف الشخصي", icon: User, action: () => navigate("/client/profile") },
           { label: "الدعم والمساعدة", icon: Phone, action: () => navigate("/client/support") },
-          { label: `الإشعارات غير المقروءة (${unreadNotifications})`, icon: MessageCircle, action: () => navigate("/driver/notifications") },
+          { label: `الإشعارات غير المقروءة (${unreadNotifications})`, icon: MessageCircle, action: () => {} },
         ].map((item, i) => (
           <button
             key={i}
