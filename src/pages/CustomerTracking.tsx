@@ -312,6 +312,11 @@ const CustomerTracking = () => {
           </motion.div>
         )}
       </motion.div>
+
+      {/* Chat with driver */}
+      {rideId && !isCompleted && !isCancelled && ride.status !== "pending" && (
+        <RideChat rideId={rideId} role="customer" />
+      )}
     </div>
   );
 };

@@ -355,6 +355,9 @@ const DriverTracking = () => {
           )}
         </motion.div>
       </div>
+
+      {/* Chat with client */}
+      {rideId && !isFinished && <RideChat rideId={rideId} role="driver" />}
     </div>
   );
 };
