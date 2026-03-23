@@ -788,9 +788,25 @@ const AdminDashboard = () => {
                     {msg.role === "user" ? <Shield className="w-3.5 h-3.5 text-primary" /> : <Bot className="w-3.5 h-3.5 text-info" />}
                   </div>
                   <div className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
-                    <div className="prose prose-sm prose-invert max-w-none text-inherit">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
-                    </div>
+                    {/* Show attachments */}
+                    {msg.attachments?.length ? (
+                      <div className="flex flex-wrap gap-1.5 mb-1.5">
+                        {msg.attachments.map((att, j) => (
+                          <div key={j} className="relative">
+                            {att.type === "image" ? (
+                              <img src={att.url} alt={att.name} className="w-24 h-24 object-cover rounded-lg border border-white/20" />
+                            ) : (
+                              <video src={att.url} className="w-24 h-24 object-cover rounded-lg border border-white/20" controls />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                    {msg.content && (
+                      <div className="prose prose-sm prose-invert max-w-none text-inherit">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -802,10 +818,33 @@ const AdminDashboard = () => {
               )}
             </div>
 
+            {/* Attachment Preview */}
+            {aiAttachments.length > 0 && (
+              <div className="px-3 pt-2 flex flex-wrap gap-2">
+                {aiAttachments.map((att, i) => (
+                  <div key={i} className="relative group">
+                    {att.type === "image" ? (
+                      <img src={att.url} alt={att.name} className="w-14 h-14 object-cover rounded-lg border border-border" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-lg border border-border bg-secondary flex items-center justify-center">
+                        <Video className="w-5 h-5 text-info" />
+                      </div>
+                    )}
+                    <button onClick={() => removeAttachment(i)} className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">×</button>
+                    <p className="text-[9px] text-muted-foreground truncate w-14 text-center mt-0.5">{att.name.slice(0, 8)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* AI Input */}
-            <form onSubmit={e => { e.preventDefault(); sendAiMessage(aiInput); }} className="p-3 border-t border-border flex gap-2">
-              <Input value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder="اسأل المساعد..." className="flex-1 bg-secondary/80 border-border rounded-xl text-sm text-right" disabled={aiLoading} />
-              <Button type="submit" size="icon" disabled={!aiInput.trim() || aiLoading} className="gradient-primary rounded-xl"><Send className="w-4 h-4" /></Button>
+            <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple className="hidden" onChange={handleFileUpload} />
+            <form onSubmit={e => { e.preventDefault(); sendAiMessage(aiInput); }} className="p-3 border-t border-border flex gap-2 items-center">
+              <Button type="button" size="icon" variant="ghost" onClick={() => fileInputRef.current?.click()} disabled={aiLoading} className="text-muted-foreground hover:text-primary flex-shrink-0" title="إرفاق صورة أو فيديو">
+                <Paperclip className="w-4 h-4" />
+              </Button>
+              <Input value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder="اسأل المساعد أو أرفق صورة..." className="flex-1 bg-secondary/80 border-border rounded-xl text-sm text-right" disabled={aiLoading} />
+              <Button type="submit" size="icon" disabled={(!aiInput.trim() && aiAttachments.length === 0) || aiLoading} className="gradient-primary rounded-xl"><Send className="w-4 h-4" /></Button>
             </form>
           </motion.div>
         )}
