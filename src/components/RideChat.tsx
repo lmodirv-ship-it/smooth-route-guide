@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, X, Loader2, MapPin } from "lucide-react";
+import { MessageCircle, Send, X, Loader2, MapPin, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { validateChatMessage } from "@/lib/inputSecurity";
 
 interface Message {
   id: string;
