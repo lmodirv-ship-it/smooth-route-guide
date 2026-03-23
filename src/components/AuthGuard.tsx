@@ -6,13 +6,38 @@ import { Loader2 } from "lucide-react";
 type UserRole = "driver" | "client" | "delivery" | "admin" | "agent" | "user";
 
 const roleDashboard: Record<UserRole, string> = {
-  driver: "/driver",
+  driver: "/driver-panel",
   client: "/client",
   delivery: "/delivery",
   agent: "/call-center",
   admin: "/admin",
   user: "/client",
 };
+
+/**
+ * Maps a requiredRole prop to the set of database roles that are allowed access.
+ * - "client" pages accept both "user" role (default signup) and "admin" (admins can access everything)
+ * - "driver" pages require "driver" role
+ * - "delivery" pages accept "user" role (delivery is a feature, not a separate db role)
+ */
+function isRoleAllowed(dbRole: string, requiredRole: string): boolean {
+  if (dbRole === "admin") return true; // admins can access everything
+
+  switch (requiredRole) {
+    case "client":
+      return dbRole === "user" || dbRole === "client";
+    case "delivery":
+      return dbRole === "user" || dbRole === "client";
+    case "driver":
+      return dbRole === "driver";
+    case "admin":
+      return dbRole === "admin";
+    case "call_center":
+      return dbRole === "agent";
+    default:
+      return false;
+  }
+}
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -45,15 +70,11 @@ const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
 
       setUserRole(role);
 
-      // Map requiredRole to match db roles
-      const mappedRequired = requiredRole === "call_center" ? "agent" : requiredRole === "delivery" ? "user" : requiredRole;
-      
-      if (role !== mappedRequired && !(requiredRole === "client" && role === "user") && !(requiredRole === "delivery" && role === "user")) {
+      if (isRoleAllowed(role, requiredRole)) {
+        setState("ok");
+      } else {
         setState("wrong-role");
-        return;
       }
-
-      setState("ok");
     };
 
     check();
