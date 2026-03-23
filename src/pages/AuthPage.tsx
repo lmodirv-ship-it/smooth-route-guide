@@ -23,12 +23,12 @@ const roleConfig: Record<string, { label: string; color: string; icon: any }> = 
 };
 
 const roleDashboard: Record<StoredRole, string> = {
-  driver: "/driver",
-  client: "/client",
+  driver: "/driver-panel",
+  client: "/customer",
   delivery: "/delivery",
   admin: "/admin",
   agent: "/call-center",
-  user: "/client",
+  user: "/customer",
 };
 
 const AuthPage = () => {

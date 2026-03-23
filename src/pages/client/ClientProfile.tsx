@@ -36,11 +36,11 @@ const ClientProfile = () => {
   }, []);
 
   const menuItems = [
-    { icon: Clock, label: "سجل الرحلات", path: "/client/history", color: "text-primary" },
-    { icon: Wallet, label: "المحفظة", path: "/client/wallet", color: "text-info" },
-    { icon: Car, label: "طرق الدفع", path: "/client/payment", color: "text-success" },
+    { icon: Clock, label: "سجل الرحلات", path: "/customer/history", color: "text-primary" },
+    { icon: Wallet, label: "المحفظة", path: "/customer/wallet", color: "text-info" },
+    { icon: Car, label: "طرق الدفع", path: "/customer/payment", color: "text-success" },
     { icon: Bot, label: "المساعد الذكي", path: "/assistant", color: "text-primary" },
-    { icon: HelpCircle, label: "الدعم والمساعدة", path: "/client/support", color: "text-info" },
+    { icon: HelpCircle, label: "الدعم والمساعدة", path: "/customer/support", color: "text-info" },
   ];
 
   if (loading) return <div className="min-h-screen gradient-dark flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
@@ -48,7 +48,7 @@ const ClientProfile = () => {
   return (
     <div className="min-h-screen gradient-dark pb-24" dir="rtl">
       <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
-        <button onClick={() => navigate("/client")}><ArrowRight className="w-5 h-5 text-muted-foreground" /></button>
+        <button onClick={() => navigate("/customer")}><ArrowRight className="w-5 h-5 text-muted-foreground" /></button>
         <span className="font-bold text-foreground">حسابي</span>
         <div className="w-5" />
       </div>

@@ -30,14 +30,14 @@ const RoleSwitcher = () => {
             className="mb-3 flex flex-col gap-2 bg-card border border-border rounded-2xl p-3 shadow-xl"
           >
             <button
-              onClick={() => switchRole("client", "/client")}
+              onClick={() => switchRole("client", "/customer")}
               className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-accent transition-colors text-right"
             >
               <User className="w-5 h-5 text-info" />
               <span className="text-sm font-medium text-foreground">عميل</span>
             </button>
             <button
-              onClick={() => switchRole("driver", "/driver")}
+              onClick={() => switchRole("driver", "/driver-panel")}
               className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-accent transition-colors text-right"
             >
               <Car className="w-5 h-5 text-primary" />

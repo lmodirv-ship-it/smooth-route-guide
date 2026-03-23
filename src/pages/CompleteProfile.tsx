@@ -9,8 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";
 
 const roleDashboard: Record<string, string> = {
-  driver: "/driver",
-  user: "/client",
+  driver: "/driver-panel",
+  user: "/customer",
   admin: "/admin",
   agent: "/call-center",
 };
@@ -54,7 +54,7 @@ const CompleteProfile = () => {
     const role = roles?.[0]?.role || "user";
 
     toast({ title: "تم حفظ الملف الشخصي ✅" });
-    navigate(roleDashboard[role] || "/client", { replace: true });
+    navigate(roleDashboard[role] || "/customer", { replace: true });
     setSaving(false);
   };
 

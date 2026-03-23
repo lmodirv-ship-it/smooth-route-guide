@@ -1,0 +1,43 @@
+/**
+ * Canonical route map — the single source of truth for all routing decisions.
+ *
+ * Naming convention:
+ *   DB role  →  canonical dashboard path
+ *   "user"   →  /customer   (default signup role)
+ *   "driver" →  /driver-panel
+ *   "admin"  →  /admin
+ *   "agent"  →  /call-center
+ *
+ * Legacy paths (/client, /driver, /customer-tracking, etc.) are kept as
+ * redirect-only routes in App.tsx and will be removed after full migration.
+ */
+
+export type DbRole = "admin" | "moderator" | "user" | "driver" | "agent";
+
+/** Maps a DB role to its canonical dashboard path. */
+export const ROLE_DASHBOARD: Record<string, string> = {
+  driver: "/driver-panel",
+  client: "/customer",
+  user: "/customer",
+  admin: "/admin",
+  agent: "/call-center",
+  delivery: "/delivery",
+};
+
+/** Human-readable labels (Arabic) for each DB role. */
+export const ROLE_LABELS: Record<string, string> = {
+  driver: "سائق",
+  client: "عميل",
+  user: "عميل",
+  delivery: "توصيل",
+  admin: "مسؤول",
+  agent: "مركز اتصال",
+};
+
+/**
+ * Given a DB role, return the canonical dashboard path.
+ * Falls back to /customer for unknown roles.
+ */
+export function dashboardForRole(role: string): string {
+  return ROLE_DASHBOARD[role] || "/customer";
+}

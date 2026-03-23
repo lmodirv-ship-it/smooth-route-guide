@@ -3,36 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Car, User, Headphones, Shield, LogOut, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { dashboardForRole, ROLE_LABELS } from "@/lib/routes";
 import logo from "@/assets/hn-driver-logo.png";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 import NativeDownloadSection from "@/components/welcome/NativeDownloadSection";
 
 type RoleId = "driver" | "client" | "delivery";
-type StoredRole = RoleId | "admin" | "agent" | "user";
-
-const roleDashboardPaths: Record<StoredRole, string> = {
-  driver: "/driver",
-  client: "/client",
-  delivery: "/delivery",
-  admin: "/admin",
-  agent: "/call-center",
-  user: "/client",
-};
-
-const roleLabelMap: Record<StoredRole, string> = {
-  driver: "سائق",
-  client: "عميل",
-  delivery: "توصيل",
-  admin: "مسؤول",
-  agent: "مركز اتصال",
-  user: "عميل",
-};
 
 const Welcome = () => {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ email?: string | null; phone?: string | null } | null>(null);
-  const [userRole, setUserRole] = useState<StoredRole | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     const syncSession = async () => {
@@ -54,7 +36,7 @@ const Welcome = () => {
         .eq("user_id", session.user.id)
         .limit(1);
 
-      setUserRole((roles?.[0]?.role as StoredRole | undefined) ?? null);
+      setUserRole(roles?.[0]?.role ?? null);
     };
 
     void syncSession();
@@ -90,15 +72,13 @@ const Welcome = () => {
         .eq("user_id", session.user.id)
         .limit(1);
 
-      const dbRole = (roles?.[0]?.role as StoredRole | undefined) ?? null;
-      // إذا كان الدور في قاعدة البيانات محدد (غير "user")، نوجه حسبه
-      // أما إذا كان "user" أو غير موجود، نوجه حسب الدور المختار
+      const dbRole = roles?.[0]?.role ?? null;
       if (dbRole && dbRole !== "user") {
-        navigate(roleDashboardPaths[dbRole] || roleDashboardPaths.user);
+        navigate(dashboardForRole(dbRole));
         return;
       }
 
-      navigate(roleDashboardPaths[roleId] || roleDashboardPaths.user);
+      navigate(dashboardForRole(roleId));
     } finally {
       setChecking(false);
     }
@@ -196,7 +176,7 @@ const Welcome = () => {
           >
             <p className="text-xs text-success">
               ✓ مسجل كـ {currentUser.email || currentUser.phone || "مستخدم"}
-              {userRole && ` (${roleLabelMap[userRole]})`}
+              {userRole && ` (${ROLE_LABELS[userRole] || userRole})`}
             </p>
             <button
               onClick={handleLogout}
