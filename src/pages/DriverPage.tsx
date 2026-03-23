@@ -56,7 +56,7 @@ const DriverPage = () => {
   const [driverName, setDriverName] = useState("السائق");
   const [activeRideId, setActiveRideId] = useState<string | null>(null);
 
-  // Fetch today's stats
+  // Check for active ride & fetch stats
   useEffect(() => {
     const fetchStats = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -65,6 +65,20 @@ const DriverPage = () => {
       // Get profile name
       const { data: profile } = await supabase.from("profiles").select("name").eq("id", user.id).single();
       if (profile?.name) setDriverName(profile.name);
+
+      // Check if driver has an active (non-completed/cancelled) ride
+      const { data: activeRides } = await supabase
+        .from("ride_requests")
+        .select("id, status")
+        .eq("driver_id", user.id)
+        .in("status", ["accepted", "in_progress", "arriving"])
+        .limit(1);
+
+      if (activeRides && activeRides.length > 0) {
+        setActiveRideId(activeRides[0].id);
+      } else {
+        setActiveRideId(null);
+      }
 
       // Today's completed rides
       const todayStart = new Date();
