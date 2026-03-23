@@ -4,14 +4,14 @@ import { Car, MapPin, Star, Check, ArrowLeftRight, Clock, Navigation, Loader2 } 
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useFirestoreCollection } from "@/hooks/useFirestoreCollection";
+import { useSupabaseQuery } from "@/hooks/useSupabaseQuery";
 
 const RideAssign = () => {
   const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
   const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
   const [assigning, setAssigning] = useState(false);
 
-  const { data: rideRequests, loading: requestsLoading, refresh: refreshRequests } = useFirestoreCollection<any>({
+  const { data: rideRequests, loading: requestsLoading, refresh: refreshRequests } = useSupabaseQuery<any>({
     table: "ride_requests",
     filters: [{ field: "status", value: "pending" }],
     orderByField: "created_at",
@@ -20,7 +20,7 @@ const RideAssign = () => {
     realtime: true,
   });
 
-  const { data: drivers, loading: driversLoading, refresh: refreshDrivers } = useFirestoreCollection<any>({
+  const { data: drivers, loading: driversLoading, refresh: refreshDrivers } = useSupabaseQuery<any>({
     table: "drivers",
     filters: [{ field: "status", value: "active" }],
     orderByField: "rating",
