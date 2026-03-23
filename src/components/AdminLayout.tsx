@@ -17,8 +17,8 @@ type AiMsg = { role: "user" | "assistant"; content: string };
 
 const AI_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-ai-agent`;
 
-async function streamAdminAI({ messages, onDelta, onDone, onError }: {
-  messages: AiMsg[]; onDelta: (t: string) => void; onDone: () => void; onError: (e: string) => void;
+async function callAdminAI({ messages, onResult, onError }: {
+  messages: AiMsg[]; onResult: (text: string) => void; onError: (e: string) => void;
 }) {
   const { data: { session } } = await supabase.auth.getSession();
   const accessToken = session?.access_token || null;
@@ -35,30 +35,8 @@ async function streamAdminAI({ messages, onDelta, onDone, onError }: {
     onError(err.error || "خطأ في الخدمة");
     return;
   }
-  if (!resp.body) { onError("لا توجد استجابة"); return; }
-  const reader = resp.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    let idx: number;
-    while ((idx = buffer.indexOf("\n")) !== -1) {
-      let line = buffer.slice(0, idx);
-      buffer = buffer.slice(idx + 1);
-      if (line.endsWith("\r")) line = line.slice(0, -1);
-      if (!line.startsWith("data: ")) continue;
-      const json = line.slice(6).trim();
-      if (json === "[DONE]") { onDone(); return; }
-      try {
-        const parsed = JSON.parse(json);
-        const content = parsed.choices?.[0]?.delta?.content;
-        if (content) onDelta(content);
-      } catch { buffer = line + "\n" + buffer; break; }
-    }
-  }
-  onDone();
+  const data = await resp.json();
+  onResult(data.reply || "لم أتمكن من معالجة الطلب");
 }
 
 const navItems = [
