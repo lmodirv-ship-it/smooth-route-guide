@@ -51,7 +51,8 @@ export function calculateTripPrice(
   const d2Km = d2Meters / 1000;
   const totalDistanceKm = d1Km + d2Km;
   const distanceFee = totalDistanceKm * RATE_PER_KM;
-  const totalPrice = BASE_FEE + distanceFee;
+  const rawPrice = BASE_FEE + distanceFee;
+  const totalPrice = Math.max(MIN_FARE, rawPrice);
 
   return {
     d1Km: Math.round(d1Km * 10) / 10,

@@ -60,7 +60,7 @@ const CustomerPage = () => {
   const rideDistance = userLocation && destCoords ? haversineKm(userLocation, destCoords) : null;
   // السعر = 5 (رسوم ثابتة) + (المسافة الإجمالية × 3)
   // ملاحظة: مسافة السائق→الزبون تُضاف عند حسابها في صفحة السائق
-  const price = rideDistance ? Math.round(BASE_FARE + rideDistance * PRICE_PER_KM) : null;
+  const price = rideDistance ? Math.max(MIN_FARE, Math.round(BASE_FARE + rideDistance * PRICE_PER_KM)) : null;
   const distance = rideDistance;
 
   const handleCreateRequest = async () => {
