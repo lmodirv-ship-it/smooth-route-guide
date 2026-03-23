@@ -5,7 +5,7 @@ import {
   Search, Shield, Settings, MapPin,
   AlertTriangle, Clock, FileText, UserCheck,
   XCircle, ChevronDown, Activity, Zap, BatteryLow, Loader2,
-  Bot, Send, MessageSquare, X
+  Bot, Send, MessageSquare, X, Image, Video, Paperclip
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

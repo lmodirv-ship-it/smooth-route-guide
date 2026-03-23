@@ -1,12 +1,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders, enforceRateLimit, handleError, parseJson, z } from "../_shared/security.ts";
+import { corsHeaders, enforceRateLimit, handleError, z } from "../_shared/security.ts";
+
+// Content can be string or multimodal array
+const contentSchema = z.union([
+  z.string().trim().min(1).max(8000),
+  z.array(z.object({
+    type: z.enum(["text", "image_url"]),
+    text: z.string().optional(),
+    image_url: z.object({
+      url: z.string(),
+      detail: z.enum(["auto", "low", "high"]).optional(),
+    }).optional(),
+  })),
+]);
 
 const requestSchema = z.object({
   messages: z.array(
     z.object({
       role: z.enum(["user", "assistant", "system"]),
-      content: z.string().trim().min(1).max(8000),
+      content: contentSchema,
     }),
   ).min(1).max(50),
 });
@@ -258,7 +271,27 @@ serve(async (req) => {
 
   try {
     await enforceRateLimit(req, "admin-ai-agent", 30, 60);
-    const { messages } = await parseJson(req, requestSchema);
+
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "invalid_json_body" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const parsed = requestSchema.safeParse(body);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      return new Response(JSON.stringify({ error: `${issue.path.join(".") || "body"}: ${issue.message}` }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { messages } = parsed.data;
 
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!lovableApiKey) throw new Error("LOVABLE_API_KEY not configured");
@@ -284,6 +317,7 @@ serve(async (req) => {
 8. **إدارة المناطق**: أضف وعدّل مناطق التوصيل
 9. **إدارة العروض**: أنشئ وعدّل أكواد الخصم
 10. **إدارة الإعدادات**: غيّر إعدادات المنصة (التسعيرة، الإشعارات، إلخ)
+11. **تحليل الصور والفيديو**: يمكنك تحليل الصور والفيديوهات المرسلة من المدير (لقطات الشاشة، صور الوثائق، إلخ)
 
 ## الجداول المتاحة:
 profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages
@@ -296,7 +330,8 @@ profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, 
 - اسأل للتأكيد فقط عند العمليات الخطيرة (حذف جماعي)
 - عند الاستعلام، اعرض البيانات بشكل جدولي منظم
 - كن مختصراً ومباشراً
-- استخدم db_stats للحصول على نظرة عامة سريعة`;
+- استخدم db_stats للحصول على نظرة عامة سريعة
+- عند استقبال صورة، حللها بدقة وقدم ملاحظاتك`;
 
     // Multi-turn tool calling loop
     let aiMessages: any[] = [
@@ -315,7 +350,7 @@ profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, 
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
+          model: "google/gemini-2.5-flash",
           messages: aiMessages,
           tools,
           stream: false,
@@ -356,7 +391,6 @@ profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, 
             content: toolResult,
           });
         }
-        // Continue loop to let AI process tool results
         continue;
       }
 
@@ -365,7 +399,6 @@ profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, 
       break;
     }
 
-    // Return the final text as a simple JSON response
     return new Response(JSON.stringify({ reply: finalText }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
