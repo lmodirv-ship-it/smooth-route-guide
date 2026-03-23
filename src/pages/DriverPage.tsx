@@ -98,7 +98,8 @@ const DriverPage = () => {
         .gte("created_at", todayStart.toISOString());
 
       const trips = completedRides?.length || 0;
-      const earnings = completedRides?.reduce((sum, r) => sum + (Number(r.price) || 0), 0) || 0;
+      const grossEarnings = completedRides?.reduce((sum, r) => sum + (Number(r.price) || 0), 0) || 0;
+      const earnings = driverNetEarnings(grossEarnings);
 
       // Rating
       const { data: driverData } = await supabase
