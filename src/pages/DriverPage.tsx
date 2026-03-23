@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle } from "lucide-react";
+import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,6 +52,48 @@ const DriverPage = () => {
   const [orders, setOrders] = useState<RideRow[]>([]);
   const [accepting, setAccepting] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [todayStats, setTodayStats] = useState({ trips: 0, earnings: 0, rating: 0 });
+  const [driverName, setDriverName] = useState("السائق");
+
+  // Fetch today's stats
+  useEffect(() => {
+    const fetchStats = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get profile name
+      const { data: profile } = await supabase.from("profiles").select("name").eq("id", user.id).single();
+      if (profile?.name) setDriverName(profile.name);
+
+      // Today's completed rides
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
+      const { data: completedRides } = await supabase
+        .from("ride_requests")
+        .select("id, price")
+        .eq("driver_id", user.id)
+        .eq("status", "completed")
+        .gte("created_at", todayStart.toISOString());
+
+      const trips = completedRides?.length || 0;
+      const earnings = completedRides?.reduce((sum, r) => sum + (Number(r.price) || 0), 0) || 0;
+
+      // Rating
+      const { data: driverData } = await supabase
+        .from("drivers")
+        .select("rating")
+        .eq("user_id", user.id)
+        .single();
+
+      setTodayStats({
+        trips,
+        earnings,
+        rating: Number(driverData?.rating) || 0,
+      });
+    };
+    fetchStats();
+  }, []);
 
   // Continuous GPS
   useEffect(() => {
@@ -157,7 +199,7 @@ const DriverPage = () => {
   return (
     <div className="h-screen flex flex-col bg-[#0a0f1a]" dir="rtl">
       {/* Map */}
-      <div className="relative h-[35vh] min-h-[220px] shrink-0">
+      <div className="relative h-[30vh] min-h-[200px] shrink-0">
         <LeafletMap
           center={driverLocation || DEFAULT_LOCATION}
           zoom={14}
@@ -167,15 +209,18 @@ const DriverPage = () => {
           className="w-full h-full"
         />
         {/* Top overlay */}
-        <div className="absolute top-0 inset-x-0 z-[1000] bg-gradient-to-b from-black/60 to-transparent px-4 pt-3 pb-8">
+        <div className="absolute top-0 inset-x-0 z-[1000] bg-gradient-to-b from-black/70 to-transparent px-4 pt-3 pb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
                 <Car className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
-                <p className="text-white font-bold text-sm">وضع السائق</p>
-                <p className="text-emerald-400 text-[11px]">متصل</p>
+                <p className="text-white font-bold text-sm">{driverName}</p>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <p className="text-emerald-400 text-[11px]">متصل</p>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
@@ -190,13 +235,22 @@ const DriverPage = () => {
         </div>
       </div>
 
+      {/* Stats bar */}
+      <div className="shrink-0 px-4 py-3 border-b border-white/5 bg-[#0d1320]">
+        <div className="grid grid-cols-3 gap-3">
+          <StatsCard icon={TrendingUp} label="رحلات اليوم" value={`${todayStats.trips}`} accent="text-emerald-400" bg="bg-emerald-500/10" />
+          <StatsCard icon={Wallet} label="أرباح اليوم" value={`${todayStats.earnings} DH`} accent="text-orange-400" bg="bg-orange-500/10" />
+          <StatsCard icon={Star} label="التقييم" value={todayStats.rating > 0 ? todayStats.rating.toFixed(1) : "—"} accent="text-yellow-400" bg="bg-yellow-500/10" />
+        </div>
+      </div>
+
       {/* Orders Table */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="px-5 py-3 flex items-center justify-between border-b border-white/5 shrink-0">
+        <div className="px-5 py-2.5 flex items-center justify-between border-b border-white/5 shrink-0">
           <div className="bg-emerald-500/15 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">
             {nearbyOrders.length}
           </div>
-          <h2 className="text-white font-bold flex items-center gap-2">
+          <h2 className="text-white font-bold text-sm flex items-center gap-2">
             <Route className="w-4 h-4 text-emerald-400" />
             الرحلات المتاحة
           </h2>
@@ -204,23 +258,24 @@ const DriverPage = () => {
 
         <div className="flex-1 overflow-y-auto">
           {nearbyOrders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4 border border-emerald-500/15">
-                <Radar className="w-10 h-10 text-emerald-500/30" />
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-3 border border-emerald-500/15">
+                <Radar className="w-8 h-8 text-emerald-500/30" />
               </div>
-              <p className="text-white/70 font-medium text-lg">لا توجد رحلات في منطقتك</p>
+              <p className="text-white/70 font-medium">لا توجد رحلات في منطقتك</p>
               <p className="text-white/30 text-sm mt-1">الرحلات القريبة ستظهر هنا تلقائياً</p>
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead className="sticky top-0 z-10 bg-[#0d1320] border-b border-white/5">
                 <tr className="text-white/50 text-xs">
-                  <th className="py-2.5 px-3 text-right font-medium">الانطلاق</th>
-                  <th className="py-2.5 px-3 text-right font-medium">الوجهة</th>
-                  <th className="py-2.5 px-3 text-center font-medium">المسافة</th>
-                  <th className="py-2.5 px-3 text-center font-medium">البُعد</th>
-                  <th className="py-2.5 px-3 text-center font-medium">السعر</th>
-                  <th className="py-2.5 px-3 text-center font-medium">إجراء</th>
+                  <th className="py-2 px-3 text-right font-medium">الانطلاق</th>
+                  <th className="py-2 px-3 text-right font-medium">الوجهة</th>
+                  <th className="py-2 px-3 text-center font-medium">المسافة</th>
+                  <th className="py-2 px-3 text-center font-medium">البُعد</th>
+                  <th className="py-2 px-3 text-center font-medium">ETA</th>
+                  <th className="py-2 px-3 text-center font-medium">السعر</th>
+                  <th className="py-2 px-3 text-center font-medium">إجراء</th>
                 </tr>
               </thead>
               <tbody>
@@ -233,49 +288,53 @@ const DriverPage = () => {
                       animate={{ opacity: 1 }}
                       onClick={() => setSelectedOrderId(isSelected ? null : order.id)}
                       className={`border-b border-white/[0.04] cursor-pointer transition-colors ${
-                        isSelected
-                          ? "bg-emerald-500/10 border-emerald-500/20"
-                          : "hover:bg-white/[0.03]"
+                        isSelected ? "bg-emerald-500/10 border-emerald-500/20" : "hover:bg-white/[0.03]"
                       }`}
                     >
-                      <td className="py-3 px-3 text-right">
+                      <td className="py-2.5 px-3 text-right">
                         <div className="flex items-center gap-1.5">
                           <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-                          <span className="text-white/80 truncate max-w-[120px]">{order.pickup || "—"}</span>
+                          <span className="text-white/80 truncate max-w-[100px]">{order.pickup || "—"}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-3 text-right">
+                      <td className="py-2.5 px-3 text-right">
                         <div className="flex items-center gap-1.5">
                           <div className="w-2 h-2 rounded-full bg-orange-400 shrink-0" />
-                          <span className="text-white/80 truncate max-w-[120px]">{order.destination || "—"}</span>
+                          <span className="text-white/80 truncate max-w-[100px]">{order.destination || "—"}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-3 text-center">
-                        <span className="text-emerald-400 font-semibold">{order.totalDistance} كم</span>
+                      <td className="py-2.5 px-3 text-center">
+                        <span className="text-emerald-400 font-semibold text-xs">{order.totalDistance} كم</span>
                       </td>
-                      <td className="py-3 px-3 text-center">
-                        <div className="flex items-center justify-center gap-1 text-yellow-400">
+                      <td className="py-2.5 px-3 text-center">
+                        <div className="flex items-center justify-center gap-1 text-yellow-400 text-xs">
                           <MapPin className="w-3 h-3" />
-                          <span>{order.distToPickup != null ? `${order.distToPickup} كم` : "—"}</span>
+                          <span>{order.distToPickup != null ? `${order.distToPickup}` : "—"}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-3 text-center">
-                        <span className="text-emerald-400 font-black text-base">
-                          {order.totalPrice || "—"} <span className="text-[10px] font-medium opacity-60">DH</span>
+                      <td className="py-2.5 px-3 text-center">
+                        <div className="flex items-center justify-center gap-1 text-blue-400 text-xs">
+                          <Clock className="w-3 h-3" />
+                          <span>{order.eta ? `${order.eta} د` : "—"}</span>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3 text-center">
+                        <span className="text-emerald-400 font-black text-sm">
+                          {order.totalPrice || "—"} <span className="text-[9px] font-medium opacity-60">DH</span>
                         </span>
                       </td>
-                      <td className="py-3 px-3 text-center">
+                      <td className="py-2.5 px-3 text-center">
                         <Button
                           size="sm"
                           onClick={(e) => { e.stopPropagation(); handleAccept(order.id); }}
                           disabled={accepting === order.id}
-                          className="h-8 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold shadow-[0_2px_10px_hsl(155,70%,40%,0.25)]"
+                          className="h-7 px-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-bold shadow-[0_2px_10px_hsl(155,70%,40%,0.25)]"
                         >
                           {accepting === order.id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <Loader2 className="w-3 h-3 animate-spin" />
                           ) : (
                             <>
-                              <CheckCircle className="w-3.5 h-3.5 ml-1" />
+                              <CheckCircle className="w-3 h-3 ml-1" />
                               قبول
                             </>
                           )}
@@ -292,5 +351,16 @@ const DriverPage = () => {
     </div>
   );
 };
+
+/* ─── Stats Card ─── */
+const StatsCard = ({ icon: Icon, label, value, accent, bg }: {
+  icon: typeof TrendingUp; label: string; value: string; accent: string; bg: string;
+}) => (
+  <div className={`${bg} rounded-xl p-3 border border-white/[0.04] text-center`}>
+    <Icon className={`w-4 h-4 ${accent} mx-auto mb-1`} />
+    <p className={`text-base font-black ${accent}`}>{value}</p>
+    <p className="text-[10px] text-white/40 mt-0.5">{label}</p>
+  </div>
+);
 
 export default DriverPage;
