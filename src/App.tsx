@@ -111,6 +111,7 @@ const App = () => (
       <CartProvider>
       <BrowserRouter>
         <GlobalLogoutButton />
+        <GlobalNotificationListener />
         <Routes>
           {/* Core */}
           <Route path="/" element={<Splash />} />
