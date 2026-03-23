@@ -244,6 +244,34 @@ const ClientHome = () => {
     await getEstimate(driverLocation, customerLocation, coords);
   };
 
+  const filteredTangierLocations = useMemo(() => {
+    let filtered = tangierLocations;
+    if (locCategory !== "all") {
+      if (locCategory === "other") {
+        const mainCats = locationCategories.filter(c => c.key !== "all" && c.key !== "other").map(c => c.key);
+        filtered = filtered.filter(l => !mainCats.includes(l.area));
+      } else {
+        filtered = filtered.filter(l => l.area === locCategory);
+      }
+    }
+    if (locSearchQuery.trim()) {
+      const q = locSearchQuery.trim().toLowerCase();
+      filtered = filtered.filter(l => l.name.toLowerCase().includes(q) || l.area.toLowerCase().includes(q));
+    }
+    return filtered;
+  }, [locCategory, locSearchQuery]);
+
+  const selectTangierLocation = (loc: TangierLocation) => {
+    const coords = `${loc.lat},${loc.lng}`;
+    setDestination(loc.name);
+    setDestinationCoords(coords);
+    setShowLocationsPicker(false);
+    setLocSearchQuery("");
+    setLocCategory("all");
+    setShowEstimate(true);
+    void getEstimate(driverLocation, customerLocation, coords);
+  };
+
   const handleCancelEstimate = () => {
     setShowEstimate(false);
     setDestination("");
