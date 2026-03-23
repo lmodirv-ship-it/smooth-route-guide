@@ -107,9 +107,16 @@ const RegisteredUsers = () => {
     setRoleDialogOpen(true);
   };
 
+  const isSelf = selectedUser?.id === currentUserId;
+
   const toggleRole = (role: string) => {
     setSelectedRoles(prev => {
       if (prev.includes(role)) {
+        // Prevent removing admin from self
+        if (role === "admin" && isSelf) {
+          toast({ title: "⚠️ لا يمكنك إزالة دور المسؤول عن نفسك", variant: "destructive" });
+          return prev;
+        }
         if (prev.length === 1) return prev; // Must have at least one role
         return prev.filter(r => r !== role);
       }
