@@ -12,7 +12,7 @@ import { updateDocument, COLLECTIONS, type UserRole } from "@/lib/firebaseServic
 import logo from "@/assets/hn-driver-logo.png";
 
 const roleDashboard: Record<UserRole, string> = {
-  driver: "/driver",
+  driver: "/driver-panel",
   client: "/client",
   delivery: "/delivery",
   call_center: "/call-center",

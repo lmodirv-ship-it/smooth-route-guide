@@ -19,7 +19,7 @@ const ALLOWED_ROLES = new Set(["admin", "driver", "delivery", "client"]);
 
 const getRoleHome = (role: string) => {
   if (role === "admin") return "/admin";
-  if (role === "driver") return "/driver";
+  if (role === "driver") return "/driver-panel";
   if (role === "delivery") return "/delivery";
   return "/client";
 };

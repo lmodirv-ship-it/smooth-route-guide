@@ -96,7 +96,7 @@ const Welcome = () => {
         return;
       }
 
-      navigate(roleId === "delivery" ? "/delivery" : roleId === "driver" ? "/driver" : "/client");
+      navigate(roleId === "delivery" ? "/delivery" : roleId === "driver" ? "/driver-panel" : "/client");
     } finally {
       setChecking(false);
     }
