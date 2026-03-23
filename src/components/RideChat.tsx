@@ -25,6 +25,7 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
   const [sending, setSending] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [unread, setUnread] = useState(0);
+  const [warning, setWarning] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastSeenCount = useRef(0);
 
