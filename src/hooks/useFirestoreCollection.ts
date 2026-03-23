@@ -1,12 +1,19 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { collection, getDocs, onSnapshot, orderBy, query, where, limit as fbLimit, type QueryConstraint } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import { normalizeFirestoreRow, resolveFirestoreCollection } from "@/lib/firestoreAdapters";
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type FirestoreFilter = {
   field: string;
   op?: "==" | ">=" | "<=" | ">" | "<" | "!=" | "in";
   value: any;
+};
+
+const opMap: Record<string, string> = {
+  "==": "eq",
+  "!=": "neq",
+  ">": "gt",
+  ">=": "gte",
+  "<": "lt",
+  "<=": "lte",
 };
 
 export function useFirestoreCollection<T = any>(options: {
@@ -31,17 +38,6 @@ export function useFirestoreCollection<T = any>(options: {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(enabled);
 
-  const constraints = useMemo<QueryConstraint[]>(() => {
-    const next: QueryConstraint[] = [];
-    for (const filter of filters) {
-      const op = filter.op || "==";
-      next.push(where(filter.field, op as any, filter.value));
-    }
-    if (orderByField) next.push(orderBy(orderByField, orderDirection));
-    if (limitCount) next.push(fbLimit(limitCount));
-    return next;
-  }, [filters, orderByField, orderDirection, limitCount]);
-
   const fetchData = useCallback(async () => {
     if (!enabled) {
       setData([]);
@@ -50,13 +46,40 @@ export function useFirestoreCollection<T = any>(options: {
     }
 
     setLoading(true);
-    const snap = await getDocs(query(collection(db, resolveFirestoreCollection(table)), ...constraints));
-    const rows = snap.docs
-      .map((docSnap) => normalizeFirestoreRow(table, { id: docSnap.id, ...docSnap.data() }))
-      .filter((row) => !(row as any).__skip) as T[];
-    setData(rows);
-    setLoading(false);
-  }, [enabled, table, constraints]);
+    try {
+      let q = supabase.from(table as any).select("*");
+
+      for (const filter of filters) {
+        const op = filter.op || "==";
+        if (op === "in") {
+          q = q.in(filter.field, filter.value);
+        } else {
+          const method = opMap[op] || "eq";
+          q = (q as any)[method](filter.field, filter.value);
+        }
+      }
+
+      if (orderByField) {
+        q = q.order(orderByField, { ascending: orderDirection === "asc" });
+      }
+      if (limitCount) {
+        q = q.limit(limitCount);
+      }
+
+      const { data: rows, error } = await q;
+      if (error) {
+        console.error(`useFirestoreCollection[${table}]:`, error);
+        setData([]);
+      } else {
+        setData((rows || []) as T[]);
+      }
+    } catch (err) {
+      console.error(`useFirestoreCollection[${table}]:`, err);
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [enabled, table, JSON.stringify(filters), orderByField, orderDirection, limitCount]);
 
   useEffect(() => {
     if (!enabled) {
@@ -65,22 +88,21 @@ export function useFirestoreCollection<T = any>(options: {
       return;
     }
 
-    if (!realtime) {
-      void fetchData();
-      return;
+    void fetchData();
+
+    if (realtime) {
+      const channel = supabase
+        .channel(`collection-${table}-${Math.random()}`)
+        .on("postgres_changes", { event: "*", schema: "public", table }, () => {
+          void fetchData();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
-
-    setLoading(true);
-    const unsubscribe = onSnapshot(query(collection(db, resolveFirestoreCollection(table)), ...constraints), (snap) => {
-      const rows = snap.docs
-        .map((docSnap) => normalizeFirestoreRow(table, { id: docSnap.id, ...docSnap.data() }))
-        .filter((row) => !(row as any).__skip) as T[];
-      setData(rows);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [enabled, realtime, table, constraints, fetchData]);
+  }, [enabled, realtime, table, fetchData]);
 
   return { data, loading, refresh: fetchData };
 }
