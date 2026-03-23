@@ -56,6 +56,7 @@ const DriverProfile = () => {
     { icon: Car, label: "معلومات السيارة", path: "/driver/car-info", color: "text-primary" },
     { icon: Shield, label: "الوثائق", path: "/driver/documents", color: "text-info" },
     { icon: Star, label: "التقييمات", path: "/driver/history", color: "text-warning" },
+    { icon: MapPin, label: "حالة السائق", path: "/driver/status", color: "text-success" },
   ];
 
   if (loading) return <div className="min-h-screen gradient-dark flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
