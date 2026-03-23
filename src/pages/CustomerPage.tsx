@@ -75,7 +75,7 @@ const CustomerPage = () => {
 
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("ride_requests").insert({
+      const { data, error } = await supabase.from("ride_requests").insert({
         user_id: user.id,
         pickup: `${userLocation.lat.toFixed(5)},${userLocation.lng.toFixed(5)}`,
         destination: destination || `${destCoords.lat.toFixed(5)},${destCoords.lng.toFixed(5)}`,
@@ -86,11 +86,11 @@ const CustomerPage = () => {
         distance: parseFloat(distance.toFixed(2)),
         price: price,
         status: "pending",
-      });
+      }).select("id").single();
 
       if (error) throw error;
       toast({ title: "تم إنشاء الطلب بنجاح ✅" });
-      setSubmitted(true);
+      navigate(`/customer-tracking?id=${data.id}`);
     } catch (err: any) {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
     } finally {

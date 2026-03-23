@@ -38,6 +38,7 @@ import DriverDelivery from "./pages/driver/DriverDelivery";
 import ClientHome from "./pages/ClientHome";
 import ClientBooking from "./pages/client/ClientBooking";
 import CustomerPage from "./pages/CustomerPage";
+import CustomerTracking from "./pages/CustomerTracking";
 import DriverPage from "./pages/DriverPage";
 import DriverTracking from "./pages/DriverTracking";
 import RideTracking from "./pages/client/RideTracking";
