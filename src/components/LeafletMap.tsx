@@ -33,10 +33,33 @@ const carIcon = L.divIcon({
   iconAnchor: [16, 16],
 });
 
+const pickupIcon = L.divIcon({
+  className: "",
+  html: `<div style="width:28px;height:28px;border-radius:50%;background:#10b981;border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.4)">
+    <div style="width:8px;height:8px;border-radius:50%;background:#fff"></div>
+  </div>`,
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+});
+
+const destinationIcon = L.divIcon({
+  className: "",
+  html: `<div style="width:28px;height:28px;border-radius:50%;background:#f97316;border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.4)">
+    <div style="width:8px;height:8px;border-radius:50%;background:#fff"></div>
+  </div>`,
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+});
+
 interface NearbyDriverMarker {
   id: string;
   lat: number;
   lng: number;
+}
+
+interface RoutePoints {
+  pickup: { lat: number; lng: number };
+  destination: { lat: number; lng: number };
 }
 
 interface LeafletMapProps {
@@ -47,6 +70,7 @@ interface LeafletMapProps {
   markerPosition?: { lat: number; lng: number };
   driverLocation?: { lat: number; lng: number } | null;
   nearbyDrivers?: NearbyDriverMarker[];
+  route?: RoutePoints | null;
   children?: React.ReactNode;
 }
 
@@ -58,6 +82,7 @@ const LeafletMap = ({
   markerPosition,
   driverLocation,
   nearbyDrivers = [],
+  route,
   children,
 }: LeafletMapProps) => {
   const mapElementRef = useRef<HTMLDivElement | null>(null);
@@ -66,6 +91,7 @@ const LeafletMap = ({
   const nearbyDriversLayerRef = useRef<L.LayerGroup | null>(null);
   const staticMarkerRef = useRef<L.Marker | null>(null);
   const driverMarkerRef = useRef<L.Marker | null>(null);
+  const routeLayerRef = useRef<L.LayerGroup | null>(null);
 
   const mapCenter = useMemo((): [number, number] => {
     if (driverLocation) return [driverLocation.lat, driverLocation.lng];
@@ -92,6 +118,7 @@ const LeafletMap = ({
 
     tileLayer.addTo(map);
     nearbyDriversLayerRef.current = L.layerGroup().addTo(map);
+    routeLayerRef.current = L.layerGroup().addTo(map);
     mapInstanceRef.current = map;
     tileLayerRef.current = tileLayer;
 
@@ -99,6 +126,7 @@ const LeafletMap = ({
       staticMarkerRef.current = null;
       driverMarkerRef.current = null;
       nearbyDriversLayerRef.current = null;
+      routeLayerRef.current = null;
       tileLayerRef.current = null;
       mapInstanceRef.current?.remove();
       mapInstanceRef.current = null;
@@ -151,6 +179,32 @@ const LeafletMap = ({
       L.marker([driver.lat, driver.lng], { icon: carIcon }).addTo(layer);
     });
   }, [nearbyDrivers]);
+
+  // Route rendering (pickup → destination line + markers)
+  useEffect(() => {
+    const layer = routeLayerRef.current;
+    const map = mapInstanceRef.current;
+    if (!layer || !map) return;
+
+    layer.clearLayers();
+    if (!route) return;
+
+    const { pickup, destination } = route;
+    const pickupLatLng: L.LatLngExpression = [pickup.lat, pickup.lng];
+    const destLatLng: L.LatLngExpression = [destination.lat, destination.lng];
+
+    L.marker(pickupLatLng, { icon: pickupIcon }).bindPopup("نقطة الانطلاق").addTo(layer);
+    L.marker(destLatLng, { icon: destinationIcon }).bindPopup("الوجهة").addTo(layer);
+
+    L.polyline([pickupLatLng, destLatLng], {
+      color: "#10b981",
+      weight: 4,
+      opacity: 0.8,
+      dashArray: "10, 8",
+    }).addTo(layer);
+
+    map.fitBounds(L.latLngBounds([pickupLatLng, destLatLng]).pad(0.3));
+  }, [route]);
 
   return (
     <div className={`${className} relative`}>
