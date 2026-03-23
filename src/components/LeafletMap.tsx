@@ -82,6 +82,7 @@ const LeafletMap = ({
   markerPosition,
   driverLocation,
   nearbyDrivers = [],
+  route,
   children,
 }: LeafletMapProps) => {
   const mapElementRef = useRef<HTMLDivElement | null>(null);
@@ -90,6 +91,7 @@ const LeafletMap = ({
   const nearbyDriversLayerRef = useRef<L.LayerGroup | null>(null);
   const staticMarkerRef = useRef<L.Marker | null>(null);
   const driverMarkerRef = useRef<L.Marker | null>(null);
+  const routeLayerRef = useRef<L.LayerGroup | null>(null);
 
   const mapCenter = useMemo((): [number, number] => {
     if (driverLocation) return [driverLocation.lat, driverLocation.lng];
