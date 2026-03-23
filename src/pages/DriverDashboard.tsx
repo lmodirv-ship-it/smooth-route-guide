@@ -6,7 +6,7 @@ import {
   MapPin, DollarSign, Star, Clock, TrendingUp,
   Bell, Menu, Power, ChevronLeft, Car, Navigation, BarChart3, User, Settings, Package, LogOut
 } from "lucide-react";
-import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
+import { useLogout } from "@/hooks/useLogout";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { subscribeDriverPendingOrders, calculateDistanceKm, estimateEtaMinutes, type OrderRecord } from "@/lib/orderService";
@@ -22,7 +22,7 @@ import logo from "@/assets/hn-driver-logo.png";
 
 const DriverDashboard = () => {
   const navigate = useNavigate();
-  const logout = useFirebaseLogout();
+  const logout = useLogout();
   const [isOnline, setIsOnline] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
   const { requests, accepting, acceptRequest, rejectRequest } = useIncomingRideRequests(isOnline);
