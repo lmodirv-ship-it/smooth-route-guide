@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, X, Loader2, MapPin } from "lucide-react";
+import { MessageCircle, Send, X, Loader2, MapPin, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { validateChatMessage } from "@/lib/inputSecurity";
 
 interface Message {
   id: string;
@@ -24,6 +25,7 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
   const [sending, setSending] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [unread, setUnread] = useState(0);
+  const [warning, setWarning] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastSeenCount = useRef(0);
 
@@ -85,6 +87,15 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
   const handleSend = async (msgText?: string) => {
     const content = msgText || text.trim();
     if (!content || !userId || sending) return;
+
+    const validation = validateChatMessage(content);
+    if (!validation.allowed) {
+      setWarning(validation.reason || "رسالة غير مسموحة");
+      setTimeout(() => setWarning(null), 4000);
+      return;
+    }
+    setWarning(null);
+
     setSending(true);
     try {
       await supabase.from("ride_messages" as any).insert({
@@ -187,6 +198,14 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
               );
             })}
           </div>
+
+          {/* Warning */}
+          {warning && (
+            <div className="shrink-0 flex items-center gap-2 px-3 py-2 bg-destructive/20 text-destructive text-xs font-medium border-t border-destructive/20" dir="rtl">
+              <ShieldAlert className="w-4 h-4 flex-shrink-0" />
+              <span>{warning}</span>
+            </div>
+          )}
 
           {/* Input */}
           <div className="shrink-0 flex items-center gap-2 p-3 border-t border-white/5 bg-white/[0.02]" dir="rtl">

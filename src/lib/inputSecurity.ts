@@ -66,6 +66,23 @@ export function sanitizeSafeOrigin(value: string) {
   return parsed.origin;
 }
 
+const MOROCCAN_PHONE_REGEX = /(\+212|0)([ \-_/]*[0-9]){9}/g;
+const FORBIDDEN_CHAT_KEYWORDS = [
+  'واتساب', 'الواتساب', 'نمرتي', 'whatsapp', 'facebook', 'fb',
+  'instagram', 'insta', 'telegram', 'tiktok', 'snapchat',
+];
+
+export function validateChatMessage(text: string): { allowed: boolean; reason?: string } {
+  const lower = text.toLowerCase();
+  if (MOROCCAN_PHONE_REGEX.test(text)) {
+    return { allowed: false, reason: "غير مسموح بمشاركة أرقام الهاتف في المحادثة" };
+  }
+  if (FORBIDDEN_CHAT_KEYWORDS.some((kw) => lower.includes(kw))) {
+    return { allowed: false, reason: "غير مسموح بمشاركة حسابات التواصل الاجتماعي" };
+  }
+  return { allowed: true };
+}
+
 export function getSafeWindowOrigin() {
   if (typeof window === "undefined") {
     return "";
