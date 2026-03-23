@@ -38,6 +38,7 @@ const DriverDashboard = () => {
   const [recentTrips, setRecentTrips] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
   const [pendingOrders, setPendingOrders] = useState<OrderRecord[]>([]);
+  const [activeRideId, setActiveRideId] = useState<string | null>(null);
 
   // Subscribe to pending delivery orders when online
   useEffect(() => {
