@@ -332,6 +332,14 @@ const ClientHome = () => {
         >
           <MapPinned className="w-5 h-5 text-primary" />
         </Button>
+        <Button
+          variant="outline"
+          onClick={() => { setShowMapPicker(true); setMapPickerDest(null); }}
+          className="h-11 px-3 border-border hover:border-primary/30 shrink-0"
+          title="حدد على الخريطة"
+        >
+          <Crosshair className="w-5 h-5 text-primary" />
+        </Button>
       </div>
 
       <div className="flex gap-3 px-4 mt-4">
