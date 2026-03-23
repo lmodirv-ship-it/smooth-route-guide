@@ -171,7 +171,14 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
                     }`}
                     style={isMine ? { backgroundColor: role === "driver" ? "#10b981" : "#3b82f6" } : {}}
                   >
-                    {msg.message}
+                    {msg.message.includes("google.com/maps") ? (
+                      <a href={msg.message.split("\n")[1]} target="_blank" rel="noopener noreferrer" className="block">
+                        <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> موقعي الحالي</span>
+                        <span className="text-[10px] underline opacity-70">فتح في الخريطة</span>
+                      </a>
+                    ) : (
+                      msg.message
+                    )}
                     <span className="block text-[9px] mt-0.5 opacity-50">
                       {new Date(msg.created_at).toLocaleTimeString("ar", { hour: "2-digit", minute: "2-digit" })}
                     </span>
@@ -192,7 +199,16 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
             />
             <Button
               size="sm"
-              onClick={handleSend}
+              onClick={handleSendLocation}
+              disabled={sending}
+              variant="outline"
+              className="h-9 w-9 p-0 rounded-xl border-white/10 hover:bg-white/5"
+            >
+              <MapPin className="w-4 h-4 text-white/60" />
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => handleSend()}
               disabled={!text.trim() || sending}
               className="h-9 w-9 p-0 rounded-xl"
               style={{ backgroundColor: role === "driver" ? "#10b981" : "#3b82f6" }}
