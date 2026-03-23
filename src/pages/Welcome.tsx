@@ -11,7 +11,7 @@ type RoleId = "driver" | "client" | "delivery";
 type StoredRole = RoleId | "admin" | "agent" | "user";
 
 const roleDashboardPaths: Record<StoredRole, string> = {
-  driver: "/driver",
+  driver: "/driver-panel",
   client: "/client",
   delivery: "/delivery",
   admin: "/admin",
@@ -90,13 +90,15 @@ const Welcome = () => {
         .eq("user_id", session.user.id)
         .limit(1);
 
-      const savedRole = (roles?.[0]?.role as StoredRole | undefined) ?? null;
-      if (savedRole) {
-        navigate(roleDashboardPaths[savedRole] || roleDashboardPaths.user);
+      const dbRole = (roles?.[0]?.role as StoredRole | undefined) ?? null;
+      // إذا كان الدور في قاعدة البيانات محدد (غير "user")، نوجه حسبه
+      // أما إذا كان "user" أو غير موجود، نوجه حسب الدور المختار
+      if (dbRole && dbRole !== "user") {
+        navigate(roleDashboardPaths[dbRole] || roleDashboardPaths.user);
         return;
       }
 
-      navigate(roleId === "delivery" ? "/delivery" : roleId === "driver" ? "/driver" : "/client");
+      navigate(roleDashboardPaths[roleId] || roleDashboardPaths.user);
     } finally {
       setChecking(false);
     }
