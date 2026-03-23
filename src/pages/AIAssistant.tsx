@@ -7,7 +7,7 @@ import ReactMarkdown from "react-markdown";
 import { supabase } from "@/lib/firestoreClient";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { sanitizePlainText } from "@/lib/inputSecurity";
+import { sanitizePlainText, validateChatMessage } from "@/lib/inputSecurity";
 import logo from "@/assets/hn-driver-logo.png";
 
 type Msg = { role: "user" | "assistant"; content: string };
