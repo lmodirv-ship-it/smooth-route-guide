@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type FirestoreFilter = {
+export type QueryFilter = {
   field: string;
   op?: "==" | ">=" | "<=" | ">" | "<" | "!=" | "in";
   value: any;
 };
+
+/** @deprecated Use QueryFilter instead */
+export type FirestoreFilter = QueryFilter;
 
 const opMap: Record<string, string> = {
   "==": "eq",
@@ -16,9 +19,12 @@ const opMap: Record<string, string> = {
   "<=": "lte",
 };
 
-export function useFirestoreCollection<T = any>(options: {
+/**
+ * Generic Supabase table query hook with optional realtime subscription.
+ */
+export function useSupabaseQuery<T = any>(options: {
   table: string;
-  filters?: FirestoreFilter[];
+  filters?: QueryFilter[];
   orderByField?: string;
   orderDirection?: "asc" | "desc";
   limitCount?: number;
@@ -68,13 +74,13 @@ export function useFirestoreCollection<T = any>(options: {
 
       const { data: rows, error } = await q;
       if (error) {
-        console.error(`useFirestoreCollection[${table}]:`, error);
+        console.error(`useSupabaseQuery[${table}]:`, error);
         setData([]);
       } else {
         setData((rows || []) as T[]);
       }
     } catch (err) {
-      console.error(`useFirestoreCollection[${table}]:`, err);
+      console.error(`useSupabaseQuery[${table}]:`, err);
       setData([]);
     } finally {
       setLoading(false);
@@ -106,3 +112,6 @@ export function useFirestoreCollection<T = any>(options: {
 
   return { data, loading, refresh: fetchData };
 }
+
+/** @deprecated Use useSupabaseQuery instead */
+export const useFirestoreCollection = useSupabaseQuery;

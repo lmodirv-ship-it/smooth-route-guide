@@ -16,7 +16,7 @@ import {
   where,
   type Unsubscribe,
 } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { auth, db } from "@/lib/legacy/firebase";
 
 export type OrderStatus =
   | "pending"

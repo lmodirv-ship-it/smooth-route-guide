@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useFirestoreCollection } from "@/hooks/useFirestoreCollection";
+import { useSupabaseQuery } from "@/hooks/useSupabaseQuery";
 
 const ManualBooking = () => {
   const [step, setStep] = useState<"form" | "drivers" | "done">("form");
@@ -27,7 +27,7 @@ const ManualBooking = () => {
     { id: "xl", label: "XL", price: "من 35 DH" },
   ];
 
-  const { data: drivers, loading: driversLoading } = useFirestoreCollection<any>({
+  const { data: drivers, loading: driversLoading } = useSupabaseQuery<any>({
     table: "drivers",
     filters: [{ field: "status", value: "active" }],
     orderByField: "rating",

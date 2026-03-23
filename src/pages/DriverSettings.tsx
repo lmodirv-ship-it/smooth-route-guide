@@ -4,11 +4,11 @@ import {
   ArrowRight, User, Phone, Car, FileText, Shield, Bell,
   Globe, Moon, LogOut, ChevronLeft, HelpCircle, Star
 } from "lucide-react";
-import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
+import { useLogout } from "@/hooks/useLogout";
 
 const DriverSettings = () => {
   const navigate = useNavigate();
-  const logout = useFirebaseLogout();
+  const logout = useLogout();
 
   const sections = [
     {

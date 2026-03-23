@@ -16,7 +16,7 @@ import {
   Phone,
   LogOut,
 } from "lucide-react";
-import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
+import { useLogout } from "@/hooks/useLogout";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -81,7 +81,7 @@ const CATEGORY_META = [
 
 const DeliveryHome = () => {
   const navigate = useNavigate();
-  const logout = useFirebaseLogout();
+  const logout = useLogout();
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("طنجة");
   const [currentZone, setCurrentZone] = useState<string | null>(null);

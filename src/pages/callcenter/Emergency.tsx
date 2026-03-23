@@ -2,7 +2,7 @@ import { AlertTriangle, Phone, MapPin, Clock, Shield, ArrowUp, CheckCircle, Radi
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useMemo } from "react";
-import { useFirestoreCollection } from "@/hooks/useFirestoreCollection";
+import { useSupabaseQuery } from "@/hooks/useSupabaseQuery";
 
 const protocols = [
   { label: "اتصال بالعميل", icon: Phone, color: "text-info" },
@@ -14,7 +14,7 @@ const protocols = [
 ];
 
 const Emergency = () => {
-  const { data: alerts, loading } = useFirestoreCollection<any>({
+  const { data: alerts, loading } = useSupabaseQuery<any>({
     table: "alerts",
     filters: [{ field: "status", value: "active" }],
     orderByField: "created_at",

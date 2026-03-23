@@ -5,7 +5,7 @@ import { ArrowRight, Bike, CheckCircle, Clock, MapPin, Navigation, Package, Phon
 import { Button } from "@/components/ui/button";
 import LiveOrderMap from "@/components/LiveOrderMap";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
-import { ORDER_STATUS_META, subscribeDriverActiveOrder, subscribeDriverPendingOrders, updateOrderStatus, type OrderRecord, type OrderStatus } from "@/lib/orderService";
+import { ORDER_STATUS_META, subscribeDriverActiveOrder, subscribeDriverPendingOrders, updateOrderStatus, type OrderRecord, type OrderStatus } from "@/lib/legacy/orderService";
 import NavigationLinks from "@/components/NavigationLinks";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";

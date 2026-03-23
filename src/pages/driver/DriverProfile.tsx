@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
+import { useLogout } from "@/hooks/useLogout";
 
 const DriverProfile = () => {
   const navigate = useNavigate();
-  const logout = useFirebaseLogout();
+  const logout = useLogout();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState({ name: "", phone: "", email: "", rating: 0, trips: 0, license: "", status: "" });
