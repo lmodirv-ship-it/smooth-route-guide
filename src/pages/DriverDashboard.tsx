@@ -194,7 +194,31 @@ const DriverDashboard = () => {
         </LeafletMap>
       </div>
 
-      <IncomingRideRequest requests={requests} accepting={accepting} onAccept={acceptRequest} onReject={rejectRequest} />
+      {/* Active ride banner */}
+      {activeRideId && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-4 mt-4 p-4 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-between"
+        >
+          <Button
+            size="sm"
+            onClick={() => navigate(`/driver-tracking?id=${activeRideId}`)}
+            className="gradient-primary text-primary-foreground font-bold"
+          >
+            <Navigation className="w-4 h-4 ml-1" />
+            متابعة الرحلة
+          </Button>
+          <div className="text-right">
+            <p className="text-primary font-bold">لديك رحلة نشطة</p>
+            <p className="text-muted-foreground text-xs">أكمل الرحلة الحالية أولاً</p>
+          </div>
+        </motion.div>
+      )}
+
+      {!activeRideId && (
+        <IncomingRideRequest requests={requests} accepting={accepting} onAccept={acceptRequest} onReject={rejectRequest} />
+      )}
 
       {isOnline && (
         <div className="px-4 mt-4">
