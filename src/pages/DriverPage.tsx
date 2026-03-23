@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star } from "lucide-react";
+import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
