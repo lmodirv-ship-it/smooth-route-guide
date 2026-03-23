@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import LeafletMap from "@/components/LeafletMap";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
-import { auth } from "@/lib/firebase";
-import { createDeliveryOrder } from "@/lib/orderService";
+import { supabase } from "@/integrations/supabase/client";
 
 interface RideDraft {
   pickup: string;
@@ -15,6 +14,10 @@ interface RideDraft {
   distance: string;
   duration: string;
   price: number;
+  pickupLat?: number;
+  pickupLng?: number;
+  destLat?: number;
+  destLng?: number;
 }
 
 const DEFAULT_RIDE: RideDraft = {
@@ -36,7 +39,7 @@ const ClientBooking = () => {
   const priceLabel = ride.price > 0 ? `${ride.price} DH` : "يُحدد لاحقاً";
 
   const handleConfirmBooking = async () => {
-    const user = auth.currentUser;
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast({ title: "يجب تسجيل الدخول أولاً", variant: "destructive" });
       navigate("/login?role=client");
@@ -45,28 +48,25 @@ const ClientBooking = () => {
 
     setLoading(true);
     try {
-      const order = await createDeliveryOrder({
-        clientId: user.uid,
-        type: "توصيل",
-        pickupAddress: ride.pickup,
-        pickupLat: null,
-        pickupLng: null,
-        deliveryAddress: ride.destination,
-        deliveryLat: null,
-        deliveryLng: null,
+      const distanceNum = parseFloat(ride.distance) || 0;
+
+      const { data, error } = await supabase.from("ride_requests").insert({
+        user_id: user.id,
+        pickup: ride.pickup,
+        destination: ride.destination,
+        pickup_lat: ride.pickupLat ?? null,
+        pickup_lng: ride.pickupLng ?? null,
+        destination_lat: ride.destLat ?? null,
+        destination_lng: ride.destLng ?? null,
+        distance: distanceNum,
         price: ride.price || 0,
-        items: [
-          {
-            name: "طلب توصيل",
-            qty: 1,
-            price: ride.price || 0,
-            paymentMethod,
-          },
-        ],
-      });
+        status: "pending",
+      }).select("id").single();
+
+      if (error) throw error;
 
       toast({ title: "تم إنشاء الطلب بنجاح ✅" });
-      navigate("/client/tracking", { state: { orderId: order.id } });
+      navigate(`/customer-tracking?id=${data.id}`);
     } catch (error: any) {
       toast({ title: "تعذر إتمام الطلب", description: error.message || "حاول مرة أخرى", variant: "destructive" });
     } finally {
