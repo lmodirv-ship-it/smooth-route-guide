@@ -48,6 +48,10 @@ const haversineKm = (from: { lat: number; lng: number }, to: { lat: number; lng:
   return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
+function calcPrice(km: number) {
+  return Math.max(10, Math.round(km * 3 + 5));
+}
+
 const ClientHome = () => {
   const navigate = useNavigate();
   const logout = async () => {
