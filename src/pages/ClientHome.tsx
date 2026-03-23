@@ -70,6 +70,8 @@ const ClientHome = () => {
   const [showLocationsPicker, setShowLocationsPicker] = useState(false);
   const [locSearchQuery, setLocSearchQuery] = useState("");
   const [locCategory, setLocCategory] = useState("all");
+  const [showMapPicker, setShowMapPicker] = useState(false);
+  const [mapPickerDest, setMapPickerDest] = useState<{ lat: number; lng: number } | null>(null);
   const { getEstimate, estimate, loading, error, reset } = useTripPricing("DH");
   const { drivers: nearbyDriversData } = useNearbyDrivers();
 
