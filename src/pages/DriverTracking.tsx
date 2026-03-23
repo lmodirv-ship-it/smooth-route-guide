@@ -254,7 +254,7 @@ const DriverTracking = () => {
 
         {/* Price */}
         <div className="flex justify-between items-center text-sm px-1">
-          <span className="text-emerald-400 font-bold text-lg">{ride.price || "—"} DH</span>
+          <span className="text-emerald-400 font-bold text-lg">{totalTripPrice || ride.price || "—"} DH</span>
           <span className="text-emerald-300/60">{ride.distance ? `${ride.distance} كم` : ""}</span>
         </div>
 
