@@ -10,6 +10,7 @@ import RideChat from "@/components/RideChat";
 
 const PRICE_PER_KM = 3;
 const BASE_FARE = 5;
+const MIN_FARE = 10;
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = (v: number) => (v * Math.PI) / 180;

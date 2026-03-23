@@ -204,12 +204,21 @@ const DriverPage = () => {
     if (!user) { toast({ title: "يجب تسجيل الدخول", variant: "destructive" }); return; }
     setAccepting(orderId);
     try {
+      // Calculate total price including driver→pickup distance
+      const order = nearbyOrders.find(o => o.id === orderId);
+      const totalPrice = order ? order.totalPrice : 0;
+
       const { error } = await supabase.from("ride_requests")
-        .update({ status: "accepted", driver_id: user.id, accepted_at: new Date().toISOString() })
+        .update({
+          status: "accepted",
+          driver_id: user.id,
+          accepted_at: new Date().toISOString(),
+          price: totalPrice,
+        })
         .eq("id", orderId).eq("status", "pending");
       if (error) throw error;
       setActiveRideId(orderId);
-      toast({ title: "تم قبول الطلب ✅" });
+      toast({ title: "تم قبول الطلب ✅", description: `السعر: ${totalPrice} DH` });
       navigate(`/driver-tracking?id=${orderId}`);
     } catch (err: any) {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
