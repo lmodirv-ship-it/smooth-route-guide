@@ -369,7 +369,7 @@ const DriverPage = () => {
                         <Button
                           size="sm"
                           onClick={(e) => { e.stopPropagation(); handleAccept(order.id); }}
-                          disabled={accepting === order.id}
+                          disabled={accepting === order.id || !!activeRideId}
                           className="h-7 px-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-bold shadow-[0_2px_10px_hsl(155,70%,40%,0.25)]"
                         >
                           {accepting === order.id ? (
