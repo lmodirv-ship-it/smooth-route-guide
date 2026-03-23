@@ -34,6 +34,7 @@ export const DEFAULT_CURRENCY = 'DH';
 // Pricing constants
 const BASE_FEE = 5;
 const RATE_PER_KM = 3;
+const MIN_FARE = 10;
 
 /**
  * Total_Price = 5 + ((D1 + D2) * 3)
