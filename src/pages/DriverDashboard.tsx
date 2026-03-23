@@ -72,6 +72,15 @@ const DriverDashboard = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Check for active ride
+    const { data: activeRides } = await supabase
+      .from("ride_requests")
+      .select("id")
+      .eq("driver_id", user.id)
+      .in("status", ["accepted", "in_progress", "arriving"])
+      .limit(1);
+    setActiveRideId(activeRides && activeRides.length > 0 ? activeRides[0].id : null);
+
     // Profile
     const { data: prof } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
     setProfile(prof);
