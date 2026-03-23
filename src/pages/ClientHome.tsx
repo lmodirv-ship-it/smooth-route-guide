@@ -45,7 +45,11 @@ const haversineKm = (from: { lat: number; lng: number }, to: { lat: number; lng:
 
 const ClientHome = () => {
   const navigate = useNavigate();
-  const logout = useFirebaseLogout();
+  const logout = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem("hn_user_role");
+    navigate("/login", { replace: true });
+  };
   const [activeTab, setActiveTab] = useState("home");
   const [destination, setDestination] = useState("");
   const [destinationCoords, setDestinationCoords] = useState<string | null>(null);
