@@ -291,8 +291,19 @@ const DriverPage = () => {
       {/* Orders Table */}
       <div className="flex-1 overflow-hidden flex flex-col">
         <div className="px-5 py-2.5 flex items-center justify-between border-b border-white/5 shrink-0">
-          <div className="bg-emerald-500/15 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">
-            {nearbyOrders.length}
+          <div className="flex items-center gap-2">
+            <div className="bg-emerald-500/15 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">
+              {nearbyOrders.length}
+            </div>
+            <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className={`p-1.5 rounded-full transition-colors ${
+                soundEnabled ? "bg-emerald-500/15 text-emerald-400" : "bg-white/5 text-white/30"
+              }`}
+              title={soundEnabled ? "إيقاف الصوت" : "تشغيل الصوت"}
+            >
+              <Volume2 className="w-3.5 h-3.5" />
+            </button>
           </div>
           <h2 className="text-white font-bold text-sm flex items-center gap-2">
             <Route className="w-4 h-4 text-emerald-400" />
