@@ -55,11 +55,19 @@ const AuthPage = () => {
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", session.user.id)
-        .limit(1);
+        .eq("user_id", session.user.id);
 
-      const userRole = (roles?.[0]?.role as StoredRole | undefined) ?? "user";
-      navigate(roleDashboard[userRole] || roleDashboard.user, { replace: true });
+      const userRoles = (roles || []).map((r) => r.role as StoredRole);
+
+      // If user entered from a specific role page and has that role, redirect there
+      if (role && userRoles.includes(role as StoredRole)) {
+        localStorage.setItem("hn_user_role", role);
+        navigate(roleDashboard[role] || roleDashboard.user, { replace: true });
+        return;
+      }
+
+      const firstRole = userRoles[0] ?? "user";
+      navigate(roleDashboard[firstRole] || roleDashboard.user, { replace: true });
     };
 
     void syncSession();
