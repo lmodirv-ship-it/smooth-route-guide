@@ -87,6 +87,15 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
   const handleSend = async (msgText?: string) => {
     const content = msgText || text.trim();
     if (!content || !userId || sending) return;
+
+    const validation = validateChatMessage(content);
+    if (!validation.allowed) {
+      setWarning(validation.reason || "رسالة غير مسموحة");
+      setTimeout(() => setWarning(null), 4000);
+      return;
+    }
+    setWarning(null);
+
     setSending(true);
     try {
       await supabase.from("ride_messages" as any).insert({
