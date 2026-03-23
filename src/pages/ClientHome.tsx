@@ -309,16 +309,26 @@ const ClientHome = () => {
 
   const renderHome = () => (
     <>
-      <div className="px-4 mt-4">
-        <PlacesAutocomplete
-          value={destination}
-          onChange={(value) => {
-            setDestination(value);
-            setDestinationCoords(null);
-          }}
-          onPlaceSelected={handlePlaceSelected}
-          placeholder="إلى أين تريد الذهاب؟"
-        />
+      <div className="px-4 mt-4 flex gap-2">
+        <div className="flex-1">
+          <PlacesAutocomplete
+            value={destination}
+            onChange={(value) => {
+              setDestination(value);
+              setDestinationCoords(null);
+            }}
+            onPlaceSelected={handlePlaceSelected}
+            placeholder="إلى أين تريد الذهاب؟"
+          />
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => setShowLocationsPicker(true)}
+          className="h-11 px-3 border-border hover:border-primary/30 shrink-0"
+          title="أماكن طنجة"
+        >
+          <MapPinned className="w-5 h-5 text-primary" />
+        </Button>
       </div>
 
       <div className="flex gap-3 px-4 mt-4">
