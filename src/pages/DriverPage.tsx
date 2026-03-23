@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
+import { notifyNewOrder, unlockAudio } from "@/lib/notificationSound";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 const PRICE_PER_KM = 3;
