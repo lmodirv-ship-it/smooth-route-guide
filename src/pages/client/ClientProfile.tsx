@@ -48,7 +48,7 @@ const ClientProfile = () => {
   return (
     <div className="min-h-screen gradient-dark pb-24" dir="rtl">
       <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
-        <button onClick={() => navigate("/client")}><ArrowRight className="w-5 h-5 text-muted-foreground" /></button>
+        <button onClick={() => navigate("/customer")}><ArrowRight className="w-5 h-5 text-muted-foreground" /></button>
         <span className="font-bold text-foreground">حسابي</span>
         <div className="w-5" />
       </div>

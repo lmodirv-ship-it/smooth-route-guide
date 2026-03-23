@@ -77,7 +77,7 @@ const ClientBooking = () => {
   return (
     <div className="min-h-screen gradient-dark" dir="rtl">
       <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
-        <button onClick={() => navigate("/client")}><ArrowRight className="w-5 h-5 text-muted-foreground" /></button>
+        <button onClick={() => navigate("/customer")}><ArrowRight className="w-5 h-5 text-muted-foreground" /></button>
         <span className="font-bold text-foreground">تأكيد الطلب</span>
         <div className="w-5" />
       </div>
