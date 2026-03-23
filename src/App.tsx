@@ -185,6 +185,7 @@ const App = () => (
             <Route path="delivery" element={<AdminDeliveryOrders />} />
             <Route path="call-center" element={<AdminCallCenter />} />
             <Route path="restaurants" element={<AdminRestaurants />} />
+            <Route path="zones" element={<ZonesManagement />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
 
