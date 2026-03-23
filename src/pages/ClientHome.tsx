@@ -67,6 +67,9 @@ const ClientHome = () => {
   const [profile, setProfile] = useState<any | null>(null);
   const [trips, setTrips] = useState<any[]>([]);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [showLocationsPicker, setShowLocationsPicker] = useState(false);
+  const [locSearchQuery, setLocSearchQuery] = useState("");
+  const [locCategory, setLocCategory] = useState("all");
   const { getEstimate, estimate, loading, error, reset } = useTripPricing("DH");
   const { drivers: nearbyDriversData } = useNearbyDrivers();
 
