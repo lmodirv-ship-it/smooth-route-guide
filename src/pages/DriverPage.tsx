@@ -37,6 +37,7 @@ interface RideRow {
 }
 
 const DriverPage = () => {
+  const navigate = useNavigate();
   const [driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [orders, setOrders] = useState<RideRow[]>([]);
   const [accepting, setAccepting] = useState<string | null>(null);
