@@ -36,6 +36,19 @@ const BASE_FEE = 0;
 const RATE_PER_KM = 3;
 const MIN_FARE = 3;
 
+// Commission rate (admin takes 5%)
+export const COMMISSION_RATE = 0.05;
+
+/** Calculate driver net earnings after commission */
+export function driverNetEarnings(totalPrice: number): number {
+  return Math.round(totalPrice * (1 - COMMISSION_RATE) * 100) / 100;
+}
+
+/** Calculate commission amount */
+export function commissionAmount(totalPrice: number): number {
+  return Math.round(totalPrice * COMMISSION_RATE * 100) / 100;
+}
+
 /**
  * Total_Price = 5 + ((D1 + D2) * 3)
  * D1 = Driver → Customer distance in km
