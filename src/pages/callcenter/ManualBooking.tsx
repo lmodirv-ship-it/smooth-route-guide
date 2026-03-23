@@ -53,19 +53,23 @@ const ManualBooking = () => {
     }
 
     setLoading(true);
-    const payload = {
-      client_name: form.clientName || "عميل هاتفي",
-      client_phone: form.clientPhone,
+    // Get current agent user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: "يجب تسجيل الدخول", variant: "destructive" });
+      setLoading(false);
+      return;
+    }
+
+    const price = form.serviceType === "premium" ? 25 : form.serviceType === "xl" ? 35 : 15;
+
+    const { data, error } = await supabase.from("ride_requests").insert({
+      user_id: user.id,
       pickup: form.pickup,
       destination: form.destination,
-      service: form.serviceType,
-      notes: form.notes,
       status: "pending",
-      price: form.serviceType === "premium" ? 25 : form.serviceType === "xl" ? 35 : 15,
-      created_at: new Date().toISOString(),
-    };
-
-    const { data, error } = await supabase.from("ride_requests").insert(payload);
+      price,
+    }).select("id").single();
     setLoading(false);
 
     if (error) {
