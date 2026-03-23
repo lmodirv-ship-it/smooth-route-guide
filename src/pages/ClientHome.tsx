@@ -479,7 +479,7 @@ const ClientHome = () => {
     <>
       <div className="min-h-screen gradient-dark pb-24">
         <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
-          <button className="p-2 relative" onClick={() => navigate("/driver/notifications")}>
+          <button className="p-2 relative" onClick={() => {}}>
             <Bell className="w-5 h-5 text-muted-foreground" />
             {unreadNotifications > 0 && (
               <div className="absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center font-bold">
