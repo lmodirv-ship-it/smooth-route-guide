@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, DollarSign, TrendingUp, Calendar, Car, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { driverNetEarnings, COMMISSION_RATE } from "@/lib/pricing";
 
 const DriverEarnings = () => {
   const navigate = useNavigate();
