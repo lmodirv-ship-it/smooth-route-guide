@@ -194,6 +194,11 @@ const DriverPage = () => {
   }, [selectedOrder]);
 
   const handleAccept = async (orderId: string) => {
+    if (activeRideId) {
+      toast({ title: "لديك رحلة نشطة بالفعل", description: "أكمل الرحلة الحالية أولاً", variant: "destructive" });
+      navigate(`/driver-tracking?id=${activeRideId}`);
+      return;
+    }
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { toast({ title: "يجب تسجيل الدخول", variant: "destructive" }); return; }
     setAccepting(orderId);
@@ -202,6 +207,7 @@ const DriverPage = () => {
         .update({ status: "accepted", driver_id: user.id, accepted_at: new Date().toISOString() })
         .eq("id", orderId).eq("status", "pending");
       if (error) throw error;
+      setActiveRideId(orderId);
       toast({ title: "تم قبول الطلب ✅" });
       navigate(`/driver-tracking?id=${orderId}`);
     } catch (err: any) {
