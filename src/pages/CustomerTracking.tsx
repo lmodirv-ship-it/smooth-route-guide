@@ -36,8 +36,9 @@ interface RideData {
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   pending: { label: "في انتظار سائق...", color: "bg-yellow-500" },
-  accepted: { label: "السائق في الطريق إليك", color: "bg-blue-500" },
-  in_progress: { label: "الرحلة جارية", color: "bg-primary" },
+  accepted: { label: "السائق قبل الطلب", color: "bg-blue-500" },
+  in_progress: { label: "السائق في الطريق إليك", color: "bg-blue-500" },
+  arriving: { label: "السائق وصل!", color: "bg-emerald-500" },
   completed: { label: "تم التوصيل بنجاح ✅", color: "bg-green-500" },
   cancelled: { label: "تم إلغاء الرحلة", color: "bg-red-500" },
 };
