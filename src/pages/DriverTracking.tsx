@@ -156,7 +156,7 @@ const DriverTracking = () => {
       pickupToDest = haversineKm({ lat: ride.pickup_lat, lng: ride.pickup_lng }, { lat: ride.destination_lat, lng: ride.destination_lng });
     }
     const totalDist = driverToPickup + pickupToDest;
-    return totalDist > 0 ? Math.round(BASE_FARE + totalDist * PRICE_PER_KM) : (ride.price || null);
+    return totalDist > 0 ? Math.max(MIN_FARE, Math.round(BASE_FARE + totalDist * PRICE_PER_KM)) : (ride.price || null);
   }, [ride, driverLocation]);
 
   const etaMinutes = distanceToTarget ? Math.max(1, Math.round(distanceToTarget * 2.5)) : null;
