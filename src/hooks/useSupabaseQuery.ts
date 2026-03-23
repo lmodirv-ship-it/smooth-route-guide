@@ -7,8 +7,6 @@ export type QueryFilter = {
   value: any;
 };
 
-/** @deprecated Use QueryFilter instead */
-export type FirestoreFilter = QueryFilter;
 
 const opMap: Record<string, string> = {
   "==": "eq",
