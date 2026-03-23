@@ -30,7 +30,7 @@ const Splash = () => {
 
         const role = roles?.[0]?.role || savedRole || "user";
 
-        if (role === "driver") navigate("/driver", { replace: true });
+        if (role === "driver") navigate("/driver-panel", { replace: true });
         else if (role === "admin") navigate("/admin", { replace: true });
         else if (role === "agent") navigate("/call-center", { replace: true });
         else navigate("/client", { replace: true });
