@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 type UserRole = "driver" | "client" | "delivery" | "admin" | "agent" | "user";
 
 const roleDashboard: Record<UserRole, string> = {
-  driver: "/driver-panel",
+  driver: "/driver",
   client: "/client",
   delivery: "/delivery",
   agent: "/call-center",
