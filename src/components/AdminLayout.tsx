@@ -208,11 +208,11 @@ const AdminLayout = () => {
                 <div className="text-center pt-8 space-y-3">
                   <Bot className="w-12 h-12 text-primary mx-auto" />
                   <p className="text-sm text-foreground font-semibold">مساعد الأدمن الذكي</p>
-                  <p className="text-xs text-muted-foreground">أحلل البيانات وأقترح أفضل القرارات</p>
-                  <div className="space-y-2 pt-2">
-                    {["ما حالة النظام الآن؟", "اقترح أفضل سائق للطلبات", "ما المشاكل الحالية؟"].map((q, i) => (
-                      <button key={i} onClick={() => sendAiMessage(q)} className="w-full text-right text-xs p-2 rounded-lg bg-secondary/50 hover:bg-secondary text-foreground transition-colors">{q}</button>
-                    ))}
+                   <p className="text-xs text-muted-foreground">لدي صلاحيات كاملة - أقرأ وأعدّل قاعدة البيانات مباشرة</p>
+                   <div className="space-y-2 pt-2">
+                     {["أعطني إحصائيات المنصة الآن", "اعرض جميع السائقين النشطين", "أضف إشعار لجميع المستخدمين", "غيّر دور مستخدم معين", "اعرض الشكاوى المفتوحة"].map((q, i) => (
+                       <button key={i} onClick={() => sendAiMessage(q)} className="w-full text-right text-xs p-2 rounded-lg bg-secondary/50 hover:bg-secondary text-foreground transition-colors">{q}</button>
+                     ))}
                   </div>
                 </div>
               )}
