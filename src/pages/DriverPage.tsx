@@ -278,6 +278,27 @@ const DriverPage = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto">
+          {/* Active ride banner */}
+          {activeRideId && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mx-4 mt-3 p-3 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-between"
+            >
+              <Button
+                size="sm"
+                onClick={() => navigate(`/driver-tracking?id=${activeRideId}`)}
+                className="h-8 px-4 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold"
+              >
+                <Navigation className="w-3.5 h-3.5 ml-1" />
+                متابعة الرحلة
+              </Button>
+              <div className="text-right">
+                <p className="text-orange-400 font-bold text-sm">لديك رحلة نشطة</p>
+                <p className="text-white/40 text-[11px]">أكمل الرحلة الحالية لقبول طلبات جديدة</p>
+              </div>
+            </motion.div>
+          )}
           {nearbyOrders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-3 border border-emerald-500/15">
