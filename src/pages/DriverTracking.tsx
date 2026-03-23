@@ -203,7 +203,7 @@ const DriverTracking = () => {
     <div className="h-screen flex flex-col bg-[#0a0f1a]" dir="rtl">
       {/* ─── Header ─── */}
       <div className="shrink-0 bg-[#0a0f1a]/90 backdrop-blur-sm border-b border-white/5 px-4 py-3 flex items-center justify-between z-50">
-        <button onClick={() => navigate("/driver-panel")} className="p-2 rounded-full hover:bg-white/5">
+        <button onClick={() => navigate("/driver")} className="p-2 rounded-full hover:bg-white/5">
           <ArrowRight className="w-5 h-5 text-white/70" />
         </button>
         <span className="font-bold text-white">التوصيل</span>
