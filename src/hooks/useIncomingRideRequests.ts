@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
-import { acceptOrder, rejectOrder, subscribeDriverPendingOrders, type OrderRecord } from '@/lib/orderService';
-import { auth } from '@/lib/firebase';
+import { acceptOrder, rejectOrder, subscribeDriverPendingOrders, type OrderRecord } from '@/lib/legacy/orderService';
+import { auth } from '@/lib/legacy/firebase';
 
 export interface RideRequest {
   id: string;
