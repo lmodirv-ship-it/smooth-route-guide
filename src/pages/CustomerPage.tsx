@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MapPin, Navigation, Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,11 +23,11 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
 }
 
 const CustomerPage = () => {
+  const navigate = useNavigate();
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [destination, setDestination] = useState("");
   const [destCoords, setDestCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
 
   // Get user GPS
   useEffect(() => {
@@ -74,7 +75,7 @@ const CustomerPage = () => {
 
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("ride_requests").insert({
+      const { data, error } = await supabase.from("ride_requests").insert({
         user_id: user.id,
         pickup: `${userLocation.lat.toFixed(5)},${userLocation.lng.toFixed(5)}`,
         destination: destination || `${destCoords.lat.toFixed(5)},${destCoords.lng.toFixed(5)}`,
@@ -85,11 +86,11 @@ const CustomerPage = () => {
         distance: parseFloat(distance.toFixed(2)),
         price: price,
         status: "pending",
-      });
+      }).select("id").single();
 
       if (error) throw error;
       toast({ title: "تم إنشاء الطلب بنجاح ✅" });
-      setSubmitted(true);
+      navigate(`/customer-tracking?id=${data.id}`);
     } catch (err: any) {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
     } finally {
@@ -153,7 +154,6 @@ const CustomerPage = () => {
                   onChange={(e) => {
                     setDestination(e.target.value);
                     setDestCoords(null);
-                    setSubmitted(false);
                   }}
                   placeholder="أدخل الوجهة أو الإحداثيات (lat,lng)"
                   className="flex-1 bg-blue-950/50 border-blue-500/20 text-white placeholder:text-blue-300/40 focus:border-blue-400"
@@ -207,7 +207,7 @@ const CustomerPage = () => {
           )}
 
           {/* Submit button */}
-          {destCoords && !submitted && (
+          {destCoords && (
             <Button
               onClick={handleCreateRequest}
               disabled={submitting}
@@ -222,28 +222,6 @@ const CustomerPage = () => {
                 </>
               )}
             </Button>
-          )}
-
-          {submitted && (
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-              className="text-center p-6 customer-card rounded-2xl border border-blue-400/30">
-              <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-3">
-                <Navigation className="w-8 h-8 text-blue-400" />
-              </div>
-              <p className="text-white font-bold text-lg">تم إرسال الطلب!</p>
-              <p className="text-blue-300/70 text-sm mt-1">في انتظار قبول سائق...</p>
-              <Button
-                onClick={() => {
-                  setSubmitted(false);
-                  setDestination("");
-                  setDestCoords(null);
-                }}
-                variant="outline"
-                className="mt-4 border-blue-500/30 text-blue-300 hover:bg-blue-500/10"
-              >
-                طلب جديد
-              </Button>
-            </motion.div>
           )}
         </motion.div>
       </div>

@@ -38,6 +38,7 @@ import DriverDelivery from "./pages/driver/DriverDelivery";
 import ClientHome from "./pages/ClientHome";
 import ClientBooking from "./pages/client/ClientBooking";
 import CustomerPage from "./pages/CustomerPage";
+import CustomerTracking from "./pages/CustomerTracking";
 import DriverPage from "./pages/DriverPage";
 import DriverTracking from "./pages/DriverTracking";
 import RideTracking from "./pages/client/RideTracking";
@@ -124,6 +125,7 @@ const App = () => (
 
           {/* New Clean Customer/Driver Pages (Supabase only) */}
           <Route path="/customer" element={<SessionGuard><CustomerPage /></SessionGuard>} />
+          <Route path="/customer-tracking" element={<SessionGuard><CustomerTracking /></SessionGuard>} />
           <Route path="/driver-panel" element={<SessionGuard><DriverPage /></SessionGuard>} />
           <Route path="/driver-tracking" element={<SessionGuard><DriverTracking /></SessionGuard>} />
 
