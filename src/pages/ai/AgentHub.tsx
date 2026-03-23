@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import { auth } from "@/lib/firebase";
-import { sanitizePlainText } from "@/lib/inputSecurity";
+import { sanitizePlainText, validateChatMessage } from "@/lib/inputSecurity";
+import { useToast } from "@/hooks/use-toast";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -25,6 +26,7 @@ const AgentHub = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -33,6 +35,11 @@ const AgentHub = () => {
   const sendMessage = async (text: string) => {
     const safeText = sanitizePlainText(text, 4000);
     if (!safeText || loading) return;
+    const validation = validateChatMessage(safeText);
+    if (!validation.allowed) {
+      toast({ title: "⚠️ رسالة محظورة", description: validation.reason, variant: "destructive" });
+      return;
+    }
     const userMsg: Msg = { role: "user", content: safeText };
     setMessages(prev => [...prev, userMsg]);
     setInput("");

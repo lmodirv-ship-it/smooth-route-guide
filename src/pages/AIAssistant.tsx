@@ -7,7 +7,7 @@ import ReactMarkdown from "react-markdown";
 import { supabase } from "@/lib/firestoreClient";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { sanitizePlainText } from "@/lib/inputSecurity";
+import { sanitizePlainText, validateChatMessage } from "@/lib/inputSecurity";
 import logo from "@/assets/hn-driver-logo.png";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -157,6 +157,11 @@ const AIAssistant = () => {
   const send = async (text: string) => {
     const safeText = sanitizePlainText(text, 4000);
     if (!safeText || isLoading) return;
+    const validation = validateChatMessage(safeText);
+    if (!validation.allowed) {
+      toast({ title: "⚠️ رسالة محظورة", description: validation.reason, variant: "destructive" });
+      return;
+    }
     const userMsg: Msg = { role: "user", content: safeText };
     setMessages((p) => [...p, userMsg]);
     setInput("");
