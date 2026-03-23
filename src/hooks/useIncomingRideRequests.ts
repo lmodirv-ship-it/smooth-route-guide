@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
-import { acceptOrder, rejectOrder, subscribeDriverPendingOrders, type OrderRecord } from '@/lib/legacy/orderService';
-import { auth } from '@/lib/legacy/firebase';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface RideRequest {
   id: string;
@@ -16,54 +15,58 @@ export interface RideRequest {
   type?: string;
 }
 
-const mapOrderToRequest = (order: OrderRecord): RideRequest => ({
-  id: order.id,
-  user_id: order.clientId,
-  pickup: order.pickupAddress,
-  destination: order.deliveryAddress,
-  price: order.price,
-  status: order.status,
-  created_at: order.createdAt?.toDate ? order.createdAt.toDate().toISOString() : new Date(order.createdAt || Date.now()).toISOString(),
-  passenger_name: order.clientName,
-  passenger_phone: order.clientPhone,
-  type: order.type,
-});
-
 export function useIncomingRideRequests(isOnline: boolean) {
   const [requests, setRequests] = useState<RideRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [accepting, setAccepting] = useState<string | null>(null);
 
   const fetchRequests = useCallback(async () => {
-    if (!isOnline || !auth.currentUser) {
+    if (!isOnline) {
       setRequests([]);
       return;
     }
-
     setLoading(true);
-    const unsubscribe = subscribeDriverPendingOrders(auth.currentUser.uid, (orders) => {
-      setRequests(orders.map(mapOrderToRequest));
-      setLoading(false);
-    });
+    const { data } = await supabase
+      .from('ride_requests')
+      .select('*')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
 
-    return unsubscribe;
+    setRequests(
+      (data || []).map((r) => ({
+        id: r.id,
+        user_id: r.user_id,
+        pickup: r.pickup,
+        destination: r.destination,
+        price: r.price,
+        status: r.status,
+        created_at: r.created_at,
+      }))
+    );
+    setLoading(false);
   }, [isOnline]);
 
   useEffect(() => {
-    if (!isOnline || !auth.currentUser) {
+    if (!isOnline) {
       setRequests([]);
       return;
     }
+    fetchRequests();
 
-    const unsubscribePromise = fetchRequests();
+    const channel = supabase
+      .channel('ride-requests-driver')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'ride_requests', filter: 'status=eq.pending' },
+        () => { fetchRequests(); }
+      )
+      .subscribe();
 
-    return () => {
-      Promise.resolve(unsubscribePromise).then((unsubscribe) => unsubscribe?.());
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [fetchRequests, isOnline]);
 
   const acceptRequest = useCallback(async (request: RideRequest) => {
-    const user = auth.currentUser;
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast({ title: 'غير مسجل الدخول', variant: 'destructive' });
       return;
@@ -71,7 +74,14 @@ export function useIncomingRideRequests(isOnline: boolean) {
 
     setAccepting(request.id);
     try {
-      await acceptOrder(request.id, user.uid);
+      const { error } = await supabase
+        .from('ride_requests')
+        .update({ status: 'accepted', driver_id: user.id, accepted_at: new Date().toISOString() })
+        .eq('id', request.id)
+        .eq('status', 'pending');
+
+      if (error) throw error;
+
       toast({
         title: 'تم قبول الطلب ✅',
         description: `من ${request.pickup} إلى ${request.destination}`,
@@ -89,10 +99,6 @@ export function useIncomingRideRequests(isOnline: boolean) {
   }, []);
 
   const rejectRequest = useCallback(async (requestId: string) => {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    await rejectOrder(requestId, user.uid);
     setRequests((prev) => prev.filter((item) => item.id !== requestId));
   }, []);
 
