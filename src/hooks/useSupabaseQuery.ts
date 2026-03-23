@@ -111,5 +111,3 @@ export function useSupabaseQuery<T = any>(options: {
   return { data, loading, refresh: fetchData };
 }
 
-/** @deprecated Use useSupabaseQuery instead */
-export const useFirestoreCollection = useSupabaseQuery;
