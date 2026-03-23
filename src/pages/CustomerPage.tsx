@@ -180,13 +180,27 @@ const CustomerPage = () => {
                 </div>
                 <div className="w-px h-10 bg-blue-500/20" />
                 <div className="text-center">
-                  <p className="text-xs text-blue-300/70">السعر المقدر</p>
+                  <p className="text-xs text-blue-300/70">السعر المبدئي</p>
                   <p className="text-2xl font-bold text-blue-400">{price} DH</p>
                 </div>
                 <div className="w-px h-10 bg-blue-500/20" />
                 <div className="text-center">
                   <p className="text-xs text-blue-300/70">الوقت المقدر</p>
                   <p className="text-lg font-bold text-blue-300">{Math.max(2, Math.round(distance * 2.5))} د</p>
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-blue-500/15 space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="text-blue-300/70">رسوم ثابتة</span>
+                  <span className="text-blue-200">{BASE_FARE} DH</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-blue-300/70">مسافة الرحلة ({distance.toFixed(1)} كم × {PRICE_PER_KM} DH)</span>
+                  <span className="text-blue-200">{Math.round(distance * PRICE_PER_KM)} DH</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-blue-300/70">مسافة السائق إليك</span>
+                  <span className="text-yellow-400">تُحسب بعد قبول الطلب</span>
                 </div>
               </div>
             </motion.div>
