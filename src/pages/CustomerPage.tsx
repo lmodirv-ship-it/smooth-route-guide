@@ -154,7 +154,6 @@ const CustomerPage = () => {
                   onChange={(e) => {
                     setDestination(e.target.value);
                     setDestCoords(null);
-                    setSubmitted(false);
                   }}
                   placeholder="أدخل الوجهة أو الإحداثيات (lat,lng)"
                   className="flex-1 bg-blue-950/50 border-blue-500/20 text-white placeholder:text-blue-300/40 focus:border-blue-400"
