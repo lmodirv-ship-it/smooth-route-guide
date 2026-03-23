@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, ShieldCheck } from "lucide-react";
 

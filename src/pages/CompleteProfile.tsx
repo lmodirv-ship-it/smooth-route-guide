@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
 import { updateDocument, COLLECTIONS, type UserRole } from "@/lib/firebaseServices";
 import logo from "@/assets/hn-driver-logo.png";
 

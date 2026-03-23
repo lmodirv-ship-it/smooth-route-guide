@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
-import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { sanitizePlainText, validateChatMessage } from "@/lib/inputSecurity";
 import logo from "@/assets/hn-driver-logo.png";

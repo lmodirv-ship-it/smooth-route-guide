@@ -15,7 +15,6 @@ import { toast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import logo from "@/assets/hn-driver-logo.png";
 import { supabase } from "@/integrations/supabase/client";
-import { auth } from "@/lib/firebase";
 import { sanitizePlainText } from "@/lib/inputSecurity";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import LeafletMap from "@/components/LeafletMap";

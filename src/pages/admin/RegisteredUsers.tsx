@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { collection, getDocs, doc, setDoc, updateDoc, getDoc, deleteDoc, serverTimestamp, Timestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { motion } from "framer-motion";
 import { Users, Search, Save, Filter, ArrowUpDown, Loader2, CheckCircle, Copy, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";

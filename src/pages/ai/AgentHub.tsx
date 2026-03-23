@@ -5,7 +5,6 @@ import { Bot, Send, ArrowRight, User, Loader2, Sparkles, Car, Headphones, Shield
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
-import { auth } from "@/lib/firebase";
 import { sanitizePlainText, validateChatMessage } from "@/lib/inputSecurity";
 import { useToast } from "@/hooks/use-toast";
 

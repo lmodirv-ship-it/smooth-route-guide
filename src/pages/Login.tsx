@@ -11,7 +11,6 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
 import { emailSchema, passwordSchema, sanitizeEmail, sanitizePlainText, sanitizeSearchParam } from "@/lib/inputSecurity";
 import logo from "@/assets/hn-driver-logo.png";
 
