@@ -54,7 +54,7 @@ const CompleteProfile = () => {
     const role = roles?.[0]?.role || "user";
 
     toast({ title: "تم حفظ الملف الشخصي ✅" });
-    navigate(roleDashboard[role] || "/client", { replace: true });
+    navigate(roleDashboard[role] || "/customer", { replace: true });
     setSaving(false);
   };
 
