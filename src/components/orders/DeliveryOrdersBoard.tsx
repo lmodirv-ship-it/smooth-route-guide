@@ -3,7 +3,7 @@ import { Clock, Eye, MapPin, Package, Phone, RefreshCw, Truck, User } from "luci
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ORDER_STATUS_META, formatOrderTime, subscribeAllOrders, toDate, type OrderRecord, type OrderStatus } from "@/lib/orderService";
+import { ORDER_STATUS_META, formatOrderTime, subscribeAllOrders, toDate, type OrderRecord, type OrderStatus } from "@/lib/legacy/orderService";
 
 const STATUS_FILTERS: Array<{ key: "all" | OrderStatus; label: string }> = [
   { key: "all", label: "الكل" },
