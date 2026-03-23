@@ -17,8 +17,7 @@ import LocationPermissionPrompt from "@/components/driver/LocationPermissionProm
 import { useIncomingRideRequests } from "@/hooks/useIncomingRideRequests";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
 import { openAppSettings } from "@/lib/nativeApp";
-import { auth } from "@/lib/firebase";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DriverDashboard = () => {
@@ -42,13 +41,18 @@ const DriverDashboard = () => {
 
   // Subscribe to pending delivery orders when online
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!isOnline || !user) {
-      setPendingOrders([]);
-      return;
-    }
-    const unsub = subscribeDriverPendingOrders(user.uid, setPendingOrders);
-    return () => unsub();
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!isOnline || !user) {
+        setPendingOrders([]);
+        return;
+      }
+      const unsub = subscribeDriverPendingOrders(user.id, setPendingOrders);
+      return unsub;
+    };
+    let cleanup: (() => void) | undefined;
+    init().then(unsub => { cleanup = unsub; });
+    return () => cleanup?.();
   }, [isOnline]);
 
   // Calculate distance from driver to each pending order's pickup

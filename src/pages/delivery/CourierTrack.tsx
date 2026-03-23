@@ -6,7 +6,7 @@ import {
   Phone, MessageCircle, Star, Home
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 
 const steps = [

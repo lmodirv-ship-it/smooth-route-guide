@@ -18,7 +18,7 @@ import {
   LogOut,
   MapPin,
 } from "lucide-react";
-import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
+// logout handled inline below
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Button } from "@/components/ui/button";
 import LeafletMap from "@/components/LeafletMap";
@@ -27,7 +27,7 @@ import PriceEstimateCard from "@/components/PriceEstimateCard";
 import { useTripPricing } from "@/hooks/useTripPricing";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
@@ -45,7 +45,11 @@ const haversineKm = (from: { lat: number; lng: number }, to: { lat: number; lng:
 
 const ClientHome = () => {
   const navigate = useNavigate();
-  const logout = useFirebaseLogout();
+  const logout = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem("hn_user_role");
+    navigate("/login", { replace: true });
+  };
   const [activeTab, setActiveTab] = useState("home");
   const [destination, setDestination] = useState("");
   const [destinationCoords, setDestinationCoords] = useState<string | null>(null);

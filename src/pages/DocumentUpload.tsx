@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Upload, FileText, CheckCircle, Clock, Camera, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 type DocStatus = "pending" | "approved" | "rejected" | "empty";
@@ -98,7 +98,7 @@ const DocumentUpload = () => {
       const uploadRes = await supabase.storage.from("driver-documents").upload(path, file);
       if (uploadRes.error) throw new Error(uploadRes.error.message);
 
-      const fileUrl = uploadRes.data?.publicUrl || supabase.storage.from("driver-documents").getPublicUrl(path).data.publicUrl;
+      const fileUrl = supabase.storage.from("driver-documents").getPublicUrl(path).data.publicUrl;
       const existing = docs.find((doc) => doc.id === docType);
 
       if (existing?.recordId) {

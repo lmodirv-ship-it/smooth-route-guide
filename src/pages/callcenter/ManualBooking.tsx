@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 import { useFirestoreCollection } from "@/hooks/useFirestoreCollection";
 
 const ManualBooking = () => {
@@ -53,19 +53,23 @@ const ManualBooking = () => {
     }
 
     setLoading(true);
-    const payload = {
-      client_name: form.clientName || "عميل هاتفي",
-      client_phone: form.clientPhone,
+    // Get current agent user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: "يجب تسجيل الدخول", variant: "destructive" });
+      setLoading(false);
+      return;
+    }
+
+    const price = form.serviceType === "premium" ? 25 : form.serviceType === "xl" ? 35 : 15;
+
+    const { data, error } = await supabase.from("ride_requests").insert({
+      user_id: user.id,
       pickup: form.pickup,
       destination: form.destination,
-      service: form.serviceType,
-      notes: form.notes,
       status: "pending",
-      price: form.serviceType === "premium" ? 25 : form.serviceType === "xl" ? 35 : 15,
-      created_at: new Date().toISOString(),
-    };
-
-    const { data, error } = await supabase.from("ride_requests").insert(payload);
+      price,
+    }).select("id").single();
     setLoading(false);
 
     if (error) {
@@ -81,8 +85,8 @@ const ManualBooking = () => {
     if (!createdRequestId) return;
     setLoading(true);
     const [{ error: reqError }, { error: driverError }] = await Promise.all([
-      supabase.from("ride_requests").update({ status: "assigned", driver_id: driverId, driver_name: driverName }).eq("id", createdRequestId),
-      supabase.from("drivers").update({ isAvailable: false }).eq("id", driverId),
+      supabase.from("ride_requests").update({ status: "accepted", driver_id: driverId }).eq("id", createdRequestId),
+      supabase.from("drivers").update({ status: "busy" }).eq("id", driverId),
     ]);
     setLoading(false);
 

@@ -5,7 +5,7 @@ import { Bot, Send, ArrowRight, User, Loader2, Sparkles, Car, Headphones, Shield
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
-import { auth } from "@/lib/firebase";
+import { supabase } from "@/integrations/supabase/client";
 import { sanitizePlainText, validateChatMessage } from "@/lib/inputSecurity";
 import { useToast } from "@/hooks/use-toast";
 
@@ -47,12 +47,13 @@ const AgentHub = () => {
 
     let assistantSoFar = "";
     try {
-      const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : null;
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token || null;
       const resp = await fetch(AI_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify({ messages: [...messages, userMsg] }),
       });

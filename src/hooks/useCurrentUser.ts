@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useCurrentUser() {
   const [userId, setUserId] = useState<string | null>(null);

@@ -14,8 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import logo from "@/assets/hn-driver-logo.png";
-import { supabase } from "@/lib/firestoreClient";
-import { auth } from "@/lib/firebase";
+import { supabase } from "@/integrations/supabase/client";
 import { sanitizePlainText } from "@/lib/inputSecurity";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import LeafletMap from "@/components/LeafletMap";
@@ -149,12 +148,13 @@ const AI_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-ai-agent
 async function streamAdminAI({ messages, onDelta, onDone, onError }: {
   messages: AiMsg[]; onDelta: (t: string) => void; onDone: () => void; onError: (e: string) => void;
 }) {
-  const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : null;
+  const { data: { session } } = await supabase.auth.getSession();
+  const accessToken = session?.access_token || null;
   const resp = await fetch(AI_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
     body: JSON.stringify({ messages }),
   });

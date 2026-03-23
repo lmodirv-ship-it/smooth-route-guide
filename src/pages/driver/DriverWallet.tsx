@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Wallet, ArrowRight, TrendingUp, TrendingDown, CreditCard, ArrowUpRight, ArrowDownLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 
 const DriverWallet = () => {
   const navigate = useNavigate();

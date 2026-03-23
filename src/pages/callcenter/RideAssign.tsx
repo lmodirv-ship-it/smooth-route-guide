@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Car, MapPin, Star, Check, ArrowLeftRight, Clock, Navigation, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 import { useFirestoreCollection } from "@/hooks/useFirestoreCollection";
 
 const RideAssign = () => {
@@ -65,8 +65,8 @@ const RideAssign = () => {
 
     setAssigning(true);
     const [{ error: requestError }, { error: driverError }] = await Promise.all([
-      supabase.from("ride_requests").update({ status: "assigned", driver_id: driver.id, driver_name: driver.name }).eq("id", request.id),
-      supabase.from("drivers").update({ isAvailable: false }).eq("id", driver.id),
+      supabase.from("ride_requests").update({ status: "accepted", driver_id: driver.id }).eq("id", request.id),
+      supabase.from("drivers").update({ status: "busy" }).eq("id", driver.id),
     ]);
     setAssigning(false);
 

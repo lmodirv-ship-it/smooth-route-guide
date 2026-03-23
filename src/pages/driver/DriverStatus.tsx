@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Power, Wifi, WifiOff, Signal, MapPin, Clock, Activity, Loader2 } from "lucide-react";
-import { supabase } from "@/lib/firestoreClient";
+import { supabase } from "@/integrations/supabase/client";
 
 const DriverStatus = () => {
   const navigate = useNavigate();
