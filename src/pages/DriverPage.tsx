@@ -132,6 +132,7 @@ const DriverPage = () => {
       if (error) throw error;
       toast({ title: "تم قبول الطلب ✅" });
       setOrders((prev) => prev.filter((o) => o.id !== orderId));
+      navigate(`/driver-tracking?id=${orderId}`);
     } catch (err: any) {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
     } finally {
