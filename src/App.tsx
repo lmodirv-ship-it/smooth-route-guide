@@ -77,6 +77,7 @@ import AdminCallCenter from "./pages/admin/AdminCallCenter";
 import AdminDeliveryOrders from "./pages/admin/DeliveryOrders";
 import AdminSettings from "./pages/admin/Settings";
 import AdminRestaurants from "./pages/admin/AdminRestaurants";
+import ZonesManagement from "./pages/admin/ZonesManagement";
 import RegisteredUsers from "./pages/admin/RegisteredUsers";
 import SetupAdmin from "./pages/admin/SetupAdmin";
 
