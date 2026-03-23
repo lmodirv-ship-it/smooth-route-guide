@@ -2,7 +2,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders, enforceRateLimit, handleError, z } from "../_shared/security.ts";
 
-// Content can be string or multimodal array
 const contentSchema = z.union([
   z.string().trim().min(1).max(8000),
   z.array(z.object({
@@ -24,7 +23,6 @@ const requestSchema = z.object({
   ).min(1).max(50),
 });
 
-// All tables the admin AI can access
 const ALLOWED_TABLES = [
   "profiles", "user_roles", "drivers", "vehicles", "ride_requests", "trips",
   "delivery_orders", "order_items", "stores", "menu_categories", "menu_items",
@@ -34,7 +32,6 @@ const ALLOWED_TABLES = [
   "trip_status_history", "ride_messages",
 ];
 
-// Tools the AI can call
 const tools = [
   {
     type: "function",
@@ -44,11 +41,10 @@ const tools = [
       parameters: {
         type: "object",
         properties: {
-          table: { type: "string", description: "Table name", enum: ALLOWED_TABLES },
-          columns: { type: "string", description: "Comma-separated columns to select, default *", default: "*" },
+          table: { type: "string", enum: ALLOWED_TABLES },
+          columns: { type: "string", default: "*" },
           filters: {
             type: "array",
-            description: "Array of filter conditions",
             items: {
               type: "object",
               properties: {
@@ -59,9 +55,9 @@ const tools = [
               required: ["column", "operator", "value"],
             },
           },
-          order_by: { type: "string", description: "Column to order by" },
+          order_by: { type: "string" },
           ascending: { type: "boolean", default: false },
-          limit: { type: "number", default: 20, description: "Max rows to return (max 100)" },
+          limit: { type: "number", default: 20 },
         },
         required: ["table"],
       },
@@ -76,11 +72,7 @@ const tools = [
         type: "object",
         properties: {
           table: { type: "string", enum: ALLOWED_TABLES },
-          rows: {
-            type: "array",
-            items: { type: "object" },
-            description: "Array of row objects to insert",
-          },
+          rows: { type: "array", items: { type: "object" } },
         },
         required: ["table", "rows"],
       },
@@ -95,7 +87,7 @@ const tools = [
         type: "object",
         properties: {
           table: { type: "string", enum: ALLOWED_TABLES },
-          updates: { type: "object", description: "Key-value pairs to update" },
+          updates: { type: "object" },
           filters: {
             type: "array",
             items: {
@@ -107,7 +99,6 @@ const tools = [
               },
               required: ["column", "operator", "value"],
             },
-            description: "Filters to match rows (required for safety)",
           },
         },
         required: ["table", "updates", "filters"],
@@ -170,8 +161,74 @@ const tools = [
     type: "function",
     function: {
       name: "db_stats",
-      description: "Get overview statistics of the entire platform: user counts, driver counts, trip counts, revenue, etc.",
+      description: "Get overview statistics of the entire platform.",
       parameters: { type: "object", properties: {}, required: [] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "platform_config",
+      description: "Read or write platform configuration settings (pricing, features, UI config, branding, etc). Use action 'get' to read a setting, 'set' to save/update, 'list' to list all settings.",
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["get", "set", "list"] },
+          key: { type: "string", description: "Setting key like 'pricing', 'branding', 'features', 'ui_config', 'notifications_config'" },
+          value: { type: "object", description: "Setting value (JSON object) - only for 'set' action" },
+        },
+        required: ["action"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "bulk_notify",
+      description: "Send notifications to multiple users at once. Specify target: 'all' for everyone, 'drivers' for all drivers, 'users' for all clients, or provide specific user_ids.",
+      parameters: {
+        type: "object",
+        properties: {
+          target: { type: "string", enum: ["all", "drivers", "users", "specific"] },
+          user_ids: { type: "array", items: { type: "string" }, description: "Specific user IDs (only when target is 'specific')" },
+          message: { type: "string", description: "Notification message" },
+          type: { type: "string", default: "general", description: "Notification type: general, alert, promo, system" },
+        },
+        required: ["target", "message"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "manage_user_role",
+      description: "Add, remove, or change a user's role. Supports: admin, moderator, user, driver, agent.",
+      parameters: {
+        type: "object",
+        properties: {
+          user_id: { type: "string", description: "The user's ID" },
+          action: { type: "string", enum: ["add", "remove", "change"] },
+          role: { type: "string", enum: ["admin", "moderator", "user", "driver", "agent"] },
+          find_by_email: { type: "string", description: "Find user by email instead of ID" },
+          find_by_phone: { type: "string", description: "Find user by phone instead of ID" },
+        },
+        required: ["action", "role"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "analyze_image",
+      description: "Analyze an uploaded image and provide detailed feedback about its content, UI issues, design suggestions, data visible, etc. Call this when the user sends an image.",
+      parameters: {
+        type: "object",
+        properties: {
+          analysis_type: { type: "string", enum: ["ui_review", "data_extraction", "general", "bug_detection", "design_feedback"], description: "Type of analysis to perform" },
+          focus_areas: { type: "string", description: "Specific areas to focus on in the analysis" },
+        },
+        required: ["analysis_type"],
+      },
     },
   },
 ];
@@ -236,7 +293,7 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
       }
       case "db_stats": {
         const today = new Date().toISOString().slice(0, 10);
-        const [users, drivers, activeDrivers, trips, pendingRides, deliveryOrders, todayEarnings, complaints] = await Promise.all([
+        const [users, drivers, activeDrivers, trips, pendingRides, deliveryOrders, todayEarnings, complaints, stores, tickets] = await Promise.all([
           supabase.from("profiles").select("id", { count: "exact", head: true }),
           supabase.from("drivers").select("id", { count: "exact", head: true }),
           supabase.from("drivers").select("id", { count: "exact", head: true }).eq("status", "active"),
@@ -245,6 +302,8 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
           supabase.from("delivery_orders").select("id", { count: "exact", head: true }),
           supabase.from("earnings").select("amount").gte("date", today),
           supabase.from("complaints").select("id", { count: "exact", head: true }).eq("status", "open"),
+          supabase.from("stores").select("id", { count: "exact", head: true }),
+          supabase.from("tickets").select("id", { count: "exact", head: true }).eq("status", "open"),
         ]);
         const totalRevenue = (todayEarnings.data || []).reduce((s: number, e: any) => s + Number(e.amount), 0);
         return JSON.stringify({
@@ -256,6 +315,101 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
           total_delivery_orders: deliveryOrders.count || 0,
           today_revenue: totalRevenue,
           open_complaints: complaints.count || 0,
+          total_stores: stores.count || 0,
+          open_tickets: tickets.count || 0,
+        });
+      }
+      case "platform_config": {
+        if (args.action === "list") {
+          const { data, error } = await supabase.from("app_settings").select("*").order("key");
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ settings: data });
+        }
+        if (args.action === "get") {
+          const { data, error } = await supabase.from("app_settings").select("*").eq("key", args.key).maybeSingle();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify(data || { key: args.key, value: null, message: "Setting not found" });
+        }
+        if (args.action === "set") {
+          const { data: existing } = await supabase.from("app_settings").select("id").eq("key", args.key).maybeSingle();
+          if (existing) {
+            const { error } = await supabase.from("app_settings").update({ value: args.value, updated_at: new Date().toISOString() }).eq("key", args.key);
+            if (error) return JSON.stringify({ error: error.message });
+            return JSON.stringify({ success: true, action: "updated", key: args.key });
+          } else {
+            const { error } = await supabase.from("app_settings").insert({ key: args.key, value: args.value });
+            if (error) return JSON.stringify({ error: error.message });
+            return JSON.stringify({ success: true, action: "created", key: args.key });
+          }
+        }
+        return JSON.stringify({ error: "Invalid action" });
+      }
+      case "bulk_notify": {
+        let userIds: string[] = [];
+        if (args.target === "all") {
+          const { data } = await supabase.from("profiles").select("id").limit(500);
+          userIds = (data || []).map((u: any) => u.id);
+        } else if (args.target === "drivers") {
+          const { data } = await supabase.from("drivers").select("user_id").limit(500);
+          userIds = (data || []).map((d: any) => d.user_id);
+        } else if (args.target === "users") {
+          const { data } = await supabase.from("user_roles").select("user_id").eq("role", "user").limit(500);
+          userIds = (data || []).map((r: any) => r.user_id);
+        } else if (args.target === "specific" && args.user_ids?.length) {
+          userIds = args.user_ids;
+        }
+        if (!userIds.length) return JSON.stringify({ error: "No users found for target" });
+        const rows = userIds.map((uid: string) => ({
+          user_id: uid,
+          message: args.message,
+          type: args.type || "general",
+        }));
+        const { error } = await supabase.from("notifications").insert(rows);
+        if (error) return JSON.stringify({ error: error.message });
+        return JSON.stringify({ success: true, notified: userIds.length });
+      }
+      case "manage_user_role": {
+        let userId = args.user_id;
+        if (!userId && args.find_by_email) {
+          const { data } = await supabase.from("profiles").select("id").eq("email", args.find_by_email).maybeSingle();
+          userId = data?.id;
+        }
+        if (!userId && args.find_by_phone) {
+          const { data } = await supabase.from("profiles").select("id").eq("phone", args.find_by_phone).maybeSingle();
+          userId = data?.id;
+        }
+        if (!userId) return JSON.stringify({ error: "User not found" });
+
+        if (args.action === "add") {
+          const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: args.role });
+          if (error) return JSON.stringify({ error: error.message });
+          if (args.role === "driver") {
+            await supabase.from("drivers").upsert({ user_id: userId, status: "inactive" }, { onConflict: "user_id" });
+          }
+          return JSON.stringify({ success: true, action: "role_added", user_id: userId, role: args.role });
+        }
+        if (args.action === "remove") {
+          const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", args.role);
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "role_removed", user_id: userId, role: args.role });
+        }
+        if (args.action === "change") {
+          await supabase.from("user_roles").delete().eq("user_id", userId);
+          const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: args.role });
+          if (error) return JSON.stringify({ error: error.message });
+          if (args.role === "driver") {
+            await supabase.from("drivers").upsert({ user_id: userId, status: "inactive" }, { onConflict: "user_id" });
+          }
+          return JSON.stringify({ success: true, action: "role_changed", user_id: userId, new_role: args.role });
+        }
+        return JSON.stringify({ error: "Invalid action" });
+      }
+      case "analyze_image": {
+        return JSON.stringify({
+          success: true,
+          message: "Image analysis requested. The AI model will analyze the image directly from the conversation context.",
+          analysis_type: args.analysis_type,
+          focus_areas: args.focus_areas || "general",
         });
       }
       default:
@@ -273,12 +427,9 @@ serve(async (req) => {
     await enforceRateLimit(req, "admin-ai-agent", 30, 60);
 
     let body: unknown;
-    try {
-      body = await req.json();
-    } catch {
+    try { body = await req.json(); } catch {
       return new Response(JSON.stringify({ error: "invalid_json_body" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -286,13 +437,11 @@ serve(async (req) => {
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
       return new Response(JSON.stringify({ error: `${issue.path.join(".") || "body"}: ${issue.message}` }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const { messages } = parsed.data;
-
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!lovableApiKey) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -304,42 +453,74 @@ serve(async (req) => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    const systemPrompt = `أنت المساعد الذكي للمسؤول في منصة HN Driver. لديك صلاحيات كاملة للوصول لقاعدة البيانات وتعديلها.
+    const systemPrompt = `أنت المساعد الذكي الخارق للمسؤول في منصة HN Driver - لديك صلاحيات كاملة ومطلقة.
 
-## قدراتك:
-1. **قراءة البيانات**: استعرض أي جدول، فلترة، بحث، إحصائيات
-2. **إضافة بيانات**: أضف مستخدمين، سائقين، طلبات، إشعارات، إلخ
-3. **تعديل بيانات**: حدّث حالة السائقين، أسعار، إعدادات، أدوار المستخدمين
-4. **حذف بيانات**: احذف سجلات حسب الحاجة
-5. **تحليل وإحصائيات**: قدّم تقارير وتحليلات شاملة
-6. **إدارة الأدوار**: غيّر أدوار المستخدمين (admin, driver, user, agent, moderator)
-7. **إدارة المتاجر**: أضف وعدّل المطاعم والمتاجر والقوائم
-8. **إدارة المناطق**: أضف وعدّل مناطق التوصيل
-9. **إدارة العروض**: أنشئ وعدّل أكواد الخصم
-10. **إدارة الإعدادات**: غيّر إعدادات المنصة (التسعيرة، الإشعارات، إلخ)
-11. **تحليل الصور والفيديو**: يمكنك تحليل الصور والفيديوهات المرسلة من المدير (لقطات الشاشة، صور الوثائق، إلخ)
+## 🔥 صلاحياتك الكاملة:
+
+### 📊 إدارة قاعدة البيانات (CRUD كامل):
+- قراءة وعرض أي بيانات من أي جدول
+- إضافة سجلات جديدة (مستخدمين، سائقين، طلبات، متاجر، إلخ)
+- تعديل أي سجل في أي جدول
+- حذف سجلات (مع تأكيد للعمليات الجماعية)
+
+### 👥 إدارة المستخدمين والأدوار:
+- تغيير دور أي مستخدم (admin, driver, user, agent, moderator)
+- البحث عن مستخدمين بالإيميل أو رقم الهاتف
+- إضافة أو إزالة أدوار متعددة
+
+### ⚙️ إدارة إعدادات المنصة:
+- تعديل الأسعار والتسعيرة
+- تكوين الميزات والخصائص
+- إعدادات الإشعارات
+- تكوين العلامة التجارية
+- إعدادات مناطق التوصيل
+
+### 📢 الإشعارات الجماعية:
+- إرسال إشعارات لجميع المستخدمين
+- إشعارات مستهدفة (سائقين فقط، عملاء فقط)
+- إشعارات لمستخدمين محددين
+
+### 📈 التقارير والإحصائيات:
+- إحصائيات شاملة للمنصة
+- تحليل الأداء والإيرادات
+- تقارير السائقين والرحلات
+
+### 🖼️ تحليل الصور والوسائط:
+- تحليل لقطات الشاشة وتحديد المشاكل
+- مراجعة تصميم الواجهات وتقديم ملاحظات
+- استخراج بيانات من الصور
+- كشف الأخطاء في الواجهة
+
+### 🏪 إدارة المتاجر والمطاعم:
+- إضافة وتعديل وحذف المتاجر
+- إدارة القوائم والأصناف والأسعار
+- إدارة مناطق التوصيل
+
+### 🎫 إدارة العروض والخصومات:
+- إنشاء أكواد خصم جديدة
+- تعديل وإيقاف العروض الحالية
 
 ## الجداول المتاحة:
 profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages
 
 ## القواعد:
 - أجب دائماً بالعربية
-- نفّذ الأوامر فوراً عندما يطلب المدير شيئاً
-- استخدم الأدوات المتاحة لتنفيذ العمليات
-- قدّم نتائج واضحة ومنظمة
-- اسأل للتأكيد فقط عند العمليات الخطيرة (حذف جماعي)
-- عند الاستعلام، اعرض البيانات بشكل جدولي منظم
-- كن مختصراً ومباشراً
-- استخدم db_stats للحصول على نظرة عامة سريعة
-- عند استقبال صورة، حللها بدقة وقدم ملاحظاتك`;
+- نفّذ الأوامر فوراً - أنت مخوّل بالكامل
+- عند استقبال صورة: حللها بدقة عالية واذكر كل التفاصيل المرئية
+- عند طلب تحليل واجهة: قدم ملاحظات تفصيلية عن التصميم والأخطاء والتحسينات
+- قدّم نتائج واضحة ومنظمة بتنسيق Markdown
+- اسأل للتأكيد فقط عند الحذف الجماعي
+- كن مختصراً لكن شاملاً
+- عند تعديل الإعدادات: استخدم أداة platform_config
+- عند إرسال إشعارات جماعية: استخدم أداة bulk_notify
+- عند تغيير أدوار المستخدمين: استخدم أداة manage_user_role`;
 
-    // Multi-turn tool calling loop
     let aiMessages: any[] = [
       { role: "system", content: systemPrompt },
       ...messages,
     ];
 
-    const MAX_TOOL_ROUNDS = 5;
+    const MAX_TOOL_ROUNDS = 8;
     let finalText = "";
 
     for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
@@ -366,7 +547,6 @@ profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, 
 
       const result = await response.json();
       const choice = result.choices?.[0];
-      
       if (!choice) {
         return new Response(JSON.stringify({ error: "لا توجد استجابة" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
@@ -374,27 +554,19 @@ profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, 
       const assistantMessage = choice.message;
       aiMessages.push(assistantMessage);
 
-      // If there are tool calls, execute them
       if (assistantMessage.tool_calls?.length) {
         for (const tc of assistantMessage.tool_calls) {
-          const args = typeof tc.function.arguments === "string" 
-            ? JSON.parse(tc.function.arguments) 
+          const fnArgs = typeof tc.function.arguments === "string"
+            ? JSON.parse(tc.function.arguments)
             : tc.function.arguments;
-          
-          console.log(`Executing tool: ${tc.function.name}`, JSON.stringify(args));
-          const toolResult = await executeTool(supabase, tc.function.name, args);
-          console.log(`Tool result: ${toolResult.slice(0, 500)}`);
-          
-          aiMessages.push({
-            role: "tool",
-            tool_call_id: tc.id,
-            content: toolResult,
-          });
+          console.log(`Tool: ${tc.function.name}`, JSON.stringify(fnArgs).slice(0, 300));
+          const toolResult = await executeTool(supabase, tc.function.name, fnArgs);
+          console.log(`Result: ${toolResult.slice(0, 500)}`);
+          aiMessages.push({ role: "tool", tool_call_id: tc.id, content: toolResult });
         }
         continue;
       }
 
-      // No tool calls = final response
       finalText = assistantMessage.content || "";
       break;
     }
