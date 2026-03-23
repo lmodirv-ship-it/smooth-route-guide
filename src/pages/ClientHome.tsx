@@ -598,6 +598,90 @@ const ClientHome = () => {
           </div>
         </div>
       </div>
+
+      {/* Tangier Locations Picker */}
+      <AnimatePresence>
+        {showLocationsPicker && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 30 }}
+            className="fixed inset-0 z-[9999] bg-background/95 backdrop-blur-md flex flex-col"
+            dir="rtl"
+          >
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <h2 className="font-bold text-foreground flex items-center gap-2">
+                <MapPinned className="w-5 h-5 text-primary" />
+                أماكن في طنجة
+              </h2>
+              <button onClick={() => { setShowLocationsPicker(false); setLocSearchQuery(""); setLocCategory("all"); }} className="p-1.5 rounded-lg hover:bg-secondary">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="px-4 py-3">
+              <div className="relative">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={locSearchQuery}
+                  onChange={e => setLocSearchQuery(e.target.value)}
+                  placeholder="ابحث عن حي، شارع أو مكان..."
+                  className="pr-9 bg-secondary/60 border-border rounded-xl"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="px-4 pb-2 flex gap-2 overflow-x-auto no-scrollbar">
+              {locationCategories.map(cat => (
+                <button
+                  key={cat.key}
+                  onClick={() => setLocCategory(cat.key)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                    locCategory === cat.key
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-muted-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex-1 overflow-auto px-4 pb-4 space-y-1.5">
+              {filteredTangierLocations.map((loc, i) => {
+                const dist = userLocation ? haversineKm(userLocation, { lat: loc.lat, lng: loc.lng }) : null;
+                const price = dist !== null ? calcPrice(dist) : null;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => selectTangierLocation(loc)}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/40 hover:bg-secondary/70 transition-colors text-right"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <MapPin className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{loc.name}</p>
+                      <p className="text-xs text-muted-foreground">{loc.area}</p>
+                    </div>
+                    {dist !== null && price !== null && (
+                      <div className="text-left shrink-0">
+                        <p className="text-xs text-muted-foreground">{dist.toFixed(1)} كم</p>
+                        <p className="text-xs font-bold text-primary">{price} DH</p>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+              {filteredTangierLocations.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground text-sm">لا توجد نتائج</div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <RoleSwitcher />
     </>
   );
