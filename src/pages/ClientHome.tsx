@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell,
   Menu,
@@ -17,10 +17,14 @@ import {
   Bot,
   LogOut,
   MapPin,
+  Search,
+  MapPinned,
+  X,
+  DollarSign,
 } from "lucide-react";
-// logout handled inline below
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import LeafletMap from "@/components/LeafletMap";
 import PlacesAutocomplete from "@/components/PlacesAutocomplete";
 import PriceEstimateCard from "@/components/PriceEstimateCard";
@@ -29,6 +33,7 @@ import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";
+import { tangierLocations, locationCategories, TangierLocation } from "@/data/tangierLocations";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 
@@ -42,6 +47,10 @@ const haversineKm = (from: { lat: number; lng: number }, to: { lat: number; lng:
     Math.cos(toRad(from.lat)) * Math.cos(toRad(to.lat)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
   return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
+
+function calcPrice(km: number) {
+  return Math.max(10, Math.round(km * 3 + 5));
+}
 
 const ClientHome = () => {
   const navigate = useNavigate();
@@ -58,6 +67,9 @@ const ClientHome = () => {
   const [profile, setProfile] = useState<any | null>(null);
   const [trips, setTrips] = useState<any[]>([]);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [showLocationsPicker, setShowLocationsPicker] = useState(false);
+  const [locSearchQuery, setLocSearchQuery] = useState("");
+  const [locCategory, setLocCategory] = useState("all");
   const { getEstimate, estimate, loading, error, reset } = useTripPricing("DH");
   const { drivers: nearbyDriversData } = useNearbyDrivers();
 
@@ -232,6 +244,34 @@ const ClientHome = () => {
     await getEstimate(driverLocation, customerLocation, coords);
   };
 
+  const filteredTangierLocations = useMemo(() => {
+    let filtered = tangierLocations;
+    if (locCategory !== "all") {
+      if (locCategory === "other") {
+        const mainCats = locationCategories.filter(c => c.key !== "all" && c.key !== "other").map(c => c.key);
+        filtered = filtered.filter(l => !mainCats.includes(l.area));
+      } else {
+        filtered = filtered.filter(l => l.area === locCategory);
+      }
+    }
+    if (locSearchQuery.trim()) {
+      const q = locSearchQuery.trim().toLowerCase();
+      filtered = filtered.filter(l => l.name.toLowerCase().includes(q) || l.area.toLowerCase().includes(q));
+    }
+    return filtered;
+  }, [locCategory, locSearchQuery]);
+
+  const selectTangierLocation = (loc: TangierLocation) => {
+    const coords = `${loc.lat},${loc.lng}`;
+    setDestination(loc.name);
+    setDestinationCoords(coords);
+    setShowLocationsPicker(false);
+    setLocSearchQuery("");
+    setLocCategory("all");
+    setShowEstimate(true);
+    void getEstimate(driverLocation, customerLocation, coords);
+  };
+
   const handleCancelEstimate = () => {
     setShowEstimate(false);
     setDestination("");
@@ -269,16 +309,26 @@ const ClientHome = () => {
 
   const renderHome = () => (
     <>
-      <div className="px-4 mt-4">
-        <PlacesAutocomplete
-          value={destination}
-          onChange={(value) => {
-            setDestination(value);
-            setDestinationCoords(null);
-          }}
-          onPlaceSelected={handlePlaceSelected}
-          placeholder="إلى أين تريد الذهاب؟"
-        />
+      <div className="px-4 mt-4 flex gap-2">
+        <div className="flex-1">
+          <PlacesAutocomplete
+            value={destination}
+            onChange={(value) => {
+              setDestination(value);
+              setDestinationCoords(null);
+            }}
+            onPlaceSelected={handlePlaceSelected}
+            placeholder="إلى أين تريد الذهاب؟"
+          />
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => setShowLocationsPicker(true)}
+          className="h-11 px-3 border-border hover:border-primary/30 shrink-0"
+          title="أماكن طنجة"
+        >
+          <MapPinned className="w-5 h-5 text-primary" />
+        </Button>
       </div>
 
       <div className="flex gap-3 px-4 mt-4">
@@ -548,6 +598,90 @@ const ClientHome = () => {
           </div>
         </div>
       </div>
+
+      {/* Tangier Locations Picker */}
+      <AnimatePresence>
+        {showLocationsPicker && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 30 }}
+            className="fixed inset-0 z-[9999] bg-background/95 backdrop-blur-md flex flex-col"
+            dir="rtl"
+          >
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <h2 className="font-bold text-foreground flex items-center gap-2">
+                <MapPinned className="w-5 h-5 text-primary" />
+                أماكن في طنجة
+              </h2>
+              <button onClick={() => { setShowLocationsPicker(false); setLocSearchQuery(""); setLocCategory("all"); }} className="p-1.5 rounded-lg hover:bg-secondary">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="px-4 py-3">
+              <div className="relative">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={locSearchQuery}
+                  onChange={e => setLocSearchQuery(e.target.value)}
+                  placeholder="ابحث عن حي، شارع أو مكان..."
+                  className="pr-9 bg-secondary/60 border-border rounded-xl"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="px-4 pb-2 flex gap-2 overflow-x-auto no-scrollbar">
+              {locationCategories.map(cat => (
+                <button
+                  key={cat.key}
+                  onClick={() => setLocCategory(cat.key)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                    locCategory === cat.key
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-muted-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex-1 overflow-auto px-4 pb-4 space-y-1.5">
+              {filteredTangierLocations.map((loc, i) => {
+                const dist = userLocation ? haversineKm(userLocation, { lat: loc.lat, lng: loc.lng }) : null;
+                const price = dist !== null ? calcPrice(dist) : null;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => selectTangierLocation(loc)}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/40 hover:bg-secondary/70 transition-colors text-right"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <MapPin className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{loc.name}</p>
+                      <p className="text-xs text-muted-foreground">{loc.area}</p>
+                    </div>
+                    {dist !== null && price !== null && (
+                      <div className="text-left shrink-0">
+                        <p className="text-xs text-muted-foreground">{dist.toFixed(1)} كم</p>
+                        <p className="text-xs font-bold text-primary">{price} DH</p>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+              {filteredTangierLocations.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground text-sm">لا توجد نتائج</div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <RoleSwitcher />
     </>
   );
