@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
 import NavigationLinks from "@/components/NavigationLinks";
+import RideChat from "@/components/RideChat";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 
 const PRICE_PER_KM = 3;
