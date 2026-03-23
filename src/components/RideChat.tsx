@@ -82,21 +82,36 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
     }
   }, [messages, open]);
 
-  const handleSend = async () => {
-    if (!text.trim() || !userId || sending) return;
+  const handleSend = async (msgText?: string) => {
+    const content = msgText || text.trim();
+    if (!content || !userId || sending) return;
     setSending(true);
     try {
       await supabase.from("ride_messages" as any).insert({
         ride_id: rideId,
         sender_id: userId,
-        message: text.trim(),
+        message: content,
       } as any);
-      setText("");
+      if (!msgText) setText("");
     } catch (e) {
       console.error("Chat send error:", e);
     } finally {
       setSending(false);
     }
+  };
+
+  const handleSendLocation = () => {
+    if (!navigator.geolocation || sending) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = `📍 موقعي الحالي\nhttps://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+        handleSend(loc);
+      },
+      () => {
+        console.error("Location permission denied");
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
   };
 
   const accentColor = role === "driver" ? "emerald" : "blue";
