@@ -367,12 +367,49 @@ const AdminDashboard = () => {
   ];
 
   // ── AI Agent ──
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    Array.from(files).forEach(file => {
+      const isVideo = file.type.startsWith("video/");
+      const isImage = file.type.startsWith("image/");
+      if (!isImage && !isVideo) {
+        toast({ title: "نوع الملف غير مدعوم", description: "يُرجى إرسال صورة أو فيديو فقط", variant: "destructive" });
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ title: "الملف كبير جداً", description: "الحد الأقصى 10 ميغابايت", variant: "destructive" });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        setAiAttachments(prev => [...prev, {
+          type: isVideo ? "video" : "image",
+          url: dataUrl,
+          name: file.name,
+        }]);
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
+  };
+
+  const removeAttachment = (index: number) => {
+    setAiAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
   const sendAiMessage = async (text: string) => {
     const safeText = sanitizePlainText(text, 4000);
-    if (!safeText || aiLoading) return;
-    const userMsg: AiMsg = { role: "user", content: safeText };
+    if ((!safeText && aiAttachments.length === 0) || aiLoading) return;
+    const userMsg: AiMsg = {
+      role: "user",
+      content: safeText || (aiAttachments.length > 0 ? "حلل هذا الملف" : ""),
+      attachments: aiAttachments.length > 0 ? [...aiAttachments] : undefined,
+    };
     setAiMessages(prev => [...prev, userMsg]);
     setAiInput("");
+    setAiAttachments([]);
     setAiLoading(true);
     await callAdminAI({
       messages: [...aiMessages, userMsg],
