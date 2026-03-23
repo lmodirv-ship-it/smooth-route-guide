@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, DollarSign, TrendingUp, Calendar, Car, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { driverNetEarnings, COMMISSION_RATE } from "@/lib/pricing";
 
 const DriverEarnings = () => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ const DriverEarnings = () => {
     const dayTrips = trips.filter(t => t.created_at.slice(0, 10) === todayStr);
     const weekTrips = trips.filter(t => new Date(t.created_at).getTime() >= weekAgo);
 
-    const sum = (arr: any[]) => arr.reduce((s, t) => s + Number(t.fare || 0), 0);
+    const sum = (arr: any[]) => driverNetEarnings(arr.reduce((s, t) => s + Number(t.fare || 0), 0));
 
     return {
       day: { total: sum(dayTrips), trips: dayTrips.length, avg: dayTrips.length > 0 ? Math.round(sum(dayTrips) / dayTrips.length) : 0 },

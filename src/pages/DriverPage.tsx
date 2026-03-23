@@ -1,12 +1,13 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star, Navigation, Volume2 } from "lucide-react";
+import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star, Navigation, Volume2, Percent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
 import { notifyNewOrder, unlockAudio } from "@/lib/notificationSound";
+import { driverNetEarnings, COMMISSION_RATE } from "@/lib/pricing";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 const PRICE_PER_KM = 3;
@@ -97,7 +98,8 @@ const DriverPage = () => {
         .gte("created_at", todayStart.toISOString());
 
       const trips = completedRides?.length || 0;
-      const earnings = completedRides?.reduce((sum, r) => sum + (Number(r.price) || 0), 0) || 0;
+      const grossEarnings = completedRides?.reduce((sum, r) => sum + (Number(r.price) || 0), 0) || 0;
+      const earnings = driverNetEarnings(grossEarnings);
 
       // Rating
       const { data: driverData } = await supabase
@@ -281,9 +283,10 @@ const DriverPage = () => {
 
       {/* Stats bar */}
       <div className="shrink-0 px-4 py-3 border-b border-white/5 bg-[#0d1320]">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-2">
           <StatsCard icon={TrendingUp} label="رحلات اليوم" value={`${todayStats.trips}`} accent="text-emerald-400" bg="bg-emerald-500/10" />
-          <StatsCard icon={Wallet} label="أرباح اليوم" value={`${todayStats.earnings} DH`} accent="text-orange-400" bg="bg-orange-500/10" />
+          <StatsCard icon={Wallet} label="صافي الأرباح" value={`${todayStats.earnings} DH`} accent="text-orange-400" bg="bg-orange-500/10" />
+          <StatsCard icon={Percent} label="عمولة المنصة" value={`${Math.round(COMMISSION_RATE * 100)}%`} accent="text-red-400" bg="bg-red-500/10" />
           <StatsCard icon={Star} label="التقييم" value={todayStats.rating > 0 ? todayStats.rating.toFixed(1) : "—"} accent="text-yellow-400" bg="bg-yellow-500/10" />
         </div>
       </div>
