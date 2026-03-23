@@ -245,6 +245,7 @@ const ClientHome = () => {
       return;
     }
 
+    const destParsed = destinationCoords?.split(",").map(Number);
     navigate("/client/booking", {
       state: {
         ride: {
@@ -253,6 +254,10 @@ const ClientHome = () => {
           distance: estimate ? `${estimate.d2Km} كم` : "—",
           duration: estimate ? `${estimate.d2DurationMin} دقيقة` : "—",
           price: estimate?.totalPrice ?? 0,
+          pickupLat: userLocation?.lat,
+          pickupLng: userLocation?.lng,
+          destLat: destParsed?.[0],
+          destLng: destParsed?.[1],
         },
       },
     });
