@@ -57,6 +57,9 @@ const DriverPage = () => {
   const [todayStats, setTodayStats] = useState({ trips: 0, earnings: 0, rating: 0 });
   const [driverName, setDriverName] = useState("السائق");
   const [activeRideId, setActiveRideId] = useState<string | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const prevOrderCountRef = useRef(0);
+  const initialLoadRef = useRef(true);
 
   // Check for active ride & fetch stats
   useEffect(() => {
