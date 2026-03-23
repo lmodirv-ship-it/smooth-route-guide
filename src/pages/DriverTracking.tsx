@@ -177,9 +177,9 @@ const DriverTracking = () => {
       if (error) throw error;
 
       if (newStatus === "completed") {
-        navigate("/driver-panel");
+        navigate("/driver");
       } else if (newStatus === "cancelled") {
-        navigate("/driver-panel");
+        navigate("/driver");
       }
     } catch (err: any) {
       console.error("Status update error:", err);
@@ -203,7 +203,7 @@ const DriverTracking = () => {
     <div className="h-screen flex flex-col bg-[#0a0f1a]" dir="rtl">
       {/* ─── Header ─── */}
       <div className="shrink-0 bg-[#0a0f1a]/90 backdrop-blur-sm border-b border-white/5 px-4 py-3 flex items-center justify-between z-50">
-        <button onClick={() => navigate("/driver-panel")} className="p-2 rounded-full hover:bg-white/5">
+        <button onClick={() => navigate("/driver")} className="p-2 rounded-full hover:bg-white/5">
           <ArrowRight className="w-5 h-5 text-white/70" />
         </button>
         <span className="font-bold text-white">التوصيل</span>
@@ -348,7 +348,7 @@ const DriverTracking = () => {
               <p className="text-white/40 text-sm mt-1">
                 الأجرة: <span className="text-orange-400 font-bold">{totalTripPrice || ride.price || "—"} DH</span>
               </p>
-              <Button onClick={() => navigate("/driver-panel")}
+              <Button onClick={() => navigate("/driver")}
                 className="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold">
                 العودة للطلبات
               </Button>

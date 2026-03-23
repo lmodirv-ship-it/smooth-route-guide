@@ -19,7 +19,6 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 // Driver pages
-import DriverDashboard from "./pages/DriverDashboard";
 import DriverHistory from "./pages/DriverHistory";
 import DriverNotifications from "./pages/DriverNotifications";
 import DriverSettings from "./pages/DriverSettings";
@@ -33,15 +32,13 @@ import DriverSupport from "./pages/driver/DriverSupport";
 import DriverStatus from "./pages/driver/DriverStatus";
 import DriverEarnings from "./pages/driver/DriverEarnings";
 import DriverDelivery from "./pages/driver/DriverDelivery";
-
-// Client pages
-import ClientHome from "./pages/ClientHome";
-import ClientBooking from "./pages/client/ClientBooking";
-import CustomerPage from "./pages/CustomerPage";
-import CustomerTracking from "./pages/CustomerTracking";
 import DriverPage from "./pages/DriverPage";
 import DriverTracking from "./pages/DriverTracking";
-import RideTracking from "./pages/client/RideTracking";
+
+// Client pages
+import CustomerPage from "./pages/CustomerPage";
+import CustomerTracking from "./pages/CustomerTracking";
+import ClientBooking from "./pages/client/ClientBooking";
 import ClientPayment from "./pages/client/ClientPayment";
 import ClientWallet from "./pages/client/ClientWallet";
 import ClientHistory from "./pages/client/ClientHistory";
@@ -124,14 +121,9 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/setup-admin" element={<SessionGuard><SetupAdmin /></SessionGuard>} />
 
-          {/* New Clean Customer/Driver Pages (Supabase only) */}
-          <Route path="/customer" element={<SessionGuard><CustomerPage /></SessionGuard>} />
-          <Route path="/customer-tracking" element={<SessionGuard><CustomerTracking /></SessionGuard>} />
-          <Route path="/driver-panel" element={<SessionGuard><DriverPage /></SessionGuard>} />
-          <Route path="/driver-tracking" element={<SessionGuard><DriverTracking /></SessionGuard>} />
-
-          {/* Driver App - Protected */}
-          <Route path="/driver" element={<AuthGuard requiredRole="driver"><DriverDashboard /></AuthGuard>} />
+          {/* Driver App - Protected (unified Supabase) */}
+          <Route path="/driver" element={<AuthGuard requiredRole="driver"><DriverPage /></AuthGuard>} />
+          <Route path="/driver/tracking" element={<AuthGuard requiredRole="driver"><DriverTracking /></AuthGuard>} />
           <Route path="/driver/history" element={<AuthGuard requiredRole="driver"><DriverHistory /></AuthGuard>} />
           <Route path="/driver/notifications" element={<AuthGuard requiredRole="driver"><DriverNotifications /></AuthGuard>} />
           <Route path="/driver/settings" element={<AuthGuard requiredRole="driver"><DriverSettings /></AuthGuard>} />
@@ -145,16 +137,22 @@ const App = () => (
           <Route path="/driver/status" element={<AuthGuard requiredRole="driver"><DriverStatus /></AuthGuard>} />
           <Route path="/driver/earnings" element={<AuthGuard requiredRole="driver"><DriverEarnings /></AuthGuard>} />
           <Route path="/driver/delivery" element={<AuthGuard requiredRole="driver"><DriverDelivery /></AuthGuard>} />
+          {/* Legacy redirect */}
+          <Route path="/driver-panel" element={<AuthGuard requiredRole="driver"><DriverPage /></AuthGuard>} />
+          <Route path="/driver-tracking" element={<AuthGuard requiredRole="driver"><DriverTracking /></AuthGuard>} />
 
-          {/* Client App - Protected */}
-          <Route path="/client" element={<AuthGuard requiredRole="client"><ClientHome /></AuthGuard>} />
+          {/* Client App - Protected (unified Supabase) */}
+          <Route path="/client" element={<AuthGuard requiredRole="client"><CustomerPage /></AuthGuard>} />
+          <Route path="/client/tracking" element={<AuthGuard requiredRole="client"><CustomerTracking /></AuthGuard>} />
           <Route path="/client/booking" element={<AuthGuard requiredRole="client"><ClientBooking /></AuthGuard>} />
-          <Route path="/client/tracking" element={<AuthGuard requiredRole="client"><RideTracking /></AuthGuard>} />
           <Route path="/client/payment" element={<AuthGuard requiredRole="client"><ClientPayment /></AuthGuard>} />
           <Route path="/client/wallet" element={<AuthGuard requiredRole="client"><ClientWallet /></AuthGuard>} />
           <Route path="/client/history" element={<AuthGuard requiredRole="client"><ClientHistory /></AuthGuard>} />
           <Route path="/client/profile" element={<AuthGuard requiredRole="client"><ClientProfile /></AuthGuard>} />
           <Route path="/client/support" element={<AuthGuard requiredRole="client"><ClientSupport /></AuthGuard>} />
+          {/* Legacy redirects */}
+          <Route path="/customer" element={<AuthGuard requiredRole="client"><CustomerPage /></AuthGuard>} />
+          <Route path="/customer-tracking" element={<AuthGuard requiredRole="client"><CustomerTracking /></AuthGuard>} />
 
           {/* Delivery App - Protected */}
           <Route path="/delivery" element={<AuthGuard requiredRole="delivery"><DeliveryHome /></AuthGuard>} />

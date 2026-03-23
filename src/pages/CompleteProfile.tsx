@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";
 
 const roleDashboard: Record<string, string> = {
-  driver: "/driver-panel",
+  driver: "/driver",
   user: "/client",
   admin: "/admin",
   agent: "/call-center",

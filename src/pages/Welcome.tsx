@@ -11,7 +11,7 @@ type RoleId = "driver" | "client" | "delivery";
 type StoredRole = RoleId | "admin" | "agent" | "user";
 
 const roleDashboardPaths: Record<StoredRole, string> = {
-  driver: "/driver-panel",
+  driver: "/driver",
   client: "/client",
   delivery: "/delivery",
   admin: "/admin",
