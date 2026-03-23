@@ -1,10 +1,7 @@
 /* @refresh reset */
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { doc, setDoc } from 'firebase/firestore';
-import { toast } from '@/hooks/use-toast';
-import { auth, db } from '@/lib/firebase';
-import { supabase } from '@/integrations/supabase/client';
-import { syncDriverOrderMetrics } from '@/lib/orderService';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DriverCoordinates,
   DriverLocationWatchId,
@@ -13,98 +10,165 @@ import {
   requestDriverLocationPermission,
   startDriverLocationWatch,
   stopDriverLocationWatch,
-} from '@/lib/driverGeolocation';
+  isNativePlatform,
+} from "@/lib/driverGeolocation";
+
+/* ── Config ─────────────────────────────────────────────── */
+
+/** Minimum interval (ms) between DB writes */
+const DB_THROTTLE_MS = 4000;
+
+/** If no update for this long (ms), consider location stale and auto-retry */
+const STALE_TIMEOUT_MS = 30000;
+
+/** Max auto-retry attempts before giving up */
+const MAX_AUTO_RETRIES = 3;
+
+/* ── Types ──────────────────────────────────────────────── */
 
 interface DriverLocation {
   lat: number;
   lng: number;
+  accuracy?: number;
 }
 
 const isPermissionDeniedError = (error: GeolocationPositionError | Error) => {
-  if ('code' in error && error.code === 1) return true;
+  if ("code" in error && (error as GeolocationPositionError).code === 1) return true;
   return /denied|permission/i.test(error.message);
 };
+
+/* ── Hook ───────────────────────────────────────────────── */
 
 export function useDriverGeolocation(isOnline: boolean) {
   const [location, setLocation] = useState<DriverLocation | null>(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [requiresSettings, setRequiresSettings] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [locationAge, setLocationAge] = useState<number | null>(null);
+
   const watchIdRef = useRef<DriverLocationWatchId | null>(null);
   const lastDbUpdateRef = useRef<number>(0);
+  const lastLocationTimeRef = useRef<number>(0);
+  const staleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const autoRetryCountRef = useRef(0);
+  const mountedRef = useRef(true);
+
+  /* ── Cleanup helper ──────────────────────────────────── */
 
   const clearWatch = useCallback(async () => {
     await stopDriverLocationWatch(watchIdRef.current);
     watchIdRef.current = null;
   }, []);
 
-  const updateLocationInDb = useCallback(async (lat: number, lng: number) => {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    const now = Date.now();
-    if (now - lastDbUpdateRef.current < 4000) return; // throttle to ~4s
-    lastDbUpdateRef.current = now;
-
-    try {
-      // Update Firestore (legacy / order metrics)
-      await setDoc(doc(db, 'drivers', user.uid), {
-        uid: user.uid,
-        currentLat: lat,
-        currentLng: lng,
-        current_lat: lat,
-        current_lng: lng,
-        isOnline: true,
-        updatedAt: new Date().toISOString(),
-      }, { merge: true });
-
-      await syncDriverOrderMetrics(user.uid, lat, lng);
-    } catch {
-      // silent fail for Firestore
-    }
-
-    try {
-      // Update Supabase drivers table for realtime tracking
-      await supabase
-        .from('drivers')
-        .update({
-          current_lat: lat,
-          current_lng: lng,
-          location_updated_at: new Date().toISOString(),
-          status: 'active',
-        })
-        .eq('user_id', user.uid);
-    } catch {
-      // silent fail for Supabase
+  const clearStaleTimer = useCallback(() => {
+    if (staleTimerRef.current) {
+      clearInterval(staleTimerRef.current);
+      staleTimerRef.current = null;
     }
   }, []);
 
-  const handleLocationSuccess = useCallback((coords: DriverCoordinates) => {
-    setLocation(coords);
-    setLoading(false);
-    setPermissionDenied(false);
-    setRequiresSettings(false);
-    void updateLocationInDb(coords.lat, coords.lng);
-  }, [updateLocationInDb]);
+  /* ── DB update (Supabase only) ───────────────────────── */
 
-  const handleLocationError = useCallback((error: GeolocationPositionError | Error) => {
-    setLoading(false);
+  const updateLocationInDb = useCallback(
+    async (lat: number, lng: number) => {
+      const now = Date.now();
+      if (now - lastDbUpdateRef.current < DB_THROTTLE_MS) return;
+      lastDbUpdateRef.current = now;
 
-    if (isPermissionDeniedError(error)) {
-      setPermissionDenied(true);
-      return;
-    }
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
 
-    toast({
-      title: 'تعذر تحديد الموقع',
-      description: 'تأكد من تشغيل GPS ثم اضغط إعادة المحاولة.',
-      variant: 'destructive',
-    });
-  }, []);
+        await supabase
+          .from("drivers")
+          .update({
+            current_lat: lat,
+            current_lng: lng,
+            location_updated_at: new Date().toISOString(),
+            status: "active",
+          })
+          .eq("user_id", user.id);
+      } catch (err) {
+        console.warn("[Location] DB update failed:", err);
+      }
+    },
+    []
+  );
 
-  const startWatching = useCallback(async () => {
-    if (!navigator.geolocation) {
-      toast({ title: 'خطأ', description: 'هذا الجهاز لا يدعم تحديد الموقع.', variant: 'destructive' });
+  /* ── Location success handler ────────────────────────── */
+
+  const handleLocationSuccess = useCallback(
+    (coords: DriverCoordinates) => {
+      if (!mountedRef.current) return;
+
+      lastLocationTimeRef.current = Date.now();
+      autoRetryCountRef.current = 0; // reset retry counter on success
+
+      setLocation({
+        lat: coords.lat,
+        lng: coords.lng,
+        accuracy: coords.accuracy,
+      });
+      setLocationAge(0);
+      setLoading(false);
+      setPermissionDenied(false);
+      setRequiresSettings(false);
+
+      void updateLocationInDb(coords.lat, coords.lng);
+    },
+    [updateLocationInDb]
+  );
+
+  /* ── Location error handler ──────────────────────────── */
+
+  const handleLocationError = useCallback(
+    (error: GeolocationPositionError | Error) => {
+      if (!mountedRef.current) return;
+      setLoading(false);
+
+      if (isPermissionDeniedError(error)) {
+        setPermissionDenied(true);
+        setRequiresSettings(isNativePlatform);
+        return;
+      }
+
+      console.warn("[Location] Error:", error.message);
+
+      // Auto-retry for transient errors
+      if (autoRetryCountRef.current < MAX_AUTO_RETRIES) {
+        autoRetryCountRef.current += 1;
+        console.log(
+          `[Location] Auto-retry ${autoRetryCountRef.current}/${MAX_AUTO_RETRIES}`
+        );
+        setTimeout(() => {
+          if (mountedRef.current) void startWatchingInternal();
+        }, 2000 * autoRetryCountRef.current);
+        return;
+      }
+
+      toast({
+        title: "تعذر تحديد الموقع",
+        description: "تأكد من تشغيل GPS ثم اضغط إعادة المحاولة.",
+        variant: "destructive",
+      });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  /* ── Start watching ──────────────────────────────────── */
+
+  const startWatchingInternal = useCallback(async () => {
+    if (!mountedRef.current) return;
+
+    if (!navigator.geolocation && !isNativePlatform) {
+      toast({
+        title: "خطأ",
+        description: "هذا الجهاز لا يدعم تحديد الموقع.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -114,90 +178,163 @@ export function useDriverGeolocation(isOnline: boolean) {
     setRequiresSettings(false);
 
     try {
-      const existingPermissionState = await checkDriverLocationPermission();
-      if (existingPermissionState === 'denied') {
-        setLoading(false);
-        setPermissionDenied(true);
-        setRequiresSettings(true);
-        return;
+      // Check existing permission on native
+      if (isNativePlatform) {
+        const existingState = await checkDriverLocationPermission();
+        if (existingState === "denied") {
+          setLoading(false);
+          setPermissionDenied(true);
+          setRequiresSettings(true);
+          return;
+        }
+
+        const permState = await requestDriverLocationPermission();
+        if (permState === "denied") {
+          setLoading(false);
+          setPermissionDenied(true);
+          setRequiresSettings(true);
+          return;
+        }
+        if (permState === "prompt-with-rationale") {
+          setLoading(false);
+          setPermissionDenied(true);
+          return;
+        }
       }
 
-      const permissionState = await requestDriverLocationPermission();
-      if (permissionState === 'denied') {
-        setLoading(false);
-        setPermissionDenied(true);
-        setRequiresSettings(true);
-        return;
-      }
+      // Get initial position
+      const currentPos = await getDriverCurrentPosition();
+      handleLocationSuccess(currentPos);
 
-      if (permissionState === 'prompt-with-rationale') {
-        setLoading(false);
-        setPermissionDenied(true);
-        return;
-      }
-
-      const currentPosition = await getDriverCurrentPosition();
-      handleLocationSuccess(currentPosition);
-      watchIdRef.current = await startDriverLocationWatch(handleLocationSuccess, handleLocationError);
+      // Start continuous watch
+      watchIdRef.current = await startDriverLocationWatch(
+        handleLocationSuccess,
+        handleLocationError
+      );
     } catch (error) {
-      handleLocationError(error instanceof Error ? error : new Error('LOCATION_REQUEST_FAILED'));
+      handleLocationError(
+        error instanceof Error ? error : new Error("LOCATION_REQUEST_FAILED")
+      );
     }
   }, [clearWatch, handleLocationError, handleLocationSuccess]);
 
+  /* ── Stale detection timer ───────────────────────────── */
+
+  const startStaleDetection = useCallback(() => {
+    clearStaleTimer();
+
+    staleTimerRef.current = setInterval(() => {
+      if (!mountedRef.current) return;
+
+      const elapsed = Date.now() - lastLocationTimeRef.current;
+      setLocationAge(elapsed);
+
+      // If location is stale and we haven't exceeded retries, restart watch
+      if (
+        elapsed > STALE_TIMEOUT_MS &&
+        autoRetryCountRef.current < MAX_AUTO_RETRIES
+      ) {
+        console.warn("[Location] Stale location detected, restarting watch...");
+        autoRetryCountRef.current += 1;
+        void clearWatch().then(() => {
+          if (mountedRef.current) void startWatchingInternal();
+        });
+      }
+    }, 10000); // check every 10s
+  }, [clearStaleTimer, clearWatch, startWatchingInternal]);
+
+  /* ── Public retry ────────────────────────────────────── */
+
   const retryLocationAccess = useCallback(() => {
-    void startWatching();
-  }, [startWatching]);
+    autoRetryCountRef.current = 0;
+    void startWatchingInternal();
+  }, [startWatchingInternal]);
+
+  /* ── Stop watching ───────────────────────────────────── */
 
   const stopWatching = useCallback(async () => {
     await clearWatch();
+    clearStaleTimer();
     setLocation(null);
     setLoading(false);
     setPermissionDenied(false);
     setRequiresSettings(false);
-
-    const user = auth.currentUser;
-    if (!user) return;
+    setLocationAge(null);
 
     try {
-      await setDoc(doc(db, 'drivers', user.uid), {
-        currentLat: null,
-        currentLng: null,
-        current_lat: null,
-        current_lng: null,
-        isOnline: false,
-        updatedAt: new Date().toISOString(),
-      }, { merge: true });
-    } catch {
-      // silent fail
-    }
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
 
-    try {
       await supabase
-        .from('drivers')
+        .from("drivers")
         .update({
           current_lat: null,
           current_lng: null,
-          status: 'inactive',
+          status: "inactive",
           location_updated_at: new Date().toISOString(),
         })
-        .eq('user_id', user.uid);
+        .eq("user_id", user.id);
     } catch {
       // silent fail
     }
-  }, [clearWatch]);
+  }, [clearWatch, clearStaleTimer]);
+
+  /* ── Lifecycle ───────────────────────────────────────── */
 
   useEffect(() => {
+    mountedRef.current = true;
+
     if (isOnline) {
-      void startWatching();
+      void startWatchingInternal();
+      startStaleDetection();
     } else {
       void stopWatching();
     }
 
     return () => {
+      mountedRef.current = false;
       void clearWatch();
+      clearStaleTimer();
     };
-  }, [clearWatch, isOnline, startWatching, stopWatching]);
+  }, [isOnline, startWatchingInternal, stopWatching, startStaleDetection, clearWatch, clearStaleTimer]);
 
-  return { location, permissionDenied, requiresSettings, loading, retryLocationAccess };
+  /* ── App resume recovery (Capacitor) ─────────────────── */
+
+  useEffect(() => {
+    if (!isNativePlatform) return;
+
+    const handleResume = () => {
+      console.log("[Location] App resumed — refreshing location...");
+      if (isOnline && mountedRef.current) {
+        autoRetryCountRef.current = 0;
+        void startWatchingInternal();
+      }
+    };
+
+    // Capacitor App plugin for resume events
+    let cleanup: (() => void) | undefined;
+
+    import("@capacitor/app").then(({ App }) => {
+      App.addListener("resume", handleResume).then((handle) => {
+        cleanup = () => handle.remove();
+      });
+    }).catch(() => {
+      // App plugin not available
+    });
+
+    return () => {
+      cleanup?.();
+    };
+  }, [isOnline, startWatchingInternal]);
+
+  return {
+    location,
+    permissionDenied,
+    requiresSettings,
+    loading,
+    locationAge,
+    retryLocationAccess,
+  };
 }
-
