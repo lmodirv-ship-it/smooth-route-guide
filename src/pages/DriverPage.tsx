@@ -1,11 +1,12 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star, Navigation } from "lucide-react";
+import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star, Navigation, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
+import { notifyNewOrder, unlockAudio } from "@/lib/notificationSound";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 const PRICE_PER_KM = 3;
@@ -56,6 +57,9 @@ const DriverPage = () => {
   const [todayStats, setTodayStats] = useState({ trips: 0, earnings: 0, rating: 0 });
   const [driverName, setDriverName] = useState("السائق");
   const [activeRideId, setActiveRideId] = useState<string | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const prevOrderCountRef = useRef(0);
+  const initialLoadRef = useRef(true);
 
   // Check for active ride & fetch stats
   useEffect(() => {
@@ -148,8 +152,17 @@ const DriverPage = () => {
     const { data, error } = await supabase
       .from("ride_requests").select("*").eq("status", "pending")
       .order("created_at", { ascending: false });
-    if (!error && data) setOrders(data as RideRow[]);
-  }, []);
+    if (!error && data) {
+      const newCount = data.length;
+      // Play sound only if new orders appeared (not on initial load)
+      if (!initialLoadRef.current && newCount > prevOrderCountRef.current && soundEnabled) {
+        notifyNewOrder();
+      }
+      initialLoadRef.current = false;
+      prevOrderCountRef.current = newCount;
+      setOrders(data as RideRow[]);
+    }
+  }, [soundEnabled]);
 
   useEffect(() => {
     fetchOrders();
@@ -228,7 +241,7 @@ const DriverPage = () => {
   const cityName = driverLocation ? detectCity(driverLocation) : "جارٍ التحديد...";
 
   return (
-    <div className="h-screen flex flex-col bg-[#0a0f1a]" dir="rtl">
+    <div className="h-screen flex flex-col bg-[#0a0f1a]" dir="rtl" onClick={() => unlockAudio()}>
       {/* Map */}
       <div className="relative h-[30vh] min-h-[200px] shrink-0">
         <LeafletMap
@@ -278,8 +291,19 @@ const DriverPage = () => {
       {/* Orders Table */}
       <div className="flex-1 overflow-hidden flex flex-col">
         <div className="px-5 py-2.5 flex items-center justify-between border-b border-white/5 shrink-0">
-          <div className="bg-emerald-500/15 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">
-            {nearbyOrders.length}
+          <div className="flex items-center gap-2">
+            <div className="bg-emerald-500/15 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">
+              {nearbyOrders.length}
+            </div>
+            <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className={`p-1.5 rounded-full transition-colors ${
+                soundEnabled ? "bg-emerald-500/15 text-emerald-400" : "bg-white/5 text-white/30"
+              }`}
+              title={soundEnabled ? "إيقاف الصوت" : "تشغيل الصوت"}
+            >
+              <Volume2 className="w-3.5 h-3.5" />
+            </button>
           </div>
           <h2 className="text-white font-bold text-sm flex items-center gap-2">
             <Route className="w-4 h-4 text-emerald-400" />
