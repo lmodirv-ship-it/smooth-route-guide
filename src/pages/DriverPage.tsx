@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Navigation, Loader2, CheckCircle, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ interface RideRow {
 }
 
 const DriverPage = () => {
+  const navigate = useNavigate();
   const [driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [orders, setOrders] = useState<RideRow[]>([]);
   const [accepting, setAccepting] = useState<string | null>(null);
@@ -130,6 +132,7 @@ const DriverPage = () => {
       if (error) throw error;
       toast({ title: "تم قبول الطلب ✅" });
       setOrders((prev) => prev.filter((o) => o.id !== orderId));
+      navigate(`/driver-tracking?id=${orderId}`);
     } catch (err: any) {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
     } finally {
