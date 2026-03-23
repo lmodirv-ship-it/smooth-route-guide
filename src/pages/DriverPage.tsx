@@ -428,6 +428,8 @@ const DriverPage = () => {
           )}
         </div>
       </div>
+
+      <BottomNav role="driver" />
     </div>
   );
 };
