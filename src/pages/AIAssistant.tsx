@@ -157,6 +157,11 @@ const AIAssistant = () => {
   const send = async (text: string) => {
     const safeText = sanitizePlainText(text, 4000);
     if (!safeText || isLoading) return;
+    const validation = validateChatMessage(safeText);
+    if (!validation.allowed) {
+      toast({ title: "⚠️ رسالة محظورة", description: validation.reason, variant: "destructive" });
+      return;
+    }
     const userMsg: Msg = { role: "user", content: safeText };
     setMessages((p) => [...p, userMsg]);
     setInput("");
