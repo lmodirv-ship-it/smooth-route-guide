@@ -180,6 +180,32 @@ const LeafletMap = ({
     });
   }, [nearbyDrivers]);
 
+  // Route rendering (pickup → destination line + markers)
+  useEffect(() => {
+    const layer = routeLayerRef.current;
+    const map = mapInstanceRef.current;
+    if (!layer || !map) return;
+
+    layer.clearLayers();
+    if (!route) return;
+
+    const { pickup, destination } = route;
+    const pickupLatLng: L.LatLngExpression = [pickup.lat, pickup.lng];
+    const destLatLng: L.LatLngExpression = [destination.lat, destination.lng];
+
+    L.marker(pickupLatLng, { icon: pickupIcon }).bindPopup("نقطة الانطلاق").addTo(layer);
+    L.marker(destLatLng, { icon: destinationIcon }).bindPopup("الوجهة").addTo(layer);
+
+    L.polyline([pickupLatLng, destLatLng], {
+      color: "#10b981",
+      weight: 4,
+      opacity: 0.8,
+      dashArray: "10, 8",
+    }).addTo(layer);
+
+    map.fitBounds(L.latLngBounds([pickupLatLng, destLatLng]).pad(0.3));
+  }, [route]);
+
   return (
     <div className={`${className} relative`}>
       <div ref={mapElementRef} className="h-full w-full" />
