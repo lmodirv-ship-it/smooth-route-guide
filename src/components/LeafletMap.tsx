@@ -124,6 +124,10 @@ const LeafletMap = ({
     mapInstanceRef.current = map;
     tileLayerRef.current = tileLayer;
 
+    map.on('click', (e: L.LeafletMouseEvent) => {
+      if (onMapClick) onMapClick({ lat: e.latlng.lat, lng: e.latlng.lng });
+    });
+
     return () => {
       staticMarkerRef.current = null;
       driverMarkerRef.current = null;
