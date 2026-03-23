@@ -443,6 +443,8 @@ const CustomerPage = () => {
         {showPickupPicker && <LocationPicker type="pickup" onClose={() => { setShowPickupPicker(false); setSearchQuery(""); setActiveCategory("all"); }} />}
         {showDestPicker && <LocationPicker type="dest" onClose={() => { setShowDestPicker(false); setSearchQuery(""); setActiveCategory("all"); }} />}
       </AnimatePresence>
+
+      <BottomNav role="client" />
     </div>
   );
 };
