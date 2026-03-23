@@ -51,7 +51,7 @@ interface RideRequest {
   user_id: string;
 }
 
-type AiMsg = { role: "user" | "assistant"; content: string };
+type AiMsg = { role: "user" | "assistant"; content: string; attachments?: { type: "image" | "video"; url: string; name: string }[] };
 
 // ── Donut SVG Component (no recharts needed) ──
 const DonutChart = ({ online, offline }: { online: number; offline: number }) => {
