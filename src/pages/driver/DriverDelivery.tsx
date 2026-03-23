@@ -52,7 +52,7 @@ const DriverDelivery = () => {
   return (
     <div className="min-h-screen gradient-dark pb-6" dir="rtl">
       <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
-        <button onClick={() => navigate("/driver")} className="p-2"><ArrowRight className="w-5 h-5 text-muted-foreground" /></button>
+        <button onClick={() => navigate("/driver-panel")} className="p-2"><ArrowRight className="w-5 h-5 text-muted-foreground" /></button>
         <div className="flex items-center gap-2">
           <img src={logo} alt="HN" className="w-7 h-7" />
           <span className="font-bold text-gradient-primary text-lg">التوصيل</span>
@@ -84,7 +84,7 @@ const DriverDelivery = () => {
                   <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-success" /><span className="text-foreground">{order.pickupAddress}</span></div>
                   <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-destructive" /><span className="text-foreground">{order.deliveryAddress}</span></div>
                 </div>
-                <Button onClick={() => navigate("/driver")} className="w-full gradient-primary text-primary-foreground">اذهب لقبول الطلب من الرئيسية</Button>
+                <Button onClick={() => navigate("/driver-panel")} className="w-full gradient-primary text-primary-foreground">اذهب لقبول الطلب من الرئيسية</Button>
               </motion.div>
             ))}
           </>

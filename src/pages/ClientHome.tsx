@@ -293,7 +293,7 @@ const ClientHome = () => {
     }
 
     const destParsed = destinationCoords?.split(",").map(Number);
-    navigate("/client/booking", {
+    navigate("/customer/booking", {
       state: {
         ride: {
           pickup: userLocation ? "موقعي الحالي" : "طنجة",
@@ -525,10 +525,10 @@ const ClientHome = () => {
       <p className="text-muted-foreground text-sm">{profile?.email || profile?.phone || "عميل"}</p>
       <div className="w-full mt-6 space-y-3">
         {[
-          { label: "الملف الشخصي", icon: User, action: () => navigate("/client/profile") },
-          { label: "المحفظة", icon: Heart, action: () => navigate("/client/wallet") },
-          { label: "سجل الرحلات", icon: Car, action: () => navigate("/client/history") },
-          { label: "الدعم والمساعدة", icon: Phone, action: () => navigate("/client/support") },
+          { label: "الملف الشخصي", icon: User, action: () => navigate("/customer/profile") },
+          { label: "المحفظة", icon: Heart, action: () => navigate("/customer/wallet") },
+          { label: "سجل الرحلات", icon: Car, action: () => navigate("/customer/history") },
+          { label: "الدعم والمساعدة", icon: Phone, action: () => navigate("/customer/support") },
           { label: `الإشعارات غير المقروءة (${unreadNotifications})`, icon: MessageCircle, action: () => {} },
         ].map((item, i) => (
           <button

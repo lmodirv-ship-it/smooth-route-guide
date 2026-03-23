@@ -223,7 +223,7 @@ const DriverDashboard = () => {
       {isOnline && (
         <div className="px-4 mt-4">
           <div className="flex items-center justify-between mb-3">
-            <button onClick={() => navigate("/driver/delivery")} className="text-primary text-sm flex items-center gap-1">
+            <button onClick={() => navigate("/driver-panel/delivery")} className="text-primary text-sm flex items-center gap-1">
               عرض الكل <ChevronLeft className="w-4 h-4" />
             </button>
             <h2 className="font-bold text-foreground flex items-center gap-2">
@@ -254,7 +254,7 @@ const DriverDashboard = () => {
                 <TableBody>
                   {ordersWithDistance.map((order) => (
                     <TableRow key={order.id} className="border-border cursor-pointer hover:bg-primary/5 transition-colors"
-                      onClick={() => navigate("/driver/delivery")}>
+                      onClick={() => navigate("/driver-panel/delivery")}>
                       <TableCell className="text-right py-3">
                         <p className="text-sm text-foreground truncate max-w-[120px]">{order.deliveryAddress || "—"}</p>
                         <p className="text-xs text-muted-foreground">{order.clientName || "عميل"}</p>
@@ -303,7 +303,7 @@ const DriverDashboard = () => {
 
       <div className="px-4 mt-6">
         <div className="flex items-center justify-between mb-3">
-          <button onClick={() => navigate("/driver/history")} className="text-primary text-sm flex items-center gap-1">
+          <button onClick={() => navigate("/driver-panel/history")} className="text-primary text-sm flex items-center gap-1">
             عرض الكل <ChevronLeft className="w-4 h-4" />
           </button>
           <h2 className="font-bold text-foreground">آخر الرحلات</h2>
@@ -343,7 +343,7 @@ const DriverDashboard = () => {
     <>
     <div className="min-h-screen gradient-dark pb-24">
       <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
-        <button onClick={() => navigate("/driver/notifications")} className="p-2 relative">
+        <button onClick={() => navigate("/driver-panel/notifications")} className="p-2 relative">
           <Bell className="w-5 h-5 text-muted-foreground" />
           <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-destructive" />
         </button>
@@ -355,7 +355,7 @@ const DriverDashboard = () => {
           <button onClick={logout} className="p-2" title="تسجيل الخروج">
             <LogOut className="w-5 h-5 text-destructive" />
           </button>
-          <button onClick={() => navigate("/driver/settings")} className="p-2">
+          <button onClick={() => navigate("/driver-panel/settings")} className="p-2">
             <Menu className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
@@ -367,9 +367,9 @@ const DriverDashboard = () => {
         <div className="flex justify-around py-2">
           {[
             { id: "home", icon: Navigation, label: "الرئيسية" },
-            { id: "earnings", icon: BarChart3, label: "الأرباح", path: "/driver/earnings" },
-            { id: "wallet", icon: DollarSign, label: "المحفظة", path: "/driver/wallet" },
-            { id: "profile", icon: User, label: "حسابي", path: "/driver/profile" },
+            { id: "earnings", icon: BarChart3, label: "الأرباح", path: "/driver-panel/earnings" },
+            { id: "wallet", icon: DollarSign, label: "المحفظة", path: "/driver-panel/wallet" },
+            { id: "profile", icon: User, label: "حسابي", path: "/driver-panel/profile" },
           ].map((tab) => (
             <button key={tab.id}
               onClick={() => tab.path ? navigate(tab.path) : setActiveTab(tab.id)}

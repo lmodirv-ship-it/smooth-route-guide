@@ -36,11 +36,11 @@ const ClientProfile = () => {
   }, []);
 
   const menuItems = [
-    { icon: Clock, label: "سجل الرحلات", path: "/client/history", color: "text-primary" },
-    { icon: Wallet, label: "المحفظة", path: "/client/wallet", color: "text-info" },
-    { icon: Car, label: "طرق الدفع", path: "/client/payment", color: "text-success" },
+    { icon: Clock, label: "سجل الرحلات", path: "/customer/history", color: "text-primary" },
+    { icon: Wallet, label: "المحفظة", path: "/customer/wallet", color: "text-info" },
+    { icon: Car, label: "طرق الدفع", path: "/customer/payment", color: "text-success" },
     { icon: Bot, label: "المساعد الذكي", path: "/assistant", color: "text-primary" },
-    { icon: HelpCircle, label: "الدعم والمساعدة", path: "/client/support", color: "text-info" },
+    { icon: HelpCircle, label: "الدعم والمساعدة", path: "/customer/support", color: "text-info" },
   ];
 
   if (loading) return <div className="min-h-screen gradient-dark flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
