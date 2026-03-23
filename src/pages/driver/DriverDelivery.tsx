@@ -7,24 +7,31 @@ import LiveOrderMap from "@/components/LiveOrderMap";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
 import { ORDER_STATUS_META, subscribeDriverActiveOrder, subscribeDriverPendingOrders, updateOrderStatus, type OrderRecord, type OrderStatus } from "@/lib/orderService";
 import NavigationLinks from "@/components/NavigationLinks";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";
 
 const DriverDelivery = () => {
   const navigate = useNavigate();
-  const user = auth.currentUser;
+  const [userId, setUserId] = useState<string | null>(null);
   const [pendingOrders, setPendingOrders] = useState<OrderRecord[]>([]);
   const [activeOrder, setActiveOrder] = useState<OrderRecord | null>(null);
   const { location: driverLocation } = useDriverGeolocation(true);
 
   useEffect(() => {
-    if (!user) return;
-    const unsubPending = subscribeDriverPendingOrders(user.uid, setPendingOrders);
-    const unsubActive = subscribeDriverActiveOrder(user.uid, setActiveOrder);
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+    const unsubPending = subscribeDriverPendingOrders(userId, setPendingOrders);
+    const unsubActive = subscribeDriverActiveOrder(userId, setActiveOrder);
     return () => {
       unsubPending();
       unsubActive();
     };
-  }, [user]);
+  }, [userId]);
 
   const targetPosition = useMemo(() => {
     if (!activeOrder) return null;
