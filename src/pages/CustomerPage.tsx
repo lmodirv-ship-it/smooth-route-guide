@@ -24,7 +24,7 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
 }
 
 function calcPrice(km: number) {
-  return Math.max(10, Math.round(km * 3 + 5));
+  return Math.max(3, Math.round(km * 3));
 }
 
 const CustomerPage = () => {
@@ -387,8 +387,8 @@ const CustomerPage = () => {
                 {/* Pricing formula */}
                 <div className="px-5 py-3 bg-primary/5 border-t border-primary/10">
                   <p className="text-xs text-muted-foreground text-center">
-                    💡 {rideDistance.toFixed(1)} كم × 3 + 5 = <span className="font-bold text-primary">{price} DH</span>
-                    {price === 10 && " (الحد الأدنى)"}
+                    💡 {rideDistance.toFixed(1)} كم × 3 = <span className="font-bold text-primary">{price} DH</span>
+                    {price === 3 && " (الحد الأدنى)"}
                   </p>
                 </div>
               </div>
