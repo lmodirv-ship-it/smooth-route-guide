@@ -150,13 +150,32 @@ async function callAdminAI({ messages, onResult, onError }: {
 }) {
   const { data: { session } } = await supabase.auth.getSession();
   const accessToken = session?.access_token || null;
+
+  // Build multimodal messages for the API
+  const apiMessages = messages.map(msg => {
+    if (msg.attachments?.length) {
+      const contentParts: any[] = [];
+      if (msg.content) {
+        contentParts.push({ type: "text", text: msg.content });
+      }
+      for (const att of msg.attachments) {
+        contentParts.push({
+          type: "image_url",
+          image_url: { url: att.url, detail: "auto" },
+        });
+      }
+      return { role: msg.role, content: contentParts };
+    }
+    return { role: msg.role, content: msg.content };
+  });
+
   const resp = await fetch(AI_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages: apiMessages }),
   });
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({ error: "خطأ" }));
