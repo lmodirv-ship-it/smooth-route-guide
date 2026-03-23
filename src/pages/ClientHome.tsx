@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell,
   Menu,
@@ -17,10 +17,14 @@ import {
   Bot,
   LogOut,
   MapPin,
+  Search,
+  MapPinned,
+  X,
+  DollarSign,
 } from "lucide-react";
-// logout handled inline below
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import LeafletMap from "@/components/LeafletMap";
 import PlacesAutocomplete from "@/components/PlacesAutocomplete";
 import PriceEstimateCard from "@/components/PriceEstimateCard";
@@ -29,6 +33,7 @@ import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-logo.png";
+import { tangierLocations, locationCategories, TangierLocation } from "@/data/tangierLocations";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 
