@@ -232,7 +232,7 @@ const ManualBooking = () => {
           <div className="gradient-card rounded-2xl p-8 border border-success/30 text-center">
             <CheckCircle className="w-20 h-20 text-success mx-auto mb-4" />
             <h2 className="text-xl font-bold text-foreground">تم إرسال الطلب بنجاح!</h2>
-            <p className="text-sm text-muted-foreground mt-2">تم إنشاء الطلب وتعيين السائق من بيانات Firebase الحية.</p>
+            <p className="text-sm text-muted-foreground mt-2">تم إنشاء الطلب وتعيين السائق بنجاح.</p>
             <Button onClick={handleReset} className="mt-6 gradient-primary text-primary-foreground rounded-xl">
               حجز رحلة جديدة
             </Button>
