@@ -126,6 +126,12 @@ const RegisteredUsers = () => {
 
   const handleSaveRoles = async () => {
     if (!selectedUser || saving) return;
+
+    // Prevent admin from removing admin role from themselves
+    if (selectedUser.id === currentUserId && !selectedRoles.includes("admin")) {
+      toast({ title: "⚠️ لا يمكنك إزالة دور المسؤول عن نفسك", variant: "destructive" });
+      return;
+    }
     
     // Check if roles actually changed
     const sortedOld = [...selectedUser.roles].sort().join(",");
