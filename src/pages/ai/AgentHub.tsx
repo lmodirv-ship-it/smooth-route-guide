@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import { auth } from "@/lib/firebase";
-import { sanitizePlainText } from "@/lib/inputSecurity";
+import { sanitizePlainText, validateChatMessage } from "@/lib/inputSecurity";
+import { useToast } from "@/hooks/use-toast";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
