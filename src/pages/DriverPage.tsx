@@ -88,26 +88,30 @@ const DriverPage = () => {
   const ordersWithMeta = orders.map((order) => {
     let distToPickup: number | null = null;
     let eta: number | null = null;
-    let totalDistance = order.distance;
-    let totalPrice = order.price;
 
+    // مسافة السائق → نقطة الانطلاق
     if (driverLocation && order.pickup_lat && order.pickup_lng) {
       distToPickup = parseFloat(haversineKm(driverLocation, { lat: order.pickup_lat, lng: order.pickup_lng }).toFixed(1));
       eta = Math.max(2, Math.round(distToPickup * 2.5));
     }
 
-    // Recalculate distance/price if missing
-    if (!totalDistance && order.pickup_lat && order.pickup_lng && order.destination_lat && order.destination_lng) {
-      totalDistance = parseFloat(
+    // مسافة نقطة الانطلاق → الوجهة
+    let rideDistance: number | null = order.distance;
+    if (!rideDistance && order.pickup_lat && order.pickup_lng && order.destination_lat && order.destination_lng) {
+      rideDistance = parseFloat(
         haversineKm(
           { lat: order.pickup_lat, lng: order.pickup_lng },
           { lat: order.destination_lat, lng: order.destination_lng }
         ).toFixed(2)
       );
-      totalPrice = Math.round(BASE_FARE + totalDistance * PRICE_PER_KM);
     }
 
-    return { ...order, distToPickup, eta, totalDistance, totalPrice };
+    // المسافة الإجمالية = سائق→زبون + زبون→وجهة
+    const totalDistance = (distToPickup || 0) + (rideDistance || 0);
+    // السعر = 5 + (المسافة الإجمالية × 3)
+    const totalPrice = totalDistance > 0 ? Math.round(BASE_FARE + totalDistance * PRICE_PER_KM) : (order.price || null);
+
+    return { ...order, distToPickup, eta, totalDistance: parseFloat(totalDistance.toFixed(1)), totalPrice, rideDistance };
   });
 
   const handleAccept = async (orderId: string) => {
