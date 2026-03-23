@@ -17,8 +17,8 @@ type AiMsg = { role: "user" | "assistant"; content: string };
 
 const AI_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-ai-agent`;
 
-async function streamAdminAI({ messages, onDelta, onDone, onError }: {
-  messages: AiMsg[]; onDelta: (t: string) => void; onDone: () => void; onError: (e: string) => void;
+async function callAdminAI({ messages, onResult, onError }: {
+  messages: AiMsg[]; onResult: (text: string) => void; onError: (e: string) => void;
 }) {
   const { data: { session } } = await supabase.auth.getSession();
   const accessToken = session?.access_token || null;
@@ -35,30 +35,8 @@ async function streamAdminAI({ messages, onDelta, onDone, onError }: {
     onError(err.error || "خطأ في الخدمة");
     return;
   }
-  if (!resp.body) { onError("لا توجد استجابة"); return; }
-  const reader = resp.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    let idx: number;
-    while ((idx = buffer.indexOf("\n")) !== -1) {
-      let line = buffer.slice(0, idx);
-      buffer = buffer.slice(idx + 1);
-      if (line.endsWith("\r")) line = line.slice(0, -1);
-      if (!line.startsWith("data: ")) continue;
-      const json = line.slice(6).trim();
-      if (json === "[DONE]") { onDone(); return; }
-      try {
-        const parsed = JSON.parse(json);
-        const content = parsed.choices?.[0]?.delta?.content;
-        if (content) onDelta(content);
-      } catch { buffer = line + "\n" + buffer; break; }
-    }
-  }
-  onDone();
+  const data = await resp.json();
+  onResult(data.reply || "لم أتمكن من معالجة الطلب");
 }
 
 const navItems = [
@@ -105,26 +83,22 @@ const AdminLayout = () => {
   }, []);
 
   const sendAiMessage = async (text: string) => {
-    const safeText = sanitizePlainText(text, 4000);
+    const safeText = sanitizePlainText(text, 8000);
     if (!safeText || aiLoading) return;
     const userMsg: AiMsg = { role: "user", content: safeText };
     setAiMessages(prev => [...prev, userMsg]);
     setAiInput("");
     setAiLoading(true);
-    let assistantSoFar = "";
-    const upsert = (chunk: string) => {
-      assistantSoFar += chunk;
-      setAiMessages(prev => {
-        const last = prev[prev.length - 1];
-        if (last?.role === "assistant") return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantSoFar } : m);
-        return [...prev, { role: "assistant", content: assistantSoFar }];
-      });
-    };
-    await streamAdminAI({
+    await callAdminAI({
       messages: [...aiMessages, userMsg],
-      onDelta: upsert,
-      onDone: () => setAiLoading(false),
-      onError: (err) => { setAiMessages(p => [...p, { role: "assistant", content: `❌ ${err}` }]); setAiLoading(false); },
+      onResult: (reply) => {
+        setAiMessages(prev => [...prev, { role: "assistant", content: reply }]);
+        setAiLoading(false);
+      },
+      onError: (err) => {
+        setAiMessages(p => [...p, { role: "assistant", content: `❌ ${err}` }]);
+        setAiLoading(false);
+      },
     });
   };
 
@@ -234,11 +208,11 @@ const AdminLayout = () => {
                 <div className="text-center pt-8 space-y-3">
                   <Bot className="w-12 h-12 text-primary mx-auto" />
                   <p className="text-sm text-foreground font-semibold">مساعد الأدمن الذكي</p>
-                  <p className="text-xs text-muted-foreground">أحلل البيانات وأقترح أفضل القرارات</p>
-                  <div className="space-y-2 pt-2">
-                    {["ما حالة النظام الآن؟", "اقترح أفضل سائق للطلبات", "ما المشاكل الحالية؟"].map((q, i) => (
-                      <button key={i} onClick={() => sendAiMessage(q)} className="w-full text-right text-xs p-2 rounded-lg bg-secondary/50 hover:bg-secondary text-foreground transition-colors">{q}</button>
-                    ))}
+                   <p className="text-xs text-muted-foreground">لدي صلاحيات كاملة - أقرأ وأعدّل قاعدة البيانات مباشرة</p>
+                   <div className="space-y-2 pt-2">
+                     {["أعطني إحصائيات المنصة الآن", "اعرض جميع السائقين النشطين", "أضف إشعار لجميع المستخدمين", "غيّر دور مستخدم معين", "اعرض الشكاوى المفتوحة"].map((q, i) => (
+                       <button key={i} onClick={() => sendAiMessage(q)} className="w-full text-right text-xs p-2 rounded-lg bg-secondary/50 hover:bg-secondary text-foreground transition-colors">{q}</button>
+                     ))}
                   </div>
                 </div>
               )}
