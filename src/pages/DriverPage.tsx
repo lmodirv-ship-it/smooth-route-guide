@@ -152,8 +152,17 @@ const DriverPage = () => {
     const { data, error } = await supabase
       .from("ride_requests").select("*").eq("status", "pending")
       .order("created_at", { ascending: false });
-    if (!error && data) setOrders(data as RideRow[]);
-  }, []);
+    if (!error && data) {
+      const newCount = data.length;
+      // Play sound only if new orders appeared (not on initial load)
+      if (!initialLoadRef.current && newCount > prevOrderCountRef.current && soundEnabled) {
+        notifyNewOrder();
+      }
+      initialLoadRef.current = false;
+      prevOrderCountRef.current = newCount;
+      setOrders(data as RideRow[]);
+    }
+  }, [soundEnabled]);
 
   useEffect(() => {
     fetchOrders();
