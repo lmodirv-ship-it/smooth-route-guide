@@ -23,11 +23,11 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
 }
 
 const CustomerPage = () => {
+  const navigate = useNavigate();
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [destination, setDestination] = useState("");
   const [destCoords, setDestCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
 
   // Get user GPS
   useEffect(() => {
