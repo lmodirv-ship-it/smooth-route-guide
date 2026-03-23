@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Power, Wifi, WifiOff, Signal, MapPin, Clock, Activity, Loader2 } from "lucide-react";
+import { ArrowRight, Wifi, WifiOff, Signal, MapPin, Activity, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const DriverStatus = () => {
@@ -31,23 +31,8 @@ const DriverStatus = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const newStatus = isOnline ? "inactive" : "active";
-    const newOnline = !isOnline;
-    
     await supabase.from("drivers").update({ status: newStatus }).eq("user_id", user.id);
-    
-    // Update Firebase drivers collection
-    try {
-      const { doc: fbDoc, updateDoc: fbUpdate } = await import("firebase/firestore");
-      const { db: fbDb } = await import("@/lib/legacy/firebase");
-      await fbUpdate(fbDoc(fbDb, "drivers", user.id), {
-        isOnline: newOnline,
-        isAvailable: newOnline,
-      });
-    } catch (e) {
-      console.warn("[DriverStatus] Firebase update failed:", e);
-    }
-    
-    setIsOnline(newOnline);
+    setIsOnline(!isOnline);
   };
 
   const statusInfo = [

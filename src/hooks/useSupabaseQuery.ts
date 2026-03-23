@@ -7,8 +7,6 @@ export type QueryFilter = {
   value: any;
 };
 
-/** @deprecated Use QueryFilter instead */
-export type FirestoreFilter = QueryFilter;
 
 const opMap: Record<string, string> = {
   "==": "eq",
@@ -113,5 +111,3 @@ export function useSupabaseQuery<T = any>(options: {
   return { data, loading, refresh: fetchData };
 }
 
-/** @deprecated Use useSupabaseQuery instead */
-export const useFirestoreCollection = useSupabaseQuery;

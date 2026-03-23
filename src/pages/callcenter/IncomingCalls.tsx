@@ -218,7 +218,7 @@ const IncomingCalls = () => {
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="gradient-card rounded-2xl p-12 border border-border text-center">
                 <PhoneIncoming className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
                 <p className="text-foreground font-bold">اختر مكالمة للرد عليها</p>
-                <p className="text-sm text-muted-foreground mt-1">ستظهر البيانات الحقيقية للمكالمات من Firebase هنا.</p>
+                <p className="text-sm text-muted-foreground mt-1">ستظهر بيانات المكالمات الحقيقية هنا.</p>
               </motion.div>
             )}
           </AnimatePresence>

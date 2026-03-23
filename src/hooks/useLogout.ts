@@ -21,5 +21,3 @@ export const useLogout = () => {
   return logout;
 };
 
-/** @deprecated Use useLogout instead */
-export const useFirebaseLogout = useLogout;

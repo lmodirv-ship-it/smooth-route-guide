@@ -3,7 +3,33 @@ import { Clock, Eye, MapPin, Package, Phone, RefreshCw, Truck, User } from "luci
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ORDER_STATUS_META, formatOrderTime, subscribeAllOrders, toDate, type OrderRecord, type OrderStatus } from "@/lib/legacy/orderService";
+import { supabase } from "@/integrations/supabase/client";
+
+type OrderStatus = "pending" | "accepted" | "on_the_way" | "arrived" | "delivering" | "delivered" | "completed" | "canceled";
+
+interface DeliveryOrder {
+  id: string;
+  status: OrderStatus;
+  store_name: string | null;
+  pickup_address: string | null;
+  delivery_address: string | null;
+  estimated_price: number | null;
+  delivery_type: string;
+  user_id: string;
+  driver_id: string | null;
+  created_at: string;
+}
+
+const STATUS_META: Record<string, { label: string; badge: string }> = {
+  pending: { label: "بانتظار سائق", badge: "bg-warning/10 text-warning" },
+  accepted: { label: "تم قبول الطلب", badge: "bg-info/10 text-info" },
+  on_the_way: { label: "في الطريق", badge: "bg-info/10 text-info" },
+  arrived: { label: "وصل السائق", badge: "bg-primary/10 text-primary" },
+  delivering: { label: "بدأ التوصيل", badge: "bg-accent/10 text-accent" },
+  delivered: { label: "تم التسليم", badge: "bg-success/10 text-success" },
+  completed: { label: "مكتمل", badge: "bg-success/10 text-success" },
+  canceled: { label: "ملغي", badge: "bg-destructive/10 text-destructive" },
+};
 
 const STATUS_FILTERS: Array<{ key: "all" | OrderStatus; label: string }> = [
   { key: "all", label: "الكل" },
@@ -16,19 +42,35 @@ const STATUS_FILTERS: Array<{ key: "all" | OrderStatus; label: string }> = [
   { key: "canceled", label: "ملغي" },
 ];
 
-const statusClass = (status: OrderStatus) => ORDER_STATUS_META[status]?.badge || "bg-secondary text-muted-foreground";
+const statusClass = (status: string) => STATUS_META[status]?.badge || "bg-secondary text-muted-foreground";
 
 const DeliveryOrdersBoard = ({ title }: { title: string }) => {
-  const [orders, setOrders] = useState<OrderRecord[]>([]);
+  const [orders, setOrders] = useState<DeliveryOrder[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | OrderStatus>("all");
-  const [selected, setSelected] = useState<OrderRecord | null>(null);
+  const [selected, setSelected] = useState<DeliveryOrder | null>(null);
 
-  useEffect(() => subscribeAllOrders(setOrders), []);
+  const fetchOrders = async () => {
+    const { data } = await supabase
+      .from("delivery_orders")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100);
+    setOrders((data || []) as DeliveryOrder[]);
+  };
+
+  useEffect(() => {
+    fetchOrders();
+    const channel = supabase
+      .channel("delivery-board")
+      .on("postgres_changes", { event: "*", schema: "public", table: "delivery_orders" }, () => fetchOrders())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   const filtered = useMemo(() => {
     return orders.filter((order) => {
-      const text = `${order.orderNumber} ${order.clientName} ${order.clientPhone} ${order.pickupAddress} ${order.deliveryAddress} ${order.type}`.toLowerCase();
+      const text = `${order.store_name || ""} ${order.pickup_address || ""} ${order.delivery_address || ""} ${order.delivery_type}`.toLowerCase();
       const matchesSearch = !search.trim() || text.includes(search.toLowerCase());
       const matchesFilter = filter === "all" || order.status === filter;
       return matchesSearch && matchesFilter;
@@ -37,16 +79,21 @@ const DeliveryOrdersBoard = ({ title }: { title: string }) => {
 
   const stats = useMemo(() => ({
     total: orders.length,
-    pending: orders.filter((order) => order.status === "pending").length,
-    live: orders.filter((order) => ["accepted", "on_the_way", "arrived", "delivering"].includes(order.status)).length,
-    done: orders.filter((order) => ["delivered", "completed"].includes(order.status)).length,
+    pending: orders.filter((o) => o.status === "pending").length,
+    live: orders.filter((o) => ["accepted", "on_the_way", "arrived", "delivering"].includes(o.status)).length,
+    done: orders.filter((o) => ["delivered", "completed"].includes(o.status)).length,
   }), [orders]);
+
+  const formatTime = (iso: string) => {
+    try { return new Date(iso).toLocaleTimeString("ar-MA", { hour: "2-digit", minute: "2-digit" }); }
+    catch { return "—"; }
+  };
 
   return (
     <div className="space-y-6" dir="rtl">
       <div className="flex items-center justify-between">
-        <Button variant="outline" size="sm" onClick={() => setSelected((current) => current ? { ...current } : current)}>
-          <RefreshCw className="w-4 h-4 ml-1" />تحديث حي
+        <Button variant="outline" size="sm" onClick={fetchOrders}>
+          <RefreshCw className="w-4 h-4 ml-1" />تحديث
         </Button>
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-foreground">{title}</h1>
@@ -75,8 +122,8 @@ const DeliveryOrdersBoard = ({ title }: { title: string }) => {
         <div className="relative flex-1 min-w-[220px]">
           <Input
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="ابحث باسم العميل أو الهاتف أو العنوان..."
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="ابحث باسم المطعم أو العنوان..."
             className="bg-secondary/60 border-border h-10 rounded-lg"
           />
         </div>
@@ -109,30 +156,27 @@ const DeliveryOrdersBoard = ({ title }: { title: string }) => {
               className={`w-full text-right gradient-card rounded-xl p-4 border transition-colors ${selected?.id === order.id ? "border-primary" : "border-border hover:border-primary/30"}`}
             >
               <div className="flex items-center justify-between gap-3 mb-3">
-                <span className={`text-xs px-2.5 py-1 rounded-full ${statusClass(order.status)}`}>{ORDER_STATUS_META[order.status].label}</span>
-                <div>
-                  <p className="font-bold text-foreground">{order.clientName}</p>
-                  <p className="text-xs text-muted-foreground">{order.clientPhone || "بدون هاتف"}</p>
-                </div>
+                <span className={`text-xs px-2.5 py-1 rounded-full ${statusClass(order.status)}`}>{STATUS_META[order.status]?.label || order.status}</span>
+                <p className="font-bold text-foreground">{order.store_name || "طلب توصيل"}</p>
               </div>
 
               <div className="grid gap-2 text-xs mb-3">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-foreground truncate">{order.pickupAddress || "—"}</span>
+                  <span className="text-foreground truncate">{order.pickup_address || "—"}</span>
                   <span className="text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />الاستلام</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-foreground truncate">{order.deliveryAddress || "—"}</span>
+                  <span className="text-foreground truncate">{order.delivery_address || "—"}</span>
                   <span className="text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />التسليم</span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-3 text-muted-foreground">
-                  <span>{formatOrderTime(order.createdAt)}</span>
-                  <span>{order.type}</span>
+                  <span>{formatTime(order.created_at)}</span>
+                  <span>{order.delivery_type}</span>
                 </div>
-                <span className="text-primary font-bold">{order.price ? `${order.price} DH` : "—"}</span>
+                <span className="text-primary font-bold">{order.estimated_price ? `${order.estimated_price} DH` : "—"}</span>
               </div>
             </motion.button>
           ))}
@@ -144,34 +188,19 @@ const DeliveryOrdersBoard = ({ title }: { title: string }) => {
           ) : (
             <div className="space-y-4 text-right">
               <div className="flex items-center justify-between">
-                <span className={`text-xs px-2.5 py-1 rounded-full ${statusClass(selected.status)}`}>{ORDER_STATUS_META[selected.status].label}</span>
-                <div>
-                  <p className="font-bold text-foreground">{selected.orderNumber}</p>
-                  <p className="text-xs text-muted-foreground">#{selected.id.slice(0, 8)}</p>
-                </div>
+                <span className={`text-xs px-2.5 py-1 rounded-full ${statusClass(selected.status)}`}>{STATUS_META[selected.status]?.label || selected.status}</span>
+                <p className="font-bold text-foreground">#{selected.id.slice(0, 8)}</p>
               </div>
 
-              <DetailRow icon={User} label="العميل" value={selected.clientName} />
-              <DetailRow icon={Phone} label="الهاتف" value={selected.clientPhone || "—"} href={selected.clientPhone ? `tel:${selected.clientPhone}` : undefined} />
-              <DetailRow icon={MapPin} label="عنوان الاستلام" value={selected.pickupAddress || "—"} />
-              <DetailRow icon={MapPin} label="عنوان التسليم" value={selected.deliveryAddress || "—"} />
-              <DetailRow icon={Package} label="نوع الطلب" value={selected.type} />
-              <DetailRow icon={Clock} label="وقت الطلب" value={toDate(selected.createdAt)?.toLocaleString("ar-MA") || "—"} />
-              <DetailRow icon={Truck} label="السائق" value={selected.driverName || "لم يتم القبول بعد"} />
-              {selected.driverPhone && <DetailRow icon={Phone} label="هاتف السائق" value={selected.driverPhone} href={`tel:${selected.driverPhone}`} />}
+              <DetailRow icon={MapPin} label="عنوان الاستلام" value={selected.pickup_address || "—"} />
+              <DetailRow icon={MapPin} label="عنوان التسليم" value={selected.delivery_address || "—"} />
+              <DetailRow icon={Package} label="نوع الطلب" value={selected.delivery_type} />
+              <DetailRow icon={Clock} label="وقت الطلب" value={new Date(selected.created_at).toLocaleString("ar-MA")} />
 
               <div className="rounded-xl bg-secondary/40 p-4">
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="text-primary font-bold">{selected.price ? `${selected.price} DH` : "—"}</span>
-                  <span className="text-muted-foreground">السعر</span>
-                </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-foreground">{selected.distanceKm ? `${selected.distanceKm} كم` : "—"}</span>
-                  <span className="text-muted-foreground">المسافة المتبقية</span>
-                </div>
-                <div className="flex items-center justify-between text-sm mt-2">
-                  <span className="text-foreground">{selected.etaMinutes ? `${selected.etaMinutes} دقيقة` : "—"}</span>
-                  <span className="text-muted-foreground">ETA</span>
+                  <span className="text-primary font-bold">{selected.estimated_price ? `${selected.estimated_price} DH` : "—"}</span>
+                  <span className="text-muted-foreground">السعر</span>
                 </div>
               </div>
             </div>
@@ -182,23 +211,9 @@ const DeliveryOrdersBoard = ({ title }: { title: string }) => {
   );
 };
 
-const DetailRow = ({
-  icon: Icon,
-  label,
-  value,
-  href,
-}: {
-  icon: typeof User;
-  label: string;
-  value: string;
-  href?: string;
-}) => (
+const DetailRow = ({ icon: Icon, label, value }: { icon: typeof User; label: string; value: string }) => (
   <div className="flex items-start justify-between gap-3 text-sm">
-    {href ? (
-      <a href={href} className="text-info hover:underline break-all">{value}</a>
-    ) : (
-      <span className="text-foreground break-words">{value}</span>
-    )}
+    <span className="text-foreground break-words">{value}</span>
     <span className="text-muted-foreground flex items-center gap-1 shrink-0"><Icon className="w-4 h-4" />{label}</span>
   </div>
 );
