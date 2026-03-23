@@ -1,12 +1,13 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star, Navigation, Volume2 } from "lucide-react";
+import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star, Navigation, Volume2, Percent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
 import { notifyNewOrder, unlockAudio } from "@/lib/notificationSound";
+import { driverNetEarnings, COMMISSION_RATE } from "@/lib/pricing";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 const PRICE_PER_KM = 3;
