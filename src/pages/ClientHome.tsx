@@ -18,7 +18,7 @@ import {
   LogOut,
   MapPin,
 } from "lucide-react";
-import { useFirebaseLogout } from "@/hooks/useFirebaseAuth";
+import { supabase } from "@/integrations/supabase/client";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Button } from "@/components/ui/button";
 import LeafletMap from "@/components/LeafletMap";
