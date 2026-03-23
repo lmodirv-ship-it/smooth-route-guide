@@ -24,7 +24,7 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
 }
 
 function calcPrice(km: number) {
-  return Math.max(10, Math.round(km * 3 + 5));
+  return Math.max(3, Math.round(km * 3));
 }
 
 const CustomerPage = () => {
