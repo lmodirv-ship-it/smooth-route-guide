@@ -45,8 +45,8 @@ const DriverDelivery = () => {
   }, [activeOrder]);
 
   const setStatus = async (status: OrderStatus, note?: string) => {
-    if (!user || !activeOrder) return;
-    await updateOrderStatus(activeOrder.id, status, { uid: user.uid, role: "driver" }, {}, note);
+    if (!userId || !activeOrder) return;
+    await updateOrderStatus(activeOrder.id, status, { uid: userId, role: "driver" }, {}, note);
   };
 
   return (
