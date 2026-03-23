@@ -98,7 +98,7 @@ const DocumentUpload = () => {
       const uploadRes = await supabase.storage.from("driver-documents").upload(path, file);
       if (uploadRes.error) throw new Error(uploadRes.error.message);
 
-      const fileUrl = uploadRes.data?.publicUrl || supabase.storage.from("driver-documents").getPublicUrl(path).data.publicUrl;
+      const fileUrl = supabase.storage.from("driver-documents").getPublicUrl(path).data.publicUrl;
       const existing = docs.find((doc) => doc.id === docType);
 
       if (existing?.recordId) {

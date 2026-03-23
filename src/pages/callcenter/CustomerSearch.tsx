@@ -120,8 +120,9 @@ const CustomerSearch = () => {
 
   const handleToggleStatus = async () => {
     if (!selectedCustomer) return;
-    const nextStatus = selectedCustomer.status === "نشط" ? "blocked" : "active";
-    await supabase.from("profiles").update({ status: nextStatus }).eq("id", selectedCustomer.id);
+    // profiles table doesn't have status column - this is a no-op placeholder
+    toast({ title: "هذه الميزة غير متوفرة حالياً" });
+    return;
     toast({ title: selectedCustomer.status === "نشط" ? "تم حظر العميل" : "تم تفعيل العميل" });
     await fetchCustomers();
   };

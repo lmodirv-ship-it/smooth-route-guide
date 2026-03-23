@@ -65,8 +65,8 @@ const RideAssign = () => {
 
     setAssigning(true);
     const [{ error: requestError }, { error: driverError }] = await Promise.all([
-      supabase.from("ride_requests").update({ status: "assigned", driver_id: driver.id, driver_name: driver.name }).eq("id", request.id),
-      supabase.from("drivers").update({ isAvailable: false }).eq("id", driver.id),
+      supabase.from("ride_requests").update({ status: "accepted", driver_id: driver.id }).eq("id", request.id),
+      supabase.from("drivers").update({ status: "busy" }).eq("id", driver.id),
     ]);
     setAssigning(false);
 

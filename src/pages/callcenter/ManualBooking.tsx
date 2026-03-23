@@ -85,8 +85,8 @@ const ManualBooking = () => {
     if (!createdRequestId) return;
     setLoading(true);
     const [{ error: reqError }, { error: driverError }] = await Promise.all([
-      supabase.from("ride_requests").update({ status: "assigned", driver_id: driverId, driver_name: driverName }).eq("id", createdRequestId),
-      supabase.from("drivers").update({ isAvailable: false }).eq("id", driverId),
+      supabase.from("ride_requests").update({ status: "accepted", driver_id: driverId }).eq("id", createdRequestId),
+      supabase.from("drivers").update({ status: "busy" }).eq("id", driverId),
     ]);
     setLoading(false);
 
