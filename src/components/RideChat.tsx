@@ -199,6 +199,14 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
             })}
           </div>
 
+          {/* Warning */}
+          {warning && (
+            <div className="shrink-0 flex items-center gap-2 px-3 py-2 bg-destructive/20 text-destructive text-xs font-medium border-t border-destructive/20" dir="rtl">
+              <ShieldAlert className="w-4 h-4 flex-shrink-0" />
+              <span>{warning}</span>
+            </div>
+          )}
+
           {/* Input */}
           <div className="shrink-0 flex items-center gap-2 p-3 border-t border-white/5 bg-white/[0.02]" dir="rtl">
             <Input
