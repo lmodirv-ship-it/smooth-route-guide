@@ -118,6 +118,7 @@ const LeafletMap = ({
 
     tileLayer.addTo(map);
     nearbyDriversLayerRef.current = L.layerGroup().addTo(map);
+    routeLayerRef.current = L.layerGroup().addTo(map);
     mapInstanceRef.current = map;
     tileLayerRef.current = tileLayer;
 
