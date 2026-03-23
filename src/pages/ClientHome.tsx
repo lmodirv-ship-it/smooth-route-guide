@@ -21,6 +21,7 @@ import {
   MapPinned,
   X,
   DollarSign,
+  Crosshair,
 } from "lucide-react";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Button } from "@/components/ui/button";
