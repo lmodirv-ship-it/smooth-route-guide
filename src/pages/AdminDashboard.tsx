@@ -5,7 +5,7 @@ import {
   Search, Shield, Settings, MapPin,
   AlertTriangle, Clock, FileText, UserCheck,
   XCircle, ChevronDown, Activity, Zap, BatteryLow, Loader2,
-  Bot, Send, MessageSquare, X
+  Bot, Send, MessageSquare, X, Image, Video, Paperclip
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -51,7 +51,7 @@ interface RideRequest {
   user_id: string;
 }
 
-type AiMsg = { role: "user" | "assistant"; content: string };
+type AiMsg = { role: "user" | "assistant"; content: string; attachments?: { type: "image" | "video"; url: string; name: string }[] };
 
 // ── Donut SVG Component (no recharts needed) ──
 const DonutChart = ({ online, offline }: { online: number; offline: number }) => {
@@ -150,13 +150,32 @@ async function callAdminAI({ messages, onResult, onError }: {
 }) {
   const { data: { session } } = await supabase.auth.getSession();
   const accessToken = session?.access_token || null;
+
+  // Build multimodal messages for the API
+  const apiMessages = messages.map(msg => {
+    if (msg.attachments?.length) {
+      const contentParts: any[] = [];
+      if (msg.content) {
+        contentParts.push({ type: "text", text: msg.content });
+      }
+      for (const att of msg.attachments) {
+        contentParts.push({
+          type: "image_url",
+          image_url: { url: att.url, detail: "auto" },
+        });
+      }
+      return { role: msg.role, content: contentParts };
+    }
+    return { role: msg.role, content: msg.content };
+  });
+
   const resp = await fetch(AI_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages: apiMessages }),
   });
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({ error: "خطأ" }));
@@ -191,7 +210,9 @@ const AdminDashboard = () => {
   const [aiMessages, setAiMessages] = useState<AiMsg[]>([]);
   const [aiInput, setAiInput] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiAttachments, setAiAttachments] = useState<{ type: "image" | "video"; url: string; name: string }[]>([]);
   const aiScrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     aiScrollRef.current?.scrollTo({ top: aiScrollRef.current.scrollHeight, behavior: "smooth" });
@@ -346,12 +367,49 @@ const AdminDashboard = () => {
   ];
 
   // ── AI Agent ──
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    Array.from(files).forEach(file => {
+      const isVideo = file.type.startsWith("video/");
+      const isImage = file.type.startsWith("image/");
+      if (!isImage && !isVideo) {
+        toast({ title: "نوع الملف غير مدعوم", description: "يُرجى إرسال صورة أو فيديو فقط", variant: "destructive" });
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ title: "الملف كبير جداً", description: "الحد الأقصى 10 ميغابايت", variant: "destructive" });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        setAiAttachments(prev => [...prev, {
+          type: isVideo ? "video" : "image",
+          url: dataUrl,
+          name: file.name,
+        }]);
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
+  };
+
+  const removeAttachment = (index: number) => {
+    setAiAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
   const sendAiMessage = async (text: string) => {
     const safeText = sanitizePlainText(text, 4000);
-    if (!safeText || aiLoading) return;
-    const userMsg: AiMsg = { role: "user", content: safeText };
+    if ((!safeText && aiAttachments.length === 0) || aiLoading) return;
+    const userMsg: AiMsg = {
+      role: "user",
+      content: safeText || (aiAttachments.length > 0 ? "حلل هذا الملف" : ""),
+      attachments: aiAttachments.length > 0 ? [...aiAttachments] : undefined,
+    };
     setAiMessages(prev => [...prev, userMsg]);
     setAiInput("");
+    setAiAttachments([]);
     setAiLoading(true);
     await callAdminAI({
       messages: [...aiMessages, userMsg],
@@ -730,9 +788,25 @@ const AdminDashboard = () => {
                     {msg.role === "user" ? <Shield className="w-3.5 h-3.5 text-primary" /> : <Bot className="w-3.5 h-3.5 text-info" />}
                   </div>
                   <div className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`}>
-                    <div className="prose prose-sm prose-invert max-w-none text-inherit">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
-                    </div>
+                    {/* Show attachments */}
+                    {msg.attachments?.length ? (
+                      <div className="flex flex-wrap gap-1.5 mb-1.5">
+                        {msg.attachments.map((att, j) => (
+                          <div key={j} className="relative">
+                            {att.type === "image" ? (
+                              <img src={att.url} alt={att.name} className="w-24 h-24 object-cover rounded-lg border border-white/20" />
+                            ) : (
+                              <video src={att.url} className="w-24 h-24 object-cover rounded-lg border border-white/20" controls />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                    {msg.content && (
+                      <div className="prose prose-sm prose-invert max-w-none text-inherit">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -744,10 +818,33 @@ const AdminDashboard = () => {
               )}
             </div>
 
+            {/* Attachment Preview */}
+            {aiAttachments.length > 0 && (
+              <div className="px-3 pt-2 flex flex-wrap gap-2">
+                {aiAttachments.map((att, i) => (
+                  <div key={i} className="relative group">
+                    {att.type === "image" ? (
+                      <img src={att.url} alt={att.name} className="w-14 h-14 object-cover rounded-lg border border-border" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-lg border border-border bg-secondary flex items-center justify-center">
+                        <Video className="w-5 h-5 text-info" />
+                      </div>
+                    )}
+                    <button onClick={() => removeAttachment(i)} className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">×</button>
+                    <p className="text-[9px] text-muted-foreground truncate w-14 text-center mt-0.5">{att.name.slice(0, 8)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* AI Input */}
-            <form onSubmit={e => { e.preventDefault(); sendAiMessage(aiInput); }} className="p-3 border-t border-border flex gap-2">
-              <Input value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder="اسأل المساعد..." className="flex-1 bg-secondary/80 border-border rounded-xl text-sm text-right" disabled={aiLoading} />
-              <Button type="submit" size="icon" disabled={!aiInput.trim() || aiLoading} className="gradient-primary rounded-xl"><Send className="w-4 h-4" /></Button>
+            <input ref={fileInputRef} type="file" accept="image/*,video/*" multiple className="hidden" onChange={handleFileUpload} />
+            <form onSubmit={e => { e.preventDefault(); sendAiMessage(aiInput); }} className="p-3 border-t border-border flex gap-2 items-center">
+              <Button type="button" size="icon" variant="ghost" onClick={() => fileInputRef.current?.click()} disabled={aiLoading} className="text-muted-foreground hover:text-primary flex-shrink-0" title="إرفاق صورة أو فيديو">
+                <Paperclip className="w-4 h-4" />
+              </Button>
+              <Input value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder="اسأل المساعد أو أرفق صورة..." className="flex-1 bg-secondary/80 border-border rounded-xl text-sm text-right" disabled={aiLoading} />
+              <Button type="submit" size="icon" disabled={(!aiInput.trim() && aiAttachments.length === 0) || aiLoading} className="gradient-primary rounded-xl"><Send className="w-4 h-4" /></Button>
             </form>
           </motion.div>
         )}
