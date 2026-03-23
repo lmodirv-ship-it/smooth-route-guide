@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/lib/firestoreClient';
+import { supabase } from '@/integrations/supabase/client';
 import { calculateTripPrice, DEFAULT_CURRENCY, CURRENCIES, type TripPriceEstimate } from '@/lib/pricing';
 
 interface DistanceSegment {
