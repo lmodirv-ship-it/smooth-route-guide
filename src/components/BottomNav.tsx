@@ -14,19 +14,19 @@ interface NavItem {
 }
 
 const clientNav: NavItem[] = [
-  { icon: Home, label: "الرئيسية", path: "/client" },
-  { icon: MapPin, label: "حجز", path: "/client/booking" },
-  { icon: Clock, label: "السجل", path: "/client/history" },
-  { icon: Wallet, label: "المحفظة", path: "/client/wallet" },
-  { icon: User, label: "حسابي", path: "/client/profile" },
+  { icon: Home, label: "الرئيسية", path: "/customer" },
+  { icon: MapPin, label: "حجز", path: "/customer/booking" },
+  { icon: Clock, label: "السجل", path: "/customer/history" },
+  { icon: Wallet, label: "المحفظة", path: "/customer/wallet" },
+  { icon: User, label: "حسابي", path: "/customer/profile" },
 ];
 
 const driverNav: NavItem[] = [
-  { icon: Car, label: "الرئيسية", path: "/driver" },
-  { icon: TrendingUp, label: "الأرباح", path: "/driver/earnings" },
-  { icon: Clock, label: "السجل", path: "/driver/history" },
-  { icon: FileText, label: "الوثائق", path: "/driver/documents" },
-  { icon: Settings, label: "الإعدادات", path: "/driver/settings" },
+  { icon: Car, label: "الرئيسية", path: "/driver-panel" },
+  { icon: TrendingUp, label: "الأرباح", path: "/driver-panel/earnings" },
+  { icon: Clock, label: "السجل", path: "/driver-panel/history" },
+  { icon: FileText, label: "الوثائق", path: "/driver-panel/documents" },
+  { icon: Settings, label: "الإعدادات", path: "/driver-panel/settings" },
 ];
 
 const deliveryNav: NavItem[] = [
@@ -34,7 +34,7 @@ const deliveryNav: NavItem[] = [
   { icon: UtensilsCrossed, label: "مطاعم", path: "/delivery/restaurants" },
   { icon: ShoppingBag, label: "السلة", path: "/delivery/cart" },
   { icon: Clock, label: "السجل", path: "/delivery/history" },
-  { icon: User, label: "حسابي", path: "/client/profile" },
+  { icon: User, label: "حسابي", path: "/customer/profile" },
 ];
 
 type Role = "client" | "driver" | "delivery";
@@ -54,6 +54,9 @@ const BottomNav = ({ role }: BottomNavProps) => {
   const navigate = useNavigate();
   const items = navMap[role];
 
+  // Determine the root path for this role (used for exact-match on home)
+  const rootPath = items[0]?.path || "/";
+
   return (
     <nav
       className="shrink-0 border-t border-border/30 bg-card/95 backdrop-blur-xl safe-area-bottom"
@@ -63,7 +66,7 @@ const BottomNav = ({ role }: BottomNavProps) => {
         {items.map((item) => {
           const isActive =
             location.pathname === item.path ||
-            (item.path !== `/${role}` && location.pathname.startsWith(item.path));
+            (item.path !== rootPath && location.pathname.startsWith(item.path));
 
           return (
             <motion.button

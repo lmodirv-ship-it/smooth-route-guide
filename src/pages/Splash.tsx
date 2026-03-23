@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { dashboardForRole } from "@/lib/routes";
 import splashLogo from "@/assets/designs/iindex.jpeg";
 
 const Splash = () => {
@@ -21,7 +22,6 @@ const Splash = () => {
           return;
         }
 
-        // Check user role from user_roles table
         const { data: roles } = await supabase
           .from("user_roles")
           .select("role")
@@ -29,11 +29,7 @@ const Splash = () => {
           .limit(1);
 
         const role = roles?.[0]?.role || savedRole || "user";
-
-        if (role === "driver") navigate("/driver", { replace: true });
-        else if (role === "admin") navigate("/admin", { replace: true });
-        else if (role === "agent") navigate("/call-center", { replace: true });
-        else navigate("/client", { replace: true }); // "user" role goes to client
+        navigate(dashboardForRole(role), { replace: true });
       } catch {
         navigate("/welcome", { replace: true });
       }
