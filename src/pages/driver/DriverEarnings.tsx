@@ -38,7 +38,7 @@ const DriverEarnings = () => {
     const dayTrips = trips.filter(t => t.created_at.slice(0, 10) === todayStr);
     const weekTrips = trips.filter(t => new Date(t.created_at).getTime() >= weekAgo);
 
-    const sum = (arr: any[]) => arr.reduce((s, t) => s + Number(t.fare || 0), 0);
+    const sum = (arr: any[]) => driverNetEarnings(arr.reduce((s, t) => s + Number(t.fare || 0), 0));
 
     return {
       day: { total: sum(dayTrips), trips: dayTrips.length, avg: dayTrips.length > 0 ? Math.round(sum(dayTrips) / dayTrips.length) : 0 },
