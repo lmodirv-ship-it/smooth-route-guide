@@ -10,6 +10,7 @@ import RideChat from "@/components/RideChat";
 
 const PRICE_PER_KM = 3;
 const BASE_FARE = 5;
+const MIN_FARE = 10;
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = (v: number) => (v * Math.PI) / 180;
@@ -139,8 +140,10 @@ const CustomerTracking = () => {
 
   const totalPrice = useMemo(() => {
     if (!ride) return null;
+    // Use price from DB (set by driver on accept)
+    if (ride.price && ride.price > 0) return ride.price;
     const total = totalRouteKm;
-    return total > 0 ? Math.round(BASE_FARE + total * PRICE_PER_KM) : (ride.price || 0);
+    return total > 0 ? Math.max(MIN_FARE, Math.round(BASE_FARE + total * PRICE_PER_KM)) : null;
   }, [ride, totalRouteKm]);
 
   const mapCenter = useMemo(

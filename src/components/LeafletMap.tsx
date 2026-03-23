@@ -71,6 +71,7 @@ interface LeafletMapProps {
   driverLocation?: { lat: number; lng: number } | null;
   nearbyDrivers?: NearbyDriverMarker[];
   route?: RoutePoints | null;
+  onMapClick?: (latlng: { lat: number; lng: number }) => void;
   children?: React.ReactNode;
 }
 
@@ -83,6 +84,7 @@ const LeafletMap = ({
   driverLocation,
   nearbyDrivers = [],
   route,
+  onMapClick,
   children,
 }: LeafletMapProps) => {
   const mapElementRef = useRef<HTMLDivElement | null>(null);
@@ -121,6 +123,10 @@ const LeafletMap = ({
     routeLayerRef.current = L.layerGroup().addTo(map);
     mapInstanceRef.current = map;
     tileLayerRef.current = tileLayer;
+
+    map.on('click', (e: L.LeafletMouseEvent) => {
+      if (onMapClick) onMapClick({ lat: e.latlng.lat, lng: e.latlng.lng });
+    });
 
     return () => {
       staticMarkerRef.current = null;
