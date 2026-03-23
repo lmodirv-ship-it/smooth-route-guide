@@ -177,9 +177,9 @@ const DriverTracking = () => {
       if (error) throw error;
 
       if (newStatus === "completed") {
-        navigate("/driver-panel");
+        navigate("/driver");
       } else if (newStatus === "cancelled") {
-        navigate("/driver-panel");
+        navigate("/driver");
       }
     } catch (err: any) {
       console.error("Status update error:", err);
