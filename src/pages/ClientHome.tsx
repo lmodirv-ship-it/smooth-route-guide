@@ -21,6 +21,7 @@ import {
   MapPinned,
   X,
   DollarSign,
+  Crosshair,
 } from "lucide-react";
 import RoleSwitcher from "@/components/RoleSwitcher";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,8 @@ const ClientHome = () => {
   const [showLocationsPicker, setShowLocationsPicker] = useState(false);
   const [locSearchQuery, setLocSearchQuery] = useState("");
   const [locCategory, setLocCategory] = useState("all");
+  const [showMapPicker, setShowMapPicker] = useState(false);
+  const [mapPickerDest, setMapPickerDest] = useState<{ lat: number; lng: number } | null>(null);
   const { getEstimate, estimate, loading, error, reset } = useTripPricing("DH");
   const { drivers: nearbyDriversData } = useNearbyDrivers();
 
@@ -328,6 +331,14 @@ const ClientHome = () => {
           title="أماكن طنجة"
         >
           <MapPinned className="w-5 h-5 text-primary" />
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => { setShowMapPicker(true); setMapPickerDest(null); }}
+          className="h-11 px-3 border-border hover:border-primary/30 shrink-0"
+          title="حدد على الخريطة"
+        >
+          <Crosshair className="w-5 h-5 text-primary" />
         </Button>
       </div>
 
@@ -676,6 +687,86 @@ const ClientHome = () => {
               })}
               {filteredTangierLocations.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground text-sm">لا توجد نتائج</div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Map Pin Picker */}
+      <AnimatePresence>
+        {showMapPicker && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 30 }}
+            className="fixed inset-0 z-[9999] bg-background flex flex-col"
+            dir="rtl"
+          >
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <h2 className="font-bold text-foreground flex items-center gap-2">
+                <Crosshair className="w-5 h-5 text-primary" />
+                حدد الوجهة على الخريطة
+              </h2>
+              <button onClick={() => setShowMapPicker(false)} className="p-1.5 rounded-lg hover:bg-secondary">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="flex-1 relative">
+              <LeafletMap
+                center={userLocation || DEFAULT_LOCATION}
+                zoom={14}
+                showMarker={!!userLocation}
+                markerPosition={userLocation || undefined}
+                nearbyDrivers={nearbyDriversData}
+                route={mapPickerDest && userLocation ? { pickup: userLocation, destination: mapPickerDest } : undefined}
+                onMapClick={(latlng) => setMapPickerDest(latlng)}
+              />
+              {!mapPickerDest && (
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-primary/90 text-primary-foreground px-4 py-2 rounded-full text-sm flex items-center gap-2 shadow-lg">
+                  <MapPin className="w-4 h-4" />
+                  اضغط على الخريطة لتحديد الوجهة
+                </div>
+              )}
+              {mapPickerDest && userLocation && (
+                <div className="absolute bottom-4 left-4 right-4 z-[1000]">
+                  <div className="bg-card border border-border rounded-2xl p-4 shadow-2xl space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground">
+                        {haversineKm(userLocation, mapPickerDest).toFixed(1)} كم
+                      </p>
+                      <p className="font-bold text-primary text-lg">
+                        {calcPrice(haversineKm(userLocation, mapPickerDest))} DH
+                      </p>
+                    </div>
+                    <p className="text-xs text-muted-foreground text-center">
+                      💡 {haversineKm(userLocation, mapPickerDest).toFixed(1)} كم × 3 + 5 = {calcPrice(haversineKm(userLocation, mapPickerDest))} درهم
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setMapPickerDest(null)}
+                        className="flex-1"
+                      >
+                        إعادة التحديد
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          const coords = `${mapPickerDest.lat},${mapPickerDest.lng}`;
+                          setDestinationCoords(coords);
+                          setDestination(`${mapPickerDest.lat.toFixed(4)}, ${mapPickerDest.lng.toFixed(4)}`);
+                          setShowMapPicker(false);
+                          setShowEstimate(true);
+                          void getEstimate(driverLocation, customerLocation, coords);
+                        }}
+                        className="flex-1 gradient-primary text-primary-foreground"
+                      >
+                        تأكيد — {calcPrice(haversineKm(userLocation, mapPickerDest))} DH
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </motion.div>
