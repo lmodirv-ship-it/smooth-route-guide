@@ -464,11 +464,11 @@ const ClientHome = () => {
       <p className="text-muted-foreground text-sm">{profile?.email || profile?.phone || "عميل"}</p>
       <div className="w-full mt-6 space-y-3">
         {[
-467:           { label: "الملف الشخصي", icon: User, action: () => navigate("/client/profile") },
-468:           { label: "المحفظة", icon: Heart, action: () => navigate("/client/wallet") },
-469:           { label: "سجل الرحلات", icon: Car, action: () => navigate("/client/history") },
-470:           { label: "الدعم والمساعدة", icon: Phone, action: () => navigate("/client/support") },
-471:           { label: `الإشعارات غير المقروءة (${unreadNotifications})`, icon: MessageCircle, action: () => {} },
+          { label: "الملف الشخصي", icon: User, action: () => navigate("/client/profile") },
+          { label: "المحفظة", icon: Heart, action: () => navigate("/client/wallet") },
+          { label: "سجل الرحلات", icon: Car, action: () => navigate("/client/history") },
+          { label: "الدعم والمساعدة", icon: Phone, action: () => navigate("/client/support") },
+          { label: `الإشعارات غير المقروءة (${unreadNotifications})`, icon: MessageCircle, action: () => {} },
         ].map((item, i) => (
           <button
             key={i}
