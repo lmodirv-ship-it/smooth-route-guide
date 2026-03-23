@@ -7,6 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
+import { useReverseGeocode } from "@/hooks/useReverseGeocode";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 
@@ -26,6 +27,8 @@ const CustomerPage = () => {
   const [destCoords, setDestCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const { drivers: nearbyDrivers } = useNearbyDrivers();
+  const { name: pickupName, loading: pickupLoading } = useReverseGeocode(userLocation);
+  const { name: destName, loading: destLoading } = useReverseGeocode(destCoords);
 
   useEffect(() => {
     if (!navigator.geolocation) { setUserLocation(DEFAULT_LOCATION); return; }
@@ -57,8 +60,8 @@ const CustomerPage = () => {
     try {
       const { data, error } = await supabase.from("ride_requests").insert({
         user_id: user.id,
-        pickup: `${userLocation.lat.toFixed(5)},${userLocation.lng.toFixed(5)}`,
-        destination: `${destCoords.lat.toFixed(5)},${destCoords.lng.toFixed(5)}`,
+        pickup: pickupName || `${userLocation.lat.toFixed(5)},${userLocation.lng.toFixed(5)}`,
+        destination: destName || `${destCoords.lat.toFixed(5)},${destCoords.lng.toFixed(5)}`,
         pickup_lat: userLocation.lat,
         pickup_lng: userLocation.lng,
         destination_lat: destCoords.lat,
@@ -122,18 +125,22 @@ const CustomerPage = () => {
               className="rounded-2xl p-5 border border-blue-500/20 bg-[#0d1320]">
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full bg-emerald-400" />
-                  <div className="flex-1">
+                  <div className="w-3 h-3 rounded-full bg-emerald-400 shrink-0" />
+                  <div className="flex-1 min-w-0">
                     <p className="text-xs text-white/50">نقطة الانطلاق</p>
-                    <p className="text-sm text-white">{userLocation?.lat.toFixed(4)}, {userLocation?.lng.toFixed(4)}</p>
+                    <p className="text-sm text-white truncate">
+                      {pickupLoading ? "جارٍ تحديد الموقع..." : (pickupName || `${userLocation?.lat.toFixed(4)}, ${userLocation?.lng.toFixed(4)}`)}
+                    </p>
                   </div>
                 </div>
                 <div className="mr-1.5 border-r border-dashed border-white/20 h-4" />
                 <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full bg-orange-400" />
-                  <div className="flex-1">
+                  <div className="w-3 h-3 rounded-full bg-orange-400 shrink-0" />
+                  <div className="flex-1 min-w-0">
                     <p className="text-xs text-white/50">الوجهة</p>
-                    <p className="text-sm text-white">{destCoords.lat.toFixed(4)}, {destCoords.lng.toFixed(4)}</p>
+                    <p className="text-sm text-white truncate">
+                      {destLoading ? "جارٍ تحديد الموقع..." : (destName || `${destCoords.lat.toFixed(4)}, ${destCoords.lng.toFixed(4)}`)}
+                    </p>
                   </div>
                 </div>
               </div>
