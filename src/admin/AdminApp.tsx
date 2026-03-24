@@ -58,7 +58,7 @@ const AdminApp = () => (
       <BrowserRouter>
         <Routes>
           {/* Login for standalone admin */}
-          <Route path="/login" element={<AuthPage />} />
+          <Route path="/login" element={<AdminLogin />} />
 
           {/* Setup admin */}
           <Route path="/setup-admin" element={<RequireRole><SetupAdmin /></RequireRole>} />
