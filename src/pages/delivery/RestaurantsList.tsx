@@ -538,6 +538,118 @@ const RestaurantsList = () => {
   );
 };
 
+/* ─── Horizontal Section ─── */
+const HorizontalSection = ({
+  title, icon, stores, onStoreClick, accent = "primary",
+}: {
+  title: string;
+  icon: React.ReactNode;
+  stores: RestaurantItem[];
+  onStoreClick: (store: RestaurantItem) => void;
+  accent?: "primary" | "warning" | "info";
+}) => {
+  if (stores.length === 0) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-2.5"
+    >
+      <div className="flex items-center gap-2">
+        {icon}
+        <h2 className="text-sm font-bold text-foreground">{title}</h2>
+        <Badge className={`border-0 text-[10px] px-1.5 ${
+          accent === "warning" ? "bg-warning/15 text-warning" :
+          accent === "info" ? "bg-info/15 text-info" :
+          "bg-primary/15 text-primary"
+        }`}>{stores.length}</Badge>
+      </div>
+
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-5 px-5" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        {stores.map((store, i) => (
+          <HorizontalCard
+            key={`h-${store.id}`}
+            store={store}
+            index={i}
+            onClick={() => onStoreClick(store)}
+            accent={accent}
+          />
+        ))}
+      </div>
+    </motion.div>
+  );
+};
+
+/* ─── Horizontal Card (compact) ─── */
+const HorizontalCard = ({
+  store, index, onClick, accent = "primary",
+}: {
+  store: RestaurantItem;
+  index: number;
+  onClick: () => void;
+  accent?: "primary" | "warning" | "info";
+}) => {
+  const isClosed = store.is_open === false;
+  const accentBorder = accent === "warning" ? "hover:border-warning/40" :
+    accent === "info" ? "hover:border-info/40" : "hover:border-primary/40";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.05 }}
+      onClick={onClick}
+      className={`flex-shrink-0 w-40 bg-card rounded-xl border border-border overflow-hidden cursor-pointer transition-all active:scale-95 ${accentBorder} ${isClosed ? "opacity-60" : ""}`}
+    >
+      {/* Image */}
+      <div className="relative w-full h-24 bg-secondary overflow-hidden">
+        {store.image_url ? (
+          <img
+            src={store.image_url}
+            alt={store.name}
+            className={`w-full h-full object-cover ${isClosed ? "grayscale" : ""}`}
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <UtensilsCrossed className="w-6 h-6 text-muted-foreground/30" />
+          </div>
+        )}
+        {/* Status */}
+        <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md text-[8px] font-bold backdrop-blur-sm ${
+          isClosed ? "bg-destructive/80 text-destructive-foreground" : "bg-green-500/80 text-white"
+        }`}>
+          {isClosed ? "مغلق" : "مفتوح"}
+        </div>
+        {/* Distance badge */}
+        {store.distance != null && (
+          <div className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-md text-[8px] font-bold bg-background/80 text-primary backdrop-blur-sm">
+            {store.distance < 1 ? `${Math.round(store.distance * 1000)} م` : `${store.distance.toFixed(1)} كم`}
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="p-2.5 space-y-1">
+        <h3 className="font-bold text-foreground text-xs truncate">{store.name}</h3>
+        <div className="flex items-center justify-between">
+          {store.rating != null && store.rating > 0 && (
+            <span className="flex items-center gap-0.5 text-[10px] font-bold text-warning">
+              <Star className="w-3 h-3 fill-current" />
+              {store.rating.toFixed(1)}
+            </span>
+          )}
+          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+            <Clock className="w-2.5 h-2.5" />
+            {store.delivery_time_min || 20} د
+          </span>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 /* ─── Filter Tab ─── */
 const FilterTab = ({
   active, onClick, icon, label, count,
