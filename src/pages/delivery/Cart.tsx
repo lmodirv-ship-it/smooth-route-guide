@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useDeliveryPricingSettings } from "@/hooks/useDeliveryPricingSettings";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -19,8 +20,9 @@ const Cart = () => {
   const [customerLng, setCustomerLng] = useState<number | null>(null);
   const [city, setCity] = useState("Tanger");
   const [store, setStore] = useState<any>(null);
+  const deliveryPricing = useDeliveryPricingSettings();
 
-  // Fetch store info for pickup coordinates and delivery fee
+  // Fetch store info for pickup coordinates
   useEffect(() => {
     if (!storeId) return;
     supabase.from("stores").select("*").eq("id", storeId).single().then(({ data }) => {
@@ -52,8 +54,18 @@ const Cart = () => {
     );
   }, []);
 
+  // Calculate distance between store and customer (Haversine)
+  const distanceKm = (() => {
+    if (!store?.lat || !store?.lng || !customerLat || !customerLng) return 0;
+    const R = 6371;
+    const dLat = (customerLat - Number(store.lat)) * Math.PI / 180;
+    const dLng = (customerLng - Number(store.lng)) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(Number(store.lat) * Math.PI / 180) * Math.cos(customerLat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  })();
+
   const subtotal = totalPrice;
-  const deliveryFee = store?.delivery_fee || 10;
+  const deliveryFee = deliveryPricing.loading ? (store?.delivery_fee || 10) : deliveryPricing.calculateFee(distanceKm);
   const grandTotal = subtotal + deliveryFee;
 
   const handleOrder = async () => {
