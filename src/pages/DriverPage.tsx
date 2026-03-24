@@ -238,7 +238,7 @@ const DriverPage = () => {
         .eq("id", orderId).eq("status", "pending");
       if (error) throw error;
       setActiveRideId(orderId);
-      toast({ title: "تم قبول الطلب ✅", description: `السعر: ${totalPrice} DH` });
+      toast({ title: t.driver.orderAccepted, description: `${t.common.price}: ${totalPrice} DH` });
       navigate(`/driver/tracking?id=${orderId}`);
     } catch (err: any) {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
