@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Minus, Plus, Trash2, ShoppingBag, Loader2 } from "lucide-react";
+import { ArrowRight, Minus, Plus, Trash2, ShoppingBag, Loader2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -11,11 +13,55 @@ const Cart = () => {
   const navigate = useNavigate();
   const { items, storeName, storeId, totalPrice, updateQuantity, removeItem, clearCart } = useCart();
   const [submitting, setSubmitting] = useState(false);
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [notes, setNotes] = useState("");
+  const [customerLat, setCustomerLat] = useState<number | null>(null);
+  const [customerLng, setCustomerLng] = useState<number | null>(null);
+  const [city, setCity] = useState("Tanger");
+  const [store, setStore] = useState<any>(null);
 
-  const deliveryFee = 10;
-  const grandTotal = totalPrice + deliveryFee;
+  // Fetch store info for pickup coordinates and delivery fee
+  useEffect(() => {
+    if (!storeId) return;
+    supabase.from("stores").select("*").eq("id", storeId).single().then(({ data }) => {
+      if (data) setStore(data);
+    });
+  }, [storeId]);
+
+  // Get customer location
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        setCustomerLat(pos.coords.latitude);
+        setCustomerLng(pos.coords.longitude);
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&accept-language=ar`
+          );
+          const geo = await res.json();
+          const detectedCity = geo?.address?.city || geo?.address?.town || geo?.address?.state || "Tanger";
+          setCity(detectedCity);
+          if (!deliveryAddress && geo?.display_name) {
+            setDeliveryAddress(geo.display_name.split(",").slice(0, 3).join(","));
+          }
+        } catch { /* keep defaults */ }
+      },
+      () => {},
+      { timeout: 8000 }
+    );
+  }, []);
+
+  const subtotal = totalPrice;
+  const deliveryFee = store?.delivery_fee || 10;
+  const grandTotal = subtotal + deliveryFee;
 
   const handleOrder = async () => {
+    if (!deliveryAddress.trim()) {
+      toast({ title: "يرجى إدخال عنوان التوصيل", variant: "destructive" });
+      return;
+    }
+
     setSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -25,18 +71,35 @@ const Cart = () => {
         return;
       }
 
-      // Create delivery order
+      // Create delivery order with full data
       const { data: order, error: orderErr } = await supabase
         .from("delivery_orders")
         .insert({
           user_id: user.id,
           category: "restaurant",
           store_name: storeName || "",
-          status: "pending",
+          store_id: storeId || null,
+          status: "pending_call_center",
           estimated_price: grandTotal,
+          subtotal: subtotal,
+          delivery_fee: deliveryFee,
+          total_price: grandTotal,
           delivery_type: "standard",
-          items: items.map((i) => ({ name: i.name, qty: i.quantity, price: i.price })),
-        })
+          delivery_address: deliveryAddress,
+          delivery_lat: customerLat,
+          delivery_lng: customerLng,
+          pickup_address: store?.address || "",
+          pickup_lat: store?.lat || null,
+          pickup_lng: store?.lng || null,
+          city: city,
+          notes: notes || "",
+          items: items.map((i) => ({
+            name: i.name,
+            qty: i.quantity,
+            price: i.price,
+            menuItemId: i.menuItemId,
+          })),
+        } as any)
         .select("id")
         .single();
 
@@ -55,7 +118,10 @@ const Cart = () => {
       if (itemsErr) throw itemsErr;
 
       clearCart();
-      toast({ title: "تم إرسال طلبك بنجاح ✅", description: `المجموع: ${grandTotal} DH` });
+      toast({
+        title: "تم إرسال طلبك بنجاح ✅",
+        description: `المجموع: ${grandTotal} DH — سيتم تأكيد الطلب من مركز الاتصال`,
+      });
       navigate(`/delivery/order/${order.id}`);
     } catch (err: any) {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
@@ -77,7 +143,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen delivery-bg pb-40" dir="rtl">
+    <div className="min-h-screen delivery-bg pb-72" dir="rtl">
       {/* Header */}
       <div className="bg-card border-b border-border px-5 py-4 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-secondary">
@@ -126,10 +192,33 @@ const Cart = () => {
         ))}
       </div>
 
+      {/* Delivery Address */}
+      <div className="px-5 mt-4 space-y-3">
+        <div className="bg-card rounded-2xl border border-border p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-primary" />
+            <h3 className="font-bold text-foreground text-sm">عنوان التوصيل</h3>
+          </div>
+          <Input
+            value={deliveryAddress}
+            onChange={(e) => setDeliveryAddress(e.target.value)}
+            placeholder="أدخل عنوان التوصيل الكامل..."
+            className="bg-secondary/60 border-border rounded-xl text-right"
+          />
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="ملاحظات إضافية (اختياري)..."
+            className="bg-secondary/60 border-border rounded-xl text-right min-h-[60px]"
+          />
+          <p className="text-[11px] text-muted-foreground">📍 المدينة: {city}</p>
+        </div>
+      </div>
+
       {/* Summary */}
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-5 space-y-3 z-50">
         <div className="flex justify-between text-sm">
-          <span className="text-foreground font-bold">{totalPrice.toFixed(0)} DH</span>
+          <span className="text-foreground font-bold">{subtotal.toFixed(0)} DH</span>
           <span className="text-muted-foreground">المنتجات</span>
         </div>
         <div className="flex justify-between text-sm">
