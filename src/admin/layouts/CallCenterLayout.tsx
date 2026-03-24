@@ -18,6 +18,7 @@ const CallCenterLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSmartAssistant, setIsSmartAssistant] = useState(false);
 
   const baseNavItems = [
     { path: "/call-center", icon: BarChart3, label: t.callCenter.dashboard },
