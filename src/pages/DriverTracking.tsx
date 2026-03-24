@@ -54,6 +54,8 @@ const DriverTracking = () => {
   const [clientName, setClientName] = useState("الزبون");
   const [clientPhone, setClientPhone] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Watch driver GPS
   useEffect(() => {
@@ -85,19 +87,26 @@ const DriverTracking = () => {
     return () => clearTimeout(t);
   }, [driverLocation]);
 
-  // Fetch ride data + client info + realtime
-  useEffect(() => {
-    if (!rideId) return;
-
-    const fetchRide = async () => {
-      const { data } = await supabase
+  const fetchRide = async () => {
+    if (!rideId) {
+      setLoading(false);
+      setError(null);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: fetchErr } = await supabase
         .from("ride_requests")
         .select("*")
         .eq("id", rideId)
         .single();
-      if (data) {
+      if (fetchErr) throw fetchErr;
+      if (!data) {
+        setError("لم يتم العثور على الرحلة");
+        setRide(null);
+      } else {
         setRide(data as RideData);
-        // Fetch client profile
         const { data: profile } = await supabase
           .from("profiles")
           .select("name, phone")
@@ -108,9 +117,19 @@ const DriverTracking = () => {
           setClientPhone(profile.phone || null);
         }
       }
-    };
+    } catch (err: any) {
+      setError(err.message || "فشل تحميل بيانات الرحلة");
+      setRide(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Fetch ride data + realtime
+  useEffect(() => {
     fetchRide();
+
+    if (!rideId) return;
 
     const channel = supabase
       .channel(`ride-track-${rideId}`)
@@ -176,9 +195,7 @@ const DriverTracking = () => {
         .eq("id", rideId);
       if (error) throw error;
 
-      if (newStatus === "completed") {
-        navigate("/driver");
-      } else if (newStatus === "cancelled") {
+      if (newStatus === "completed" || newStatus === "cancelled") {
         navigate("/driver");
       }
     } catch (err: any) {
@@ -188,10 +205,36 @@ const DriverTracking = () => {
     }
   };
 
-  if (!ride) {
+  // No ride ID provided
+  if (!rideId) {
     return (
-      <div className="min-h-screen bg-[#0a0f1a] flex items-center justify-center" dir="rtl">
-        <div className="text-emerald-300 animate-pulse">جارٍ التحميل...</div>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4" dir="rtl">
+        <MapPin className="w-14 h-14 text-muted-foreground/30" />
+        <p className="text-muted-foreground text-lg">لا توجد رحلة نشطة</p>
+        <Button onClick={() => navigate("/driver")} className="rounded-xl">العودة للرئيسية</Button>
+      </div>
+    );
+  }
+
+  // Loading state with timeout protection
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
+        <div className="text-primary animate-pulse">جارٍ التحميل...</div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !ride) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4" dir="rtl">
+        <XCircle className="w-14 h-14 text-destructive/50" />
+        <p className="text-destructive text-lg">{error || "لم يتم العثور على الرحلة"}</p>
+        <div className="flex gap-3">
+          <Button onClick={fetchRide} variant="outline" className="rounded-xl">إعادة المحاولة</Button>
+          <Button onClick={() => navigate("/driver")} className="rounded-xl">العودة للرئيسية</Button>
+        </div>
       </div>
     );
   }
