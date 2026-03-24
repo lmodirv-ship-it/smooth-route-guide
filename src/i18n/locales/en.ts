@@ -183,6 +183,7 @@ const en: TranslationSet = {
     minutes: "min",
     currency: "DH",
     minimumFare: "Minimum fare",
+  },
   driver: {
     home: "Home",
     earnings: "Earnings",

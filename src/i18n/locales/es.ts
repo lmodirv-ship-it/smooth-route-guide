@@ -183,6 +183,7 @@ const es: TranslationSet = {
     minutes: "min",
     currency: "DH",
     minimumFare: "Tarifa mínima",
+  },
   driver: {
     home: "Inicio",
     earnings: "Ganancias",

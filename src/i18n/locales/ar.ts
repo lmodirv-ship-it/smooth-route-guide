@@ -183,6 +183,7 @@ const ar: TranslationSet = {
     minutes: "دقيقة",
     currency: "درهم",
     minimumFare: "الحد الأدنى",
+  },
   driver: {
     home: "الرئيسية",
     earnings: "الأرباح",
