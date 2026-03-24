@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight, Search, Star, Clock, MapPin, ChevronLeft,
   UtensilsCrossed, Loader2, Globe, Filter, ShoppingBag,
-  Coffee, Store, Eye
+  Coffee, Store, Eye, Navigation, Sparkles, ChevronDown
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
