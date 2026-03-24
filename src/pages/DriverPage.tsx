@@ -234,7 +234,7 @@ const DriverPage = () => {
       if (error) throw error;
       setActiveRideId(orderId);
       toast({ title: "تم قبول الطلب ✅", description: `السعر: ${totalPrice} DH` });
-      navigate(`/driver-tracking?id=${orderId}`);
+      navigate(`/driver/tracking?id=${orderId}`);
     } catch (err: any) {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
     } finally { setAccepting(null); }
