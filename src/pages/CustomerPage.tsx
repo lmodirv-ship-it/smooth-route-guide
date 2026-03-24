@@ -124,7 +124,7 @@ const CustomerPage = () => {
 
       if (error) throw error;
       toast({ title: "تم إنشاء الطلب ✅", description: `السعر: ${price} درهم` });
-      navigate(`/customer-tracking?id=${data.id}`);
+      navigate(`/customer/tracking?id=${data.id}`);
     } catch (err: any) {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
     } finally {

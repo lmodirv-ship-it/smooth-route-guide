@@ -66,7 +66,7 @@ const ClientBooking = () => {
       if (error) throw error;
 
       toast({ title: "تم إنشاء الطلب بنجاح ✅" });
-      navigate(`/customer-tracking?id=${data.id}`);
+      navigate(`/customer/tracking?id=${data.id}`);
     } catch (error: any) {
       toast({ title: "تعذر إتمام الطلب", description: error.message || "حاول مرة أخرى", variant: "destructive" });
     } finally {

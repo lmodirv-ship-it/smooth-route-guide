@@ -53,10 +53,10 @@ const DriverProfile = () => {
   };
 
   const menuItems = [
-    { icon: Car, label: "معلومات السيارة", path: "/driver-panel/car-info", color: "text-primary" },
-    { icon: Shield, label: "الوثائق", path: "/driver-panel/documents", color: "text-info" },
-    { icon: Star, label: "التقييمات", path: "/driver-panel/history", color: "text-warning" },
-    { icon: MapPin, label: "حالة السائق", path: "/driver-panel/status", color: "text-success" },
+    { icon: Car, label: "معلومات السيارة", path: "/driver/car-info", color: "text-primary" },
+    { icon: Shield, label: "الوثائق", path: "/driver/documents", color: "text-info" },
+    { icon: Star, label: "التقييمات", path: "/driver/history", color: "text-warning" },
+    { icon: MapPin, label: "حالة السائق", path: "/driver/status", color: "text-success" },
   ];
 
   if (loading) return <div className="min-h-screen gradient-dark flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
@@ -64,7 +64,7 @@ const DriverProfile = () => {
   return (
     <div className="min-h-screen gradient-dark pb-24" dir="rtl">
       <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
-        <button onClick={() => navigate("/driver-panel")}><ArrowRight className="w-5 h-5 text-muted-foreground" /></button>
+        <button onClick={() => navigate("/driver")}><ArrowRight className="w-5 h-5 text-muted-foreground" /></button>
         <span className="font-bold text-foreground">الملف الشخصي</span>
         <button onClick={() => setEditing(!editing)}><Edit2 className="w-5 h-5 text-primary" /></button>
       </div>
