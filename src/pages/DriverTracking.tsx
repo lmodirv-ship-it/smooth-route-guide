@@ -348,8 +348,6 @@ const DriverTracking = () => {
             </div>
           </div>
         </div>
-      )}
-
       {/* ─── Map (top section) ─── */}
       <div className="relative h-[30vh] min-h-[180px] shrink-0">
         <LeafletMap
