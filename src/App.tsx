@@ -4,9 +4,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
+import { I18nProvider } from "@/i18n/context";
 import RequireRole from "@/components/RequireRole";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
+import LandingPage from "@/pages/LandingPage";
 
 // ─── Core (public) pages ───
 import Splash from "./pages/Splash";
