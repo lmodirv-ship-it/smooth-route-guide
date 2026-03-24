@@ -212,7 +212,17 @@ const AdminSettings = () => {
       </div>
 
       {/* Delivery Pricing Section - Full Width */}
-      <Section title="إعدادات تسعير التوصيل" icon={Truck}>
+      <div className="gradient-card rounded-xl border border-border p-6">
+        <div className="flex items-center justify-between mb-4">
+          <Button variant="outline" size="sm" onClick={handleResetDeliveryPricing} className="text-xs gap-1">
+            <RotateCcw className="w-3 h-3" />
+            إعادة تعيين
+          </Button>
+          <div className="flex items-center gap-2">
+            <Truck className="w-5 h-5 text-primary" />
+            <h3 className="font-bold text-foreground">إعدادات تسعير التوصيل</h3>
+          </div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Day Pricing */}
           <div className="space-y-4 border border-border rounded-lg p-4">
