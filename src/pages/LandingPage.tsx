@@ -370,6 +370,37 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ─── Browse Services ─── */}
+      <section className="py-20 md:py-28 relative">
+        <div className="absolute inset-0 particles-bg opacity-20" />
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.h2 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-3xl md:text-4xl font-bold text-center font-display mb-4">
+            <span className="text-gradient-primary">{lt.browseServicesTitle}</span>
+          </motion.h2>
+          <div className="w-20 h-1 gradient-primary mx-auto rounded-full mb-14" />
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
+            {serviceCategories.map((cat, i) => (
+              <motion.div
+                key={cat.key}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeUp}
+                custom={i + 1}
+                onClick={() => navigate(`/delivery/${cat.key}`)}
+                className="group cursor-pointer rounded-2xl p-6 gradient-card border border-border hover:border-primary/40 transition-all duration-500 text-center"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
+                  <cat.icon className="w-7 h-7 text-primary" />
+                </div>
+                <h3 className="font-bold text-foreground text-sm md:text-base">{cat.label}</h3>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ─── CTA ─── */}
       <section className="py-20 md:py-28 relative overflow-hidden">
         {/* Neon accent lines */}
