@@ -48,12 +48,42 @@ const STATUS_FLOW: Record<string, { label: string; icon: string }> = {
 const DriverTracking = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const rideId = searchParams.get("id");
+  const rideIdParam = searchParams.get("id");
+  const [rideId, setRideId] = useState<string | null>(rideIdParam);
   const [ride, setRide] = useState<RideData | null>(null);
   const [driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [clientName, setClientName] = useState("الزبون");
   const [clientPhone, setClientPhone] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Auto-find active ride if no ID provided
+  useEffect(() => {
+    if (rideIdParam) {
+      setRideId(rideIdParam);
+      return;
+    }
+    const findActiveRide = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setLoading(false); return; }
+      const { data } = await supabase
+        .from("ride_requests")
+        .select("id")
+        .eq("driver_id", user.id)
+        .in("status", ["accepted", "in_progress", "arriving"])
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (data && data.length > 0) {
+        setRideId(data[0].id);
+        console.log("[DriverTracking] Auto-found active ride:", data[0].id);
+      } else {
+        console.log("[DriverTracking] No active ride found for user:", user.id);
+        setLoading(false);
+      }
+    };
+    findActiveRide();
+  }, [rideIdParam]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

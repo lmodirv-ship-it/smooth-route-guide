@@ -324,7 +324,7 @@ const DriverPage = () => {
             >
               <Button
                 size="sm"
-                onClick={() => navigate(`/driver-tracking?id=${activeRideId}`)}
+                onClick={() => navigate(`/driver/tracking?id=${activeRideId}`)}
                 className="h-8 px-4 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold"
               >
                 <Navigation className="w-3.5 h-3.5 ml-1" />
