@@ -53,62 +53,64 @@ const queryClient = new QueryClient();
 
 const AdminApp = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Login for standalone admin */}
-          <Route path="/login" element={<AdminLogin />} />
+    <I18nProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Login for standalone admin */}
+            <Route path="/login" element={<AdminLogin />} />
 
-          {/* Setup admin */}
-          <Route path="/setup-admin" element={<RequireRole><SetupAdmin /></RequireRole>} />
+            {/* Setup admin */}
+            <Route path="/setup-admin" element={<RequireRole><SetupAdmin /></RequireRole>} />
 
-          {/* Admin panel — root of standalone deployment */}
-          <Route path="/" element={<RequireRole allowed={["admin"]}><AdminLayout /></RequireRole>}>
-            <Route index element={<AdminDashboardPage />} />
-            <Route path="users" element={<RegisteredUsers />} />
-            <Route path="requests" element={<AdminRideRequests />} />
-            <Route path="drivers" element={<AdminDrivers />} />
-            <Route path="clients" element={<AdminClients />} />
-            <Route path="earnings" element={<AdminEarnings />} />
-            <Route path="map" element={<AdminLiveMap />} />
-            <Route path="alerts" element={<AdminAlerts />} />
-            <Route path="documents" element={<AdminDocuments />} />
-            <Route path="delivery" element={<AdminDeliveryOrders />} />
-            <Route path="call-center" element={<AdminCallCenter />} />
-            <Route path="restaurants" element={<AdminRestaurants />} />
-            <Route path="zones" element={<ZonesManagement />} />
-            <Route path="settings" element={<AdminSettings />} />
-          </Route>
+            {/* Admin panel — root of standalone deployment */}
+            <Route path="/" element={<RequireRole allowed={["admin"]}><AdminLayout /></RequireRole>}>
+              <Route index element={<AdminDashboardPage />} />
+              <Route path="users" element={<RegisteredUsers />} />
+              <Route path="requests" element={<AdminRideRequests />} />
+              <Route path="drivers" element={<AdminDrivers />} />
+              <Route path="clients" element={<AdminClients />} />
+              <Route path="earnings" element={<AdminEarnings />} />
+              <Route path="map" element={<AdminLiveMap />} />
+              <Route path="alerts" element={<AdminAlerts />} />
+              <Route path="documents" element={<AdminDocuments />} />
+              <Route path="delivery" element={<AdminDeliveryOrders />} />
+              <Route path="call-center" element={<AdminCallCenter />} />
+              <Route path="restaurants" element={<AdminRestaurants />} />
+              <Route path="zones" element={<ZonesManagement />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
 
-          {/* Redirect /admin/* to root (standalone mode) */}
-          <Route path="/admin/*" element={<Navigate to="/" replace />} />
+            {/* Redirect /admin/* to root (standalone mode) */}
+            <Route path="/admin/*" element={<Navigate to="/" replace />} />
 
-          {/* Call Center */}
-          <Route path="/call-center" element={<RequireRole allowed={["admin", "agent"]}><CallCenterLayout /></RequireRole>}>
-            <Route index element={<CCDashboard />} />
-            <Route path="incoming" element={<IncomingCalls />} />
-            <Route path="manual-booking" element={<ManualBooking />} />
-            <Route path="ride-assign" element={<RideAssign />} />
-            <Route path="customers" element={<CustomerSearch />} />
-            <Route path="drivers" element={<DriverSearchCC />} />
-            <Route path="complaints" element={<Complaints />} />
-            <Route path="tickets" element={<Tickets />} />
-            <Route path="delivery" element={<DeliveryOrdersCC />} />
-            <Route path="restaurants" element={<RestaurantsCC />} />
-            <Route path="auto-import" element={<AutoImport />} />
-            <Route path="google-import" element={<GoogleMapsImport />} />
-            <Route path="emergency" element={<Emergency />} />
-            <Route path="history" element={<CallHistory />} />
-            <Route path="reports" element={<CCReports />} />
-          </Route>
+            {/* Call Center */}
+            <Route path="/call-center" element={<RequireRole allowed={["admin", "agent"]}><CallCenterLayout /></RequireRole>}>
+              <Route index element={<CCDashboard />} />
+              <Route path="incoming" element={<IncomingCalls />} />
+              <Route path="manual-booking" element={<ManualBooking />} />
+              <Route path="ride-assign" element={<RideAssign />} />
+              <Route path="customers" element={<CustomerSearch />} />
+              <Route path="drivers" element={<DriverSearchCC />} />
+              <Route path="complaints" element={<Complaints />} />
+              <Route path="tickets" element={<Tickets />} />
+              <Route path="delivery" element={<DeliveryOrdersCC />} />
+              <Route path="restaurants" element={<RestaurantsCC />} />
+              <Route path="auto-import" element={<AutoImport />} />
+              <Route path="google-import" element={<GoogleMapsImport />} />
+              <Route path="emergency" element={<Emergency />} />
+              <Route path="history" element={<CallHistory />} />
+              <Route path="reports" element={<CCReports />} />
+            </Route>
 
-          {/* Catch-all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+            {/* Catch-all */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </I18nProvider>
   </QueryClientProvider>
 );
 
