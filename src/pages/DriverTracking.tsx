@@ -459,6 +459,16 @@ const DriverTracking = () => {
 
       {/* Chat */}
       {rideId && !isFinished && <RideChat rideId={rideId} role="driver" />}
+
+      {rideId && (
+        <CancelRideDialog
+          open={cancelDialogOpen}
+          onOpenChange={setCancelDialogOpen}
+          rideId={rideId}
+          role="driver"
+          onCancelled={() => navigate("/driver")}
+        />
+      )}
     </div>
   );
 };
