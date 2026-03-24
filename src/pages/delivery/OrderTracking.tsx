@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 const steps = [
-  { key: "pending", label: "قيد المراجعة", sublabel: "مركز الاتصال يراجع طلبك", icon: Clock, color: "bg-amber-500" },
+  { key: "pending_call_center", label: "بانتظار مركز الاتصال", sublabel: "مركز الاتصال يراجع طلبك", icon: Clock, color: "bg-amber-500" },
   { key: "confirmed", label: "تم التأكيد", sublabel: "تم تأكيد الطلب مع المطعم", icon: CheckCircle, color: "bg-blue-500" },
-  { key: "driver_assigned", label: "تعيين سائق", sublabel: "تم تعيين سائق لطلبك", icon: Car, color: "bg-cyan-500" },
-  { key: "accepted", label: "السائق قبل الطلب", sublabel: "السائق في الطريق للمطعم", icon: Bike, color: "bg-indigo-500" },
-  { key: "arrived_restaurant", label: "وصل للمطعم", sublabel: "السائق في المطعم لاستلام طلبك", icon: Store, color: "bg-orange-500" },
-  { key: "picked_up", label: "تم الاستلام", sublabel: "السائق استلم الطلب ومتجه إليك", icon: Package, color: "bg-purple-500" },
-  { key: "delivered", label: "تم التوصيل", sublabel: "وصل طلبك!", icon: MapPin, color: "bg-emerald-500" },
-  { key: "completed", label: "مكتمل", sublabel: "تم إتمام الطلب بنجاح", icon: CheckCircle, color: "bg-emerald-600" },
+  { key: "ready_for_driver", label: "جاهز للسائق", sublabel: "بانتظار سائق لاستلام الطلب", icon: Car, color: "bg-cyan-500" },
+  { key: "driver_assigned", label: "السائق قبل الطلب", sublabel: "تم تعيين سائق لطلبك", icon: Bike, color: "bg-indigo-500" },
+  { key: "on_the_way_to_vendor", label: "في الطريق للمطعم", sublabel: "السائق متجه للمطعم", icon: Store, color: "bg-orange-500" },
+  { key: "picked_up", label: "تم الاستلام", sublabel: "السائق استلم الطلب", icon: Package, color: "bg-purple-500" },
+  { key: "on_the_way_to_customer", label: "في الطريق إليك", sublabel: "السائق متجه إلى موقعك", icon: Bike, color: "bg-primary" },
+  { key: "delivered", label: "تم التوصيل", sublabel: "وصل طلبك! 🎉", icon: MapPin, color: "bg-emerald-500" },
 ];
 
 const OrderTracking = () => {
