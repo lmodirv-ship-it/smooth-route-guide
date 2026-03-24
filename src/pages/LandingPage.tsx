@@ -86,22 +86,12 @@ export default function LandingPage() {
 
       {/* ─── Hero Section ─── */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background skyline */}
-        <div className="absolute inset-0">
-          <img
-            src={heroSkyline}
-            alt=""
-            className="w-full h-full object-cover"
-            width={1920}
-            height={1080}
-          />
-          {/* Deep cinematic overlay */}
-          <div className="absolute inset-0 bg-background/70" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-transparent to-background" />
+        {/* Pure black background with subtle atmospheric effects */}
+        <div className="absolute inset-0 bg-background">
           {/* Blue atmospheric haze */}
-          <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 70% 30%, hsl(205 78% 56% / 0.08) 0%, transparent 60%)" }} />
+          <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 70% 30%, hsl(205 78% 56% / 0.06) 0%, transparent 60%)" }} />
           {/* Orange warm accent */}
-          <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 30% 70%, hsl(32 95% 55% / 0.06) 0%, transparent 50%)" }} />
+          <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 30% 70%, hsl(32 95% 55% / 0.04) 0%, transparent 50%)" }} />
         </div>
 
         {/* Neon ground streaks — dramatic speed lines */}
