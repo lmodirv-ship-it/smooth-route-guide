@@ -298,6 +298,58 @@ const DriverTracking = () => {
         <div className="w-9" />
       </div>
 
+      {/* ─── Full-screen Nav Mode ─── */}
+      {navMode && (
+        <div className="absolute inset-0 z-[100] flex flex-col bg-background">
+          <div className="relative flex-1">
+            <LeafletMap
+              center={smoothedDriver || mapCenter}
+              zoom={16}
+              className="w-full h-full"
+              showMarker={false}
+              driverLocation={smoothedDriver}
+              route={mapRoute}
+            />
+            {/* Floating info bar */}
+            {distanceToTarget != null && etaMinutes != null && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1001] bg-black/80 text-white px-5 py-2.5 rounded-full text-sm backdrop-blur-sm flex items-center gap-3 border border-white/10">
+                <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-orange-400" />{distanceToTarget.toFixed(1)} كم</span>
+                <span className="text-white/30">|</span>
+                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-blue-400" />{etaMinutes} د</span>
+              </div>
+            )}
+            {/* Close nav mode button */}
+            <button
+              onClick={() => setNavMode(false)}
+              className="absolute top-4 right-4 z-[1001] w-10 h-10 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/10"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
+            {/* Status action floating at bottom */}
+            <div className="absolute bottom-4 left-4 right-4 z-[1001] space-y-2">
+              {ride.status === "accepted" && (
+                <Button onClick={() => handleStatusUpdate("in_progress")} disabled={updating}
+                  className="w-full h-14 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-base shadow-lg gap-2">
+                  <Send className="w-5 h-5" /> في الطريق
+                </Button>
+              )}
+              {ride.status === "in_progress" && (
+                <Button onClick={() => handleStatusUpdate("arriving")} disabled={updating}
+                  className="w-full h-14 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-base shadow-lg gap-2">
+                  <Car className="w-5 h-5" /> وصلت
+                </Button>
+              )}
+              {ride.status === "arriving" && (
+                <Button onClick={() => handleStatusUpdate("completed")} disabled={updating}
+                  className="w-full h-14 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-bold text-base shadow-lg gap-2">
+                  <CheckCircle className="w-5 h-5" /> تم التوصيل
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─── Map (top section) ─── */}
       <div className="relative h-[30vh] min-h-[180px] shrink-0">
         <LeafletMap
@@ -307,6 +359,7 @@ const DriverTracking = () => {
           showMarker={!!targetPosition}
           markerPosition={targetPosition || undefined}
           driverLocation={smoothedDriver}
+          route={mapRoute}
         />
         {distanceToTarget != null && etaMinutes != null && (
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[1000] bg-black/70 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm flex items-center gap-3 border border-white/10">
@@ -314,6 +367,7 @@ const DriverTracking = () => {
             <span className="text-white/30">|</span>
             <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-blue-400" />{etaMinutes} د</span>
           </div>
+        )}
         )}
       </div>
 
