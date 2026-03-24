@@ -108,7 +108,7 @@ const es: TranslationSet = {
     deliveryAccount: "Cuenta de repartidor",
     adminAccount: "Cuenta de administrador",
     agentAccount: "Cuenta de centro de llamadas",
-    emailMethod: "Correo electrónico",
+    storeOwnerAccount: "Cuenta de propietario de tienda",
     phoneMethod: "Número de teléfono",
     loginBtn: "Entrar",
     createAccount: "Crear cuenta nueva",
