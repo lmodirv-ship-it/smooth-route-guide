@@ -47,6 +47,13 @@ export type Database = {
             foreignKeyName: "alerts_driver_id_fkey"
             columns: ["driver_id"]
             isOneToOne: false
+            referencedRelation: "active_drivers_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alerts_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
             referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
@@ -279,6 +286,13 @@ export type Database = {
             foreignKeyName: "complaints_driver_id_fkey"
             columns: ["driver_id"]
             isOneToOne: false
+            referencedRelation: "active_drivers_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "complaints_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
             referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
@@ -407,6 +421,13 @@ export type Database = {
             foreignKeyName: "documents_driver_id_fkey"
             columns: ["driver_id"]
             isOneToOne: false
+            referencedRelation: "active_drivers_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
             referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
@@ -482,6 +503,13 @@ export type Database = {
           id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "earnings_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "active_drivers_public"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "earnings_driver_id_fkey"
             columns: ["driver_id"]
@@ -831,6 +859,13 @@ export type Database = {
             foreignKeyName: "ratings_driver_id_fkey"
             columns: ["driver_id"]
             isOneToOne: false
+            referencedRelation: "active_drivers_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ratings_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
             referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
@@ -1033,6 +1068,13 @@ export type Database = {
             foreignKeyName: "tickets_driver_id_fkey"
             columns: ["driver_id"]
             isOneToOne: false
+            referencedRelation: "active_drivers_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
             referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
@@ -1125,6 +1167,13 @@ export type Database = {
             foreignKeyName: "trips_driver_id_fkey"
             columns: ["driver_id"]
             isOneToOne: false
+            referencedRelation: "active_drivers_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
             referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
@@ -1177,6 +1226,13 @@ export type Database = {
           plate_no?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "vehicles_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "active_drivers_public"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "vehicles_driver_id_fkey"
             columns: ["driver_id"]
@@ -1248,7 +1304,44 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      active_drivers_public: {
+        Row: {
+          car_id: string | null
+          current_lat: number | null
+          current_lng: number | null
+          id: string | null
+          rating: number | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          car_id?: string | null
+          current_lat?: never
+          current_lng?: never
+          id?: string | null
+          rating?: number | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          car_id?: string | null
+          current_lat?: never
+          current_lng?: never
+          id?: string | null
+          rating?: number | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_drivers_car"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       enforce_rate_limit: {
