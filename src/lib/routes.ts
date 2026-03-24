@@ -29,9 +29,10 @@ export const ROLE_LABELS: Record<string, string> = {
   driver: "سائق",
   client: "عميل",
   user: "عميل",
-  delivery: "توصيل",
+  delivery: "سائق توصيل",
   admin: "مسؤول",
   agent: "مركز اتصال",
+  moderator: "مشرف",
 };
 
 /**

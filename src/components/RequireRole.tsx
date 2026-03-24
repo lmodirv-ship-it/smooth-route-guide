@@ -62,6 +62,7 @@ function bestDashboard(roles: AppRole[]): string {
   if (roles.includes("admin")) return ROLE_DASHBOARD.admin;
   if (roles.includes("agent")) return ROLE_DASHBOARD.agent;
   if (roles.includes("driver")) return ROLE_DASHBOARD.driver;
+  if (roles.includes("delivery")) return ROLE_DASHBOARD.delivery;
   return ROLE_DASHBOARD.user || "/customer";
 }
 
