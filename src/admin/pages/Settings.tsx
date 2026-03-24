@@ -51,6 +51,20 @@ const AdminSettings = () => {
           const n = map.get("notifications") as any;
           setSettings(s => ({ ...s, emailNotifications: n.email ?? s.emailNotifications, pushNotifications: n.push ?? s.pushNotifications }));
         }
+        if (map.has("delivery_pricing")) {
+          const dp = map.get("delivery_pricing") as any;
+          setDeliveryPricing(prev => ({
+            dayBaseFare: String(dp.dayBaseFare ?? prev.dayBaseFare),
+            dayIncludedKm: String(dp.dayIncludedKm ?? prev.dayIncludedKm),
+            dayExtraKmRate: String(dp.dayExtraKmRate ?? prev.dayExtraKmRate),
+            nightBaseFare: String(dp.nightBaseFare ?? prev.nightBaseFare),
+            nightIncludedKm: String(dp.nightIncludedKm ?? prev.nightIncludedKm),
+            nightExtraKmRate: String(dp.nightExtraKmRate ?? prev.nightExtraKmRate),
+            dayStartHour: String(dp.dayStartHour ?? prev.dayStartHour),
+            dayEndHour: String(dp.dayEndHour ?? prev.dayEndHour),
+            roundingMethod: dp.roundingMethod ?? prev.roundingMethod,
+          }));
+        }
       }
       setLoading(false);
     };
