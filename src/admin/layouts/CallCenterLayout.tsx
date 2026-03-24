@@ -47,6 +47,7 @@ const CallCenterLayout = () => {
       supabase.from("user_roles").select("role").eq("user_id", data.user.id).then(({ data: roles }) => {
         const userRoles = (roles || []).map(r => r.role);
         setIsAdmin(userRoles.includes("admin"));
+        setIsSmartAssistant(userRoles.includes("smart_admin_assistant"));
       });
     });
   }, []);
