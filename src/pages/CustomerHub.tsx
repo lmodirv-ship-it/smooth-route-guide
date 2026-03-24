@@ -77,7 +77,7 @@ const CustomerHub = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 300, damping: 25 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => navigate("/customer/booking")}
+            onClick={() => navigate("/customer/ride")}
             className="w-full glass-strong rounded-3xl border border-border p-6 text-right group hover:border-primary/40 transition-all duration-300"
           >
             <div className="flex items-center gap-4">
