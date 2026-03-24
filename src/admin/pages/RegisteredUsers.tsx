@@ -24,7 +24,7 @@ interface UserRecord {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  admin: "مسؤول", agent: "مركز اتصال", user: "عميل", driver: "سائق", moderator: "مشرف",
+  admin: "مسؤول", agent: "مركز اتصال", user: "عميل", driver: "سائق", moderator: "مشرف", delivery: "سائق توصيل",
 };
 
 const ROLE_COLORS: Record<string, string> = {
@@ -33,6 +33,7 @@ const ROLE_COLORS: Record<string, string> = {
   driver: "bg-primary/15 text-primary border-primary/30",
   user: "bg-secondary text-secondary-foreground border-border",
   moderator: "bg-orange-500/15 text-orange-600 border-orange-500/30",
+  delivery: "bg-success/15 text-success border-success/30",
 };
 
 const RegisteredUsers = () => {
