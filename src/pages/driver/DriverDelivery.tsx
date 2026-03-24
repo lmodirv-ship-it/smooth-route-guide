@@ -5,7 +5,7 @@ import { ArrowRight, Bike, CheckCircle, Clock, MapPin, Navigation, Package, Stor
 import { Button } from "@/components/ui/button";
 import LiveOrderMap from "@/components/LiveOrderMap";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
-import NavigationLinks from "@/components/NavigationLinks";
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -187,7 +187,12 @@ const DriverDelivery = () => {
       </div>
 
       <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-64 relative">
-        <LiveOrderMap driverPosition={driverLocation} targetPosition={targetPosition} />
+        <LiveOrderMap
+          driverPosition={driverLocation}
+          targetPosition={targetPosition}
+          showRouteInfo={!!activeOrder}
+          targetLabel={activeOrder ? (["driver_assigned", "on_the_way_to_vendor"].includes(activeOrder.status) ? (activeOrder.pickup_address || "") : (activeOrder.delivery_address || "")) : undefined}
+        />
       </div>
 
       <div className="px-4 mt-4 space-y-4">
@@ -268,14 +273,6 @@ const DriverDelivery = () => {
               </div>
             </div>
 
-            {targetPosition && (
-              <NavigationLinks
-                lat={targetPosition.lat}
-                lng={targetPosition.lng}
-                label={["driver_assigned", "on_the_way_to_vendor"].includes(activeOrder.status) ? (activeOrder.pickup_address || "") : (activeOrder.delivery_address || "")}
-                compact
-              />
-            )}
 
             <div className="grid gap-3">
               {activeOrder.status === "driver_assigned" && (
