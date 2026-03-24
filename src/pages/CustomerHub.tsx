@@ -87,9 +87,9 @@ const CustomerHub = () => {
                 <Car className="w-8 h-8 text-info" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-bold text-foreground mb-1">التوصيل</h2>
+                <h2 className="text-lg font-bold text-foreground mb-1">🚗 طلب سيارة</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  اطلب سيارة — حدد موقعك ووجهتك وابحث عن سائق
+                  حدد موقعك ووجهتك وابحث عن سائق فوراً
                 </p>
               </div>
             </div>
