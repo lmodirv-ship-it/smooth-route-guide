@@ -216,7 +216,7 @@ const DriverPage = () => {
 
   const handleAccept = async (orderId: string) => {
     if (activeRideId) {
-      toast({ title: "لديك رحلة نشطة بالفعل", description: "أكمل الرحلة الحالية أولاً", variant: "destructive" });
+      toast({ title: t.driver.activeRide, description: t.driver.completeCurrentFirst, variant: "destructive" });
       navigate(`/driver/tracking?id=${activeRideId}`);
       return;
     }
