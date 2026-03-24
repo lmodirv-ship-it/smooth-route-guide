@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 const steps = [
-  { key: "pending", label: "قيد المراجعة", sublabel: "مركز الاتصال يراجع طلبك", icon: Clock, color: "bg-amber-500" },
+  { key: "pending_call_center", label: "بانتظار مركز الاتصال", sublabel: "مركز الاتصال يراجع طلبك", icon: Clock, color: "bg-amber-500" },
   { key: "confirmed", label: "تم التأكيد", sublabel: "تم تأكيد الطلب مع المطعم", icon: CheckCircle, color: "bg-blue-500" },
-  { key: "driver_assigned", label: "تعيين سائق", sublabel: "تم تعيين سائق لطلبك", icon: Car, color: "bg-cyan-500" },
-  { key: "accepted", label: "السائق قبل الطلب", sublabel: "السائق في الطريق للمطعم", icon: Bike, color: "bg-indigo-500" },
-  { key: "arrived_restaurant", label: "وصل للمطعم", sublabel: "السائق في المطعم لاستلام طلبك", icon: Store, color: "bg-orange-500" },
-  { key: "picked_up", label: "تم الاستلام", sublabel: "السائق استلم الطلب ومتجه إليك", icon: Package, color: "bg-purple-500" },
-  { key: "delivered", label: "تم التوصيل", sublabel: "وصل طلبك!", icon: MapPin, color: "bg-emerald-500" },
-  { key: "completed", label: "مكتمل", sublabel: "تم إتمام الطلب بنجاح", icon: CheckCircle, color: "bg-emerald-600" },
+  { key: "ready_for_driver", label: "جاهز للسائق", sublabel: "بانتظار سائق لاستلام الطلب", icon: Car, color: "bg-cyan-500" },
+  { key: "driver_assigned", label: "السائق قبل الطلب", sublabel: "تم تعيين سائق لطلبك", icon: Bike, color: "bg-indigo-500" },
+  { key: "on_the_way_to_vendor", label: "في الطريق للمطعم", sublabel: "السائق متجه للمطعم", icon: Store, color: "bg-orange-500" },
+  { key: "picked_up", label: "تم الاستلام", sublabel: "السائق استلم الطلب", icon: Package, color: "bg-purple-500" },
+  { key: "on_the_way_to_customer", label: "في الطريق إليك", sublabel: "السائق متجه إلى موقعك", icon: Bike, color: "bg-primary" },
+  { key: "delivered", label: "تم التوصيل", sublabel: "وصل طلبك! 🎉", icon: MapPin, color: "bg-emerald-500" },
 ];
 
 const OrderTracking = () => {
@@ -69,8 +69,8 @@ const OrderTracking = () => {
     return () => { supabase.removeChannel(channel); };
   }, [id]);
 
-  const currentStep = steps.findIndex((s) => s.key === (order?.status || "pending"));
-  const isCancelled = order?.status === "cancelled";
+  const currentStep = steps.findIndex((s) => s.key === (order?.status || "pending_call_center"));
+  const isCancelled = order?.status === "cancelled" || order?.status === "canceled";
 
   return (
     <div className="min-h-screen delivery-bg px-5 pt-6 pb-10" dir="rtl">
@@ -114,10 +114,24 @@ const OrderTracking = () => {
                 </p>
               </div>
             </div>
-            {order.estimated_price && (
-              <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
-                <span className="text-lg font-bold text-primary">{order.estimated_price} DH</span>
-                <span className="text-xs text-muted-foreground">المجموع</span>
+            {(order.total_price || order.estimated_price) && (
+              <div className="mt-3 pt-3 border-t border-border space-y-1">
+                {order.subtotal > 0 && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-foreground">{order.subtotal} DH</span>
+                    <span className="text-muted-foreground">المنتجات</span>
+                  </div>
+                )}
+                {order.delivery_fee > 0 && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-foreground">{order.delivery_fee} DH</span>
+                    <span className="text-muted-foreground">التوصيل</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-lg font-bold text-primary">{order.total_price || order.estimated_price} DH</span>
+                  <span className="text-xs text-muted-foreground">المجموع</span>
+                </div>
               </div>
             )}
           </motion.div>
