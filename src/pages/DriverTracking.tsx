@@ -56,6 +56,7 @@ const DriverTracking = () => {
   const [updating, setUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [navMode, setNavMode] = useState(false);
 
   // Auto-find active ride if no ID provided
   useEffect(() => {
