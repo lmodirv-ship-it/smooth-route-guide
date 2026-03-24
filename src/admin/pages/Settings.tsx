@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings, Save, DollarSign, MapPin, Bell, Shield, Loader2, Truck, Sun, Moon } from "lucide-react";
+import { Settings, Save, DollarSign, MapPin, Bell, Shield, Loader2, Truck, Sun, Moon, RotateCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -73,37 +73,59 @@ const AdminSettings = () => {
 
   const handleSave = async () => {
     setSaving(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    const uid = user?.id;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const uid = user?.id;
 
-    const upsert = async (key: string, value: any) => {
-      const { data: existing } = await supabase.from("app_settings").select("id").eq("key", key).maybeSingle();
-      if (existing) {
-        await supabase.from("app_settings").update({ value, updated_at: new Date().toISOString(), updated_by: uid }).eq("key", key);
-      } else {
-        await supabase.from("app_settings").insert({ key, value, updated_by: uid });
-      }
-    };
+      const upsert = async (key: string, value: any) => {
+        const { data: existing } = await supabase.from("app_settings").select("id").eq("key", key).maybeSingle();
+        if (existing) {
+          const { error } = await supabase.from("app_settings").update({ value, updated_at: new Date().toISOString(), updated_by: uid }).eq("key", key);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from("app_settings").insert({ key, value, updated_by: uid });
+          if (error) throw error;
+        }
+      };
 
-    await Promise.all([
-      upsert("pricing", { baseFare: settings.baseFare, perKmRate: settings.perKmRate, perMinRate: settings.perMinRate, minFare: settings.minFare }),
-      upsert("general", { maxRadius: settings.maxRadius, autoAssign: settings.autoAssign, maintenanceMode: settings.maintenanceMode }),
-      upsert("notifications", { email: settings.emailNotifications, push: settings.pushNotifications }),
-      upsert("delivery_pricing", {
-        dayBaseFare: Number(deliveryPricing.dayBaseFare),
-        dayIncludedKm: Number(deliveryPricing.dayIncludedKm),
-        dayExtraKmRate: Number(deliveryPricing.dayExtraKmRate),
-        nightBaseFare: Number(deliveryPricing.nightBaseFare),
-        nightIncludedKm: Number(deliveryPricing.nightIncludedKm),
-        nightExtraKmRate: Number(deliveryPricing.nightExtraKmRate),
-        dayStartHour: Number(deliveryPricing.dayStartHour),
-        dayEndHour: Number(deliveryPricing.dayEndHour),
-        roundingMethod: deliveryPricing.roundingMethod,
-      }),
-    ]);
+      await Promise.all([
+        upsert("pricing", { baseFare: settings.baseFare, perKmRate: settings.perKmRate, perMinRate: settings.perMinRate, minFare: settings.minFare }),
+        upsert("general", { maxRadius: settings.maxRadius, autoAssign: settings.autoAssign, maintenanceMode: settings.maintenanceMode }),
+        upsert("notifications", { email: settings.emailNotifications, push: settings.pushNotifications }),
+        upsert("delivery_pricing", {
+          dayBaseFare: Number(deliveryPricing.dayBaseFare),
+          dayIncludedKm: Number(deliveryPricing.dayIncludedKm),
+          dayExtraKmRate: Number(deliveryPricing.dayExtraKmRate),
+          nightBaseFare: Number(deliveryPricing.nightBaseFare),
+          nightIncludedKm: Number(deliveryPricing.nightIncludedKm),
+          nightExtraKmRate: Number(deliveryPricing.nightExtraKmRate),
+          dayStartHour: Number(deliveryPricing.dayStartHour),
+          dayEndHour: Number(deliveryPricing.dayEndHour),
+          roundingMethod: deliveryPricing.roundingMethod,
+        }),
+      ]);
 
-    toast({ title: "تم حفظ الإعدادات بنجاح" });
-    setSaving(false);
+      toast({ title: "✅ تم حفظ الإعدادات بنجاح" });
+    } catch (err: any) {
+      toast({ title: "❌ فشل حفظ الإعدادات", description: err?.message || "حدث خطأ غير متوقع", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleResetDeliveryPricing = () => {
+    setDeliveryPricing({
+      dayBaseFare: String(DELIVERY_PRICING_DEFAULTS.dayBaseFare),
+      dayIncludedKm: String(DELIVERY_PRICING_DEFAULTS.dayIncludedKm),
+      dayExtraKmRate: String(DELIVERY_PRICING_DEFAULTS.dayExtraKmRate),
+      nightBaseFare: String(DELIVERY_PRICING_DEFAULTS.nightBaseFare),
+      nightIncludedKm: String(DELIVERY_PRICING_DEFAULTS.nightIncludedKm),
+      nightExtraKmRate: String(DELIVERY_PRICING_DEFAULTS.nightExtraKmRate),
+      dayStartHour: String(DELIVERY_PRICING_DEFAULTS.dayStartHour),
+      dayEndHour: String(DELIVERY_PRICING_DEFAULTS.dayEndHour),
+      roundingMethod: DELIVERY_PRICING_DEFAULTS.roundingMethod,
+    });
+    toast({ title: "تم إعادة تعيين قيم تسعير التوصيل إلى الافتراضية (لم تُحفظ بعد)" });
   };
 
   const Section = ({ title, icon: Icon, children }: { title: string; icon: any; children: React.ReactNode }) => (
@@ -190,7 +212,17 @@ const AdminSettings = () => {
       </div>
 
       {/* Delivery Pricing Section - Full Width */}
-      <Section title="إعدادات تسعير التوصيل" icon={Truck}>
+      <div className="gradient-card rounded-xl border border-border p-6">
+        <div className="flex items-center justify-between mb-4">
+          <Button variant="outline" size="sm" onClick={handleResetDeliveryPricing} className="text-xs gap-1">
+            <RotateCcw className="w-3 h-3" />
+            إعادة تعيين
+          </Button>
+          <div className="flex items-center gap-2">
+            <Truck className="w-5 h-5 text-primary" />
+            <h3 className="font-bold text-foreground">إعدادات تسعير التوصيل</h3>
+          </div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Day Pricing */}
           <div className="space-y-4 border border-border rounded-lg p-4">
@@ -270,7 +302,7 @@ const AdminSettings = () => {
         <p className="text-xs text-muted-foreground text-right mt-3">
           النهار: {deliveryPricing.dayStartHour}:00 → {deliveryPricing.dayEndHour}:00 | الليل: {deliveryPricing.dayEndHour}:00 → {deliveryPricing.dayStartHour}:00
         </p>
-      </Section>
+      </div>
     </div>
   );
 };
