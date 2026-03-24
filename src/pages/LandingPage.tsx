@@ -95,27 +95,59 @@ export default function LandingPage() {
             width={1920}
             height={1080}
           />
-          {/* Dark overlay for readability */}
-          <div className="absolute inset-0 bg-background/60" />
-          {/* Bottom gradient fade */}
-          <div className="absolute bottom-0 inset-x-0 h-48 bg-gradient-to-t from-background to-transparent" />
-          {/* Top gradient fade */}
-          <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-background/80 to-transparent" />
+          {/* Deep cinematic overlay */}
+          <div className="absolute inset-0 bg-background/70" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-transparent to-background" />
+          {/* Blue atmospheric haze */}
+          <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 70% 30%, hsl(205 78% 56% / 0.08) 0%, transparent 60%)" }} />
+          {/* Orange warm accent */}
+          <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 30% 70%, hsl(32 95% 55% / 0.06) 0%, transparent 50%)" }} />
         </div>
 
-        {/* Neon light streaks */}
+        {/* Neon ground streaks — dramatic speed lines */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute bottom-20 left-0 right-0 h-px bg-gradient-to-r from-transparent via-info/40 to-transparent" />
-          <div className="absolute bottom-24 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+          {/* Static glow lines */}
+          <div className="absolute bottom-20 left-0 right-0 h-px bg-gradient-to-r from-transparent via-info/30 to-transparent" />
+          <div className="absolute bottom-24 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
+          <div className="absolute bottom-32 left-0 right-0 h-px bg-gradient-to-r from-transparent via-info/15 to-transparent" />
+
+          {/* Animated speed streaks — orange */}
           <motion.div
-            className="absolute bottom-16 h-0.5 w-40 bg-gradient-to-r from-transparent via-primary to-transparent"
-            animate={{ x: ["-100%", "200vw"] }}
+            className="absolute bottom-16 h-0.5 w-48 bg-gradient-to-r from-transparent via-primary to-transparent"
+            animate={{ x: ["-200px", "110vw"] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 1.5 }}
+          />
+          <motion.div
+            className="absolute bottom-36 h-[3px] w-64 rounded-full"
+            style={{ background: "linear-gradient(90deg, transparent, hsl(32 95% 55% / 0.8), hsl(32 95% 55% / 0.4), transparent)" }}
+            animate={{ x: ["-300px", "120vw"] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 3 }}
+          />
+          {/* Animated speed streaks — blue */}
+          <motion.div
+            className="absolute bottom-28 h-0.5 w-40 bg-gradient-to-r from-transparent via-info to-transparent"
+            animate={{ x: ["110vw", "-200px"] }}
             transition={{ duration: 4, repeat: Infinity, ease: "linear", repeatDelay: 2 }}
           />
           <motion.div
-            className="absolute bottom-28 h-0.5 w-32 bg-gradient-to-r from-transparent via-info to-transparent"
-            animate={{ x: ["200vw", "-100%"] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "linear", repeatDelay: 3 }}
+            className="absolute bottom-44 h-[2px] w-56 rounded-full"
+            style={{ background: "linear-gradient(90deg, transparent, hsl(205 78% 56% / 0.6), hsl(205 78% 56% / 0.3), transparent)" }}
+            animate={{ x: ["120vw", "-300px"] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
+          />
+
+          {/* Vertical accent beams */}
+          <motion.div
+            className="absolute left-[15%] bottom-0 w-px h-40"
+            style={{ background: "linear-gradient(to top, hsl(32 95% 55% / 0.4), transparent)" }}
+            animate={{ opacity: [0.2, 0.6, 0.2], height: ["120px", "200px", "120px"] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute right-[20%] bottom-0 w-px h-32"
+            style={{ background: "linear-gradient(to top, hsl(205 78% 56% / 0.3), transparent)" }}
+            animate={{ opacity: [0.15, 0.5, 0.15], height: ["100px", "160px", "100px"] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
           />
         </div>
 
@@ -130,24 +162,35 @@ export default function LandingPage() {
                 variants={scaleIn}
                 className="relative mb-6"
               >
-                {/* Animated golden glow rings */}
+                {/* Outer dramatic glow */}
+                <motion.div
+                  className="absolute inset-0 rounded-full scale-150"
+                  style={{ background: "radial-gradient(circle, hsl(32 95% 55% / 0.15) 0%, hsl(205 78% 56% / 0.05) 50%, transparent 70%)" }}
+                  animate={{ scale: [1.4, 1.6, 1.4], opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                />
+                {/* Inner golden pulse */}
                 <motion.div
                   className="absolute inset-0 rounded-full scale-125"
-                  style={{ background: "radial-gradient(circle, hsl(32 95% 55% / 0.25) 0%, transparent 70%)" }}
-                  animate={{ scale: [1.2, 1.35, 1.2], opacity: [0.4, 0.7, 0.4] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  style={{ background: "radial-gradient(circle, hsl(32 95% 55% / 0.3) 0%, transparent 60%)" }}
+                  animate={{ scale: [1.2, 1.35, 1.2], opacity: [0.5, 0.8, 0.5] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                 />
+                {/* Rotating ring */}
                 <motion.div
-                  className="absolute inset-0 rounded-full scale-110 border-2 border-primary/30"
-                  animate={{ scale: [1.1, 1.2, 1.1], opacity: [0.3, 0.6, 0.3], rotate: [0, 360] }}
-                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-0 rounded-full scale-115 border-2 border-primary/25"
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                  style={{ borderStyle: "dashed" }}
                 />
+                {/* Blue accent ring */}
                 <motion.div
-                  className="absolute inset-0 rounded-full scale-105 border border-primary/20"
-                  animate={{ scale: [1.05, 1.15, 1.05], opacity: [0.2, 0.5, 0.2] }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                  className="absolute inset-0 rounded-full scale-130"
+                  style={{ border: "1px solid hsl(205 78% 56% / 0.15)" }}
+                  animate={{ scale: [1.3, 1.4, 1.3], opacity: [0.2, 0.4, 0.2] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                 />
-                <div className="absolute inset-0 blur-3xl bg-primary/20 rounded-full scale-110" />
+                <div className="absolute inset-0 blur-3xl bg-primary/25 rounded-full scale-110" />
                 <img
                   src={heroEmblem}
                   alt="HN Driver Emblem"
