@@ -213,6 +213,23 @@ const DriverTracking = () => {
     [smoothedDriver, targetPosition]
   );
 
+  // Build route for the map polyline
+  const mapRoute = useMemo(() => {
+    if (!ride) return null;
+    // In nav mode, route from driver to target
+    if (navMode && smoothedDriver && targetPosition) {
+      return { pickup: smoothedDriver, destination: targetPosition };
+    }
+    // Default: show pickup → destination route
+    if (ride.pickup_lat && ride.pickup_lng && ride.destination_lat && ride.destination_lng) {
+      return {
+        pickup: { lat: ride.pickup_lat, lng: ride.pickup_lng },
+        destination: { lat: ride.destination_lat, lng: ride.destination_lng },
+      };
+    }
+    return null;
+  }, [ride, smoothedDriver, targetPosition, navMode]);
+
   const handleStatusUpdate = async (newStatus: string) => {
     if (!rideId || updating) return;
     setUpdating(true);
