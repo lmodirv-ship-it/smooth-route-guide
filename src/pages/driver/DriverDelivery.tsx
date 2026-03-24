@@ -5,7 +5,7 @@ import { ArrowRight, Bike, CheckCircle, Clock, MapPin, Navigation, Package, Stor
 import { Button } from "@/components/ui/button";
 import LiveOrderMap from "@/components/LiveOrderMap";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
-import NavigationLinks from "@/components/NavigationLinks";
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
