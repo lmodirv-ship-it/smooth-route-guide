@@ -432,7 +432,7 @@ const DriverTracking = () => {
                 </Button>
               )}
 
-              <Button onClick={() => handleStatusUpdate("cancelled")} disabled={updating} variant="outline"
+              <Button onClick={() => setCancelDialogOpen(true)} disabled={updating} variant="outline"
                 className="w-full h-13 rounded-xl border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 font-bold text-base gap-2">
                 <XCircle className="w-5 h-5" /> إلغاء الطلب
               </Button>
