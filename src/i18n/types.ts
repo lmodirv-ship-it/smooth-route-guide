@@ -170,6 +170,25 @@ export interface TranslationSet {
     trips: string;
     balance: string;
     user: string;
+    pickupPoint: string;
+    chooseDestination: string;
+    locating: string;
+    yourLocation: string;
+    whereToGo: string;
+    selectedDest: string;
+    clickToSelectDest: string;
+    driversAvailable: string;
+    searching: string;
+    noResults: string;
+    resetSelection: string;
+    confirmRide: string;
+    orderCreated: string;
+    selectPickupAndDest: string;
+    chooseFromListOrMap: string;
+    km: string;
+    minutes: string;
+    currency: string;
+    minimumFare: string;
   };
   // Driver pages
   driver: {
