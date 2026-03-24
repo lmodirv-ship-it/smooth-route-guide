@@ -226,6 +226,7 @@ const fr: TranslationSet = {
     connected: "En ligne",
     action: "Action",
     km: "km",
+  },
   delivery: {
     home: "Accueil",
     whatDoYouWant: "Que voulez-vous aujourd'hui ?",
