@@ -226,6 +226,7 @@ const es: TranslationSet = {
     connected: "En línea",
     action: "Acción",
     km: "km",
+  },
   delivery: {
     home: "Inicio",
     whatDoYouWant: "¿Qué quieres hoy?",
