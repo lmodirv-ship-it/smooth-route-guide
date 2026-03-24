@@ -59,6 +59,7 @@ const DriverPage = () => {
   const [driverName, setDriverName] = useState("السائق");
   const [activeRideId, setActiveRideId] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [driverType, setDriverType] = useState<string>("ride");
   const prevOrderCountRef = useRef(0);
   const initialLoadRef = useRef(true);
 
