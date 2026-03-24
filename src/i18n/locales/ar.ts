@@ -157,6 +157,13 @@ const ar: TranslationSet = {
     payment: "الدفع",
     support: "الدعم",
     profile: "الملف الشخصي",
+    tripHistory: "سجل الرحلات",
+    paymentMethods: "طرق الدفع",
+    aiAssistant: "المساعد الذكي",
+    helpSupport: "الدعم والمساعدة",
+    trips: "الرحلات",
+    balance: "الرصيد",
+    user: "مستخدم",
   },
   driver: {
     home: "الرئيسية",
@@ -307,6 +314,9 @@ const ar: TranslationSet = {
     googleImport: "استيراد Google Maps",
     agentInfo: "وكيل #01",
     quickSearch: "بحث سريع...",
+    knowledge: "قاعدة المعرفة",
+    liveMap: "الخريطة المباشرة",
+    alertsPage: "التنبيهات",
   },
   roles: {
     admin: "مسؤول",

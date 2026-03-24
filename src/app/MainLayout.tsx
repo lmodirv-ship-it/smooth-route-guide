@@ -6,11 +6,15 @@
 import { Outlet } from "react-router-dom";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const MainLayout = () => (
   <>
     <GlobalLogoutButton />
     <GlobalNotificationListener />
+    <div className="fixed top-3 left-3 z-[60]">
+      <LanguageSwitcher />
+    </div>
     <Outlet />
   </>
 );

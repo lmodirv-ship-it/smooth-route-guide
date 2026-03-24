@@ -5,10 +5,12 @@ import { User, ArrowRight, Phone, Mail, Car, Wallet, Clock, Star, Heart, Setting
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useLogout } from "@/hooks/useLogout";
+import { useI18n } from "@/i18n/context";
 
 const ClientProfile = () => {
   const navigate = useNavigate();
   const logout = useLogout();
+  const { t, dir } = useI18n();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState({ name: "", email: "", phone: "", tripCount: 0, balance: 0 });
 
@@ -36,20 +38,20 @@ const ClientProfile = () => {
   }, []);
 
   const menuItems = [
-    { icon: Clock, label: "سجل الرحلات", path: "/customer/history", color: "text-primary" },
-    { icon: Wallet, label: "المحفظة", path: "/customer/wallet", color: "text-info" },
-    { icon: Car, label: "طرق الدفع", path: "/customer/payment", color: "text-success" },
-    { icon: Bot, label: "المساعد الذكي", path: "/assistant", color: "text-primary" },
-    { icon: HelpCircle, label: "الدعم والمساعدة", path: "/customer/support", color: "text-info" },
+    { icon: Clock, label: t.customer.tripHistory, path: "/customer/history", color: "text-primary" },
+    { icon: Wallet, label: t.customer.wallet, path: "/customer/wallet", color: "text-info" },
+    { icon: Car, label: t.customer.paymentMethods, path: "/customer/payment", color: "text-success" },
+    { icon: Bot, label: t.customer.aiAssistant, path: "/assistant", color: "text-primary" },
+    { icon: HelpCircle, label: t.customer.helpSupport, path: "/customer/support", color: "text-info" },
   ];
 
   if (loading) return <div className="min-h-screen gradient-dark flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
-    <div className="min-h-screen gradient-dark pb-24" dir="rtl">
+    <div className="min-h-screen gradient-dark pb-24" dir={dir}>
       <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate("/customer")}><ArrowRight className="w-5 h-5 text-muted-foreground" /></button>
-        <span className="font-bold text-foreground">حسابي</span>
+        <span className="font-bold text-foreground">{t.customer.myAccount}</span>
         <div className="w-5" />
       </div>
 
@@ -57,7 +59,7 @@ const ClientProfile = () => {
         <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[hsl(205,78%,56%)] to-[hsl(220,80%,40%)] flex items-center justify-center glow-blue">
           <User className="w-10 h-10 text-white" />
         </div>
-        <h2 className="text-xl font-bold text-foreground mt-3">{profile.name || "مستخدم"}</h2>
+        <h2 className="text-xl font-bold text-foreground mt-3">{profile.name || t.customer.user}</h2>
         <div className="flex items-center gap-4 mt-2">
           {profile.phone && <span className="text-xs text-muted-foreground flex items-center gap-1"><Phone className="w-3 h-3" /> {profile.phone}</span>}
           {profile.email && <span className="text-xs text-muted-foreground flex items-center gap-1"><Mail className="w-3 h-3" /> {profile.email}</span>}
@@ -66,12 +68,12 @@ const ClientProfile = () => {
 
       <div className="grid grid-cols-2 gap-3 px-4 mt-6">
         <div className="gradient-card rounded-xl p-3 border border-border text-center">
-          <p className="text-xs text-muted-foreground">الرحلات</p>
+          <p className="text-xs text-muted-foreground">{t.customer.trips}</p>
           <p className="text-lg font-bold text-foreground mt-1">{profile.tripCount}</p>
         </div>
         <div className="gradient-card rounded-xl p-3 border border-border text-center">
-          <p className="text-xs text-muted-foreground">الرصيد</p>
-          <p className="text-lg font-bold text-foreground mt-1">{profile.balance} DH</p>
+          <p className="text-xs text-muted-foreground">{t.customer.balance}</p>
+          <p className="text-lg font-bold text-foreground mt-1">{profile.balance} {t.common.currency}</p>
         </div>
       </div>
 
@@ -90,7 +92,7 @@ const ClientProfile = () => {
 
         <Button variant="outline" className="w-full mt-4 border-destructive/30 text-destructive hover:bg-destructive/10 rounded-xl"
           onClick={logout}>
-          <LogOut className="w-4 h-4 ml-2" /> تسجيل الخروج
+          <LogOut className="w-4 h-4 ml-2" /> {t.common.logout}
         </Button>
       </div>
     </div>

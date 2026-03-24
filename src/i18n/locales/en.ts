@@ -157,6 +157,13 @@ const en: TranslationSet = {
     payment: "Payment",
     support: "Support",
     profile: "Profile",
+    tripHistory: "Trip History",
+    paymentMethods: "Payment Methods",
+    aiAssistant: "AI Assistant",
+    helpSupport: "Help & Support",
+    trips: "Trips",
+    balance: "Balance",
+    user: "User",
   },
   driver: {
     home: "Home",
@@ -307,6 +314,9 @@ const en: TranslationSet = {
     googleImport: "Google Maps Import",
     agentInfo: "Agent #01",
     quickSearch: "Quick search...",
+    knowledge: "Knowledge Base",
+    liveMap: "Live Map",
+    alertsPage: "Alerts",
   },
   roles: {
     admin: "Admin",

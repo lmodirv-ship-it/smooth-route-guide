@@ -162,6 +162,13 @@ export interface TranslationSet {
     payment: string;
     support: string;
     profile: string;
+    tripHistory: string;
+    paymentMethods: string;
+    aiAssistant: string;
+    helpSupport: string;
+    trips: string;
+    balance: string;
+    user: string;
   };
   // Driver pages
   driver: {
@@ -318,6 +325,9 @@ export interface TranslationSet {
     googleImport: string;
     agentInfo: string;
     quickSearch: string;
+    knowledge: string;
+    liveMap: string;
+    alertsPage: string;
   };
   // Role labels
   roles: {
