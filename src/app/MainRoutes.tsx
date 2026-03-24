@@ -122,7 +122,7 @@ export const mainRouteElements = (
       <Route path="/delivery/restaurant/:id" element={<RequireRole allowed={["client"]}><RestaurantMenu /></RequireRole>} />
       <Route path="/delivery/cart" element={<RequireRole allowed={["client"]}><Cart /></RequireRole>} />
       <Route path="/delivery/store/:id" element={<RequireRole allowed={["client"]}><StoreDetail /></RequireRole>} />
-      <Route path="/delivery/my-store" element={<RequireRole><MyStore /></RequireRole>} />
+      <Route path="/delivery/my-store" element={<RequireRole allowed={["store_owner"]}><MyStore /></RequireRole>} />
       <Route path="/delivery/order/:id" element={<RequireRole allowed={["client"]}><OrderTracking /></RequireRole>} />
       <Route path="/delivery/order" element={<RequireRole allowed={["client"]}><OrderTracking /></RequireRole>} />
       <Route path="/delivery/:category" element={<RequireRole allowed={["client"]}><DeliveryCategory /></RequireRole>} />
@@ -134,33 +134,26 @@ export const mainRouteElements = (
 
     {/* ═══════════════════════════════════════════
         LEGACY REDIRECTS — backward compatibility
+        Consolidated: /client/* → /customer/*, /driver-panel/* → /driver/*
        ═══════════════════════════════════════════ */}
-    <Route path="/client" element={<Navigate to="/customer" replace />} />
-    <Route path="/client/tracking" element={<Navigate to="/customer/tracking" replace />} />
-    <Route path="/client/booking" element={<Navigate to="/customer/booking" replace />} />
-    <Route path="/client/payment" element={<Navigate to="/customer/payment" replace />} />
-    <Route path="/client/wallet" element={<Navigate to="/customer/wallet" replace />} />
-    <Route path="/client/history" element={<Navigate to="/customer/history" replace />} />
-    <Route path="/client/profile" element={<Navigate to="/customer/profile" replace />} />
-    <Route path="/client/support" element={<Navigate to="/customer/support" replace />} />
-    <Route path="/customer-tracking" element={<Navigate to="/customer/tracking" replace />} />
+    {[
+      ["/client", "/customer"],
+      ["/client/tracking", "/customer/tracking"],
+      ["/client/booking", "/customer/booking"],
+      ["/client/payment", "/customer/payment"],
+      ["/client/wallet", "/customer/wallet"],
+      ["/client/history", "/customer/history"],
+      ["/client/profile", "/customer/profile"],
+      ["/client/support", "/customer/support"],
+      ["/customer-tracking", "/customer/tracking"],
+      ["/driver-panel", "/driver"],
+      ["/driver-tracking", "/driver/tracking"],
+    ].map(([from, to]) => (
+      <Route key={from} path={from} element={<Navigate to={to} replace />} />
+    ))}
 
-    <Route path="/driver-panel" element={<Navigate to="/driver" replace />} />
-    <Route path="/driver-panel/tracking" element={<Navigate to="/driver/tracking" replace />} />
-    <Route path="/driver-panel/history" element={<Navigate to="/driver/history" replace />} />
-    <Route path="/driver-panel/notifications" element={<Navigate to="/driver/notifications" replace />} />
-    <Route path="/driver-panel/settings" element={<Navigate to="/driver/settings" replace />} />
-    <Route path="/driver-panel/documents" element={<Navigate to="/driver/documents" replace />} />
-    <Route path="/driver-panel/trip" element={<Navigate to="/driver/trip" replace />} />
-    <Route path="/driver-panel/profile" element={<Navigate to="/driver/profile" replace />} />
-    <Route path="/driver-panel/wallet" element={<Navigate to="/driver/wallet" replace />} />
-    <Route path="/driver-panel/car-info" element={<Navigate to="/driver/car-info" replace />} />
-    <Route path="/driver-panel/promotions" element={<Navigate to="/driver/promotions" replace />} />
-    <Route path="/driver-panel/support" element={<Navigate to="/driver/support" replace />} />
-    <Route path="/driver-panel/status" element={<Navigate to="/driver/status" replace />} />
-    <Route path="/driver-panel/earnings" element={<Navigate to="/driver/earnings" replace />} />
-    <Route path="/driver-panel/delivery" element={<Navigate to="/driver/delivery" replace />} />
-    <Route path="/driver-tracking" element={<Navigate to="/driver/tracking" replace />} />
+    {/* Catch-all driver-panel/* → driver/* */}
+    <Route path="/driver-panel/*" element={<Navigate to="/driver" replace />} />
 
     <Route path="*" element={<NotFound />} />
   </>
