@@ -169,7 +169,21 @@ const RegisteredUsers = () => {
           .eq("user_id", selectedUser.id)
           .maybeSingle();
         if (!existing) {
-          await supabase.from("drivers").insert({ user_id: selectedUser.id, status: "inactive" });
+          await supabase.from("drivers").insert({ user_id: selectedUser.id, status: "inactive", driver_type: "ride" });
+        }
+      }
+
+      // If delivery role added, ensure driver record exists with delivery type
+      if (selectedRoles.includes("delivery") && !selectedUser.roles.includes("delivery")) {
+        const { data: existing } = await supabase
+          .from("drivers")
+          .select("id")
+          .eq("user_id", selectedUser.id)
+          .maybeSingle();
+        if (!existing) {
+          await supabase.from("drivers").insert({ user_id: selectedUser.id, status: "inactive", driver_type: "delivery" });
+        } else {
+          await supabase.from("drivers").update({ driver_type: "delivery" }).eq("user_id", selectedUser.id);
         }
       }
 
