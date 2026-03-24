@@ -333,11 +333,11 @@ const DriverPage = () => {
                 className="h-8 px-4 rounded-lg bg-info hover:bg-info/80 text-white text-xs font-bold"
               >
                 <Package className="w-3.5 h-3.5 ml-1" />
-                طلبات التوصيل
+                {t.driver.deliveryOrders}
               </Button>
               <div className="text-right">
-                <p className="text-info font-bold text-sm">خدمة الطلبيات</p>
-                <p className="text-white/40 text-[11px]">عرض وقبول طلبات توصيل الطلبيات</p>
+                <p className="text-info font-bold text-sm">{t.driver.deliveryService}</p>
+                <p className="text-white/40 text-[11px]">{t.driver.viewDeliveryOrders}</p>
               </div>
             </motion.div>
           )}
