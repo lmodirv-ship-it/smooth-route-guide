@@ -107,7 +107,7 @@ const AuthPage = () => {
           password,
           options: {
             emailRedirectTo: redirectTo,
-            data: { name, phone, requested_role: role, driver_type: role === "driver" ? driverType : undefined },
+            data: { name, phone, requested_role: role },
           },
         });
 
