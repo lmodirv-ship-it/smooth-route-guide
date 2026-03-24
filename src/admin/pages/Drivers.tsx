@@ -108,6 +108,9 @@ const AdminDrivers = () => {
               <Badge variant="outline" className={driver.status === "active" ? "text-success border-success/30" : "text-muted-foreground border-border"}>
                 {driver.status === "active" ? "متصل" : "غير متصل"}
               </Badge>
+              <Badge variant="outline" className={driver.driver_type === "delivery" ? "text-info border-info/30" : "text-primary border-primary/30"}>
+                {driver.driver_type === "delivery" ? "خدمة طلبيات" : driver.driver_type === "both" ? "الكل" : "توصيل زبائن"}
+              </Badge>
               <div className="flex items-center gap-3">
                 {driver.vehicle && <span className="text-muted-foreground">{driver.vehicle.brand} {driver.vehicle.model} - {driver.vehicle.plate_no}</span>}
                 <span className="text-warning flex items-center gap-1"><Star className="w-3 h-3" /> {driver.rating || "—"}</span>
