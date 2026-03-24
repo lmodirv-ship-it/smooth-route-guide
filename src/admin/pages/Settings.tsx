@@ -302,7 +302,7 @@ const AdminSettings = () => {
         <p className="text-xs text-muted-foreground text-right mt-3">
           النهار: {deliveryPricing.dayStartHour}:00 → {deliveryPricing.dayEndHour}:00 | الليل: {deliveryPricing.dayEndHour}:00 → {deliveryPricing.dayStartHour}:00
         </p>
-      </Section>
+      </div>
     </div>
   );
 };
