@@ -308,7 +308,7 @@ const DriverPage = () => {
               className={`p-1.5 rounded-full transition-colors ${
                 soundEnabled ? "bg-emerald-500/15 text-emerald-400" : "bg-white/5 text-white/30"
               }`}
-              title={soundEnabled ? "إيقاف الصوت" : "تشغيل الصوت"}
+              title={soundEnabled ? t.driver.soundOn : t.driver.soundOff}
             >
               <Volume2 className="w-3.5 h-3.5" />
             </button>
