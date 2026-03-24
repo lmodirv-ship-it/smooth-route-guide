@@ -74,7 +74,6 @@
     "electron": "^38.3.0",
     "electron-builder": "^26.0.12",
     "embla-carousel-react": "^8.6.0",
-    "firebase": "^12.10.0",
     "framer-motion": "^12.37.0",
     "input-otp": "^1.4.2",
     "leaflet": "^1.9.4",
@@ -136,15 +135,21 @@
     ],
     "asar": true,
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "artifactName": "smooth-route-guide-windows-setup.${ext}"
     },
     "mac": {
-      "target": ["dmg"],
+      "target": [
+        "dmg"
+      ],
       "artifactName": "smooth-route-guide-macos.${ext}"
     },
     "linux": {
-      "target": ["AppImage"],
+      "target": [
+        "AppImage"
+      ],
       "artifactName": "smooth-route-guide-linux.${ext}"
     }
   }
