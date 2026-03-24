@@ -11,6 +11,7 @@ import BottomNav from "@/components/BottomNav";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import { useReverseGeocode } from "@/hooks/useReverseGeocode";
 import { tangierLocations, locationCategories, TangierLocation } from "@/data/tangierLocations";
+import { usePricingSettings } from "@/hooks/usePricingSettings";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 
