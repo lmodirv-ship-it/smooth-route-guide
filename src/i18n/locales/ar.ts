@@ -226,6 +226,7 @@ const ar: TranslationSet = {
     connected: "متصل",
     action: "إجراء",
     km: "كم",
+  },
   delivery: {
     home: "الرئيسية",
     whatDoYouWant: "ماذا تريد اليوم؟",
