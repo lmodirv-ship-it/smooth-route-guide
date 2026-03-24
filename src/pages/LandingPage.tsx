@@ -8,6 +8,9 @@ import { useState } from "react";
 import logo from "@/assets/hn-driver-badge.png";
 import heroSkyline from "@/assets/hero-skyline.jpg";
 import heroEmblem from "@/assets/hero-emblem.png";
+import heroDriver from "@/assets/hero-driver.png";
+import heroCustomer from "@/assets/hero-customer.png";
+import heroDelivery from "@/assets/hero-delivery.png";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
