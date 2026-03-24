@@ -58,6 +58,8 @@ import RestaurantsList from "@/pages/delivery/RestaurantsList";
 import RestaurantMenu from "@/pages/delivery/RestaurantMenu";
 import Cart from "@/pages/delivery/Cart";
 import OrderTracking from "@/pages/delivery/OrderTracking";
+import StoreDetail from "@/pages/delivery/StoreDetail";
+import MyStore from "@/pages/delivery/MyStore";
 
 // ─── AI ───
 import AgentHub from "@/pages/ai/AgentHub";
