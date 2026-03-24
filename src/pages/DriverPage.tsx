@@ -315,7 +315,7 @@ const DriverPage = () => {
           </div>
           <h2 className="text-white font-bold text-sm flex items-center gap-2">
             <Route className="w-4 h-4 text-emerald-400" />
-            الرحلات المتاحة
+            {t.driver.availableRides}
           </h2>
         </div>
 
