@@ -83,7 +83,7 @@ const GlobalNotificationListener = () => {
         channels.push(rideChannel);
       }
 
-      // 3. Client-specific: ride status updates
+      // 3. Client-specific: ride status updates + delivery order updates
       if (userRoles.includes("user")) {
         const clientRideChannel = supabase
           .channel("global-client-ride")
@@ -94,6 +94,20 @@ const GlobalNotificationListener = () => {
               const row = payload.new as any;
               if (row.user_id === userIdRef.current) {
                 const statusMsg = getRideStatusMessage(row.status);
+                if (statusMsg) {
+                  notifyNewOrder();
+                  toast({ title: statusMsg.title, description: statusMsg.desc });
+                }
+              }
+            }
+          )
+          .on(
+            "postgres_changes",
+            { event: "UPDATE", schema: "public", table: "delivery_orders" },
+            (payload) => {
+              const row = payload.new as any;
+              if (row.user_id === userIdRef.current) {
+                const statusMsg = getDeliveryStatusMessage(row.status);
                 if (statusMsg) {
                   notifyNewOrder();
                   toast({ title: statusMsg.title, description: statusMsg.desc });
@@ -164,6 +178,20 @@ function getRideStatusMessage(status: string): { title: string; desc: string } |
     case "in_progress": return { title: "🛣️ الرحلة بدأت", desc: "أنت في الطريق إلى وجهتك" };
     case "completed": return { title: "🏁 تمت الرحلة", desc: "شكراً لاستخدامك خدمتنا" };
     case "cancelled": return { title: "❌ تم إلغاء الرحلة", desc: "تم إلغاء الرحلة" };
+    default: return null;
+  }
+}
+
+function getDeliveryStatusMessage(status: string): { title: string; desc: string } | null {
+  switch (status) {
+    case "confirmed": return { title: "✅ تم تأكيد طلبك", desc: "جاري تجهيز طلبك" };
+    case "ready_for_driver": return { title: "📦 طلبك جاهز", desc: "بانتظار سائق لاستلام الطلب" };
+    case "driver_assigned": return { title: "🚗 تم تعيين سائق", desc: "السائق في طريقه للمطعم" };
+    case "on_the_way_to_vendor": return { title: "🏪 السائق متجه للمطعم", desc: "السائق في الطريق لاستلام طلبك" };
+    case "picked_up": return { title: "📦 تم استلام طلبك", desc: "السائق استلم طلبك من المطعم" };
+    case "on_the_way_to_customer": return { title: "🛵 طلبك في الطريق!", desc: "السائق متجه إلى موقعك الآن" };
+    case "delivered": return { title: "🎉 تم التوصيل!", desc: "وصل طلبك، بالصحة والعافية!" };
+    case "cancelled": return { title: "❌ تم إلغاء الطلب", desc: "تم إلغاء طلبك" };
     default: return null;
   }
 }
