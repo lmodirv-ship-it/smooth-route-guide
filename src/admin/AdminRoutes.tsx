@@ -41,9 +41,13 @@ import DeliveryOrdersCC from "@/admin/pages/callcenter/DeliveryOrdersCC";
 import RestaurantsCC from "@/admin/pages/callcenter/RestaurantsCC";
 import AutoImport from "@/admin/pages/callcenter/AutoImport";
 import GoogleMapsImport from "@/admin/pages/callcenter/GoogleMapsImport";
+import CallCenterLogin from "@/admin/pages/CallCenterLogin";
+import AdminLogin from "@/admin/pages/AdminLogin";
 
 export const adminRouteElements = (
   <>
+    <Route path="/admin/login" element={<AdminLogin />} />
+    <Route path="/call-center/login" element={<CallCenterLogin />} />
     <Route path="/setup-admin" element={<RequireRole><SetupAdmin /></RequireRole>} />
 
     <Route path="/admin" element={<RequireRole allowed={["admin"]}><AdminLayout /></RequireRole>}>
