@@ -237,6 +237,30 @@ export interface TranslationSet {
     courierSend: string;
     courierAddress: string;
     courierTrack: string;
+    allRestaurants: string;
+    nearestToYou: string;
+    recommended: string;
+    noResults: string;
+    tryDifferentSearch: string;
+    noRestaurantsFilters: string;
+    clearFilters: string;
+    clear: string;
+    retry: string;
+    searchingNearby: string;
+    deliveryFee: string;
+    minutes: string;
+    km: string;
+    meters: string;
+    open: string;
+    closed: string;
+    sortDefault: string;
+    sortNearest: string;
+    sortRating: string;
+    sortPrice: string;
+    restaurantsAndStores: string;
+    storeOwnerAccount: string;
+    errorLoadingStores: string;
+    unexpectedError: string;
   };
   // Admin panel
   admin: {
