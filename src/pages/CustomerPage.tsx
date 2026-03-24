@@ -25,9 +25,7 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
   return 6371 * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
 
-function calcPrice(km: number) {
-  return Math.max(3, Math.round(km * 3));
-}
+// calcPrice is now defined inside the component using DB settings
 
 const CustomerPage = () => {
   const navigate = useNavigate();
