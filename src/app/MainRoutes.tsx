@@ -137,6 +137,7 @@ export const mainRouteElements = (
         Consolidated: /client/* → /customer/*, /driver-panel/* → /driver/*
        ═══════════════════════════════════════════ */}
     {[
+      ["/restaurants", "/delivery/restaurants"],
       ["/client", "/customer"],
       ["/client/tracking", "/customer/tracking"],
       ["/client/booking", "/customer/booking"],
