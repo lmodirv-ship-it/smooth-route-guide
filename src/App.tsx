@@ -121,24 +121,24 @@ const App = () => (
           <Route path="/driver/support" element={<RequireRole allowed={["driver"]}><DriverSupport /></RequireRole>} />
           <Route path="/driver/status" element={<RequireRole allowed={["driver"]}><DriverStatus /></RequireRole>} />
           <Route path="/driver/earnings" element={<RequireRole allowed={["driver"]}><DriverEarnings /></RequireRole>} />
-          <Route path="/driver/delivery" element={<RequireRole allowed={["driver"]}><DriverDelivery /></RequireRole>} />
+          <Route path="/driver/delivery" element={<RequireRole allowed={["driver", "delivery"]}><DriverDelivery /></RequireRole>} />
 
           {/* ═══════════════════════════════════════════
               CANONICAL: Delivery  /delivery/*
              ═══════════════════════════════════════════ */}
-          <Route path="/delivery" element={<RequireRole allowed={["delivery"]}><DeliveryHome /></RequireRole>} />
-          <Route path="/delivery/tracking" element={<RequireRole allowed={["delivery"]}><DeliveryTracking /></RequireRole>} />
-          <Route path="/delivery/history" element={<RequireRole allowed={["delivery"]}><DeliveryHistory /></RequireRole>} />
-          <Route path="/delivery/courier/send" element={<RequireRole allowed={["delivery"]}><CourierSend /></RequireRole>} />
-          <Route path="/delivery/courier/address" element={<RequireRole allowed={["delivery"]}><CourierAddress /></RequireRole>} />
-          <Route path="/delivery/courier/track" element={<RequireRole allowed={["delivery"]}><CourierTrack /></RequireRole>} />
-          <Route path="/delivery/support" element={<RequireRole allowed={["delivery"]}><DeliverySupport /></RequireRole>} />
-          <Route path="/delivery/restaurants" element={<RequireRole allowed={["delivery"]}><RestaurantsList /></RequireRole>} />
-          <Route path="/delivery/restaurant/:id" element={<RequireRole allowed={["delivery"]}><RestaurantMenu /></RequireRole>} />
-          <Route path="/delivery/cart" element={<RequireRole allowed={["delivery"]}><Cart /></RequireRole>} />
-          <Route path="/delivery/order/:id" element={<RequireRole allowed={["delivery"]}><OrderTracking /></RequireRole>} />
-          <Route path="/delivery/order" element={<RequireRole allowed={["delivery"]}><OrderTracking /></RequireRole>} />
-          <Route path="/delivery/:category" element={<RequireRole allowed={["delivery"]}><DeliveryCategory /></RequireRole>} />
+          <Route path="/delivery" element={<RequireRole allowed={["client"]}><DeliveryHome /></RequireRole>} />
+          <Route path="/delivery/tracking" element={<RequireRole allowed={["client"]}><DeliveryTracking /></RequireRole>} />
+          <Route path="/delivery/history" element={<RequireRole allowed={["client"]}><DeliveryHistory /></RequireRole>} />
+          <Route path="/delivery/courier/send" element={<RequireRole allowed={["client"]}><CourierSend /></RequireRole>} />
+          <Route path="/delivery/courier/address" element={<RequireRole allowed={["client"]}><CourierAddress /></RequireRole>} />
+          <Route path="/delivery/courier/track" element={<RequireRole allowed={["client"]}><CourierTrack /></RequireRole>} />
+          <Route path="/delivery/support" element={<RequireRole allowed={["client"]}><DeliverySupport /></RequireRole>} />
+          <Route path="/delivery/restaurants" element={<RequireRole allowed={["client"]}><RestaurantsList /></RequireRole>} />
+          <Route path="/delivery/restaurant/:id" element={<RequireRole allowed={["client"]}><RestaurantMenu /></RequireRole>} />
+          <Route path="/delivery/cart" element={<RequireRole allowed={["client"]}><Cart /></RequireRole>} />
+          <Route path="/delivery/order/:id" element={<RequireRole allowed={["client"]}><OrderTracking /></RequireRole>} />
+          <Route path="/delivery/order" element={<RequireRole allowed={["client"]}><OrderTracking /></RequireRole>} />
+          <Route path="/delivery/:category" element={<RequireRole allowed={["client"]}><DeliveryCategory /></RequireRole>} />
 
           {/* ═══════════════════════════════════════════
               ADMIN PANEL (separated module)

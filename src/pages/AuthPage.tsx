@@ -17,7 +17,7 @@ type StoredRole = RoleId | "user";
 const roleConfig: Record<string, { label: string; color: string; icon: any }> = {
   driver: { label: "حساب سائق", color: "text-primary", icon: Car },
   client: { label: "حساب عميل", color: "text-info", icon: UserIcon },
-  delivery: { label: "حساب توصيل", color: "text-success", icon: ShoppingBag },
+  delivery: { label: "حساب سائق توصيل", color: "text-success", icon: ShoppingBag },
   admin: { label: "حساب مسؤول", color: "text-destructive", icon: UserIcon },
   agent: { label: "حساب مركز اتصال", color: "text-warning", icon: Phone },
 };
@@ -25,7 +25,7 @@ const roleConfig: Record<string, { label: string; color: string; icon: any }> = 
 const roleDashboard: Record<StoredRole, string> = {
   driver: "/driver",
   client: "/customer",
-  delivery: "/delivery",
+  delivery: "/driver/delivery",
   admin: "/admin",
   agent: "/call-center",
   user: "/customer",
@@ -46,7 +46,6 @@ const AuthPage = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [driverType, setDriverType] = useState<"ride" | "delivery">("ride");
 
   useEffect(() => {
     const syncSession = async () => {
@@ -108,7 +107,7 @@ const AuthPage = () => {
           password,
           options: {
             emailRedirectTo: redirectTo,
-            data: { name, phone, requested_role: role, driver_type: role === "driver" ? driverType : undefined },
+            data: { name, phone, requested_role: role },
           },
         });
 
@@ -212,21 +211,6 @@ const AuthPage = () => {
                   <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 </div>
               </div>
-              {role === "driver" && (
-                <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground text-right block">نوع السائق</label>
-                  <div className="flex gap-2">
-                    <button type="button" onClick={() => setDriverType("ride")}
-                      className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${driverType === "ride" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
-                      <Car className="w-4 h-4 inline-block ml-1.5" />سائق توصيل زبائن
-                    </button>
-                    <button type="button" onClick={() => setDriverType("delivery")}
-                      className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${driverType === "delivery" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
-                      <ShoppingBag className="w-4 h-4 inline-block ml-1.5" />سائق خدمة طلبيات
-                    </button>
-                  </div>
-                </div>
-              )}
             </>
           )}
 

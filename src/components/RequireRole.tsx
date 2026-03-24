@@ -5,7 +5,7 @@ import { Loader2, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROLE_DASHBOARD } from "@/lib/routes";
 
-type AppRole = "admin" | "moderator" | "user" | "driver" | "agent";
+type AppRole = "admin" | "moderator" | "user" | "driver" | "agent" | "delivery";
 
 /**
  * Unified route guard — Supabase is the single source of truth.
@@ -42,8 +42,9 @@ function dbRoleSatisfies(dbRole: string, requiredLabel: string): boolean {
 
   switch (requiredLabel) {
     case "client":
-    case "delivery":
       return dbRole === "user" || dbRole === "client";
+    case "delivery":
+      return dbRole === "delivery";
     case "driver":
       return dbRole === "driver";
     case "admin":
@@ -61,6 +62,7 @@ function bestDashboard(roles: AppRole[]): string {
   if (roles.includes("admin")) return ROLE_DASHBOARD.admin;
   if (roles.includes("agent")) return ROLE_DASHBOARD.agent;
   if (roles.includes("driver")) return ROLE_DASHBOARD.driver;
+  if (roles.includes("delivery")) return ROLE_DASHBOARD.delivery;
   return ROLE_DASHBOARD.user || "/customer";
 }
 

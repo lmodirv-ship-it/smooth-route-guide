@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, User, Headphones, Shield, LogOut, Download } from "lucide-react";
+import { Car, User, Headphones, Shield, LogOut, Download, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { dashboardForRole, ROLE_LABELS } from "@/lib/routes";
 import logo from "@/assets/hn-driver-badge.png";
@@ -93,7 +93,7 @@ const Welcome = () => {
       id: "driver" as const,
       icon: Car,
       title: "سائق",
-      desc: "سجل كسائق وابدأ بالربح",
+      desc: "سجل كسائق نقل الزبائن وابدأ بالربح",
       glowClass: "glow-ring-orange",
       iconColor: "text-primary",
     },
@@ -101,16 +101,16 @@ const Welcome = () => {
       id: "client" as const,
       icon: User,
       title: "عميل",
-      desc: "اطلب رحلة بسهولة وأمان",
+      desc: "اطلب رحلة أو خدمة توصيل بسهولة",
       glowClass: "glow-ring-blue",
       iconColor: "text-info",
     },
     {
       id: "delivery" as const,
-      icon: null,
+      icon: Package,
       customLogo: deliveryLogo,
-      title: "توصيل",
-      desc: "أرسل طرودك بسرعة وأمان",
+      title: "سائق توصيل",
+      desc: "سجل كسائق توصيل طلبيات",
       glowClass: "glow-ring-green",
       iconColor: "text-success",
     },

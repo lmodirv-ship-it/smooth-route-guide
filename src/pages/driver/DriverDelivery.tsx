@@ -55,16 +55,8 @@ const DriverDelivery = () => {
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
-      const { data: driver } = await supabase.from("drivers").select("id, driver_type").eq("user_id", user.id).maybeSingle();
-      if (driver) {
-        setDriverId(driver.id);
-        // Only delivery or both drivers can see delivery orders
-        if (driver.driver_type !== 'delivery' && driver.driver_type !== 'both') {
-          toast({ title: "غير مصرح", description: "هذا القسم خاص بسائقي خدمة الطلبيات", variant: "destructive" });
-          navigate("/driver");
-          return;
-        }
-      }
+      const { data: driver } = await supabase.from("drivers").select("id").eq("user_id", user.id).maybeSingle();
+      if (driver) setDriverId(driver.id);
 
       // Detect driver city from GPS
       if (navigator.geolocation) {
