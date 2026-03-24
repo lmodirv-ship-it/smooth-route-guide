@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle, Clock, MapPin, Phone, User, Navigation, Car, Route as RouteIcon } from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, MapPin, Phone, User, Navigation, Car, Route as RouteIcon, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
