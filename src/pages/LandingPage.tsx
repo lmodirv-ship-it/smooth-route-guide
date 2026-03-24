@@ -191,7 +191,7 @@ export default function LandingPage() {
               </motion.div>
 
               <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
-                <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary/15 border border-primary/30 text-primary text-base font-bold mb-4 tracking-wide glow-ring-orange">
+                <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary/15 border border-primary/30 text-white text-base font-bold mb-4 tracking-wide glow-ring-orange">
                   🚀 {dir === "rtl" ? "متوفر الآن بطنجة" : "Now available in Tangier"}
                 </span>
               </motion.div>
