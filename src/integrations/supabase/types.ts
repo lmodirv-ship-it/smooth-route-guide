@@ -797,6 +797,38 @@ export type Database = {
           },
         ]
       }
+      product_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          menu_item_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          menu_item_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          menu_item_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_images_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1001,6 +1033,7 @@ export type Database = {
           lng: number | null
           min_order: number | null
           name: string
+          owner_id: string | null
           phone: string | null
           rating: number | null
           zone_id: string | null
@@ -1022,6 +1055,7 @@ export type Database = {
           lng?: number | null
           min_order?: number | null
           name?: string
+          owner_id?: string | null
           phone?: string | null
           rating?: number | null
           zone_id?: string | null
@@ -1043,6 +1077,7 @@ export type Database = {
           lng?: number | null
           min_order?: number | null
           name?: string
+          owner_id?: string | null
           phone?: string | null
           rating?: number | null
           zone_id?: string | null
