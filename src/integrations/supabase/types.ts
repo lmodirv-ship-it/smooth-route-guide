@@ -898,6 +898,9 @@ export type Database = {
       ride_requests: {
         Row: {
           accepted_at: string | null
+          cancel_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           created_at: string
           destination: string
           destination_lat: number | null
@@ -914,6 +917,9 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           destination?: string
           destination_lat?: number | null
@@ -930,6 +936,9 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           destination?: string
           destination_lat?: number | null
