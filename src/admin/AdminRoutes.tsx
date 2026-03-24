@@ -46,6 +46,8 @@ import AdminLogin from "@/admin/pages/AdminLogin";
 
 export const adminRouteElements = (
   <>
+    <Route path="/admin/login" element={<AdminLogin />} />
+    <Route path="/call-center/login" element={<CallCenterLogin />} />
     <Route path="/setup-admin" element={<RequireRole><SetupAdmin /></RequireRole>} />
 
     <Route path="/admin" element={<RequireRole allowed={["admin"]}><AdminLayout /></RequireRole>}>
