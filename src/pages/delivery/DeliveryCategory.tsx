@@ -10,10 +10,15 @@ import { supabase } from "@/integrations/supabase/client";
 const categoryMeta: Record<string, { title: string; titleFr: string; emoji: string; dbCategory: string }> = {
   restaurants: { title: "مطاعم", titleFr: "Restaurants", emoji: "🍽️", dbCategory: "restaurant" },
   supermarkets: { title: "سوبرماركت", titleFr: "Supermarchés", emoji: "🛒", dbCategory: "supermarket" },
-  shops: { title: "متاجر وهدايا", titleFr: "Boutiques & Cadeaux", emoji: "🎁", dbCategory: "shops" },
+  shops: { title: "المحلات", titleFr: "Boutiques", emoji: "🏪", dbCategory: "shops" },
   pharmacy: { title: "صيدلية وتجميل", titleFr: "Parapharmacie & Beauté", emoji: "💊", dbCategory: "pharmacy" },
   courier: { title: "خدمة كورسيي", titleFr: "Service Coursier", emoji: "📦", dbCategory: "courier" },
   market: { title: "ماركت سريع", titleFr: "Market", emoji: "🏪", dbCategory: "market" },
+  cafes: { title: "المقاهي", titleFr: "Cafés", emoji: "☕", dbCategory: "cafe" },
+  clothing: { title: "محلات الملابس", titleFr: "Vêtements", emoji: "👗", dbCategory: "clothing" },
+  bakeries: { title: "المخبزات", titleFr: "Boulangeries", emoji: "🥐", dbCategory: "bakery" },
+  "online-stores": { title: "المتاجر الإلكترونية", titleFr: "Boutiques en ligne", emoji: "🛍️", dbCategory: "online" },
+  printing: { title: "المطابع", titleFr: "Imprimeries", emoji: "🖨️", dbCategory: "printing" },
 };
 
 const DeliveryCategory = () => {
