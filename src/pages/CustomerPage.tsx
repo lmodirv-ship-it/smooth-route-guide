@@ -11,6 +11,7 @@ import BottomNav from "@/components/BottomNav";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import { useReverseGeocode } from "@/hooks/useReverseGeocode";
 import { tangierLocations, locationCategories, TangierLocation } from "@/data/tangierLocations";
+import { usePricingSettings } from "@/hooks/usePricingSettings";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 
@@ -24,9 +25,7 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
   return 6371 * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
 
-function calcPrice(km: number) {
-  return Math.max(3, Math.round(km * 3));
-}
+// calcPrice is now defined inside the component using DB settings
 
 const CustomerPage = () => {
   const navigate = useNavigate();
@@ -36,6 +35,11 @@ const CustomerPage = () => {
   const { drivers: nearbyDrivers } = useNearbyDrivers();
   const { name: pickupName, loading: pickupLoading } = useReverseGeocode(userLocation);
   const { name: destName, loading: destLoading } = useReverseGeocode(destCoords);
+  const pricing = usePricingSettings();
+
+  const calcPrice = useCallback((km: number) => {
+    return Math.max(pricing.minFare, Math.round(pricing.baseFare + km * pricing.perKmRate));
+  }, [pricing.minFare, pricing.baseFare, pricing.perKmRate]);
 
   const [showPickupPicker, setShowPickupPicker] = useState(false);
   const [showDestPicker, setShowDestPicker] = useState(false);

@@ -31,10 +31,10 @@ export const CURRENCIES: Record<string, CurrencyConfig> = {
 // Default currency
 export const DEFAULT_CURRENCY = 'DH';
 
-// Pricing constants
-const BASE_FEE = 0;
-const RATE_PER_KM = 3;
-const MIN_FARE = 3;
+// Default pricing constants (fallback when DB is unavailable)
+export const DEFAULT_BASE_FEE = 0;
+export const DEFAULT_RATE_PER_KM = 3;
+export const DEFAULT_MIN_FARE = 3;
 
 // Commission rate (admin takes 5%)
 export const COMMISSION_RATE = 0.05;
@@ -49,23 +49,33 @@ export function commissionAmount(totalPrice: number): number {
   return Math.round(totalPrice * COMMISSION_RATE * 100) / 100;
 }
 
+export interface DynamicPricingParams {
+  baseFee?: number;
+  ratePerKm?: number;
+  minFare?: number;
+}
+
 /**
- * Total_Price = 5 + ((D1 + D2) * 3)
- * D1 = Driver → Customer distance in km
- * D2 = Customer → Destination distance in km
+ * Total_Price = baseFee + ((D1 + D2) * ratePerKm)
+ * Accepts optional dynamic pricing params from DB.
  */
 export function calculateTripPrice(
   d1Meters: number,
   d2Meters: number,
-  currencyCode: string = DEFAULT_CURRENCY
+  currencyCode: string = DEFAULT_CURRENCY,
+  params?: DynamicPricingParams
 ): TripPriceEstimate {
   const currency = CURRENCIES[currencyCode] || CURRENCIES[DEFAULT_CURRENCY];
+  const baseFee = params?.baseFee ?? DEFAULT_BASE_FEE;
+  const ratePerKm = params?.ratePerKm ?? DEFAULT_RATE_PER_KM;
+  const minFare = params?.minFare ?? DEFAULT_MIN_FARE;
+
   const d1Km = d1Meters / 1000;
   const d2Km = d2Meters / 1000;
   const totalDistanceKm = d1Km + d2Km;
-  const distanceFee = totalDistanceKm * RATE_PER_KM;
-  const rawPrice = BASE_FEE + distanceFee;
-  const totalPrice = Math.max(MIN_FARE, rawPrice);
+  const distanceFee = totalDistanceKm * ratePerKm;
+  const rawPrice = baseFee + distanceFee;
+  const totalPrice = Math.max(minFare, rawPrice);
 
   return {
     d1Km: Math.round(d1Km * 10) / 10,
@@ -73,7 +83,7 @@ export function calculateTripPrice(
     totalDistanceKm: Math.round(totalDistanceKm * 10) / 10,
     d1DurationMin: 0,
     d2DurationMin: 0,
-    baseFee: BASE_FEE,
+    baseFee,
     distanceFee: Math.round(distanceFee * 100) / 100,
     totalPrice: Math.round(totalPrice * 100) / 100,
     currency,
