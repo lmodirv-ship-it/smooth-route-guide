@@ -21,7 +21,7 @@ export const ROLE_DASHBOARD: Record<string, string> = {
   user: "/customer",
   admin: "/admin",
   agent: "/call-center",
-  delivery: "/delivery",
+  delivery: "/driver/delivery",
 };
 
 /** Human-readable labels (Arabic) for each DB role. */
