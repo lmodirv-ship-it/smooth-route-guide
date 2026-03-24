@@ -4,8 +4,9 @@ import { RTL_LOCALES } from "./types";
 import en from "./locales/en";
 import ar from "./locales/ar";
 import fr from "./locales/fr";
+import es from "./locales/es";
 
-const translations: Record<Locale, TranslationSet> = { en, ar, fr };
+const translations: Record<Locale, TranslationSet> = { en, ar, fr, es };
 
 interface I18nContextValue {
   locale: Locale;
@@ -21,6 +22,7 @@ const availableLocales: I18nContextValue["locales"] = [
   { code: "en", label: "English", flag: "🇬🇧" },
   { code: "ar", label: "العربية", flag: "🇲🇦" },
   { code: "fr", label: "Français", flag: "🇫🇷" },
+  { code: "es", label: "Español", flag: "🇪🇸" },
 ];
 
 function detectLocale(): Locale {
@@ -30,6 +32,7 @@ function detectLocale(): Locale {
   const browserLang = navigator.language.split("-")[0];
   if (browserLang === "ar") return "ar";
   if (browserLang === "fr") return "fr";
+  if (browserLang === "es") return "es";
   return "en";
 }
 

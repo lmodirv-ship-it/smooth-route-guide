@@ -7,37 +7,38 @@ import {
   Menu, X, UtensilsCrossed, Download, MapPin
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useI18n } from "@/i18n/context";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import logo from "@/assets/hn-driver-badge.png";
 
-/** Nav items visible to all call center users (agents + admins) */
-const baseNavItems = [
-  { path: "/call-center", icon: BarChart3, label: "لوحة التحكم" },
-  { path: "/call-center/delivery", icon: PlusCircle, label: "طلبات التوصيل" },
-  { path: "/call-center/drivers", icon: Car, label: "السائقون" },
-  { path: "/call-center/incoming", icon: PhoneCall, label: "المكالمات الواردة" },
-  { path: "/call-center/manual-booking", icon: PlusCircle, label: "حجز يدوي" },
-  { path: "/call-center/ride-assign", icon: Car, label: "تعيين الرحلات" },
-  { path: "/call-center/customers", icon: Users, label: "العملاء" },
-  { path: "/call-center/complaints", icon: AlertTriangle, label: "الشكاوى" },
-  { path: "/call-center/tickets", icon: FileText, label: "التذاكر" },
-  { path: "/call-center/emergency", icon: AlertTriangle, label: "الطوارئ" },
-  { path: "/call-center/restaurants", icon: UtensilsCrossed, label: "المطاعم" },
-  { path: "/call-center/history", icon: Clock, label: "سجل المكالمات" },
-  { path: "/call-center/reports", icon: BarChart, label: "التقارير" },
-];
-
-/** Admin-only nav items (hidden from agents) */
-const adminOnlyNavItems = [
-  { path: "/call-center/auto-import", icon: Download, label: "استيراد تلقائي" },
-  { path: "/call-center/google-import", icon: MapPin, label: "استيراد Google Maps" },
-];
-
 const CallCenterLayout = () => {
+  const { t, dir } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  const baseNavItems = [
+    { path: "/call-center", icon: BarChart3, label: t.callCenter.dashboard },
+    { path: "/call-center/delivery", icon: PlusCircle, label: t.callCenter.deliveryOrders },
+    { path: "/call-center/drivers", icon: Car, label: t.callCenter.driversMenu },
+    { path: "/call-center/incoming", icon: PhoneCall, label: t.callCenter.incomingCalls },
+    { path: "/call-center/manual-booking", icon: PlusCircle, label: t.callCenter.manualBooking },
+    { path: "/call-center/ride-assign", icon: Car, label: t.callCenter.rideAssign },
+    { path: "/call-center/customers", icon: Users, label: t.callCenter.customers },
+    { path: "/call-center/complaints", icon: AlertTriangle, label: t.callCenter.complaints },
+    { path: "/call-center/tickets", icon: FileText, label: t.callCenter.tickets },
+    { path: "/call-center/emergency", icon: AlertTriangle, label: t.callCenter.emergency },
+    { path: "/call-center/restaurants", icon: UtensilsCrossed, label: t.callCenter.restaurantsMenu },
+    { path: "/call-center/history", icon: Clock, label: t.callCenter.callHistory },
+    { path: "/call-center/reports", icon: BarChart, label: t.callCenter.reports },
+  ];
+
+  const adminOnlyNavItems = [
+    { path: "/call-center/auto-import", icon: Download, label: t.callCenter.autoImport },
+    { path: "/call-center/google-import", icon: MapPin, label: t.callCenter.googleImport },
+  ];
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -58,7 +59,7 @@ const CallCenterLayout = () => {
       <div className="p-4 flex items-center gap-3 border-b border-border">
         <img src={logo} alt="HN" className="w-8 h-8 flex-shrink-0" />
         {!collapsed && (
-          <span className="font-bold text-gradient-primary font-display text-sm">مركز الاتصال</span>
+          <span className="font-bold text-gradient-primary font-display text-sm">{t.callCenter.title}</span>
         )}
       </div>
       {!collapsed && (
@@ -67,10 +68,10 @@ const CallCenterLayout = () => {
             <Headphones className="w-4 h-4 text-info" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-foreground">وكيل #01 - سارة</p>
+            <p className="text-xs font-semibold text-foreground">{t.callCenter.agentInfo}</p>
             <div className="flex items-center gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-              <p className="text-[10px] text-success">متصل • 3 ساعات</p>
+              <p className="text-[10px] text-success">{t.common.connected}</p>
             </div>
           </div>
         </div>
@@ -100,14 +101,14 @@ const CallCenterLayout = () => {
           onClick={() => setCollapsed(!collapsed)}
           className="w-full text-xs text-muted-foreground hover:text-foreground py-2 rounded-lg hover:bg-secondary transition-colors"
         >
-          {collapsed ? "»" : "طي القائمة «"}
+          {collapsed ? "»" : `${t.admin.collapseMenu} «`}
         </button>
       </div>
     </>
   );
 
   return (
-    <div className="min-h-screen gradient-dark flex" dir="rtl">
+    <div className="min-h-screen gradient-dark flex" dir={dir}>
       {/* Desktop Sidebar */}
       <aside
         className={`${collapsed ? "w-16" : "w-64"} glass-strong border-l border-border hidden lg:flex flex-col transition-all duration-300`}
@@ -135,15 +136,16 @@ const CallCenterLayout = () => {
             <div className="relative w-56">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="بحث سريع..."
+                placeholder={t.callCenter.quickSearch}
                 className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm"
               />
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageSwitcher />
             <div className="hidden md:flex items-center gap-1.5 bg-success/10 text-success px-3 py-1 rounded-full text-xs">
               <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-              متصل
+              {t.common.connected}
             </div>
             <button className="p-2 relative hover:bg-secondary rounded-lg transition-colors">
               <Bell className="w-5 h-5 text-muted-foreground" />

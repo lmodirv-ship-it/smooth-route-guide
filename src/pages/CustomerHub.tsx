@@ -2,12 +2,15 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Car, ShoppingBag, Sparkles, UtensilsCrossed, Package } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import { useI18n } from "@/i18n/context";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const CustomerHub = () => {
   const navigate = useNavigate();
+  const { t, dir } = useI18n();
 
   return (
-    <div className="min-h-screen flex flex-col gradient-dark" dir="rtl">
+    <div className="min-h-screen flex flex-col gradient-dark" dir={dir}>
       {/* Background effects */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-primary/3 blur-[150px]" />
@@ -15,10 +18,11 @@ const CustomerHub = () => {
       </div>
 
       {/* Header */}
-      <div className="sticky top-0 z-50 px-5 py-4 flex items-center justify-center glass-strong border-b border-border">
+      <div className="sticky top-0 z-50 px-5 py-4 flex items-center justify-between glass-strong border-b border-border">
+        <LanguageSwitcher />
         <div className="flex items-center gap-2.5">
           <Sparkles className="w-5 h-5 text-primary" />
-          <span className="font-bold text-xl text-gradient-primary font-display">مرحباً بك</span>
+          <span className="font-bold text-xl text-gradient-primary font-display">{t.customer.welcomeTitle}</span>
         </div>
       </div>
 
@@ -29,7 +33,7 @@ const CustomerHub = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-muted-foreground text-base text-center"
         >
-          ماذا تحتاج اليوم؟
+          {t.customer.whatDoYouNeed}
         </motion.p>
 
         <div className="w-full max-w-sm space-y-4">
@@ -47,26 +51,26 @@ const CustomerHub = () => {
                 <ShoppingBag className="w-8 h-8 text-primary-foreground" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-bold text-foreground mb-1">🛒 طلب خدمة (مطاعم / أسواق)</h2>
+                <h2 className="text-lg font-bold text-foreground mb-1">{t.customer.orderService}</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  تصفح المطاعم والأسواق، أضف للسلة وأكّد طلبك
+                  {t.customer.orderServiceDesc}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border/50">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <UtensilsCrossed className="w-3.5 h-3.5" />
-                <span>مطاعم</span>
+                <span>{t.customer.restaurants}</span>
               </div>
               <div className="w-1 h-1 rounded-full bg-border" />
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Package className="w-3.5 h-3.5" />
-                <span>أسواق</span>
+                <span>{t.customer.markets}</span>
               </div>
               <div className="w-1 h-1 rounded-full bg-border" />
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <ShoppingBag className="w-3.5 h-3.5" />
-                <span>سلة</span>
+                <span>{t.customer.cart}</span>
               </div>
             </div>
           </motion.button>
@@ -87,21 +91,21 @@ const CustomerHub = () => {
                 <Car className="w-8 h-8 text-info" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-bold text-foreground mb-1">🚗 طلب سيارة</h2>
+                <h2 className="text-lg font-bold text-foreground mb-1">{t.customer.requestRide}</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  حدد موقعك ووجهتك وابحث عن سائق فوراً
+                  {t.customer.requestRideDesc}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border/50">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Car className="w-3.5 h-3.5" />
-                <span>سيارة خاصة</span>
+                <span>{t.customer.privateCar}</span>
               </div>
               <div className="w-1 h-1 rounded-full bg-border" />
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>بحث فوري</span>
+                <span>{t.customer.instantSearch}</span>
               </div>
             </div>
           </motion.button>

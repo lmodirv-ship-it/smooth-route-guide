@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Car, User, Headphones, Shield, LogOut, Download, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { dashboardForRole, ROLE_LABELS } from "@/lib/routes";
+import { useI18n } from "@/i18n/context";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import logo from "@/assets/hn-driver-badge.png";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 import NativeDownloadSection from "@/components/welcome/NativeDownloadSection";
@@ -12,6 +14,7 @@ type RoleId = "driver" | "client" | "delivery";
 
 const Welcome = () => {
   const navigate = useNavigate();
+  const { t, dir } = useI18n();
   const [checking, setChecking] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ email?: string | null; phone?: string | null } | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -92,16 +95,16 @@ const Welcome = () => {
     {
       id: "driver" as const,
       icon: Car,
-      title: "سائق",
-      desc: "سجل كسائق نقل الزبائن وابدأ بالربح",
+      title: t.welcome.driverTitle,
+      desc: t.welcome.driverDesc,
       glowClass: "glow-ring-orange",
       iconColor: "text-primary",
     },
     {
       id: "client" as const,
       icon: User,
-      title: "عميل",
-      desc: "اطلب رحلة أو خدمة توصيل بسهولة",
+      title: t.welcome.clientTitle,
+      desc: t.welcome.clientDesc,
       glowClass: "glow-ring-blue",
       iconColor: "text-info",
     },
@@ -109,21 +112,26 @@ const Welcome = () => {
       id: "delivery" as const,
       icon: Package,
       customLogo: deliveryLogo,
-      title: "سائق توصيل",
-      desc: "سجل كسائق توصيل طلبيات",
+      title: t.welcome.deliveryTitle,
+      desc: t.welcome.deliveryDesc,
       glowClass: "glow-ring-green",
       iconColor: "text-success",
     },
   ];
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-between px-6 py-10 gradient-hero particles-bg relative gap-8 safe-mobile-top safe-mobile-bottom">
+    <div className="flex min-h-screen flex-col items-center justify-between px-6 py-10 gradient-hero particles-bg relative gap-8 safe-mobile-top safe-mobile-bottom" dir={dir}>
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         className="flex flex-col items-center pt-8 relative z-10"
       >
+        {/* Language Switcher */}
+        <div className="absolute top-0 left-0">
+          <LanguageSwitcher />
+        </div>
+
         <div className="relative flex items-center justify-center">
           <motion.div
             className="absolute w-56 h-56 rounded-full"
@@ -156,8 +164,8 @@ const Welcome = () => {
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           />
         </div>
-        <h1 className="text-4xl font-bold font-display text-gradient-primary mt-4 tracking-wider">HN DRIVER</h1>
-        <p className="text-muted-foreground mt-1 text-sm">اختر نوع حسابك للمتابعة</p>
+        <h1 className="text-4xl font-bold font-display text-gradient-primary mt-4 tracking-wider">{t.welcome.title}</h1>
+        <p className="text-muted-foreground mt-1 text-sm">{t.welcome.subtitle}</p>
 
         <button
           type="button"
@@ -165,7 +173,7 @@ const Welcome = () => {
           className="mt-5 inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-5 py-2.5 text-sm font-semibold text-foreground shadow-lg shadow-primary/10 transition-all hover:border-primary/40 hover:bg-card"
         >
           <Download className="h-4 w-4 text-primary" />
-          تحميل التطبيق للجوال
+          {t.common.downloadApp}
         </button>
 
         {currentUser && (
@@ -175,15 +183,15 @@ const Welcome = () => {
             className="mt-3 flex flex-col items-center gap-2"
           >
             <p className="text-xs text-success">
-              ✓ مسجل كـ {currentUser.email || currentUser.phone || "مستخدم"}
-              {userRole && ` (${ROLE_LABELS[userRole] || userRole})`}
+              ✓ {t.welcome.loggedAs} {currentUser.email || currentUser.phone || t.common.client}
+              {userRole && ` (${t.roles[userRole as keyof typeof t.roles] || ROLE_LABELS[userRole] || userRole})`}
             </p>
             <button
               onClick={handleLogout}
               className="flex items-center gap-1.5 text-xs text-destructive hover:text-destructive/80 transition-colors"
             >
               <LogOut className="w-3.5 h-3.5" />
-              استخدام حساب آخر
+              {t.welcome.useOtherAccount}
             </button>
           </motion.div>
         )}
@@ -202,11 +210,11 @@ const Welcome = () => {
             disabled={checking}
             style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
             className="group relative z-10 w-full overflow-hidden rounded-2xl p-5 text-right gradient-card border border-border hover:border-primary/40 transition-all duration-300 disabled:opacity-50 cursor-pointer select-none active:scale-[0.97]"
-            aria-label={`الدخول كـ ${role.title}`}
+            aria-label={role.title}
           >
             <div className="absolute inset-0 gradient-primary opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none" />
             <div className="flex items-center gap-4">
-              {role.customLogo ? (
+              {"customLogo" in role && role.customLogo ? (
                 <img src={role.customLogo} alt={role.title} className="w-12 h-12 rounded-full object-cover border-2 border-success/30 shadow-lg shadow-success/20" />
               ) : (
                 <div className={`icon-circle ${role.glowClass}`}>
@@ -231,14 +239,14 @@ const Welcome = () => {
         className="flex gap-6 items-center relative z-10"
       >
         <div className="flex items-center gap-1.5 text-muted-foreground">
-          <span className="text-xs">آمن</span>
+          <span className="text-xs">{t.common.secure}</span>
           <Shield className="w-3.5 h-3.5 text-success" />
         </div>
         <div className="flex items-center gap-1.5 text-muted-foreground">
-          <span className="text-xs">دعم ٢٤/٧</span>
+          <span className="text-xs">{t.common.support247}</span>
           <Headphones className="w-3.5 h-3.5 text-info" />
         </div>
-        <p className="text-xs text-muted-foreground">بالمتابعة أنت توافق على الشروط والأحكام</p>
+        <p className="text-xs text-muted-foreground">{t.common.termsAgree}</p>
       </motion.div>
     </div>
   );
