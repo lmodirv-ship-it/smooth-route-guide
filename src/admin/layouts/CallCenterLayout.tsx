@@ -44,6 +44,7 @@ const CallCenterLayout = () => {
   const operationalNavItems = [
     { path: "/call-center/map", icon: Map, label: "الخريطة المباشرة" },
     { path: "/call-center/alerts", icon: Bell, label: "التنبيهات" },
+    { path: "/call-center/knowledge", icon: Brain, label: "قاعدة المعرفة" },
   ];
 
   useEffect(() => {
