@@ -42,8 +42,9 @@ function dbRoleSatisfies(dbRole: string, requiredLabel: string): boolean {
 
   switch (requiredLabel) {
     case "client":
-    case "delivery":
       return dbRole === "user" || dbRole === "client";
+    case "delivery":
+      return dbRole === "delivery";
     case "driver":
       return dbRole === "driver";
     case "admin":
