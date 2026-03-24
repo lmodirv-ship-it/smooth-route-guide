@@ -8,26 +8,34 @@ import { ROLE_DASHBOARD } from "@/lib/routes";
 type AppRole = "admin" | "moderator" | "user" | "driver" | "agent";
 
 /**
- * Unified route guard.
+ * Unified route guard — Supabase is the single source of truth.
  *
  * Usage:
- *   <RequireRole allowed={["client"]}>      — any user/client
- *   <RequireRole allowed={["driver"]}>       — drivers only
- *   <RequireRole allowed={["admin"]}>        — admins only
+ *   <RequireRole allowed={["client"]}>       — any user/client
+ *   <RequireRole allowed={["driver"]}>        — drivers only
+ *   <RequireRole allowed={["admin"]}>         — admins only
  *   <RequireRole allowed={["admin","agent"]}> — admins + agents
- *   <RequireRole>                            — any authenticated user
+ *   <RequireRole>                             — any authenticated user
+ *
+ * Access matrix:
+ *   /admin/*       → allowed={["admin"]}
+ *   /call-center/* → allowed={["admin","agent"]}
+ *   /driver/*      → allowed={["driver"]}
+ *   /customer/*    → allowed={["client"]}
+ *   /delivery/*    → allowed={["delivery"]}
  */
 interface RequireRoleProps {
   children: React.ReactNode;
-  /** DB roles that may access this route. Empty / undefined = any authenticated user. */
+  /** Labels that may access this route. Empty / undefined = any authenticated user. */
   allowed?: string[];
 }
 
 /**
- * Maps a DB role to the set of "allowed" labels it satisfies.
- * - "admin" satisfies everything
- * - "user" satisfies "client" and "delivery" (these are features, not DB roles)
- * - "agent" satisfies "call_center" and "agent"
+ * Checks if a DB role satisfies a required route label.
+ * - "admin" satisfies everything (superuser)
+ * - "user" satisfies "client" and "delivery"
+ * - "driver" satisfies "driver"
+ * - "agent" satisfies "agent" and "call_center"
  */
 function dbRoleSatisfies(dbRole: string, requiredLabel: string): boolean {
   if (dbRole === "admin") return true;
@@ -48,49 +56,67 @@ function dbRoleSatisfies(dbRole: string, requiredLabel: string): boolean {
   }
 }
 
+/** Pick the best dashboard for a set of DB roles. */
+function bestDashboard(roles: AppRole[]): string {
+  if (roles.includes("admin")) return ROLE_DASHBOARD.admin;
+  if (roles.includes("agent")) return ROLE_DASHBOARD.agent;
+  if (roles.includes("driver")) return ROLE_DASHBOARD.driver;
+  return ROLE_DASHBOARD.user || "/customer";
+}
+
 const RequireRole = ({ children, allowed }: RequireRoleProps) => {
   const [state, setState] = useState<"loading" | "ok" | "no-auth" | "wrong-role">("loading");
-  const [userDbRole, setUserDbRole] = useState<AppRole | null>(null);
+  const [userRoles, setUserRoles] = useState<AppRole[]>([]);
 
   useEffect(() => {
+    let mounted = true;
+
     const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        setState("no-auth");
+        if (mounted) setState("no-auth");
         return;
       }
 
-      // If no role requirement, just need auth
+      // No role requirement — just need auth
       if (!allowed || allowed.length === 0) {
-        setState("ok");
+        if (mounted) setState("ok");
         return;
       }
 
-      const { data: roles } = await supabase
+      // Fetch ALL roles for this user (supports multi-role accounts)
+      const { data: rolesData } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", session.user.id)
-        .limit(1);
+        .eq("user_id", session.user.id);
 
-      const role = roles?.[0]?.role as AppRole | undefined;
-      if (!role) {
+      const roles = (rolesData || []).map((r) => r.role as AppRole);
+
+      if (!mounted) return;
+
+      if (roles.length === 0) {
         setState("no-auth");
         return;
       }
 
-      setUserDbRole(role);
+      setUserRoles(roles);
 
-      const hasAccess = allowed.some((label) => dbRoleSatisfies(role, label));
+      const hasAccess = roles.some((dbRole) =>
+        allowed.some((label) => dbRoleSatisfies(dbRole, label))
+      );
       setState(hasAccess ? "ok" : "wrong-role");
     };
 
     check();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      check();
+      if (mounted) check();
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [allowed]);
 
   if (state === "loading") {
@@ -106,11 +132,11 @@ const RequireRole = ({ children, allowed }: RequireRoleProps) => {
 
   if (state === "no-auth") return <Navigate to="/login" replace />;
 
-  if (state === "wrong-role" && userDbRole) {
-    const redirectTo = ROLE_DASHBOARD[userDbRole] || "/customer";
+  if (state === "wrong-role") {
+    const redirectTo = bestDashboard(userRoles);
 
-    // For admin/agent unauthorized pages show a nice UI
-    if (allowed?.includes("admin") || allowed?.includes("agent") || allowed?.includes("call_center")) {
+    // For restricted areas (admin/agent) show an explicit "unauthorized" UI
+    if (allowed?.some((a) => ["admin", "agent", "call_center"].includes(a))) {
       return (
         <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
           <div className="text-center space-y-4 max-w-md px-6">
@@ -120,10 +146,13 @@ const RequireRole = ({ children, allowed }: RequireRoleProps) => {
             <h1 className="text-2xl font-bold text-foreground">غير مصرح</h1>
             <p className="text-muted-foreground">ليس لديك صلاحية الوصول إلى هذه الصفحة.</p>
             <div className="flex gap-3 justify-center pt-4">
-              <Button variant="outline" onClick={() => window.history.back()} className="border-border">رجوع</Button>
+              <Button variant="outline" onClick={() => window.history.back()} className="border-border">
+                رجوع
+              </Button>
               <Button
                 onClick={async () => {
                   await supabase.auth.signOut();
+                  localStorage.removeItem("hn_user_role");
                   window.location.href = "/login";
                 }}
                 className="bg-primary text-primary-foreground"
