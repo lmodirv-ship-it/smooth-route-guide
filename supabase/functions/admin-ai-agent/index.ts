@@ -278,10 +278,18 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
       }
       case "db_delete": {
         if (!args.filters?.length) return JSON.stringify({ error: "Filters required for delete" });
+        // Safety: count before deleting to prevent mass deletion
+        let countQ = supabase.from(args.table).select("id", { count: "exact", head: true });
+        countQ = applyFilters(countQ, args.filters);
+        const { count: affectedCount } = await countQ;
+        if (affectedCount && affectedCount > 10) {
+          return JSON.stringify({ error: `Safety limit: would delete ${affectedCount} rows. Max 10 per operation. Add more specific filters.` });
+        }
         let q = supabase.from(args.table).delete();
         q = applyFilters(q, args.filters);
         const { data, error } = await q.select();
         if (error) return JSON.stringify({ error: error.message });
+        console.log(`[AUDIT] Deleted ${data?.length || 0} rows from ${args.table}`);
         return JSON.stringify({ deleted: data?.length || 0 });
       }
       case "db_count": {
