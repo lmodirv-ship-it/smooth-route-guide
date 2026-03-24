@@ -157,6 +157,13 @@ const es: TranslationSet = {
     payment: "Pago",
     support: "Soporte",
     profile: "Perfil",
+    tripHistory: "Historial de viajes",
+    paymentMethods: "Métodos de pago",
+    aiAssistant: "Asistente IA",
+    helpSupport: "Ayuda y soporte",
+    trips: "Viajes",
+    balance: "Saldo",
+    user: "Usuario",
   },
   driver: {
     home: "Inicio",

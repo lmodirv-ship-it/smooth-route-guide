@@ -157,6 +157,13 @@ const ar: TranslationSet = {
     payment: "الدفع",
     support: "الدعم",
     profile: "الملف الشخصي",
+    tripHistory: "سجل الرحلات",
+    paymentMethods: "طرق الدفع",
+    aiAssistant: "المساعد الذكي",
+    helpSupport: "الدعم والمساعدة",
+    trips: "الرحلات",
+    balance: "الرصيد",
+    user: "مستخدم",
   },
   driver: {
     home: "الرئيسية",
