@@ -84,8 +84,6 @@ const DriverTracking = () => {
     };
     findActiveRide();
   }, [rideIdParam]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Watch driver GPS
   useEffect(() => {
