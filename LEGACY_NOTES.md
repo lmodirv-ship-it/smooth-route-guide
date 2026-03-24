@@ -31,3 +31,25 @@ These redirects exist in `src/App.tsx` and ensure old links/bookmarks still work
 - **Pricing**: DB-driven via `app_settings` table + `usePricingSettings` hook
 - **Admin Panel**: Self-contained module in `src/admin/`
 - **Routing**: Canonical paths defined in `src/lib/routes.ts`
+
+## 🚀 Standalone Admin Deployment
+
+The admin panel can be built and deployed independently:
+
+```bash
+npm run build:admin    # outputs to dist-admin/
+```
+
+**Files involved:**
+| File | Purpose |
+|------|---------|
+| `admin.html` | Standalone HTML entry point |
+| `src/admin/main.tsx` | Admin-only React bootstrap |
+| `src/admin/AdminApp.tsx` | Admin-only router & shell |
+| `vite.config.admin.ts` | Vite build config → `dist-admin/` |
+
+**Deployment:**
+- Deploy `dist-admin/` to `admin.hndriver.com`
+- Uses same Supabase backend (same `.env` vars)
+- Routes are root-relative (`/`, `/users`, `/settings`, etc.)
+- `/admin/*` redirects to `/` in standalone mode
