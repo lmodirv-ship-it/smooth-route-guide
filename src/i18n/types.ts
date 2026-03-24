@@ -111,6 +111,7 @@ export interface TranslationSet {
     deliveryAccount: string;
     adminAccount: string;
     agentAccount: string;
+    storeOwnerAccount: string;
     emailMethod: string;
     phoneMethod: string;
     loginBtn: string;
@@ -169,6 +170,25 @@ export interface TranslationSet {
     trips: string;
     balance: string;
     user: string;
+    pickupPoint: string;
+    chooseDestination: string;
+    locating: string;
+    yourLocation: string;
+    whereToGo: string;
+    selectedDest: string;
+    clickToSelectDest: string;
+    driversAvailable: string;
+    searching: string;
+    noResults: string;
+    resetSelection: string;
+    confirmRide: string;
+    orderCreated: string;
+    selectPickupAndDest: string;
+    chooseFromListOrMap: string;
+    km: string;
+    minutes: string;
+    currency: string;
+    minimumFare: string;
   };
   // Driver pages
   driver: {
@@ -210,6 +230,9 @@ export interface TranslationSet {
     driverStatus: string;
     notifications: string;
     trip: string;
+    connected: string;
+    action: string;
+    km: string;
   };
   // Delivery pages
   delivery: {
@@ -237,6 +260,30 @@ export interface TranslationSet {
     courierSend: string;
     courierAddress: string;
     courierTrack: string;
+    allRestaurants: string;
+    nearestToYou: string;
+    recommended: string;
+    noResults: string;
+    tryDifferentSearch: string;
+    noRestaurantsFilters: string;
+    clearFilters: string;
+    clear: string;
+    retry: string;
+    searchingNearby: string;
+    deliveryFee: string;
+    minutes: string;
+    km: string;
+    meters: string;
+    open: string;
+    closed: string;
+    sortDefault: string;
+    sortNearest: string;
+    sortRating: string;
+    sortPrice: string;
+    restaurantsAndStores: string;
+    storeOwnerAccount: string;
+    errorLoadingStores: string;
+    unexpectedError: string;
   };
   // Admin panel
   admin: {

@@ -10,6 +10,7 @@ import BottomNav from "@/components/BottomNav";
 import { notifyNewOrder, unlockAudio } from "@/lib/notificationSound";
 import { driverNetEarnings, COMMISSION_RATE } from "@/lib/pricing";
 import { usePricingSettings } from "@/hooks/usePricingSettings";
+import { useI18n } from "@/i18n/context";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 const MAX_RADIUS_KM = 10;
@@ -51,6 +52,7 @@ interface RideRow {
 const DriverPage = () => {
   const navigate = useNavigate();
   const pricing = usePricingSettings();
+  const { t, dir } = useI18n();
   const [driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [orders, setOrders] = useState<RideRow[]>([]);
   const [accepting, setAccepting] = useState<string | null>(null);
@@ -214,12 +216,12 @@ const DriverPage = () => {
 
   const handleAccept = async (orderId: string) => {
     if (activeRideId) {
-      toast({ title: "لديك رحلة نشطة بالفعل", description: "أكمل الرحلة الحالية أولاً", variant: "destructive" });
+      toast({ title: t.driver.activeRide, description: t.driver.completeCurrentFirst, variant: "destructive" });
       navigate(`/driver/tracking?id=${activeRideId}`);
       return;
     }
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { toast({ title: "يجب تسجيل الدخول", variant: "destructive" }); return; }
+    if (!user) { toast({ title: t.driver.mustLogin, variant: "destructive" }); return; }
     setAccepting(orderId);
     try {
       // Calculate total price including driver→pickup distance
@@ -236,17 +238,17 @@ const DriverPage = () => {
         .eq("id", orderId).eq("status", "pending");
       if (error) throw error;
       setActiveRideId(orderId);
-      toast({ title: "تم قبول الطلب ✅", description: `السعر: ${totalPrice} DH` });
+      toast({ title: t.driver.orderAccepted, description: `${t.common.price}: ${totalPrice} DH` });
       navigate(`/driver/tracking?id=${orderId}`);
     } catch (err: any) {
-      toast({ title: "خطأ", description: err.message, variant: "destructive" });
+      toast({ title: t.common.error, description: err.message, variant: "destructive" });
     } finally { setAccepting(null); }
   };
 
   const cityName = driverLocation ? detectCity(driverLocation) : "جارٍ التحديد...";
 
   return (
-    <div className="h-screen flex flex-col bg-[#0a0f1a]" dir="rtl" onClick={() => unlockAudio()}>
+    <div className="h-screen flex flex-col bg-[#0a0f1a]" dir={dir} onClick={() => unlockAudio()}>
       {/* Map */}
       <div className="relative h-[30vh] min-h-[200px] shrink-0">
         <LeafletMap
@@ -268,7 +270,7 @@ const DriverPage = () => {
                 <p className="text-white font-bold text-sm">{driverName}</p>
                 <div className="flex items-center gap-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <p className="text-emerald-400 text-[11px]">متصل</p>
+                  <p className="text-emerald-400 text-[11px]">{t.driver.connected}</p>
                 </div>
               </div>
             </div>
@@ -280,17 +282,17 @@ const DriverPage = () => {
         </div>
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[1000] bg-black/60 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-xs flex items-center gap-2 border border-white/10">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          نطاق البحث: {MAX_RADIUS_KM} كم
+          {t.driver.searchRadius}: {MAX_RADIUS_KM} {t.driver.km}
         </div>
       </div>
 
       {/* Stats bar */}
       <div className="shrink-0 px-4 py-3 border-b border-white/5 bg-[#0d1320]">
         <div className="grid grid-cols-4 gap-2">
-          <StatsCard icon={TrendingUp} label="رحلات اليوم" value={`${todayStats.trips}`} accent="text-emerald-400" bg="bg-emerald-500/10" />
-          <StatsCard icon={Wallet} label="صافي الأرباح" value={`${todayStats.earnings} DH`} accent="text-orange-400" bg="bg-orange-500/10" />
-          <StatsCard icon={Percent} label="عمولة المنصة" value={`${Math.round(COMMISSION_RATE * 100)}%`} accent="text-red-400" bg="bg-red-500/10" />
-          <StatsCard icon={Star} label="التقييم" value={todayStats.rating > 0 ? todayStats.rating.toFixed(1) : "—"} accent="text-yellow-400" bg="bg-yellow-500/10" />
+          <StatsCard icon={TrendingUp} label={t.driver.todayTrips} value={`${todayStats.trips}`} accent="text-emerald-400" bg="bg-emerald-500/10" />
+          <StatsCard icon={Wallet} label={t.driver.netEarnings} value={`${todayStats.earnings} DH`} accent="text-orange-400" bg="bg-orange-500/10" />
+          <StatsCard icon={Percent} label={t.driver.platformFee} value={`${Math.round(COMMISSION_RATE * 100)}%`} accent="text-red-400" bg="bg-red-500/10" />
+          <StatsCard icon={Star} label={t.driver.rating} value={todayStats.rating > 0 ? todayStats.rating.toFixed(1) : "—"} accent="text-yellow-400" bg="bg-yellow-500/10" />
         </div>
       </div>
 
@@ -306,14 +308,14 @@ const DriverPage = () => {
               className={`p-1.5 rounded-full transition-colors ${
                 soundEnabled ? "bg-emerald-500/15 text-emerald-400" : "bg-white/5 text-white/30"
               }`}
-              title={soundEnabled ? "إيقاف الصوت" : "تشغيل الصوت"}
+              title={soundEnabled ? t.driver.soundOn : t.driver.soundOff}
             >
               <Volume2 className="w-3.5 h-3.5" />
             </button>
           </div>
           <h2 className="text-white font-bold text-sm flex items-center gap-2">
             <Route className="w-4 h-4 text-emerald-400" />
-            الرحلات المتاحة
+            {t.driver.availableRides}
           </h2>
         </div>
 
@@ -331,11 +333,11 @@ const DriverPage = () => {
                 className="h-8 px-4 rounded-lg bg-info hover:bg-info/80 text-white text-xs font-bold"
               >
                 <Package className="w-3.5 h-3.5 ml-1" />
-                طلبات التوصيل
+                {t.driver.deliveryOrders}
               </Button>
               <div className="text-right">
-                <p className="text-info font-bold text-sm">خدمة الطلبيات</p>
-                <p className="text-white/40 text-[11px]">عرض وقبول طلبات توصيل الطلبيات</p>
+                <p className="text-info font-bold text-sm">{t.driver.deliveryService}</p>
+                <p className="text-white/40 text-[11px]">{t.driver.viewDeliveryOrders}</p>
               </div>
             </motion.div>
           )}
@@ -352,11 +354,11 @@ const DriverPage = () => {
                 className="h-8 px-4 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold"
               >
                 <Navigation className="w-3.5 h-3.5 ml-1" />
-                متابعة الرحلة
+                {t.driver.continueRide}
               </Button>
               <div className="text-right">
-                <p className="text-orange-400 font-bold text-sm">لديك رحلة نشطة</p>
-                <p className="text-white/40 text-[11px]">أكمل الرحلة الحالية لقبول طلبات جديدة</p>
+                <p className="text-orange-400 font-bold text-sm">{t.driver.activeRide}</p>
+                <p className="text-white/40 text-[11px]">{t.driver.completeCurrentFirst}</p>
               </div>
             </motion.div>
           )}
@@ -365,20 +367,20 @@ const DriverPage = () => {
               <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-3 border border-emerald-500/15">
                 <Radar className="w-8 h-8 text-emerald-500/30" />
               </div>
-              <p className="text-white/70 font-medium">لا توجد رحلات في منطقتك</p>
-              <p className="text-white/30 text-sm mt-1">الرحلات القريبة ستظهر هنا تلقائياً</p>
+              <p className="text-white/70 font-medium">{t.driver.noRidesInArea}</p>
+              <p className="text-white/30 text-sm mt-1">{t.driver.ridesWillAppear}</p>
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead className="sticky top-0 z-10 bg-[#0d1320] border-b border-white/5">
                 <tr className="text-white/50 text-xs">
-                  <th className="py-2 px-3 text-right font-medium">الانطلاق</th>
-                  <th className="py-2 px-3 text-right font-medium">الوجهة</th>
-                  <th className="py-2 px-3 text-center font-medium">المسافة</th>
-                  <th className="py-2 px-3 text-center font-medium">البُعد</th>
-                  <th className="py-2 px-3 text-center font-medium">ETA</th>
-                  <th className="py-2 px-3 text-center font-medium">السعر</th>
-                  <th className="py-2 px-3 text-center font-medium">إجراء</th>
+                  <th className="py-2 px-3 text-right font-medium">{t.driver.pickup}</th>
+                  <th className="py-2 px-3 text-right font-medium">{t.driver.destination}</th>
+                  <th className="py-2 px-3 text-center font-medium">{t.driver.distance}</th>
+                  <th className="py-2 px-3 text-center font-medium">{t.driver.distanceToPickup}</th>
+                  <th className="py-2 px-3 text-center font-medium">{t.driver.eta}</th>
+                  <th className="py-2 px-3 text-center font-medium">{t.common.price}</th>
+                  <th className="py-2 px-3 text-center font-medium">{t.driver.action}</th>
                 </tr>
               </thead>
               <tbody>
@@ -407,7 +409,7 @@ const DriverPage = () => {
                         </div>
                       </td>
                       <td className="py-2.5 px-3 text-center">
-                        <span className="text-emerald-400 font-semibold text-xs">{order.totalDistance} كم</span>
+                        <span className="text-emerald-400 font-semibold text-xs">{order.totalDistance} {t.driver.km}</span>
                       </td>
                       <td className="py-2.5 px-3 text-center">
                         <div className="flex items-center justify-center gap-1 text-yellow-400 text-xs">
@@ -438,7 +440,7 @@ const DriverPage = () => {
                           ) : (
                             <>
                               <CheckCircle className="w-3 h-3 ml-1" />
-                              قبول
+                              {t.driver.accept}
                             </>
                           )}
                         </Button>
