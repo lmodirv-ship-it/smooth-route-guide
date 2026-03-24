@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface Driver {
   id: string; user_id: string; license_no: string; rating: number | null;
-  status: string; created_at: string; car_id: string | null;
+  status: string; created_at: string; car_id: string | null; driver_type?: string;
   name?: string; vehicle?: { brand: string; model: string; plate_no: string; color: string | null } | null;
 }
 
@@ -107,6 +107,9 @@ const AdminDrivers = () => {
             <div className="flex items-center justify-between text-xs">
               <Badge variant="outline" className={driver.status === "active" ? "text-success border-success/30" : "text-muted-foreground border-border"}>
                 {driver.status === "active" ? "متصل" : "غير متصل"}
+              </Badge>
+              <Badge variant="outline" className={driver.driver_type === "delivery" ? "text-info border-info/30" : "text-primary border-primary/30"}>
+                {driver.driver_type === "delivery" ? "خدمة طلبيات" : driver.driver_type === "both" ? "الكل" : "توصيل زبائن"}
               </Badge>
               <div className="flex items-center gap-3">
                 {driver.vehicle && <span className="text-muted-foreground">{driver.vehicle.brand} {driver.vehicle.model} - {driver.vehicle.plate_no}</span>}

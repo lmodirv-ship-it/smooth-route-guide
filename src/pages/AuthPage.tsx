@@ -46,6 +46,7 @@ const AuthPage = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [driverType, setDriverType] = useState<"ride" | "delivery">("ride");
 
   useEffect(() => {
     const syncSession = async () => {
@@ -107,7 +108,7 @@ const AuthPage = () => {
           password,
           options: {
             emailRedirectTo: redirectTo,
-            data: { name, phone, requested_role: role },
+            data: { name, phone, requested_role: role, driver_type: role === "driver" ? driverType : undefined },
           },
         });
 
@@ -211,6 +212,21 @@ const AuthPage = () => {
                   <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 </div>
               </div>
+              {role === "driver" && (
+                <div className="space-y-2">
+                  <label className="text-sm text-muted-foreground text-right block">نوع السائق</label>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => setDriverType("ride")}
+                      className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${driverType === "ride" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
+                      <Car className="w-4 h-4 inline-block ml-1.5" />سائق توصيل زبائن
+                    </button>
+                    <button type="button" onClick={() => setDriverType("delivery")}
+                      className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${driverType === "delivery" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
+                      <ShoppingBag className="w-4 h-4 inline-block ml-1.5" />سائق خدمة طلبيات
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
 

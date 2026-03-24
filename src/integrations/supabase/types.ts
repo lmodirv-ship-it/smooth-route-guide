@@ -464,6 +464,7 @@ export type Database = {
           created_at: string
           current_lat: number | null
           current_lng: number | null
+          driver_type: string
           id: string
           license_no: string
           location_updated_at: string | null
@@ -476,6 +477,7 @@ export type Database = {
           created_at?: string
           current_lat?: number | null
           current_lng?: number | null
+          driver_type?: string
           id?: string
           license_no?: string
           location_updated_at?: string | null
@@ -488,6 +490,7 @@ export type Database = {
           created_at?: string
           current_lat?: number | null
           current_lng?: number | null
+          driver_type?: string
           id?: string
           license_no?: string
           location_updated_at?: string | null

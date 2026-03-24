@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star, Navigation, Volume2, Percent } from "lucide-react";
+import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star, Navigation, Volume2, Percent, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,6 +59,7 @@ const DriverPage = () => {
   const [driverName, setDriverName] = useState("السائق");
   const [activeRideId, setActiveRideId] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [driverType, setDriverType] = useState<string>("ride");
   const prevOrderCountRef = useRef(0);
   const initialLoadRef = useRef(true);
 
@@ -101,12 +102,14 @@ const DriverPage = () => {
       const grossEarnings = completedRides?.reduce((sum, r) => sum + (Number(r.price) || 0), 0) || 0;
       const earnings = driverNetEarnings(grossEarnings);
 
-      // Rating
+      // Rating + driver_type
       const { data: driverData } = await supabase
         .from("drivers")
-        .select("rating")
+        .select("rating, driver_type")
         .eq("user_id", user.id)
         .single();
+
+      if (driverData?.driver_type) setDriverType(driverData.driver_type);
 
       setTodayStats({
         trips,
@@ -315,6 +318,27 @@ const DriverPage = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto">
+          {/* Delivery driver banner */}
+          {(driverType === "delivery" || driverType === "both") && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mx-4 mt-3 p-3 rounded-xl bg-info/10 border border-info/30 flex items-center justify-between"
+            >
+              <Button
+                size="sm"
+                onClick={() => navigate("/driver/delivery")}
+                className="h-8 px-4 rounded-lg bg-info hover:bg-info/80 text-white text-xs font-bold"
+              >
+                <Package className="w-3.5 h-3.5 ml-1" />
+                طلبات التوصيل
+              </Button>
+              <div className="text-right">
+                <p className="text-info font-bold text-sm">خدمة الطلبيات</p>
+                <p className="text-white/40 text-[11px]">عرض وقبول طلبات توصيل الطلبيات</p>
+              </div>
+            </motion.div>
+          )}
           {/* Active ride banner */}
           {activeRideId && (
             <motion.div

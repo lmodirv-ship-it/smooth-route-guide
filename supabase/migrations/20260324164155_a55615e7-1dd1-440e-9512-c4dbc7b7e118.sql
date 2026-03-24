@@ -1,0 +1,2 @@
+ALTER TABLE public.drivers ADD COLUMN IF NOT EXISTS driver_type text NOT NULL DEFAULT 'ride';
+COMMENT ON COLUMN public.drivers.driver_type IS 'ride = passenger transport, delivery = order delivery, both = can do either';
