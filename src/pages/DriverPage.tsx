@@ -318,6 +318,27 @@ const DriverPage = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto">
+          {/* Delivery driver banner */}
+          {(driverType === "delivery" || driverType === "both") && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mx-4 mt-3 p-3 rounded-xl bg-info/10 border border-info/30 flex items-center justify-between"
+            >
+              <Button
+                size="sm"
+                onClick={() => navigate("/driver/delivery")}
+                className="h-8 px-4 rounded-lg bg-info hover:bg-info/80 text-white text-xs font-bold"
+              >
+                <Package className="w-3.5 h-3.5 ml-1" />
+                طلبات التوصيل
+              </Button>
+              <div className="text-right">
+                <p className="text-info font-bold text-sm">خدمة الطلبيات</p>
+                <p className="text-white/40 text-[11px]">عرض وقبول طلبات توصيل الطلبيات</p>
+              </div>
+            </motion.div>
+          )}
           {/* Active ride banner */}
           {activeRideId && (
             <motion.div
