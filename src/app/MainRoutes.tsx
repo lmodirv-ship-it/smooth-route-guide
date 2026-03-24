@@ -121,6 +121,8 @@ export const mainRouteElements = (
       <Route path="/delivery/restaurants" element={<RequireRole allowed={["client"]}><RestaurantsList /></RequireRole>} />
       <Route path="/delivery/restaurant/:id" element={<RequireRole allowed={["client"]}><RestaurantMenu /></RequireRole>} />
       <Route path="/delivery/cart" element={<RequireRole allowed={["client"]}><Cart /></RequireRole>} />
+      <Route path="/delivery/store/:id" element={<RequireRole allowed={["client"]}><StoreDetail /></RequireRole>} />
+      <Route path="/delivery/my-store" element={<RequireRole><MyStore /></RequireRole>} />
       <Route path="/delivery/order/:id" element={<RequireRole allowed={["client"]}><OrderTracking /></RequireRole>} />
       <Route path="/delivery/order" element={<RequireRole allowed={["client"]}><OrderTracking /></RequireRole>} />
       <Route path="/delivery/:category" element={<RequireRole allowed={["client"]}><DeliveryCategory /></RequireRole>} />
