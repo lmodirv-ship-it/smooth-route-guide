@@ -10,6 +10,7 @@ import BottomNav from "@/components/BottomNav";
 import { notifyNewOrder, unlockAudio } from "@/lib/notificationSound";
 import { driverNetEarnings, COMMISSION_RATE } from "@/lib/pricing";
 import { usePricingSettings } from "@/hooks/usePricingSettings";
+import { useI18n } from "@/i18n/context";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 const MAX_RADIUS_KM = 10;
