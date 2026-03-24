@@ -4,19 +4,19 @@
  * Naming convention:
  *   DB role  →  canonical dashboard path
  *   "user"   →  /customer   (default signup role)
- *   "driver" →  /driver-panel
+ *   "driver" →  /driver
  *   "admin"  →  /admin
  *   "agent"  →  /call-center
  *
- * Legacy paths (/client, /driver, /customer-tracking, etc.) are kept as
- * redirect-only routes in App.tsx and will be removed after full migration.
+ * Legacy paths (/client, /driver-panel, /customer-tracking, etc.) are kept as
+ * redirect-only routes in App.tsx.
  */
 
 export type DbRole = "admin" | "moderator" | "user" | "driver" | "agent";
 
 /** Maps a DB role to its canonical dashboard path. */
 export const ROLE_DASHBOARD: Record<string, string> = {
-  driver: "/driver-panel",
+  driver: "/driver",
   client: "/customer",
   user: "/customer",
   admin: "/admin",

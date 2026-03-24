@@ -87,7 +87,7 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* ═══════════════════════════════════════════
-              MAIN APP: Customer  /customer/*
+              CANONICAL: Customer  /customer/*
              ═══════════════════════════════════════════ */}
           <Route path="/customer" element={<RequireRole allowed={["client"]}><CustomerPage /></RequireRole>} />
           <Route path="/customer/tracking" element={<RequireRole allowed={["client"]}><CustomerTracking /></RequireRole>} />
@@ -99,26 +99,26 @@ const App = () => (
           <Route path="/customer/support" element={<RequireRole allowed={["client"]}><ClientSupport /></RequireRole>} />
 
           {/* ═══════════════════════════════════════════
-              MAIN APP: Driver  /driver-panel/*
+              CANONICAL: Driver  /driver/*
              ═══════════════════════════════════════════ */}
-          <Route path="/driver-panel" element={<RequireRole allowed={["driver"]}><DriverPage /></RequireRole>} />
-          <Route path="/driver-panel/tracking" element={<RequireRole allowed={["driver"]}><DriverTracking /></RequireRole>} />
-          <Route path="/driver-panel/history" element={<RequireRole allowed={["driver"]}><DriverHistory /></RequireRole>} />
-          <Route path="/driver-panel/notifications" element={<RequireRole allowed={["driver"]}><DriverNotifications /></RequireRole>} />
-          <Route path="/driver-panel/settings" element={<RequireRole allowed={["driver"]}><DriverSettings /></RequireRole>} />
-          <Route path="/driver-panel/documents" element={<RequireRole allowed={["driver"]}><DocumentUpload /></RequireRole>} />
-          <Route path="/driver-panel/trip" element={<RequireRole allowed={["driver"]}><ActiveTrip /></RequireRole>} />
-          <Route path="/driver-panel/profile" element={<RequireRole allowed={["driver"]}><DriverProfile /></RequireRole>} />
-          <Route path="/driver-panel/wallet" element={<RequireRole allowed={["driver"]}><DriverWallet /></RequireRole>} />
-          <Route path="/driver-panel/car-info" element={<RequireRole allowed={["driver"]}><CarInfo /></RequireRole>} />
-          <Route path="/driver-panel/promotions" element={<RequireRole allowed={["driver"]}><DriverPromotions /></RequireRole>} />
-          <Route path="/driver-panel/support" element={<RequireRole allowed={["driver"]}><DriverSupport /></RequireRole>} />
-          <Route path="/driver-panel/status" element={<RequireRole allowed={["driver"]}><DriverStatus /></RequireRole>} />
-          <Route path="/driver-panel/earnings" element={<RequireRole allowed={["driver"]}><DriverEarnings /></RequireRole>} />
-          <Route path="/driver-panel/delivery" element={<RequireRole allowed={["driver"]}><DriverDelivery /></RequireRole>} />
+          <Route path="/driver" element={<RequireRole allowed={["driver"]}><DriverPage /></RequireRole>} />
+          <Route path="/driver/tracking" element={<RequireRole allowed={["driver"]}><DriverTracking /></RequireRole>} />
+          <Route path="/driver/history" element={<RequireRole allowed={["driver"]}><DriverHistory /></RequireRole>} />
+          <Route path="/driver/notifications" element={<RequireRole allowed={["driver"]}><DriverNotifications /></RequireRole>} />
+          <Route path="/driver/settings" element={<RequireRole allowed={["driver"]}><DriverSettings /></RequireRole>} />
+          <Route path="/driver/documents" element={<RequireRole allowed={["driver"]}><DocumentUpload /></RequireRole>} />
+          <Route path="/driver/trip" element={<RequireRole allowed={["driver"]}><ActiveTrip /></RequireRole>} />
+          <Route path="/driver/profile" element={<RequireRole allowed={["driver"]}><DriverProfile /></RequireRole>} />
+          <Route path="/driver/wallet" element={<RequireRole allowed={["driver"]}><DriverWallet /></RequireRole>} />
+          <Route path="/driver/car-info" element={<RequireRole allowed={["driver"]}><CarInfo /></RequireRole>} />
+          <Route path="/driver/promotions" element={<RequireRole allowed={["driver"]}><DriverPromotions /></RequireRole>} />
+          <Route path="/driver/support" element={<RequireRole allowed={["driver"]}><DriverSupport /></RequireRole>} />
+          <Route path="/driver/status" element={<RequireRole allowed={["driver"]}><DriverStatus /></RequireRole>} />
+          <Route path="/driver/earnings" element={<RequireRole allowed={["driver"]}><DriverEarnings /></RequireRole>} />
+          <Route path="/driver/delivery" element={<RequireRole allowed={["driver"]}><DriverDelivery /></RequireRole>} />
 
           {/* ═══════════════════════════════════════════
-              MAIN APP: Delivery  /delivery/*
+              CANONICAL: Delivery  /delivery/*
              ═══════════════════════════════════════════ */}
           <Route path="/delivery" element={<RequireRole allowed={["delivery"]}><DeliveryHome /></RequireRole>} />
           <Route path="/delivery/tracking" element={<RequireRole allowed={["delivery"]}><DeliveryTracking /></RequireRole>} />
@@ -144,8 +144,9 @@ const App = () => (
           <Route path="/assistant" element={<RequireRole><AIAssistant /></RequireRole>} />
 
           {/* ═══════════════════════════════════════════
-              LEGACY REDIRECTS — transitional only
+              LEGACY REDIRECTS — backward compatibility
              ═══════════════════════════════════════════ */}
+          {/* /client/* → /customer/* */}
           <Route path="/client" element={<Navigate to="/customer" replace />} />
           <Route path="/client/tracking" element={<Navigate to="/customer/tracking" replace />} />
           <Route path="/client/booking" element={<Navigate to="/customer/booking" replace />} />
@@ -156,22 +157,23 @@ const App = () => (
           <Route path="/client/support" element={<Navigate to="/customer/support" replace />} />
           <Route path="/customer-tracking" element={<Navigate to="/customer/tracking" replace />} />
 
-          <Route path="/driver" element={<Navigate to="/driver-panel" replace />} />
-          <Route path="/driver/tracking" element={<Navigate to="/driver-panel/tracking" replace />} />
-          <Route path="/driver/history" element={<Navigate to="/driver-panel/history" replace />} />
-          <Route path="/driver/notifications" element={<Navigate to="/driver-panel/notifications" replace />} />
-          <Route path="/driver/settings" element={<Navigate to="/driver-panel/settings" replace />} />
-          <Route path="/driver/documents" element={<Navigate to="/driver-panel/documents" replace />} />
-          <Route path="/driver/trip" element={<Navigate to="/driver-panel/trip" replace />} />
-          <Route path="/driver/profile" element={<Navigate to="/driver-panel/profile" replace />} />
-          <Route path="/driver/wallet" element={<Navigate to="/driver-panel/wallet" replace />} />
-          <Route path="/driver/car-info" element={<Navigate to="/driver-panel/car-info" replace />} />
-          <Route path="/driver/promotions" element={<Navigate to="/driver-panel/promotions" replace />} />
-          <Route path="/driver/support" element={<Navigate to="/driver-panel/support" replace />} />
-          <Route path="/driver/status" element={<Navigate to="/driver-panel/status" replace />} />
-          <Route path="/driver/earnings" element={<Navigate to="/driver-panel/earnings" replace />} />
-          <Route path="/driver/delivery" element={<Navigate to="/driver-panel/delivery" replace />} />
-          <Route path="/driver-tracking" element={<Navigate to="/driver-panel/tracking" replace />} />
+          {/* /driver-panel/* → /driver/* */}
+          <Route path="/driver-panel" element={<Navigate to="/driver" replace />} />
+          <Route path="/driver-panel/tracking" element={<Navigate to="/driver/tracking" replace />} />
+          <Route path="/driver-panel/history" element={<Navigate to="/driver/history" replace />} />
+          <Route path="/driver-panel/notifications" element={<Navigate to="/driver/notifications" replace />} />
+          <Route path="/driver-panel/settings" element={<Navigate to="/driver/settings" replace />} />
+          <Route path="/driver-panel/documents" element={<Navigate to="/driver/documents" replace />} />
+          <Route path="/driver-panel/trip" element={<Navigate to="/driver/trip" replace />} />
+          <Route path="/driver-panel/profile" element={<Navigate to="/driver/profile" replace />} />
+          <Route path="/driver-panel/wallet" element={<Navigate to="/driver/wallet" replace />} />
+          <Route path="/driver-panel/car-info" element={<Navigate to="/driver/car-info" replace />} />
+          <Route path="/driver-panel/promotions" element={<Navigate to="/driver/promotions" replace />} />
+          <Route path="/driver-panel/support" element={<Navigate to="/driver/support" replace />} />
+          <Route path="/driver-panel/status" element={<Navigate to="/driver/status" replace />} />
+          <Route path="/driver-panel/earnings" element={<Navigate to="/driver/earnings" replace />} />
+          <Route path="/driver-panel/delivery" element={<Navigate to="/driver/delivery" replace />} />
+          <Route path="/driver-tracking" element={<Navigate to="/driver/tracking" replace />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
