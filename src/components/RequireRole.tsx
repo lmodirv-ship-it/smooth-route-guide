@@ -5,7 +5,7 @@ import { Loader2, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROLE_DASHBOARD } from "@/lib/routes";
 
-type AppRole = "admin" | "moderator" | "user" | "driver" | "agent";
+type AppRole = "admin" | "moderator" | "user" | "driver" | "agent" | "delivery";
 
 /**
  * Unified route guard — Supabase is the single source of truth.
