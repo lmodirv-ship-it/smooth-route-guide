@@ -4,6 +4,7 @@ import { Car, Star, FileCheck, Power, PowerOff, Search, Eye } from "lucide-react
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -133,6 +134,31 @@ const AdminDrivers = () => {
                   <p className="text-sm text-warning">★ {selectedDriver.rating || "—"}</p>
                 </div>
               </div>
+
+              {/* Driver Type Selector */}
+              <div className="p-3 rounded-lg bg-secondary/50">
+                <p className="text-xs text-muted-foreground mb-2">نوع السائق</p>
+                <Select
+                  value={selectedDriver.driver_type || "ride"}
+                  onValueChange={async (val) => {
+                    const { error } = await supabase.from("drivers").update({ driver_type: val }).eq("id", selectedDriver.id);
+                    if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
+                    toast({ title: "تم تحديث نوع السائق ✅" });
+                    setSelectedDriver({ ...selectedDriver, driver_type: val });
+                    fetchDrivers();
+                  }}
+                >
+                  <SelectTrigger className="bg-background border-border">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ride">🚗 توصيل زبائن</SelectItem>
+                    <SelectItem value="delivery">📦 خدمة طلبيات</SelectItem>
+                    <SelectItem value="both">🔄 الكل (زبائن + طلبيات)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {selectedDriver.vehicle && (
                 <div className="p-3 rounded-lg bg-secondary/50">
                   <p className="text-xs text-muted-foreground mb-1">السيارة</p>
