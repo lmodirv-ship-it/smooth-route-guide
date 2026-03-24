@@ -133,7 +133,7 @@ const NativeDownloadSection = () => {
     let mounted = true;
 
     const checkAvailability = async () => {
-      const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://smooth-route-guide.lovable.app";
+      const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
 
       const entries = await Promise.all(
         allDownloads.map(async (item) => {

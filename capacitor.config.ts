@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "app.lovable.871f375973ef45798f089a7c52b1611d",
-  appName: "smooth-route-guide",
+  appId: "com.hndriver.app",
+  appName: "HN Driver",
   webDir: "dist",
   android: {
     backgroundColor: "#111827",
