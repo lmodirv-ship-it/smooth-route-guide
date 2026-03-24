@@ -10,10 +10,15 @@ import { supabase } from "@/integrations/supabase/client";
 const categoryMeta: Record<string, { title: string; titleFr: string; emoji: string; dbCategory: string }> = {
   restaurants: { title: "مطاعم", titleFr: "Restaurants", emoji: "🍽️", dbCategory: "restaurant" },
   supermarkets: { title: "سوبرماركت", titleFr: "Supermarchés", emoji: "🛒", dbCategory: "supermarket" },
-  shops: { title: "متاجر وهدايا", titleFr: "Boutiques & Cadeaux", emoji: "🎁", dbCategory: "shops" },
+  shops: { title: "المحلات", titleFr: "Boutiques", emoji: "🏪", dbCategory: "shops" },
   pharmacy: { title: "صيدلية وتجميل", titleFr: "Parapharmacie & Beauté", emoji: "💊", dbCategory: "pharmacy" },
   courier: { title: "خدمة كورسيي", titleFr: "Service Coursier", emoji: "📦", dbCategory: "courier" },
   market: { title: "ماركت سريع", titleFr: "Market", emoji: "🏪", dbCategory: "market" },
+  cafes: { title: "المقاهي", titleFr: "Cafés", emoji: "☕", dbCategory: "cafe" },
+  clothing: { title: "محلات الملابس", titleFr: "Vêtements", emoji: "👗", dbCategory: "clothing" },
+  bakeries: { title: "المخبزات", titleFr: "Boulangeries", emoji: "🥐", dbCategory: "bakery" },
+  "online-stores": { title: "المتاجر الإلكترونية", titleFr: "Boutiques en ligne", emoji: "🛍️", dbCategory: "online" },
+  printing: { title: "المطابع", titleFr: "Imprimeries", emoji: "🖨️", dbCategory: "printing" },
 };
 
 const DeliveryCategory = () => {
@@ -185,18 +190,11 @@ const DeliveryCategory = () => {
               <div className="flex items-start justify-between gap-3">
                 <Button
                   size="sm"
-                  onClick={() => handleOrder(store)}
-                  disabled={loading && selectedStore === store.id}
+                  onClick={() => navigate(`/delivery/store/${store.id}`)}
                   className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 flex-shrink-0"
                 >
-                  {loading && selectedStore === store.id ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      <ShoppingBag className="w-4 h-4" />
-                      اطلب
-                    </>
-                  )}
+                  <ShoppingBag className="w-4 h-4" />
+                  عرض
                 </Button>
                 <div className="flex-1 text-right">
                   <h3 className="font-bold text-foreground">{store.name}</h3>
