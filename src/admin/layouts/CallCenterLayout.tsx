@@ -37,6 +37,18 @@ const CallCenterLayout = () => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return;
+      supabase.from("user_roles").select("role").eq("user_id", data.user.id).eq("role", "admin").then(({ data: roles }) => {
+        setIsAdmin((roles || []).length > 0);
+      });
+    });
+  }, []);
+
+  const navItems = [...baseNavItems, ...(isAdmin ? adminOnlyNavItems : [])];
 
   const isActive = (path: string) =>
     path === "/call-center" ? location.pathname === "/call-center" : location.pathname.startsWith(path);
