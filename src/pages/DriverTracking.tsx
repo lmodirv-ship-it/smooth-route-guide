@@ -233,22 +233,22 @@ const DriverTracking = () => {
     }
   };
 
-  // No ride ID provided
-  if (!rideId) {
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
+        <div className="text-primary animate-pulse">جارٍ التحميل...</div>
+      </div>
+    );
+  }
+
+  // No ride found
+  if (!rideId || (!ride && !error)) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4" dir="rtl">
         <MapPin className="w-14 h-14 text-muted-foreground/30" />
         <p className="text-muted-foreground text-lg">لا توجد رحلة نشطة</p>
         <Button onClick={() => navigate("/driver")} className="rounded-xl">العودة للرئيسية</Button>
-      </div>
-    );
-  }
-
-  // Loading state with timeout protection
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
-        <div className="text-primary animate-pulse">جارٍ التحميل...</div>
       </div>
     );
   }
