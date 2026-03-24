@@ -187,7 +187,12 @@ const DriverDelivery = () => {
       </div>
 
       <div className="mx-4 mt-4 rounded-2xl overflow-hidden border border-border h-64 relative">
-        <LiveOrderMap driverPosition={driverLocation} targetPosition={targetPosition} />
+        <LiveOrderMap
+          driverPosition={driverLocation}
+          targetPosition={targetPosition}
+          showRouteInfo={!!activeOrder}
+          targetLabel={activeOrder ? (["driver_assigned", "on_the_way_to_vendor"].includes(activeOrder.status) ? (activeOrder.pickup_address || "") : (activeOrder.delivery_address || "")) : undefined}
+        />
       </div>
 
       <div className="px-4 mt-4 space-y-4">
