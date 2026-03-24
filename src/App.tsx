@@ -184,6 +184,7 @@ const App = () => (
       </BrowserRouter>
       </CartProvider>
     </TooltipProvider>
+    </I18nProvider>
   </QueryClientProvider>
 );
 
