@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Settings, Save, DollarSign, MapPin, Bell, Shield, Loader2, Truck, Sun, Moon, RotateCcw } from "lucide-react";
+import { Settings, Save, DollarSign, MapPin, Bell, Shield, Loader2, Truck, Sun, Moon, RotateCcw, Globe } from "lucide-react";
+import LanguageManagement from "@/admin/components/LanguageManagement";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -303,6 +304,9 @@ const AdminSettings = () => {
           النهار: {deliveryPricing.dayStartHour}:00 → {deliveryPricing.dayEndHour}:00 | الليل: {deliveryPricing.dayEndHour}:00 → {deliveryPricing.dayStartHour}:00
         </p>
       </div>
+
+      {/* Language Management Section */}
+      <LanguageManagement />
     </div>
   );
 };
