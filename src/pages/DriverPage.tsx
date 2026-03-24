@@ -440,7 +440,7 @@ const DriverPage = () => {
                           ) : (
                             <>
                               <CheckCircle className="w-3 h-3 ml-1" />
-                              قبول
+                              {t.driver.accept}
                             </>
                           )}
                         </Button>
