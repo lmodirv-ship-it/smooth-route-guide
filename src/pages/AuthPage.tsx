@@ -11,7 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-badge.png";
 
-type RoleId = "driver" | "client" | "delivery" | "admin" | "agent";
+type RoleId = "driver" | "client" | "delivery" | "admin" | "agent" | "store_owner";
 type StoredRole = RoleId | "user";
 
 const roleConfig: Record<string, { label: string; color: string; icon: any }> = {
@@ -20,6 +20,7 @@ const roleConfig: Record<string, { label: string; color: string; icon: any }> = 
   delivery: { label: "حساب سائق توصيل", color: "text-success", icon: ShoppingBag },
   admin: { label: "حساب مسؤول", color: "text-destructive", icon: UserIcon },
   agent: { label: "حساب مركز اتصال", color: "text-warning", icon: Phone },
+  store_owner: { label: "حساب صاحب محل", color: "text-accent-foreground", icon: StoreIcon },
 };
 
 const roleDashboard: Record<StoredRole, string> = {
@@ -28,6 +29,7 @@ const roleDashboard: Record<StoredRole, string> = {
   delivery: "/driver/delivery",
   admin: "/admin",
   agent: "/call-center",
+  store_owner: "/delivery/my-store",
   user: "/customer",
 };
 
