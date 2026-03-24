@@ -330,6 +330,16 @@ const CustomerTracking = () => {
       {rideId && isActive && ride.status !== "pending" && (
         <RideChat rideId={rideId} role="customer" />
       )}
+
+      {rideId && (
+        <CancelRideDialog
+          open={cancelDialogOpen}
+          onOpenChange={setCancelDialogOpen}
+          rideId={rideId}
+          role="customer"
+          onCancelled={() => navigate("/customer")}
+        />
+      )}
     </div>
   );
 };
