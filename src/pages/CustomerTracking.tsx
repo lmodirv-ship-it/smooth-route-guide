@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle, Clock, MapPin, Phone, User, Navigation, Car, Route as RouteIcon } from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, MapPin, Phone, User, Navigation, Car, Route as RouteIcon, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
@@ -54,8 +55,25 @@ const CustomerTracking = () => {
   const [driverName, setDriverName] = useState<string | null>(null);
   const [driverPhone, setDriverPhone] = useState<string | null>(null);
   const [vehicleInfo, setVehicleInfo] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
-  // Fetch ride + realtime
+  const handleCancelRide = async () => {
+    if (!rideId || cancelling) return;
+    setCancelling(true);
+    try {
+      const { error } = await supabase
+        .from("ride_requests")
+        .update({ status: "cancelled" })
+        .eq("id", rideId);
+      if (error) throw error;
+      toast({ title: "تم إلغاء الرحلة ❌" });
+    } catch (err: any) {
+      toast({ title: "خطأ", description: err.message || "فشل إلغاء الرحلة", variant: "destructive" });
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   useEffect(() => {
     if (!rideId) return;
     const fetchRide = async () => {
@@ -233,10 +251,12 @@ const CustomerTracking = () => {
             </div>
             <p className="text-white font-bold">جارٍ البحث عن سائق...</p>
             <p className="text-white/40 text-sm mt-1">سيتم تعيين أقرب سائق</p>
+            <Button onClick={handleCancelRide} disabled={cancelling} variant="outline"
+              className="mt-4 w-full border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded-xl font-bold gap-2">
+              <XCircle className="w-4 h-4" /> {cancelling ? "جارٍ الإلغاء..." : "إلغاء الطلب"}
+            </Button>
           </div>
         )}
-
-        {/* Active ride info */}
         {isActive && ride.status !== "pending" && (
           <div className="p-4 space-y-3">
             {/* Driver card */}
@@ -285,6 +305,12 @@ const CustomerTracking = () => {
                 <p className="text-orange-400 font-black text-base mt-0.5">{totalPrice || "—"} <span className="text-[9px] font-normal">DH</span></p>
               </div>
             </div>
+
+            {/* Cancel button */}
+            <Button onClick={handleCancelRide} disabled={cancelling} variant="outline"
+              className="w-full border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded-xl font-bold gap-2">
+              <XCircle className="w-4 h-4" /> {cancelling ? "جارٍ الإلغاء..." : "إلغاء الرحلة"}
+            </Button>
           </div>
         )}
 
