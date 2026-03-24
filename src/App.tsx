@@ -37,6 +37,7 @@ import DriverEarnings from "./pages/driver/DriverEarnings";
 import DriverDelivery from "./pages/driver/DriverDelivery";
 
 // ─── Client pages ───
+import CustomerHub from "./pages/CustomerHub";
 import CustomerPage from "./pages/CustomerPage";
 import CustomerTracking from "./pages/CustomerTracking";
 import ClientBooking from "./pages/client/ClientBooking";
@@ -93,7 +94,8 @@ const App = () => (
           {/* ═══════════════════════════════════════════
               CANONICAL: Customer  /customer/*
              ═══════════════════════════════════════════ */}
-          <Route path="/customer" element={<RequireRole allowed={["client"]}><CustomerPage /></RequireRole>} />
+          <Route path="/customer" element={<RequireRole allowed={["client"]}><CustomerHub /></RequireRole>} />
+          <Route path="/customer/ride" element={<RequireRole allowed={["client"]}><CustomerPage /></RequireRole>} />
           <Route path="/customer/tracking" element={<RequireRole allowed={["client"]}><CustomerTracking /></RequireRole>} />
           <Route path="/customer/booking" element={<RequireRole allowed={["client"]}><ClientBooking /></RequireRole>} />
           <Route path="/customer/payment" element={<RequireRole allowed={["client"]}><ClientPayment /></RequireRole>} />

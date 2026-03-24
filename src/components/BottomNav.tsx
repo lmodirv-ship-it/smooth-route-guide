@@ -15,7 +15,7 @@ interface NavItem {
 
 const clientNav: NavItem[] = [
   { icon: Home, label: "الرئيسية", path: "/customer" },
-  { icon: MapPin, label: "حجز", path: "/customer/booking" },
+  { icon: MapPin, label: "حجز", path: "/customer/ride" },
   { icon: Clock, label: "السجل", path: "/customer/history" },
   { icon: Wallet, label: "المحفظة", path: "/customer/wallet" },
   { icon: User, label: "حسابي", path: "/customer/profile" },
