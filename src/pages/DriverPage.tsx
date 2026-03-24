@@ -197,7 +197,7 @@ const DriverPage = () => {
     })
     .filter((o) => o.distToPickup === null || o.distToPickup <= MAX_RADIUS_KM)
     .sort((a, b) => (a.distToPickup ?? 999) - (b.distToPickup ?? 999));
-  }, [orders, driverLocation]);
+  }, [orders, driverLocation, pricing.minFare, pricing.baseFare, pricing.perKmRate]);
 
   const selectedOrder = useMemo(() => nearbyOrders.find(o => o.id === selectedOrderId) || null, [nearbyOrders, selectedOrderId]);
 
