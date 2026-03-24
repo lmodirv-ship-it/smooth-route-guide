@@ -270,7 +270,7 @@ const DriverPage = () => {
                 <p className="text-white font-bold text-sm">{driverName}</p>
                 <div className="flex items-center gap-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <p className="text-emerald-400 text-[11px]">متصل</p>
+                  <p className="text-emerald-400 text-[11px]">{t.driver.connected}</p>
                 </div>
               </div>
             </div>
