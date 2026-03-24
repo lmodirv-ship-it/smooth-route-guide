@@ -192,7 +192,7 @@ const DriverPage = () => {
         ).toFixed(2));
       }
       const totalDistance = (distToPickup || 0) + (rideDistance || 0);
-      const totalPrice = totalDistance > 0 ? Math.max(MIN_FARE, Math.round(BASE_FARE + totalDistance * PRICE_PER_KM)) : (order.price || 0);
+      const totalPrice = totalDistance > 0 ? Math.max(pricing.minFare, Math.round(pricing.baseFare + totalDistance * pricing.perKmRate)) : (order.price || 0);
       return { ...order, distToPickup, eta, totalDistance: parseFloat(totalDistance.toFixed(1)), totalPrice, rideDistance };
     })
     .filter((o) => o.distToPickup === null || o.distToPickup <= MAX_RADIUS_KM)
