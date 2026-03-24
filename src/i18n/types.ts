@@ -162,6 +162,13 @@ export interface TranslationSet {
     payment: string;
     support: string;
     profile: string;
+    tripHistory: string;
+    paymentMethods: string;
+    aiAssistant: string;
+    helpSupport: string;
+    trips: string;
+    balance: string;
+    user: string;
   };
   // Driver pages
   driver: {
