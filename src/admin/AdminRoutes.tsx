@@ -83,6 +83,8 @@ export const adminRouteElements = (
       <Route path="emergency" element={<Emergency />} />
       <Route path="history" element={<CallHistory />} />
       <Route path="reports" element={<CCReports />} />
+      <Route path="map" element={<AdminLiveMap />} />
+      <Route path="alerts" element={<AdminAlerts />} />
     </Route>
   </>
 );

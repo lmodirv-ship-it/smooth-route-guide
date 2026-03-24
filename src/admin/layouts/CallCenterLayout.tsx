@@ -57,7 +57,11 @@ const CallCenterLayout = () => {
     });
   }, []);
 
-  const navItems = [...baseNavItems, ...(isAdmin ? adminOnlyNavItems : [])];
+  const navItems = [
+    ...baseNavItems,
+    ...((isAdmin || isSmartAssistant) ? operationalNavItems : []),
+    ...(isAdmin ? adminOnlyNavItems : []),
+  ];
 
   const isActive = (path: string) =>
     path === "/call-center" ? location.pathname === "/call-center" : location.pathname.startsWith(path);
