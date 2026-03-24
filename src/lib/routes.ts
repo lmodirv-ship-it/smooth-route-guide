@@ -12,7 +12,7 @@
  * redirect-only routes in App.tsx.
  */
 
-export type DbRole = "admin" | "moderator" | "user" | "driver" | "agent" | "delivery" | "store_owner";
+export type DbRole = "admin" | "moderator" | "user" | "driver" | "agent" | "delivery" | "store_owner" | "smart_admin_assistant";
 
 /** Maps a DB role to its canonical dashboard path. */
 export const ROLE_DASHBOARD: Record<string, string> = {
@@ -23,6 +23,7 @@ export const ROLE_DASHBOARD: Record<string, string> = {
   agent: "/call-center",
   delivery: "/driver/delivery",
   store_owner: "/delivery/my-store",
+  smart_admin_assistant: "/call-center",
 };
 
 /** Human-readable labels (Arabic) for each DB role. */
@@ -35,6 +36,7 @@ export const ROLE_LABELS: Record<string, string> = {
   agent: "مركز اتصال",
   moderator: "مشرف",
   store_owner: "صاحب محل",
+  smart_admin_assistant: "المساعد الإداري الذكي",
 };
 
 /**

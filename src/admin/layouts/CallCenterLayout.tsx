@@ -43,8 +43,9 @@ const CallCenterLayout = () => {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) return;
-      supabase.from("user_roles").select("role").eq("user_id", data.user.id).eq("role", "admin").then(({ data: roles }) => {
-        setIsAdmin((roles || []).length > 0);
+      supabase.from("user_roles").select("role").eq("user_id", data.user.id).then(({ data: roles }) => {
+        const userRoles = (roles || []).map(r => r.role);
+        setIsAdmin(userRoles.includes("admin"));
       });
     });
   }, []);

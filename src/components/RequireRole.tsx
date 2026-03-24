@@ -5,7 +5,7 @@ import { Loader2, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROLE_DASHBOARD } from "@/lib/routes";
 
-type AppRole = "admin" | "moderator" | "user" | "driver" | "agent" | "delivery" | "store_owner";
+type AppRole = "admin" | "moderator" | "user" | "driver" | "agent" | "delivery" | "store_owner" | "smart_admin_assistant";
 
 /**
  * Unified route guard — Supabase is the single source of truth.
@@ -51,9 +51,11 @@ function dbRoleSatisfies(dbRole: string, requiredLabel: string): boolean {
       return dbRole === "admin";
     case "call_center":
     case "agent":
-      return dbRole === "agent";
+      return dbRole === "agent" || dbRole === "smart_admin_assistant";
     case "store_owner":
       return dbRole === "store_owner";
+    case "smart_admin_assistant":
+      return dbRole === "smart_admin_assistant";
     default:
       return false;
   }
@@ -62,6 +64,7 @@ function dbRoleSatisfies(dbRole: string, requiredLabel: string): boolean {
 /** Pick the best dashboard for a set of DB roles. */
 function bestDashboard(roles: AppRole[]): string {
   if (roles.includes("admin")) return ROLE_DASHBOARD.admin;
+  if (roles.includes("smart_admin_assistant")) return ROLE_DASHBOARD.smart_admin_assistant;
   if (roles.includes("agent")) return ROLE_DASHBOARD.agent;
   if (roles.includes("store_owner")) return ROLE_DASHBOARD.store_owner;
   if (roles.includes("driver")) return ROLE_DASHBOARD.driver;
