@@ -1,61 +1,51 @@
 /**
- * Admin Panel — logically separated from the main app.
- *
- * Contains all admin dashboard routes (/admin/*) and
- * call-center routes (/call-center/*).
- *
- * Both share the same Supabase database as the main app
- * but are organised as an independent module.
+ * Admin Panel — self-contained module.
+ * All admin dashboard (/admin/*) and call-center (/call-center/*) routes.
+ * Shares the same Supabase database as the main app.
  */
 import { Route } from "react-router-dom";
 import RequireRole from "@/components/RequireRole";
 
 // Admin layout & pages
-import AdminLayout from "@/components/AdminLayout";
-import AdminDashboardPage from "@/pages/admin/Dashboard";
-import RegisteredUsers from "@/pages/admin/RegisteredUsers";
-import AdminRideRequests from "@/pages/admin/RideRequests";
-import AdminDrivers from "@/pages/admin/Drivers";
-import AdminClients from "@/pages/admin/Clients";
-import AdminEarnings from "@/pages/admin/Earnings";
-import AdminLiveMap from "@/pages/admin/LiveMap";
-import AdminAlerts from "@/pages/admin/Alerts";
-import AdminDocuments from "@/pages/admin/Documents";
-import AdminDeliveryOrders from "@/pages/admin/DeliveryOrders";
-import AdminCallCenter from "@/pages/admin/AdminCallCenter";
-import AdminRestaurants from "@/pages/admin/AdminRestaurants";
-import ZonesManagement from "@/pages/admin/ZonesManagement";
-import AdminSettings from "@/pages/admin/Settings";
-import SetupAdmin from "@/pages/admin/SetupAdmin";
+import AdminLayout from "@/admin/layouts/AdminLayout";
+import AdminDashboardPage from "@/admin/pages/Dashboard";
+import RegisteredUsers from "@/admin/pages/RegisteredUsers";
+import AdminRideRequests from "@/admin/pages/RideRequests";
+import AdminDrivers from "@/admin/pages/Drivers";
+import AdminClients from "@/admin/pages/Clients";
+import AdminEarnings from "@/admin/pages/Earnings";
+import AdminLiveMap from "@/admin/pages/LiveMap";
+import AdminAlerts from "@/admin/pages/Alerts";
+import AdminDocuments from "@/admin/pages/Documents";
+import AdminDeliveryOrders from "@/admin/pages/DeliveryOrders";
+import AdminCallCenter from "@/admin/pages/AdminCallCenter";
+import AdminRestaurants from "@/admin/pages/AdminRestaurants";
+import ZonesManagement from "@/admin/pages/ZonesManagement";
+import AdminSettings from "@/admin/pages/Settings";
+import SetupAdmin from "@/admin/pages/SetupAdmin";
 
 // Call Center layout & pages
-import CallCenterLayout from "@/components/CallCenterLayout";
-import CCDashboard from "@/pages/callcenter/CCDashboard";
-import IncomingCalls from "@/pages/callcenter/IncomingCalls";
-import ManualBooking from "@/pages/callcenter/ManualBooking";
-import RideAssign from "@/pages/callcenter/RideAssign";
-import CustomerSearch from "@/pages/callcenter/CustomerSearch";
-import DriverSearchCC from "@/pages/callcenter/DriverSearchCC";
-import Complaints from "@/pages/callcenter/Complaints";
-import Tickets from "@/pages/callcenter/Tickets";
-import Emergency from "@/pages/callcenter/Emergency";
-import CallHistory from "@/pages/callcenter/CallHistory";
-import CCReports from "@/pages/callcenter/CCReports";
-import DeliveryOrdersCC from "@/pages/callcenter/DeliveryOrdersCC";
-import RestaurantsCC from "@/pages/callcenter/RestaurantsCC";
-import AutoImport from "@/pages/callcenter/AutoImport";
-import GoogleMapsImport from "@/pages/callcenter/GoogleMapsImport";
+import CallCenterLayout from "@/admin/layouts/CallCenterLayout";
+import CCDashboard from "@/admin/pages/callcenter/CCDashboard";
+import IncomingCalls from "@/admin/pages/callcenter/IncomingCalls";
+import ManualBooking from "@/admin/pages/callcenter/ManualBooking";
+import RideAssign from "@/admin/pages/callcenter/RideAssign";
+import CustomerSearch from "@/admin/pages/callcenter/CustomerSearch";
+import DriverSearchCC from "@/admin/pages/callcenter/DriverSearchCC";
+import Complaints from "@/admin/pages/callcenter/Complaints";
+import Tickets from "@/admin/pages/callcenter/Tickets";
+import Emergency from "@/admin/pages/callcenter/Emergency";
+import CallHistory from "@/admin/pages/callcenter/CallHistory";
+import CCReports from "@/admin/pages/callcenter/CCReports";
+import DeliveryOrdersCC from "@/admin/pages/callcenter/DeliveryOrdersCC";
+import RestaurantsCC from "@/admin/pages/callcenter/RestaurantsCC";
+import AutoImport from "@/admin/pages/callcenter/AutoImport";
+import GoogleMapsImport from "@/admin/pages/callcenter/GoogleMapsImport";
 
-/**
- * All admin-panel routes as a React fragment.
- * Drop into <Routes> in App.tsx.
- */
 const AdminRoutes = () => (
   <>
-    {/* Setup */}
     <Route path="/setup-admin" element={<RequireRole><SetupAdmin /></RequireRole>} />
 
-    {/* ═══ Admin Dashboard  /admin/* ═══ */}
     <Route path="/admin" element={<RequireRole allowed={["admin"]}><AdminLayout /></RequireRole>}>
       <Route index element={<AdminDashboardPage />} />
       <Route path="users" element={<RegisteredUsers />} />
@@ -73,7 +63,6 @@ const AdminRoutes = () => (
       <Route path="settings" element={<AdminSettings />} />
     </Route>
 
-    {/* ═══ Call Center  /call-center/* ═══ */}
     <Route path="/call-center" element={<RequireRole allowed={["admin", "agent"]}><CallCenterLayout /></RequireRole>}>
       <Route index element={<CCDashboard />} />
       <Route path="incoming" element={<IncomingCalls />} />
