@@ -308,10 +308,13 @@ export type Database = {
       delivery_orders: {
         Row: {
           accepted_at: string | null
+          cancel_reason: string | null
           category: string
+          city: string | null
           created_at: string
           delivered_at: string | null
           delivery_address: string | null
+          delivery_fee: number | null
           delivery_lat: number | null
           delivery_lng: number | null
           delivery_type: string
@@ -326,17 +329,23 @@ export type Database = {
           pickup_lat: number | null
           pickup_lng: number | null
           status: string
+          store_id: string | null
           store_name: string | null
+          subtotal: number | null
+          total_price: number | null
           updated_at: string
           user_id: string
           zone_id: string | null
         }
         Insert: {
           accepted_at?: string | null
+          cancel_reason?: string | null
           category?: string
+          city?: string | null
           created_at?: string
           delivered_at?: string | null
           delivery_address?: string | null
+          delivery_fee?: number | null
           delivery_lat?: number | null
           delivery_lng?: number | null
           delivery_type?: string
@@ -351,17 +360,23 @@ export type Database = {
           pickup_lat?: number | null
           pickup_lng?: number | null
           status?: string
+          store_id?: string | null
           store_name?: string | null
+          subtotal?: number | null
+          total_price?: number | null
           updated_at?: string
           user_id: string
           zone_id?: string | null
         }
         Update: {
           accepted_at?: string | null
+          cancel_reason?: string | null
           category?: string
+          city?: string | null
           created_at?: string
           delivered_at?: string | null
           delivery_address?: string | null
+          delivery_fee?: number | null
           delivery_lat?: number | null
           delivery_lng?: number | null
           delivery_type?: string
@@ -376,12 +391,22 @@ export type Database = {
           pickup_lat?: number | null
           pickup_lng?: number | null
           status?: string
+          store_id?: string | null
           store_name?: string | null
+          subtotal?: number | null
+          total_price?: number | null
           updated_at?: string
           user_id?: string
           zone_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "delivery_orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "delivery_orders_zone_id_fkey"
             columns: ["zone_id"]
