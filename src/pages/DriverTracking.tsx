@@ -1,11 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Phone, Navigation, CheckCircle, XCircle, MapPin, User, Clock, Car, Send } from "lucide-react";
+import { ArrowRight, Phone, Navigation, CheckCircle, XCircle, MapPin, Clock, Car, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
-import NavigationLinks from "@/components/NavigationLinks";
 import RideChat from "@/components/RideChat";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 
@@ -57,13 +56,11 @@ const DriverTracking = () => {
   const [updating, setUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [navMode, setNavMode] = useState(false);
 
   // Auto-find active ride if no ID provided
   useEffect(() => {
-    if (rideIdParam) {
-      setRideId(rideIdParam);
-      return;
-    }
+    if (rideIdParam) { setRideId(rideIdParam); return; }
     const findActiveRide = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
@@ -76,9 +73,7 @@ const DriverTracking = () => {
         .limit(1);
       if (data && data.length > 0) {
         setRideId(data[0].id);
-        console.log("[DriverTracking] Auto-found active ride:", data[0].id);
       } else {
-        console.log("[DriverTracking] No active ride found for user:", user.id);
         setLoading(false);
       }
     };
@@ -116,11 +111,7 @@ const DriverTracking = () => {
   }, [driverLocation]);
 
   const fetchRide = async () => {
-    if (!rideId) {
-      setLoading(false);
-      setError(null);
-      return;
-    }
+    if (!rideId) { setLoading(false); setError(null); return; }
     setLoading(true);
     setError(null);
     try {
@@ -153,24 +144,16 @@ const DriverTracking = () => {
     }
   };
 
-  // Fetch ride data + realtime
   useEffect(() => {
     fetchRide();
-
     if (!rideId) return;
-
     const channel = supabase
       .channel(`ride-track-${rideId}`)
       .on("postgres_changes", {
-        event: "UPDATE",
-        schema: "public",
-        table: "ride_requests",
+        event: "UPDATE", schema: "public", table: "ride_requests",
         filter: `id=eq.${rideId}`,
-      }, (payload) => {
-        setRide(payload.new as RideData);
-      })
+      }, (payload) => { setRide(payload.new as RideData); })
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, [rideId]);
 
@@ -213,6 +196,21 @@ const DriverTracking = () => {
     [smoothedDriver, targetPosition]
   );
 
+  // Route for the map: driver → target when in nav mode, otherwise pickup → destination
+  const mapRoute = useMemo(() => {
+    if (!ride) return null;
+    if (navMode && smoothedDriver && targetPosition) {
+      return { pickup: smoothedDriver, destination: targetPosition };
+    }
+    if (ride.pickup_lat && ride.pickup_lng && ride.destination_lat && ride.destination_lng) {
+      return {
+        pickup: { lat: ride.pickup_lat, lng: ride.pickup_lng },
+        destination: { lat: ride.destination_lat, lng: ride.destination_lng },
+      };
+    }
+    return null;
+  }, [ride, smoothedDriver, targetPosition, navMode]);
+
   const handleStatusUpdate = async (newStatus: string) => {
     if (!rideId || updating) return;
     setUpdating(true);
@@ -222,7 +220,6 @@ const DriverTracking = () => {
         .update({ status: newStatus })
         .eq("id", rideId);
       if (error) throw error;
-
       if (newStatus === "completed" || newStatus === "cancelled") {
         navigate("/driver");
       }
@@ -271,13 +268,65 @@ const DriverTracking = () => {
   const isFinished = ride.status === "completed" || ride.status === "cancelled";
 
   return (
-    <div className="h-screen flex flex-col bg-[#0a0f1a]" dir="rtl">
+    <div className="h-screen flex flex-col bg-background" dir="rtl">
+      {/* ─── Full-screen Navigation Mode ─── */}
+      {navMode && (
+        <div className="absolute inset-0 z-[100] flex flex-col bg-background">
+          <div className="relative flex-1">
+            <LeafletMap
+              center={smoothedDriver || mapCenter}
+              zoom={16}
+              className="w-full h-full"
+              showMarker={false}
+              driverLocation={smoothedDriver}
+              route={mapRoute}
+            />
+            {/* Floating info */}
+            {distanceToTarget != null && etaMinutes != null && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1001] bg-black/80 text-white px-5 py-2.5 rounded-full text-sm backdrop-blur-sm flex items-center gap-3 border border-white/10">
+                <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-orange-400" />{distanceToTarget.toFixed(1)} كم</span>
+                <span className="text-white/30">|</span>
+                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-blue-400" />{etaMinutes} د</span>
+              </div>
+            )}
+            {/* Close nav mode */}
+            <button
+              onClick={() => setNavMode(false)}
+              className="absolute top-4 right-4 z-[1001] w-10 h-10 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/10"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
+            {/* Status action floating */}
+            <div className="absolute bottom-4 left-4 right-4 z-[1001] space-y-2">
+              {ride.status === "accepted" && (
+                <Button onClick={() => handleStatusUpdate("in_progress")} disabled={updating}
+                  className="w-full h-14 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-base shadow-lg gap-2">
+                  <Send className="w-5 h-5" /> في الطريق
+                </Button>
+              )}
+              {ride.status === "in_progress" && (
+                <Button onClick={() => handleStatusUpdate("arriving")} disabled={updating}
+                  className="w-full h-14 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-base shadow-lg gap-2">
+                  <Car className="w-5 h-5" /> وصلت
+                </Button>
+              )}
+              {ride.status === "arriving" && (
+                <Button onClick={() => handleStatusUpdate("completed")} disabled={updating}
+                  className="w-full h-14 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-bold text-base shadow-lg gap-2">
+                  <CheckCircle className="w-5 h-5" /> تم التوصيل
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─── Header ─── */}
-      <div className="shrink-0 bg-[#0a0f1a]/90 backdrop-blur-sm border-b border-white/5 px-4 py-3 flex items-center justify-between z-50">
-        <button onClick={() => navigate("/driver")} className="p-2 rounded-full hover:bg-white/5">
-          <ArrowRight className="w-5 h-5 text-white/70" />
+      <div className="shrink-0 bg-background/90 backdrop-blur-sm border-b border-border px-4 py-3 flex items-center justify-between z-50">
+        <button onClick={() => navigate("/driver")} className="p-2 rounded-full hover:bg-muted">
+          <ArrowRight className="w-5 h-5 text-muted-foreground" />
         </button>
-        <span className="font-bold text-white">التوصيل</span>
+        <span className="font-bold text-foreground">التوصيل</span>
         <div className="w-9" />
       </div>
 
@@ -290,6 +339,7 @@ const DriverTracking = () => {
           showMarker={!!targetPosition}
           markerPosition={targetPosition || undefined}
           driverLocation={smoothedDriver}
+          route={mapRoute}
         />
         {distanceToTarget != null && etaMinutes != null && (
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[1000] bg-black/70 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm flex items-center gap-3 border border-white/10">
@@ -300,7 +350,7 @@ const DriverTracking = () => {
         )}
       </div>
 
-      {/* ─── Bottom Panel (scrollable) ─── */}
+      {/* ─── Bottom Panel ─── */}
       <div className="flex-1 overflow-y-auto">
         <motion.div
           initial={{ y: 40, opacity: 0 }}
@@ -308,104 +358,81 @@ const DriverTracking = () => {
           className="p-4 space-y-3"
         >
           {/* Client info card */}
-          <div className="rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.04] to-white/[0.01] p-4">
+          <div className="rounded-2xl border border-border bg-card p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="bg-emerald-500/15 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">
                 {statusInfo.label}
               </div>
               <div className="text-right">
-                <p className="text-white font-bold text-lg">{clientName}</p>
-                <p className="text-white/40 text-sm">{clientPhone || "—"}</p>
+                <p className="text-foreground font-bold text-lg">{clientName}</p>
+                <p className="text-muted-foreground text-sm">{clientPhone || "—"}</p>
               </div>
             </div>
 
             {/* Route */}
             <div className="space-y-2">
-              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border">
                 <Car className="w-4 h-4 text-emerald-400" />
-                <span className="text-sm text-white/80 flex-1">{ride.pickup || "موقعي الحالي"}</span>
+                <span className="text-sm text-foreground/80 flex-1">{ride.pickup || "موقعي الحالي"}</span>
               </div>
-              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border">
                 <MapPin className="w-4 h-4 text-orange-400" />
-                <span className="text-sm text-white/80 flex-1">{ride.destination || "الوجهة"}</span>
+                <span className="text-sm text-foreground/80 flex-1">{ride.destination || "الوجهة"}</span>
               </div>
             </div>
 
             {/* Price & ETA */}
-            <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/[0.05]">
-              <span className="text-white/40 text-sm">ETA {etaMinutes ? `${etaMinutes} د` : "—"}</span>
-              <span className="text-orange-400 font-black text-xl">{totalTripPrice || ride.price || "—"} DH</span>
+            <div className="flex justify-between items-center mt-3 pt-3 border-t border-border">
+              <span className="text-muted-foreground text-sm">ETA {etaMinutes ? `${etaMinutes} د` : "—"}</span>
+              <span className="text-primary font-black text-xl">{totalTripPrice || ride.price || "—"} DH</span>
             </div>
           </div>
 
-          {/* Navigation link */}
+          {/* In-app navigation button (replaces external nav links) */}
           {targetPosition && !isFinished && (
-            <NavigationLinks
-              lat={targetPosition.lat}
-              lng={targetPosition.lng}
-              label={["accepted", "in_progress"].includes(ride.status) ? "نقطة الاستلام" : "الوجهة"}
-              compact
-            />
+            <Button
+              onClick={() => setNavMode(true)}
+              className="w-full h-12 rounded-xl gap-2 bg-gradient-to-r from-primary to-orange-500 hover:from-primary/90 hover:to-orange-600 text-primary-foreground font-bold text-base"
+            >
+              <Navigation className="w-5 h-5" />
+              ابدأ الملاحة
+            </Button>
           )}
 
           {/* ─── Action Buttons ─── */}
           {!isFinished && (
             <div className="space-y-2.5 pt-1">
-              {/* Call client */}
               {clientPhone && (
                 <a href={`tel:${clientPhone}`} className="block">
-                  <Button className="w-full h-13 rounded-xl bg-[#1a2a3a] hover:bg-[#1e3040] text-white font-bold text-base border border-white/[0.06] gap-2">
+                  <Button className="w-full h-13 rounded-xl bg-secondary hover:bg-secondary/80 text-secondary-foreground font-bold text-base border border-border gap-2">
                     <Phone className="w-5 h-5 text-blue-400" />
                     اتصال بالعميل
                   </Button>
                 </a>
               )}
 
-              {/* في الطريق — from accepted */}
               {ride.status === "accepted" && (
-                <Button
-                  onClick={() => handleStatusUpdate("in_progress")}
-                  disabled={updating}
-                  className="w-full h-14 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-base shadow-[0_4px_20px_hsl(30,80%,50%,0.3)] gap-2"
-                >
-                  <Send className="w-5 h-5" />
-                  في الطريق
+                <Button onClick={() => handleStatusUpdate("in_progress")} disabled={updating}
+                  className="w-full h-14 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-base shadow-lg gap-2">
+                  <Send className="w-5 h-5" /> في الطريق
                 </Button>
               )}
-
-              {/* وصلت — from in_progress */}
               {ride.status === "in_progress" && (
-                <Button
-                  onClick={() => handleStatusUpdate("arriving")}
-                  disabled={updating}
-                  className="w-full h-14 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-base shadow-[0_4px_20px_hsl(30,80%,50%,0.3)] gap-2"
-                >
-                  <Car className="w-5 h-5" />
-                  وصلت
+                <Button onClick={() => handleStatusUpdate("arriving")} disabled={updating}
+                  className="w-full h-14 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-base shadow-lg gap-2">
+                  <Car className="w-5 h-5" /> وصلت
                 </Button>
               )}
-
-              {/* تم التوصيل — from arriving */}
               {ride.status === "arriving" && (
-                <Button
-                  onClick={() => handleStatusUpdate("completed")}
-                  disabled={updating}
-                  className="w-full h-14 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-bold text-base shadow-[0_4px_20px_hsl(155,70%,40%,0.3)] gap-2"
-                >
-                  <CheckCircle className="w-5 h-5" />
-                  تم التوصيل
+                <Button onClick={() => handleStatusUpdate("completed")} disabled={updating}
+                  className="w-full h-14 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-bold text-base shadow-lg gap-2">
+                  <CheckCircle className="w-5 h-5" /> تم التوصيل
                 </Button>
               )}
 
-              {/* إلغاء الطلب */}
-              <Button
-                onClick={() => handleStatusUpdate("cancelled")}
-                disabled={updating}
-                variant="outline"
-                className="w-full h-13 rounded-xl border-orange-500/30 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 font-bold text-base gap-2"
-              >
-                <XCircle className="w-5 h-5" />
-                إلغاء الطلب
+              <Button onClick={() => handleStatusUpdate("cancelled")} disabled={updating} variant="outline"
+                className="w-full h-13 rounded-xl border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 font-bold text-base gap-2">
+                <XCircle className="w-5 h-5" /> إلغاء الطلب
               </Button>
             </div>
           )}
@@ -415,9 +442,9 @@ const DriverTracking = () => {
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
               className="text-center p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
               <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto mb-3" />
-              <p className="text-white font-bold text-lg">تم التوصيل بنجاح! 🎉</p>
-              <p className="text-white/40 text-sm mt-1">
-                الأجرة: <span className="text-orange-400 font-bold">{totalTripPrice || ride.price || "—"} DH</span>
+              <p className="text-foreground font-bold text-lg">تم التوصيل بنجاح! 🎉</p>
+              <p className="text-muted-foreground text-sm mt-1">
+                الأجرة: <span className="text-primary font-bold">{totalTripPrice || ride.price || "—"} DH</span>
               </p>
               <Button onClick={() => navigate("/driver")}
                 className="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold">
@@ -428,7 +455,7 @@ const DriverTracking = () => {
         </motion.div>
       </div>
 
-      {/* Chat with client */}
+      {/* Chat */}
       {rideId && !isFinished && <RideChat rideId={rideId} role="driver" />}
     </div>
   );
