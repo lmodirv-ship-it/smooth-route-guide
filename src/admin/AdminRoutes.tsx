@@ -41,6 +41,7 @@ import DeliveryOrdersCC from "@/admin/pages/callcenter/DeliveryOrdersCC";
 import RestaurantsCC from "@/admin/pages/callcenter/RestaurantsCC";
 import AutoImport from "@/admin/pages/callcenter/AutoImport";
 import GoogleMapsImport from "@/admin/pages/callcenter/GoogleMapsImport";
+import AssistantKnowledge from "@/admin/pages/callcenter/AssistantKnowledge";
 import CallCenterLogin from "@/admin/pages/CallCenterLogin";
 import AdminLogin from "@/admin/pages/AdminLogin";
 
@@ -85,6 +86,7 @@ export const adminRouteElements = (
       <Route path="reports" element={<CCReports />} />
       <Route path="map" element={<AdminLiveMap />} />
       <Route path="alerts" element={<AdminAlerts />} />
+      <Route path="knowledge" element={<AssistantKnowledge />} />
     </Route>
   </>
 );

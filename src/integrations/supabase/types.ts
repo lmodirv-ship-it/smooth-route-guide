@@ -113,6 +113,216 @@ export type Database = {
         }
         Relationships: []
       }
+      assistant_activity_log: {
+        Row: {
+          action_type: string
+          created_at: string
+          created_by: string | null
+          details: string
+          id: string
+          metadata: Json | null
+          title: string
+        }
+        Insert: {
+          action_type?: string
+          created_at?: string
+          created_by?: string | null
+          details?: string
+          id?: string
+          metadata?: Json | null
+          title?: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          created_by?: string | null
+          details?: string
+          id?: string
+          metadata?: Json | null
+          title?: string
+        }
+        Relationships: []
+      }
+      assistant_campaign_ideas: {
+        Row: {
+          admin_approved: boolean
+          approved_at: string | null
+          campaign_type: string
+          content_data: Json | null
+          created_at: string
+          created_by: string | null
+          description: string
+          estimated_impact: string
+          id: string
+          status: string
+          target_audience: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          admin_approved?: boolean
+          approved_at?: string | null
+          campaign_type?: string
+          content_data?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          estimated_impact?: string
+          id?: string
+          status?: string
+          target_audience?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_approved?: boolean
+          approved_at?: string | null
+          campaign_type?: string
+          content_data?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          estimated_impact?: string
+          id?: string
+          status?: string
+          target_audience?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      assistant_issue_patterns: {
+        Row: {
+          affected_area: string
+          created_at: string
+          description: string
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          occurrence_count: number
+          pattern_type: string
+          resolution_notes: string | null
+          severity: string
+          status: string
+          title: string
+        }
+        Insert: {
+          affected_area?: string
+          created_at?: string
+          description?: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          occurrence_count?: number
+          pattern_type?: string
+          resolution_notes?: string | null
+          severity?: string
+          status?: string
+          title?: string
+        }
+        Update: {
+          affected_area?: string
+          created_at?: string
+          description?: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          occurrence_count?: number
+          pattern_type?: string
+          resolution_notes?: string | null
+          severity?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      assistant_knowledge_entries: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          priority: string
+          source_type: string
+          source_url: string | null
+          status: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          priority?: string
+          source_type?: string
+          source_url?: string | null
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          priority?: string
+          source_type?: string
+          source_url?: string | null
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      assistant_recommendations: {
+        Row: {
+          admin_response: string | null
+          area: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          impact: string
+          responded_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          admin_response?: string | null
+          area?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          impact?: string
+          responded_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_response?: string | null
+          area?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          impact?: string
+          responded_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       call_center: {
         Row: {
           agent_id: string | null

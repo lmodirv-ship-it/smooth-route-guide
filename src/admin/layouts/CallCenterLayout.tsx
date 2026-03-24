@@ -4,7 +4,7 @@ import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
   BarChart3, Phone, Car, Users, Search, AlertTriangle, FileText,
   Headphones, BarChart, Shield, Bell, PhoneCall, PlusCircle, Clock,
-  Menu, X, UtensilsCrossed, Download, MapPin, Map
+  Menu, X, UtensilsCrossed, Download, MapPin, Map, Brain
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/i18n/context";
@@ -44,6 +44,7 @@ const CallCenterLayout = () => {
   const operationalNavItems = [
     { path: "/call-center/map", icon: Map, label: "الخريطة المباشرة" },
     { path: "/call-center/alerts", icon: Bell, label: "التنبيهات" },
+    { path: "/call-center/knowledge", icon: Brain, label: "قاعدة المعرفة" },
   ];
 
   useEffect(() => {
