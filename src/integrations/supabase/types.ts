@@ -1312,7 +1312,6 @@ export type Database = {
           id: string | null
           rating: number | null
           status: string | null
-          user_id: string | null
         }
         Insert: {
           car_id?: string | null
@@ -1321,7 +1320,6 @@ export type Database = {
           id?: string | null
           rating?: number | null
           status?: string | null
-          user_id?: string | null
         }
         Update: {
           car_id?: string | null
@@ -1330,7 +1328,6 @@ export type Database = {
           id?: string | null
           rating?: number | null
           status?: string | null
-          user_id?: string | null
         }
         Relationships: [
           {
