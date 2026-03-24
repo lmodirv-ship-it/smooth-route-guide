@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, User, Headphones, Shield, LogOut, Download } from "lucide-react";
+import { Car, User, Headphones, Shield, LogOut, Download, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { dashboardForRole, ROLE_LABELS } from "@/lib/routes";
 import logo from "@/assets/hn-driver-badge.png";
