@@ -182,4 +182,18 @@ function getRideStatusMessage(status: string): { title: string; desc: string } |
   }
 }
 
+function getDeliveryStatusMessage(status: string): { title: string; desc: string } | null {
+  switch (status) {
+    case "confirmed": return { title: "✅ تم تأكيد طلبك", desc: "جاري تجهيز طلبك" };
+    case "ready_for_driver": return { title: "📦 طلبك جاهز", desc: "بانتظار سائق لاستلام الطلب" };
+    case "driver_assigned": return { title: "🚗 تم تعيين سائق", desc: "السائق في طريقه للمطعم" };
+    case "on_the_way_to_vendor": return { title: "🏪 السائق متجه للمطعم", desc: "السائق في الطريق لاستلام طلبك" };
+    case "picked_up": return { title: "📦 تم استلام طلبك", desc: "السائق استلم طلبك من المطعم" };
+    case "on_the_way_to_customer": return { title: "🛵 طلبك في الطريق!", desc: "السائق متجه إلى موقعك الآن" };
+    case "delivered": return { title: "🎉 تم التوصيل!", desc: "وصل طلبك، بالصحة والعافية!" };
+    case "cancelled": return { title: "❌ تم إلغاء الطلب", desc: "تم إلغاء طلبك" };
+    default: return null;
+  }
+}
+
 export default GlobalNotificationListener;
