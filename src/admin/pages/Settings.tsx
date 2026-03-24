@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Settings, Save, DollarSign, MapPin, Bell, Shield, Loader2 } from "lucide-react";
+import { Settings, Save, DollarSign, MapPin, Bell, Shield, Loader2, Truck, Sun, Moon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { DELIVERY_PRICING_DEFAULTS } from "@/hooks/useDeliveryPricingSettings";
 
 const AdminSettings = () => {
   const [saving, setSaving] = useState(false);
@@ -19,6 +21,17 @@ const AdminSettings = () => {
     emailNotifications: true,
     pushNotifications: true,
     maintenanceMode: false,
+  });
+  const [deliveryPricing, setDeliveryPricing] = useState({
+    dayBaseFare: String(DELIVERY_PRICING_DEFAULTS.dayBaseFare),
+    dayIncludedKm: String(DELIVERY_PRICING_DEFAULTS.dayIncludedKm),
+    dayExtraKmRate: String(DELIVERY_PRICING_DEFAULTS.dayExtraKmRate),
+    nightBaseFare: String(DELIVERY_PRICING_DEFAULTS.nightBaseFare),
+    nightIncludedKm: String(DELIVERY_PRICING_DEFAULTS.nightIncludedKm),
+    nightExtraKmRate: String(DELIVERY_PRICING_DEFAULTS.nightExtraKmRate),
+    dayStartHour: String(DELIVERY_PRICING_DEFAULTS.dayStartHour),
+    dayEndHour: String(DELIVERY_PRICING_DEFAULTS.dayEndHour),
+    roundingMethod: DELIVERY_PRICING_DEFAULTS.roundingMethod,
   });
 
   useEffect(() => {
