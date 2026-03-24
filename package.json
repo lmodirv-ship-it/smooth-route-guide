@@ -6,6 +6,7 @@
   "main": "electron/main.mjs",
   "scripts": {
     "dev": "vite",
+    "dev:admin": "vite --config vite.config.admin.ts --port 5174",
     "build": "vite build",
     "build:admin": "vite build --config vite.config.admin.ts",
     "build:dev": "vite build --mode development",
