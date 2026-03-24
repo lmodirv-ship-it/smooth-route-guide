@@ -2,7 +2,7 @@ import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, Package, BarChart3, Zap, Shield, DollarSign, MapPin, ArrowRight, Menu, X, Users, Truck } from "lucide-react";
+import { Car, Package, BarChart3, Zap, Shield, DollarSign, MapPin, ArrowRight, Menu, X, Users, Truck, Headphones, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import logo from "@/assets/hn-driver-badge.png";
@@ -62,6 +62,14 @@ export default function LandingPage() {
 
           <div className="hidden md:flex items-center gap-4">
             <LanguageSwitcher variant="ghost" />
+            <Button variant="ghost" size="sm" onClick={() => navigate("/call-center/login")} className="text-muted-foreground hover:text-primary gap-1.5">
+              <Headphones className="w-4 h-4" />
+              {dir === "rtl" ? "مركز الاتصال" : "Call Center"}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/admin/login")} className="text-muted-foreground hover:text-primary gap-1.5">
+              <ShieldCheck className="w-4 h-4" />
+              {dir === "rtl" ? "الإدارة" : "Admin"}
+            </Button>
             <Button variant="ghost" onClick={() => navigate("/login")} className="text-foreground hover:text-primary">
               {t.common.login}
             </Button>
@@ -78,6 +86,14 @@ export default function LandingPage() {
         {menuOpen && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="md:hidden border-t border-border bg-background px-4 py-4 flex flex-col gap-3">
             <LanguageSwitcher variant="outline" />
+            <Button variant="ghost" onClick={() => { navigate("/call-center/login"); setMenuOpen(false); }} className="justify-start gap-2">
+              <Headphones className="w-4 h-4" />
+              {dir === "rtl" ? "مركز الاتصال" : "Call Center"}
+            </Button>
+            <Button variant="ghost" onClick={() => { navigate("/admin/login"); setMenuOpen(false); }} className="justify-start gap-2">
+              <ShieldCheck className="w-4 h-4" />
+              {dir === "rtl" ? "الإدارة" : "Admin"}
+            </Button>
             <Button variant="ghost" onClick={() => { navigate("/login"); setMenuOpen(false); }}>{t.common.login}</Button>
             <Button onClick={() => { navigate("/auth/client"); setMenuOpen(false); }} className="gradient-primary text-primary-foreground">{t.common.signup}</Button>
           </motion.div>
