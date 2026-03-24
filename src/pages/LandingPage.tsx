@@ -11,12 +11,12 @@ import heroEmblem from "@/assets/hero-emblem.png";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
-  visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.12, duration: 0.6, ease: "easeOut" } }),
+  visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.12, duration: 0.6, ease: "easeOut" as const } }),
 };
 
 const scaleIn = {
   hidden: { opacity: 0, scale: 0.8 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.8, ease: "easeOut" } },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.8, ease: "easeOut" as const } },
 };
 
 export default function LandingPage() {
