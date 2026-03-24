@@ -41,6 +41,11 @@ const CallCenterLayout = () => {
     { path: "/call-center/google-import", icon: MapPin, label: t.callCenter.googleImport },
   ];
 
+  const operationalNavItems = [
+    { path: "/call-center/map", icon: Map, label: "الخريطة المباشرة" },
+    { path: "/call-center/alerts", icon: Bell, label: "التنبيهات" },
+  ];
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) return;
