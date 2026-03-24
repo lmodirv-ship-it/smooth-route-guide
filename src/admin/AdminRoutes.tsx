@@ -67,7 +67,7 @@ export const adminRouteElements = (
       <Route path="settings" element={<AdminSettings />} />
     </Route>
 
-    <Route path="/call-center" element={<RequireRole allowed={["admin", "agent"]}><CallCenterLayout /></RequireRole>}>
+    <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><CallCenterLayout /></RequireRole>}>
       <Route index element={<CCDashboard />} />
       <Route path="incoming" element={<IncomingCalls />} />
       <Route path="manual-booking" element={<ManualBooking />} />

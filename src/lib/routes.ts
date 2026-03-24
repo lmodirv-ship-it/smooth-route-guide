@@ -36,6 +36,7 @@ export const ROLE_LABELS: Record<string, string> = {
   agent: "مركز اتصال",
   moderator: "مشرف",
   store_owner: "صاحب محل",
+  smart_admin_assistant: "المساعد الإداري الذكي",
 };
 
 /**
