@@ -109,6 +109,7 @@ const en: TranslationSet = {
     adminAccount: "Admin Account",
     agentAccount: "Call Center Account",
     storeOwnerAccount: "Store Owner Account",
+    emailMethod: "Email",
     phoneMethod: "Phone Number",
     loginBtn: "Login",
     createAccount: "Create Account",
@@ -183,6 +184,7 @@ const en: TranslationSet = {
     minutes: "min",
     currency: "DH",
     minimumFare: "Minimum fare",
+  },
   driver: {
     home: "Home",
     earnings: "Earnings",
@@ -225,6 +227,7 @@ const en: TranslationSet = {
     connected: "Online",
     action: "Action",
     km: "km",
+  },
   delivery: {
     home: "Home",
     whatDoYouWant: "What do you want today?",
@@ -274,6 +277,7 @@ const en: TranslationSet = {
     storeOwnerAccount: "Store Owner Account",
     errorLoadingStores: "Error loading stores",
     unexpectedError: "An unexpected error occurred",
+  },
   admin: {
     panelTitle: "Admin Panel",
     dashboard: "Dashboard",

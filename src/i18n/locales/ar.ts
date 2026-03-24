@@ -109,6 +109,7 @@ const ar: TranslationSet = {
     adminAccount: "حساب مسؤول",
     agentAccount: "حساب مركز اتصال",
     storeOwnerAccount: "حساب صاحب محل",
+    emailMethod: "البريد الإلكتروني",
     phoneMethod: "رقم الهاتف",
     loginBtn: "دخول",
     createAccount: "إنشاء حساب جديد",
@@ -183,6 +184,7 @@ const ar: TranslationSet = {
     minutes: "دقيقة",
     currency: "درهم",
     minimumFare: "الحد الأدنى",
+  },
   driver: {
     home: "الرئيسية",
     earnings: "الأرباح",
@@ -225,6 +227,7 @@ const ar: TranslationSet = {
     connected: "متصل",
     action: "إجراء",
     km: "كم",
+  },
   delivery: {
     home: "الرئيسية",
     whatDoYouWant: "ماذا تريد اليوم؟",
@@ -274,6 +277,7 @@ const ar: TranslationSet = {
     storeOwnerAccount: "حساب صاحب محل",
     errorLoadingStores: "حدث خطأ أثناء جلب المطاعم",
     unexpectedError: "حدث خطأ غير متوقع",
+  },
   admin: {
     panelTitle: "لوحة التحكم",
     dashboard: "لوحة المعلومات",

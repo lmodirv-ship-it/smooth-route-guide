@@ -109,6 +109,7 @@ const fr: TranslationSet = {
     adminAccount: "Compte administrateur",
     agentAccount: "Compte centre d'appels",
     storeOwnerAccount: "Compte propriétaire de magasin",
+    emailMethod: "Email",
     phoneMethod: "Numéro de téléphone",
     loginBtn: "Se connecter",
     createAccount: "Créer un compte",
@@ -183,6 +184,7 @@ const fr: TranslationSet = {
     minutes: "min",
     currency: "DH",
     minimumFare: "Tarif minimum",
+  },
   driver: {
     home: "Accueil",
     earnings: "Revenus",
@@ -225,6 +227,7 @@ const fr: TranslationSet = {
     connected: "En ligne",
     action: "Action",
     km: "km",
+  },
   delivery: {
     home: "Accueil",
     whatDoYouWant: "Que voulez-vous aujourd'hui ?",
@@ -274,6 +277,7 @@ const fr: TranslationSet = {
     storeOwnerAccount: "Compte propriétaire",
     errorLoadingStores: "Erreur lors du chargement",
     unexpectedError: "Une erreur inattendue s'est produite",
+  },
   admin: {
     panelTitle: "Panneau d'administration",
     dashboard: "Tableau de bord",

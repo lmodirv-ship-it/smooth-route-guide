@@ -109,6 +109,7 @@ const es: TranslationSet = {
     adminAccount: "Cuenta de administrador",
     agentAccount: "Cuenta de centro de llamadas",
     storeOwnerAccount: "Cuenta de propietario de tienda",
+    emailMethod: "Correo electrónico",
     phoneMethod: "Número de teléfono",
     loginBtn: "Entrar",
     createAccount: "Crear cuenta nueva",
@@ -183,6 +184,7 @@ const es: TranslationSet = {
     minutes: "min",
     currency: "DH",
     minimumFare: "Tarifa mínima",
+  },
   driver: {
     home: "Inicio",
     earnings: "Ganancias",
@@ -225,6 +227,7 @@ const es: TranslationSet = {
     connected: "En línea",
     action: "Acción",
     km: "km",
+  },
   delivery: {
     home: "Inicio",
     whatDoYouWant: "¿Qué quieres hoy?",
@@ -274,6 +277,7 @@ const es: TranslationSet = {
     storeOwnerAccount: "Cuenta de propietario",
     errorLoadingStores: "Error al cargar tiendas",
     unexpectedError: "Ocurrió un error inesperado",
+  },
   admin: {
     panelTitle: "Panel de Administración",
     dashboard: "Panel",
