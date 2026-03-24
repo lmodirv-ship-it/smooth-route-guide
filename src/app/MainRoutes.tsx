@@ -133,10 +133,11 @@ export const mainRouteElements = (
     </Route>
 
     {/* ═══════════════════════════════════════════
-        LEGACY REDIRECTS — backward compatibility
+        SHORTCUT + LEGACY REDIRECTS
         Consolidated: /client/* → /customer/*, /driver-panel/* → /driver/*
        ═══════════════════════════════════════════ */}
     {[
+      ["/restaurants", "/delivery/restaurants"],
       ["/client", "/customer"],
       ["/client/tracking", "/customer/tracking"],
       ["/client/booking", "/customer/booking"],
