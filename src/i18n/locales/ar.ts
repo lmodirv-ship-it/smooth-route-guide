@@ -307,6 +307,9 @@ const ar: TranslationSet = {
     googleImport: "استيراد Google Maps",
     agentInfo: "وكيل #01",
     quickSearch: "بحث سريع...",
+    knowledge: "قاعدة المعرفة",
+    liveMap: "الخريطة المباشرة",
+    alertsPage: "التنبيهات",
   },
   roles: {
     admin: "مسؤول",

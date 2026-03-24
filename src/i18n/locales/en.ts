@@ -307,6 +307,9 @@ const en: TranslationSet = {
     googleImport: "Google Maps Import",
     agentInfo: "Agent #01",
     quickSearch: "Quick search...",
+    knowledge: "Knowledge Base",
+    liveMap: "Live Map",
+    alertsPage: "Alerts",
   },
   roles: {
     admin: "Admin",

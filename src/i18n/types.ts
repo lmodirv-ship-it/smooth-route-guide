@@ -318,6 +318,9 @@ export interface TranslationSet {
     googleImport: string;
     agentInfo: string;
     quickSearch: string;
+    knowledge: string;
+    liveMap: string;
+    alertsPage: string;
   };
   // Role labels
   roles: {
