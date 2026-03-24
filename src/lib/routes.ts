@@ -12,7 +12,7 @@
  * redirect-only routes in App.tsx.
  */
 
-export type DbRole = "admin" | "moderator" | "user" | "driver" | "agent";
+export type DbRole = "admin" | "moderator" | "user" | "driver" | "agent" | "delivery";
 
 /** Maps a DB role to its canonical dashboard path. */
 export const ROLE_DASHBOARD: Record<string, string> = {
