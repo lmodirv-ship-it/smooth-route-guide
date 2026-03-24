@@ -273,6 +273,32 @@ const RegisteredUsers = () => {
                       <UserCog className="w-3.5 h-3.5" />
                       الأدوار
                     </Button>
+                    {/* Quick delivery role assignment for clients/drivers without delivery */}
+                    {(u.roles.includes("user") || u.roles.includes("driver")) && !u.roles.includes("delivery") && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 text-xs border-success/30 text-success hover:bg-success/10"
+                        onClick={async () => {
+                          const newRoles = [...u.roles, "delivery"];
+                          const inserts = [{ user_id: u.id, role: "delivery" as AppRole }];
+                          const { error } = await supabase.from("user_roles").insert(inserts);
+                          if (error) {
+                            toast({ title: "خطأ في إضافة دور التوصيل", description: error.message, variant: "destructive" });
+                            return;
+                          }
+                          // Ensure driver record exists
+                          const { data: existing } = await supabase.from("drivers").select("id").eq("user_id", u.id).maybeSingle();
+                          if (!existing) {
+                            await supabase.from("drivers").insert({ user_id: u.id, status: "inactive", driver_type: "delivery" });
+                          }
+                          toast({ title: `✅ تم تعيين "${u.name}" كسائق توصيل` });
+                          setUsers(prev => prev.map(x => x.id === u.id ? { ...x, roles: newRoles } : x));
+                        }}
+                      >
+                        🚚 تعيين توصيل
+                      </Button>
+                    )}
                     <Button variant="ghost" size="sm" onClick={() => handleCopyId(u.id)} title="نسخ ID">
                       {copiedId === u.id ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                     </Button>
