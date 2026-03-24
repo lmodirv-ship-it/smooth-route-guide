@@ -276,6 +276,7 @@ const ar: TranslationSet = {
     storeOwnerAccount: "حساب صاحب محل",
     errorLoadingStores: "حدث خطأ أثناء جلب المطاعم",
     unexpectedError: "حدث خطأ غير متوقع",
+  },
   admin: {
     panelTitle: "لوحة التحكم",
     dashboard: "لوحة المعلومات",
