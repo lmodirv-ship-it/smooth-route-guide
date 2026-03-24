@@ -398,8 +398,63 @@ const RestaurantsList = () => {
           </div>
         )}
 
+        {/* ═══ Horizontal Sections ═══ */}
+        {showSections && (
+          <>
+            {/* أقرب إليك */}
+            {nearestStores.length > 0 && (
+              <HorizontalSection
+                title="أقرب إليك"
+                icon={<Navigation className="w-4 h-4 text-primary" />}
+                stores={nearestStores}
+                onStoreClick={(store) => {
+                  if (store.source === "db") navigate(`/delivery/restaurant/${store.id}`);
+                  else toast({ title: store.name, description: `📍 ${store.address || store.area || userCity}` });
+                }}
+              />
+            )}
+
+            {/* مفتوح الآن */}
+            {openNowStores.length > 0 && (
+              <HorizontalSection
+                title="مفتوح الآن"
+                icon={<span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />}
+                stores={openNowStores}
+                onStoreClick={(store) => {
+                  if (store.source === "db") navigate(`/delivery/restaurant/${store.id}`);
+                  else toast({ title: store.name, description: `📍 ${store.address || store.area || userCity}` });
+                }}
+              />
+            )}
+
+            {/* موصى به */}
+            {recommendedStores.length > 0 && (
+              <HorizontalSection
+                title="موصى به"
+                icon={<Sparkles className="w-4 h-4 text-warning" />}
+                stores={recommendedStores}
+                onStoreClick={(store) => {
+                  if (store.source === "db") navigate(`/delivery/restaurant/${store.id}`);
+                  else toast({ title: store.name, description: `📍 ${store.address || store.area || userCity}` });
+                }}
+                accent="warning"
+              />
+            )}
+
+            {/* Divider before full list */}
+            <div className="flex items-center gap-3 pt-4 pb-1">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+                <ChevronDown className="w-3.5 h-3.5" />
+                جميع المطاعم
+              </span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+          </>
+        )}
+
         {/* DB section label */}
-        {!loading && dbStores.length > 0 && (
+        {!loading && dbStores.length > 0 && !search.trim() && (
           <div className="flex items-center gap-2 pt-1">
             <UtensilsCrossed className="w-4 h-4 text-primary" />
             <h2 className="text-sm font-bold text-foreground">مطاعمنا الشريكة</h2>
