@@ -3,11 +3,11 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle, Clock, MapPin, Phone, User, Navigation, Car, Route as RouteIcon, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 import RideChat from "@/components/RideChat";
+import CancelRideDialog from "@/components/CancelRideDialog";
 
 const PRICE_PER_KM = 3;
 const BASE_FARE = 5;
@@ -55,24 +55,7 @@ const CustomerTracking = () => {
   const [driverName, setDriverName] = useState<string | null>(null);
   const [driverPhone, setDriverPhone] = useState<string | null>(null);
   const [vehicleInfo, setVehicleInfo] = useState<string | null>(null);
-  const [cancelling, setCancelling] = useState(false);
-
-  const handleCancelRide = async () => {
-    if (!rideId || cancelling) return;
-    setCancelling(true);
-    try {
-      const { error } = await supabase
-        .from("ride_requests")
-        .update({ status: "cancelled" })
-        .eq("id", rideId);
-      if (error) throw error;
-      toast({ title: "تم إلغاء الرحلة ❌" });
-    } catch (err: any) {
-      toast({ title: "خطأ", description: err.message || "فشل إلغاء الرحلة", variant: "destructive" });
-    } finally {
-      setCancelling(false);
-    }
-  };
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!rideId) return;
@@ -251,9 +234,9 @@ const CustomerTracking = () => {
             </div>
             <p className="text-white font-bold">جارٍ البحث عن سائق...</p>
             <p className="text-white/40 text-sm mt-1">سيتم تعيين أقرب سائق</p>
-            <Button onClick={handleCancelRide} disabled={cancelling} variant="outline"
+            <Button onClick={() => setCancelDialogOpen(true)} variant="outline"
               className="mt-4 w-full border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded-xl font-bold gap-2">
-              <XCircle className="w-4 h-4" /> {cancelling ? "جارٍ الإلغاء..." : "إلغاء الطلب"}
+              <XCircle className="w-4 h-4" /> إلغاء الطلب
             </Button>
           </div>
         )}
@@ -307,9 +290,9 @@ const CustomerTracking = () => {
             </div>
 
             {/* Cancel button */}
-            <Button onClick={handleCancelRide} disabled={cancelling} variant="outline"
+            <Button onClick={() => setCancelDialogOpen(true)} variant="outline"
               className="w-full border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded-xl font-bold gap-2">
-              <XCircle className="w-4 h-4" /> {cancelling ? "جارٍ الإلغاء..." : "إلغاء الرحلة"}
+              <XCircle className="w-4 h-4" /> إلغاء الرحلة
             </Button>
           </div>
         )}
@@ -346,6 +329,16 @@ const CustomerTracking = () => {
       {/* Chat */}
       {rideId && isActive && ride.status !== "pending" && (
         <RideChat rideId={rideId} role="customer" />
+      )}
+
+      {rideId && (
+        <CancelRideDialog
+          open={cancelDialogOpen}
+          onOpenChange={setCancelDialogOpen}
+          rideId={rideId}
+          role="customer"
+          onCancelled={() => navigate("/customer")}
+        />
       )}
     </div>
   );

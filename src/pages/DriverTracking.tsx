@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
 import RideChat from "@/components/RideChat";
+import CancelRideDialog from "@/components/CancelRideDialog";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 
 const PRICE_PER_KM = 3;
@@ -57,6 +58,7 @@ const DriverTracking = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [navMode, setNavMode] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   // Auto-find active ride if no ID provided
   useEffect(() => {
@@ -430,7 +432,7 @@ const DriverTracking = () => {
                 </Button>
               )}
 
-              <Button onClick={() => handleStatusUpdate("cancelled")} disabled={updating} variant="outline"
+              <Button onClick={() => setCancelDialogOpen(true)} disabled={updating} variant="outline"
                 className="w-full h-13 rounded-xl border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 font-bold text-base gap-2">
                 <XCircle className="w-5 h-5" /> إلغاء الطلب
               </Button>
@@ -457,6 +459,16 @@ const DriverTracking = () => {
 
       {/* Chat */}
       {rideId && !isFinished && <RideChat rideId={rideId} role="driver" />}
+
+      {rideId && (
+        <CancelRideDialog
+          open={cancelDialogOpen}
+          onOpenChange={setCancelDialogOpen}
+          rideId={rideId}
+          role="driver"
+          onCancelled={() => navigate("/driver")}
+        />
+      )}
     </div>
   );
 };
