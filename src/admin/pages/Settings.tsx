@@ -89,6 +89,17 @@ const AdminSettings = () => {
       upsert("pricing", { baseFare: settings.baseFare, perKmRate: settings.perKmRate, perMinRate: settings.perMinRate, minFare: settings.minFare }),
       upsert("general", { maxRadius: settings.maxRadius, autoAssign: settings.autoAssign, maintenanceMode: settings.maintenanceMode }),
       upsert("notifications", { email: settings.emailNotifications, push: settings.pushNotifications }),
+      upsert("delivery_pricing", {
+        dayBaseFare: Number(deliveryPricing.dayBaseFare),
+        dayIncludedKm: Number(deliveryPricing.dayIncludedKm),
+        dayExtraKmRate: Number(deliveryPricing.dayExtraKmRate),
+        nightBaseFare: Number(deliveryPricing.nightBaseFare),
+        nightIncludedKm: Number(deliveryPricing.nightIncludedKm),
+        nightExtraKmRate: Number(deliveryPricing.nightExtraKmRate),
+        dayStartHour: Number(deliveryPricing.dayStartHour),
+        dayEndHour: Number(deliveryPricing.dayEndHour),
+        roundingMethod: deliveryPricing.roundingMethod,
+      }),
     ]);
 
     toast({ title: "تم حفظ الإعدادات بنجاح" });
