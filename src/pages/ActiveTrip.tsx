@@ -132,7 +132,7 @@ const ActiveTrip = () => {
         <Clock className="w-14 h-14 text-muted-foreground/40 mb-4" />
         <h1 className="text-xl font-bold text-foreground mb-2">لا توجد رحلة نشطة</h1>
         <p className="text-sm text-muted-foreground mb-4">عند قبول رحلة جديدة ستظهر هنا تلقائياً.</p>
-        <Button onClick={() => navigate("/driver-panel")} className="gradient-primary text-primary-foreground rounded-xl">
+        <Button onClick={() => navigate("/driver")} className="gradient-primary text-primary-foreground rounded-xl">
           العودة للرئيسية
         </Button>
       </div>
@@ -259,7 +259,7 @@ const ActiveTrip = () => {
               </div>
               <p className="text-sm text-muted-foreground mt-2 mb-4">قيّم العميل</p>
               <Button
-                onClick={() => navigate("/driver-panel")}
+                onClick={() => navigate("/driver")}
                 className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-bold glow-primary"
               >
                 العودة للرئيسية

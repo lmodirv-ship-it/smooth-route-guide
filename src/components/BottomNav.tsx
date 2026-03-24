@@ -22,11 +22,11 @@ const clientNav: NavItem[] = [
 ];
 
 const driverNav: NavItem[] = [
-  { icon: Car, label: "الرئيسية", path: "/driver-panel" },
-  { icon: TrendingUp, label: "الأرباح", path: "/driver-panel/earnings" },
-  { icon: Clock, label: "السجل", path: "/driver-panel/history" },
-  { icon: FileText, label: "الوثائق", path: "/driver-panel/documents" },
-  { icon: Settings, label: "الإعدادات", path: "/driver-panel/settings" },
+  { icon: Car, label: "الرئيسية", path: "/driver" },
+  { icon: TrendingUp, label: "الأرباح", path: "/driver/earnings" },
+  { icon: Clock, label: "السجل", path: "/driver/history" },
+  { icon: FileText, label: "الوثائق", path: "/driver/documents" },
+  { icon: Settings, label: "الإعدادات", path: "/driver/settings" },
 ];
 
 const deliveryNav: NavItem[] = [

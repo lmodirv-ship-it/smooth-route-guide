@@ -23,7 +23,7 @@ const roleConfig: Record<string, { label: string; color: string; icon: any }> = 
 };
 
 const roleDashboard: Record<StoredRole, string> = {
-  driver: "/driver-panel",
+  driver: "/driver",
   client: "/customer",
   delivery: "/delivery",
   admin: "/admin",

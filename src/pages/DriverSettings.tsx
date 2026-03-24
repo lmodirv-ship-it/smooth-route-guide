@@ -17,7 +17,7 @@ const DriverSettings = () => {
         { icon: User, label: "بيانات الحساب", color: "text-primary" },
         { icon: Phone, label: "رقم الهاتف", color: "text-info" },
         { icon: Car, label: "بيانات المركبة", color: "text-success" },
-        { icon: FileText, label: "الوثائق", color: "text-warning", path: "/driver-panel/documents" },
+        { icon: FileText, label: "الوثائق", color: "text-warning", path: "/driver/documents" },
       ],
     },
     {
