@@ -37,6 +37,7 @@ import DriverEarnings from "./pages/driver/DriverEarnings";
 import DriverDelivery from "./pages/driver/DriverDelivery";
 
 // ─── Client pages ───
+import CustomerHub from "./pages/CustomerHub";
 import CustomerPage from "./pages/CustomerPage";
 import CustomerTracking from "./pages/CustomerTracking";
 import ClientBooking from "./pages/client/ClientBooking";
