@@ -216,28 +216,53 @@ const RestaurantsList = () => {
     };
   }, []);
 
-  // Merge, deduplicate, add distance, filter & sort
-  const displayStores = useMemo(() => {
+  // All stores with distance (no filter/search applied)
+  const allWithDistance = useMemo(() => {
     const dbPlaceIds = new Set(dbStores.map((s) => s.google_place_id).filter(Boolean));
     const uniqueGoogle = googleStores.filter(
       (g) => !g.google_place_id || !dbPlaceIds.has(g.google_place_id)
     );
     let all = [...dbStores, ...uniqueGoogle];
 
-    // Add distance
     if (userLat && userLng) {
       all = all.map((s) => ({
         ...s,
         distance: s.lat && s.lng ? calcDistance(userLat, userLng, s.lat, s.lng) : undefined,
       }));
     }
+    return all;
+  }, [dbStores, googleStores, userLat, userLng]);
 
-    // Filter
+  // Horizontal sections
+  const nearestStores = useMemo(() =>
+    [...allWithDistance]
+      .filter((s) => s.distance != null)
+      .sort((a, b) => (a.distance || 99) - (b.distance || 99))
+      .slice(0, 8),
+    [allWithDistance]
+  );
+
+  const openNowStores = useMemo(() =>
+    allWithDistance.filter((s) => s.is_open !== false).slice(0, 8),
+    [allWithDistance]
+  );
+
+  const recommendedStores = useMemo(() =>
+    [...allWithDistance]
+      .filter((s) => s.is_open !== false && (s.rating || 0) >= 4)
+      .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+      .slice(0, 8),
+    [allWithDistance]
+  );
+
+  // Filtered main list (with search + filter)
+  const displayStores = useMemo(() => {
+    let all = [...allWithDistance];
+
     if (filter === "open") {
       all = all.filter((s) => s.is_open !== false);
     }
 
-    // Search
     if (search.trim()) {
       const q = search.toLowerCase();
       all = all.filter(
@@ -249,7 +274,6 @@ const RestaurantsList = () => {
       );
     }
 
-    // Sort: open first, then by distance (if available), then by rating
     all.sort((a, b) => {
       const aOpen = a.is_open !== false ? 0 : 1;
       const bOpen = b.is_open !== false ? 0 : 1;
@@ -261,11 +285,12 @@ const RestaurantsList = () => {
     });
 
     return all;
-  }, [dbStores, googleStores, userLat, userLng, filter, search]);
+  }, [allWithDistance, filter, search]);
 
   const isLoading = loading && googleLoading;
   const dbCount = dbStores.length;
   const googleCount = googleStores.length;
+  const showSections = !search.trim() && !isLoading;
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
