@@ -47,9 +47,9 @@ const CustomerHub = () => {
                 <ShoppingBag className="w-8 h-8 text-primary-foreground" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-bold text-foreground mb-1">الخدمة</h2>
+                <h2 className="text-lg font-bold text-foreground mb-1">🛒 طلب خدمة (مطاعم / أسواق)</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  اطلب من المطاعم والأسواق — تصفح، أضف للسلة وأكّد طلبك
+                  تصفح المطاعم والأسواق، أضف للسلة وأكّد طلبك
                 </p>
               </div>
             </div>
