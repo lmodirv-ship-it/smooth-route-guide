@@ -367,8 +367,8 @@ const DriverPage = () => {
               <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-3 border border-emerald-500/15">
                 <Radar className="w-8 h-8 text-emerald-500/30" />
               </div>
-              <p className="text-white/70 font-medium">لا توجد رحلات في منطقتك</p>
-              <p className="text-white/30 text-sm mt-1">الرحلات القريبة ستظهر هنا تلقائياً</p>
+              <p className="text-white/70 font-medium">{t.driver.noRidesInArea}</p>
+              <p className="text-white/30 text-sm mt-1">{t.driver.ridesWillAppear}</p>
             </div>
           ) : (
             <table className="w-full text-sm">
