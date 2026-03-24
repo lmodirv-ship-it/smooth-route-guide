@@ -4,7 +4,7 @@ import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
   BarChart3, Phone, Car, Users, Search, AlertTriangle, FileText,
   Headphones, BarChart, Shield, Bell, PhoneCall, PlusCircle, Clock,
-  Menu, X, UtensilsCrossed, Download, MapPin
+  Menu, X, UtensilsCrossed, Download, MapPin, Map
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/i18n/context";
@@ -18,6 +18,7 @@ const CallCenterLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSmartAssistant, setIsSmartAssistant] = useState(false);
 
   const baseNavItems = [
     { path: "/call-center", icon: BarChart3, label: t.callCenter.dashboard },
@@ -40,17 +41,27 @@ const CallCenterLayout = () => {
     { path: "/call-center/google-import", icon: MapPin, label: t.callCenter.googleImport },
   ];
 
+  const operationalNavItems = [
+    { path: "/call-center/map", icon: Map, label: "الخريطة المباشرة" },
+    { path: "/call-center/alerts", icon: Bell, label: "التنبيهات" },
+  ];
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) return;
       supabase.from("user_roles").select("role").eq("user_id", data.user.id).then(({ data: roles }) => {
         const userRoles = (roles || []).map(r => r.role);
         setIsAdmin(userRoles.includes("admin"));
+        setIsSmartAssistant(userRoles.includes("smart_admin_assistant"));
       });
     });
   }, []);
 
-  const navItems = [...baseNavItems, ...(isAdmin ? adminOnlyNavItems : [])];
+  const navItems = [
+    ...baseNavItems,
+    ...((isAdmin || isSmartAssistant) ? operationalNavItems : []),
+    ...(isAdmin ? adminOnlyNavItems : []),
+  ];
 
   const isActive = (path: string) =>
     path === "/call-center" ? location.pathname === "/call-center" : location.pathname.startsWith(path);
