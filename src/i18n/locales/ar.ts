@@ -109,6 +109,7 @@ const ar: TranslationSet = {
     adminAccount: "حساب مسؤول",
     agentAccount: "حساب مركز اتصال",
     storeOwnerAccount: "حساب صاحب محل",
+    emailMethod: "البريد الإلكتروني",
     phoneMethod: "رقم الهاتف",
     loginBtn: "دخول",
     createAccount: "إنشاء حساب جديد",

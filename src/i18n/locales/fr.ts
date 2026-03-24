@@ -109,6 +109,7 @@ const fr: TranslationSet = {
     adminAccount: "Compte administrateur",
     agentAccount: "Compte centre d'appels",
     storeOwnerAccount: "Compte propriétaire de magasin",
+    emailMethod: "Email",
     phoneMethod: "Numéro de téléphone",
     loginBtn: "Se connecter",
     createAccount: "Créer un compte",
