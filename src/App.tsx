@@ -63,7 +63,7 @@ import AgentHub from "./pages/ai/AgentHub";
 import AIAssistant from "./pages/AIAssistant";
 
 // ─── Admin Panel (logically separated module) ───
-import { AdminRoutes } from "./admin";
+import { adminRouteElements } from "./admin";
 
 const queryClient = new QueryClient();
 
