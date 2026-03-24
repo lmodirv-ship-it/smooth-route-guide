@@ -95,27 +95,59 @@ export default function LandingPage() {
             width={1920}
             height={1080}
           />
-          {/* Dark overlay for readability */}
-          <div className="absolute inset-0 bg-background/60" />
-          {/* Bottom gradient fade */}
-          <div className="absolute bottom-0 inset-x-0 h-48 bg-gradient-to-t from-background to-transparent" />
-          {/* Top gradient fade */}
-          <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-background/80 to-transparent" />
+          {/* Deep cinematic overlay */}
+          <div className="absolute inset-0 bg-background/70" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-transparent to-background" />
+          {/* Blue atmospheric haze */}
+          <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 70% 30%, hsl(205 78% 56% / 0.08) 0%, transparent 60%)" }} />
+          {/* Orange warm accent */}
+          <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 30% 70%, hsl(32 95% 55% / 0.06) 0%, transparent 50%)" }} />
         </div>
 
-        {/* Neon light streaks */}
+        {/* Neon ground streaks — dramatic speed lines */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute bottom-20 left-0 right-0 h-px bg-gradient-to-r from-transparent via-info/40 to-transparent" />
-          <div className="absolute bottom-24 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+          {/* Static glow lines */}
+          <div className="absolute bottom-20 left-0 right-0 h-px bg-gradient-to-r from-transparent via-info/30 to-transparent" />
+          <div className="absolute bottom-24 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
+          <div className="absolute bottom-32 left-0 right-0 h-px bg-gradient-to-r from-transparent via-info/15 to-transparent" />
+
+          {/* Animated speed streaks — orange */}
           <motion.div
-            className="absolute bottom-16 h-0.5 w-40 bg-gradient-to-r from-transparent via-primary to-transparent"
-            animate={{ x: ["-100%", "200vw"] }}
+            className="absolute bottom-16 h-0.5 w-48 bg-gradient-to-r from-transparent via-primary to-transparent"
+            animate={{ x: ["-200px", "110vw"] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 1.5 }}
+          />
+          <motion.div
+            className="absolute bottom-36 h-[3px] w-64 rounded-full"
+            style={{ background: "linear-gradient(90deg, transparent, hsl(32 95% 55% / 0.8), hsl(32 95% 55% / 0.4), transparent)" }}
+            animate={{ x: ["-300px", "120vw"] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 3 }}
+          />
+          {/* Animated speed streaks — blue */}
+          <motion.div
+            className="absolute bottom-28 h-0.5 w-40 bg-gradient-to-r from-transparent via-info to-transparent"
+            animate={{ x: ["110vw", "-200px"] }}
             transition={{ duration: 4, repeat: Infinity, ease: "linear", repeatDelay: 2 }}
           />
           <motion.div
-            className="absolute bottom-28 h-0.5 w-32 bg-gradient-to-r from-transparent via-info to-transparent"
-            animate={{ x: ["200vw", "-100%"] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "linear", repeatDelay: 3 }}
+            className="absolute bottom-44 h-[2px] w-56 rounded-full"
+            style={{ background: "linear-gradient(90deg, transparent, hsl(205 78% 56% / 0.6), hsl(205 78% 56% / 0.3), transparent)" }}
+            animate={{ x: ["120vw", "-300px"] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
+          />
+
+          {/* Vertical accent beams */}
+          <motion.div
+            className="absolute left-[15%] bottom-0 w-px h-40"
+            style={{ background: "linear-gradient(to top, hsl(32 95% 55% / 0.4), transparent)" }}
+            animate={{ opacity: [0.2, 0.6, 0.2], height: ["120px", "200px", "120px"] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute right-[20%] bottom-0 w-px h-32"
+            style={{ background: "linear-gradient(to top, hsl(205 78% 56% / 0.3), transparent)" }}
+            animate={{ opacity: [0.15, 0.5, 0.15], height: ["100px", "160px", "100px"] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
           />
         </div>
 
