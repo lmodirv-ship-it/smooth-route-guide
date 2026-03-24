@@ -234,9 +234,9 @@ const CustomerTracking = () => {
             </div>
             <p className="text-white font-bold">جارٍ البحث عن سائق...</p>
             <p className="text-white/40 text-sm mt-1">سيتم تعيين أقرب سائق</p>
-            <Button onClick={handleCancelRide} disabled={cancelling} variant="outline"
+            <Button onClick={() => setCancelDialogOpen(true)} variant="outline"
               className="mt-4 w-full border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded-xl font-bold gap-2">
-              <XCircle className="w-4 h-4" /> {cancelling ? "جارٍ الإلغاء..." : "إلغاء الطلب"}
+              <XCircle className="w-4 h-4" /> إلغاء الطلب
             </Button>
           </div>
         )}
