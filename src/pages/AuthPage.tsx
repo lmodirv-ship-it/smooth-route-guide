@@ -46,7 +46,6 @@ const AuthPage = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [driverType, setDriverType] = useState<"ride" | "delivery">("ride");
 
   useEffect(() => {
     const syncSession = async () => {
