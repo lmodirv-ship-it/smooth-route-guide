@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface Driver {
   id: string; user_id: string; license_no: string; rating: number | null;
-  status: string; created_at: string; car_id: string | null;
+  status: string; created_at: string; car_id: string | null; driver_type?: string;
   name?: string; vehicle?: { brand: string; model: string; plate_no: string; color: string | null } | null;
 }
 
