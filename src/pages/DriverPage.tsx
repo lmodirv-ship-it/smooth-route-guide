@@ -221,7 +221,7 @@ const DriverPage = () => {
       return;
     }
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { toast({ title: "يجب تسجيل الدخول", variant: "destructive" }); return; }
+    if (!user) { toast({ title: t.driver.mustLogin, variant: "destructive" }); return; }
     setAccepting(orderId);
     try {
       // Calculate total price including driver→pickup distance
