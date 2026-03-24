@@ -9,12 +9,10 @@ import LeafletMap from "@/components/LeafletMap";
 import BottomNav from "@/components/BottomNav";
 import { notifyNewOrder, unlockAudio } from "@/lib/notificationSound";
 import { driverNetEarnings, COMMISSION_RATE } from "@/lib/pricing";
+import { usePricingSettings } from "@/hooks/usePricingSettings";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
-const PRICE_PER_KM = 3;
-const BASE_FARE = 5;
 const MAX_RADIUS_KM = 10;
-const MIN_FARE = 10;
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = (v: number) => (v * Math.PI) / 180;
