@@ -55,8 +55,25 @@ const CustomerTracking = () => {
   const [driverName, setDriverName] = useState<string | null>(null);
   const [driverPhone, setDriverPhone] = useState<string | null>(null);
   const [vehicleInfo, setVehicleInfo] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
-  // Fetch ride + realtime
+  const handleCancelRide = async () => {
+    if (!rideId || cancelling) return;
+    setCancelling(true);
+    try {
+      const { error } = await supabase
+        .from("ride_requests")
+        .update({ status: "cancelled" })
+        .eq("id", rideId);
+      if (error) throw error;
+      toast({ title: "تم إلغاء الرحلة ❌" });
+    } catch (err: any) {
+      toast({ title: "خطأ", description: err.message || "فشل إلغاء الرحلة", variant: "destructive" });
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   useEffect(() => {
     if (!rideId) return;
     const fetchRide = async () => {
