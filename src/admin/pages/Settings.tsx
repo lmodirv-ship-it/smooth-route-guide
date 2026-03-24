@@ -188,6 +188,89 @@ const AdminSettings = () => {
           </div>
         </Section>
       </div>
+
+      {/* Delivery Pricing Section - Full Width */}
+      <Section title="إعدادات تسعير التوصيل" icon={Truck}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Day Pricing */}
+          <div className="space-y-4 border border-border rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Sun className="w-4 h-4 text-yellow-500" />
+              <h4 className="font-semibold text-sm text-foreground">التسعيرة النهارية</h4>
+            </div>
+            {[
+              { label: "السعر الأساسي (DH)", key: "dayBaseFare" },
+              { label: "الكيلومترات المشمولة", key: "dayIncludedKm" },
+              { label: "سعر كل كم إضافي (DH)", key: "dayExtraKmRate" },
+            ].map(field => (
+              <div key={field.key} className="flex items-center justify-between gap-4">
+                <Input
+                  value={deliveryPricing[field.key as keyof typeof deliveryPricing]}
+                  onChange={e => setDeliveryPricing(s => ({ ...s, [field.key]: e.target.value }))}
+                  className="bg-secondary/60 border-border h-9 w-32 text-sm text-center" type="number" />
+                <label className="text-sm text-foreground">{field.label}</label>
+              </div>
+            ))}
+          </div>
+
+          {/* Night Pricing */}
+          <div className="space-y-4 border border-border rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Moon className="w-4 h-4 text-blue-400" />
+              <h4 className="font-semibold text-sm text-foreground">التسعيرة الليلية</h4>
+            </div>
+            {[
+              { label: "السعر الأساسي (DH)", key: "nightBaseFare" },
+              { label: "الكيلومترات المشمولة", key: "nightIncludedKm" },
+              { label: "سعر كل كم إضافي (DH)", key: "nightExtraKmRate" },
+            ].map(field => (
+              <div key={field.key} className="flex items-center justify-between gap-4">
+                <Input
+                  value={deliveryPricing[field.key as keyof typeof deliveryPricing]}
+                  onChange={e => setDeliveryPricing(s => ({ ...s, [field.key]: e.target.value }))}
+                  className="bg-secondary/60 border-border h-9 w-32 text-sm text-center" type="number" />
+                <label className="text-sm text-foreground">{field.label}</label>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Time & Rounding settings */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-border">
+          <div className="flex items-center justify-between gap-4">
+            <Input
+              value={deliveryPricing.dayStartHour}
+              onChange={e => setDeliveryPricing(s => ({ ...s, dayStartHour: e.target.value }))}
+              className="bg-secondary/60 border-border h-9 w-20 text-sm text-center" type="number" min="0" max="23" />
+            <label className="text-sm text-foreground">بداية النهار (ساعة)</label>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <Input
+              value={deliveryPricing.dayEndHour}
+              onChange={e => setDeliveryPricing(s => ({ ...s, dayEndHour: e.target.value }))}
+              className="bg-secondary/60 border-border h-9 w-20 text-sm text-center" type="number" min="0" max="23" />
+            <label className="text-sm text-foreground">بداية الليل (ساعة)</label>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <Select value={deliveryPricing.roundingMethod} onValueChange={v => setDeliveryPricing(s => ({ ...s, roundingMethod: v as any }))}>
+              <SelectTrigger className="bg-secondary/60 border-border h-9 w-32 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="round">تقريب عادي</SelectItem>
+                <SelectItem value="ceil">تقريب لأعلى</SelectItem>
+                <SelectItem value="floor">تقريب لأسفل</SelectItem>
+                <SelectItem value="none">بدون تقريب</SelectItem>
+              </SelectContent>
+            </Select>
+            <label className="text-sm text-foreground">تقريب المسافة</label>
+          </div>
+        </div>
+
+        <p className="text-xs text-muted-foreground text-right mt-3">
+          النهار: {deliveryPricing.dayStartHour}:00 → {deliveryPricing.dayEndHour}:00 | الليل: {deliveryPricing.dayEndHour}:00 → {deliveryPricing.dayStartHour}:00
+        </p>
+      </Section>
     </div>
   );
 };
