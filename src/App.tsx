@@ -8,7 +8,7 @@ import RequireRole from "@/components/RequireRole";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 
-// Core pages
+// ─── Core (public) pages ───
 import Splash from "./pages/Splash";
 import Welcome from "./pages/Welcome";
 import AuthPage from "./pages/AuthPage";
@@ -17,7 +17,9 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
-// Driver pages
+// ─── Driver pages ───
+import DriverPage from "./pages/DriverPage";
+import DriverTracking from "./pages/DriverTracking";
 import DriverHistory from "./pages/DriverHistory";
 import DriverNotifications from "./pages/DriverNotifications";
 import DriverSettings from "./pages/DriverSettings";
@@ -31,10 +33,8 @@ import DriverSupport from "./pages/driver/DriverSupport";
 import DriverStatus from "./pages/driver/DriverStatus";
 import DriverEarnings from "./pages/driver/DriverEarnings";
 import DriverDelivery from "./pages/driver/DriverDelivery";
-import DriverPage from "./pages/DriverPage";
-import DriverTracking from "./pages/DriverTracking";
 
-// Client pages
+// ─── Client pages ───
 import CustomerPage from "./pages/CustomerPage";
 import CustomerTracking from "./pages/CustomerTracking";
 import ClientBooking from "./pages/client/ClientBooking";
@@ -44,7 +44,7 @@ import ClientHistory from "./pages/client/ClientHistory";
 import ClientProfile from "./pages/client/ClientProfile";
 import ClientSupport from "./pages/client/ClientSupport";
 
-// Delivery pages
+// ─── Delivery pages ───
 import DeliveryHome from "./pages/delivery/DeliveryHome";
 import DeliveryCategory from "./pages/delivery/DeliveryCategory";
 import DeliveryTracking from "./pages/delivery/DeliveryTracking";
@@ -58,45 +58,12 @@ import RestaurantMenu from "./pages/delivery/RestaurantMenu";
 import Cart from "./pages/delivery/Cart";
 import OrderTracking from "./pages/delivery/OrderTracking";
 
-// Admin
-import AdminLayout from "./components/AdminLayout";
-import AdminDashboardPage from "./pages/admin/Dashboard";
-import AdminRideRequests from "./pages/admin/RideRequests";
-import AdminDrivers from "./pages/admin/Drivers";
-import AdminClients from "./pages/admin/Clients";
-import AdminEarnings from "./pages/admin/Earnings";
-import AdminLiveMap from "./pages/admin/LiveMap";
-import AdminAlerts from "./pages/admin/Alerts";
-import AdminDocuments from "./pages/admin/Documents";
-import AdminCallCenter from "./pages/admin/AdminCallCenter";
-import AdminDeliveryOrders from "./pages/admin/DeliveryOrders";
-import AdminSettings from "./pages/admin/Settings";
-import AdminRestaurants from "./pages/admin/AdminRestaurants";
-import ZonesManagement from "./pages/admin/ZonesManagement";
-import RegisteredUsers from "./pages/admin/RegisteredUsers";
-import SetupAdmin from "./pages/admin/SetupAdmin";
-
-// Call Center
-import CallCenterLayout from "./components/CallCenterLayout";
-import CCDashboard from "./pages/callcenter/CCDashboard";
-import IncomingCalls from "./pages/callcenter/IncomingCalls";
-import ManualBooking from "./pages/callcenter/ManualBooking";
-import RideAssign from "./pages/callcenter/RideAssign";
-import CustomerSearch from "./pages/callcenter/CustomerSearch";
-import DriverSearchCC from "./pages/callcenter/DriverSearchCC";
-import Complaints from "./pages/callcenter/Complaints";
-import Tickets from "./pages/callcenter/Tickets";
-import Emergency from "./pages/callcenter/Emergency";
-import CallHistory from "./pages/callcenter/CallHistory";
-import CCReports from "./pages/callcenter/CCReports";
-import DeliveryOrdersCC from "./pages/callcenter/DeliveryOrdersCC";
-import RestaurantsCC from "./pages/callcenter/RestaurantsCC";
-import AutoImport from "./pages/callcenter/AutoImport";
-import GoogleMapsImport from "./pages/callcenter/GoogleMapsImport";
-
-// AI
+// ─── AI ───
 import AgentHub from "./pages/ai/AgentHub";
 import AIAssistant from "./pages/AIAssistant";
+
+// ─── Admin Panel (logically separated module) ───
+import { AdminRoutes } from "./admin";
 
 const queryClient = new QueryClient();
 
@@ -118,10 +85,9 @@ const App = () => (
           <Route path="/complete-profile" element={<RequireRole><CompleteProfile /></RequireRole>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/setup-admin" element={<RequireRole><SetupAdmin /></RequireRole>} />
 
           {/* ═══════════════════════════════════════════
-              CANONICAL: Customer  /customer/*
+              MAIN APP: Customer  /customer/*
              ═══════════════════════════════════════════ */}
           <Route path="/customer" element={<RequireRole allowed={["client"]}><CustomerPage /></RequireRole>} />
           <Route path="/customer/tracking" element={<RequireRole allowed={["client"]}><CustomerTracking /></RequireRole>} />
@@ -133,7 +99,7 @@ const App = () => (
           <Route path="/customer/support" element={<RequireRole allowed={["client"]}><ClientSupport /></RequireRole>} />
 
           {/* ═══════════════════════════════════════════
-              CANONICAL: Driver  /driver-panel/*
+              MAIN APP: Driver  /driver-panel/*
              ═══════════════════════════════════════════ */}
           <Route path="/driver-panel" element={<RequireRole allowed={["driver"]}><DriverPage /></RequireRole>} />
           <Route path="/driver-panel/tracking" element={<RequireRole allowed={["driver"]}><DriverTracking /></RequireRole>} />
@@ -152,7 +118,7 @@ const App = () => (
           <Route path="/driver-panel/delivery" element={<RequireRole allowed={["driver"]}><DriverDelivery /></RequireRole>} />
 
           {/* ═══════════════════════════════════════════
-              CANONICAL: Delivery  /delivery/*
+              MAIN APP: Delivery  /delivery/*
              ═══════════════════════════════════════════ */}
           <Route path="/delivery" element={<RequireRole allowed={["delivery"]}><DeliveryHome /></RequireRole>} />
           <Route path="/delivery/tracking" element={<RequireRole allowed={["delivery"]}><DeliveryTracking /></RequireRole>} />
@@ -169,45 +135,9 @@ const App = () => (
           <Route path="/delivery/:category" element={<RequireRole allowed={["delivery"]}><DeliveryCategory /></RequireRole>} />
 
           {/* ═══════════════════════════════════════════
-              CANONICAL: Admin  /admin/*
+              ADMIN PANEL (separated module)
              ═══════════════════════════════════════════ */}
-          <Route path="/admin" element={<RequireRole allowed={["admin"]}><AdminLayout /></RequireRole>}>
-            <Route index element={<AdminDashboardPage />} />
-            <Route path="users" element={<RegisteredUsers />} />
-            <Route path="requests" element={<AdminRideRequests />} />
-            <Route path="drivers" element={<AdminDrivers />} />
-            <Route path="clients" element={<AdminClients />} />
-            <Route path="earnings" element={<AdminEarnings />} />
-            <Route path="map" element={<AdminLiveMap />} />
-            <Route path="alerts" element={<AdminAlerts />} />
-            <Route path="documents" element={<AdminDocuments />} />
-            <Route path="delivery" element={<AdminDeliveryOrders />} />
-            <Route path="call-center" element={<AdminCallCenter />} />
-            <Route path="restaurants" element={<AdminRestaurants />} />
-            <Route path="zones" element={<ZonesManagement />} />
-            <Route path="settings" element={<AdminSettings />} />
-          </Route>
-
-          {/* ═══════════════════════════════════════════
-              CANONICAL: Call Center  /call-center/*
-             ═══════════════════════════════════════════ */}
-          <Route path="/call-center" element={<RequireRole allowed={["admin", "agent"]}><CallCenterLayout /></RequireRole>}>
-            <Route index element={<CCDashboard />} />
-            <Route path="incoming" element={<IncomingCalls />} />
-            <Route path="manual-booking" element={<ManualBooking />} />
-            <Route path="ride-assign" element={<RideAssign />} />
-            <Route path="customers" element={<CustomerSearch />} />
-            <Route path="drivers" element={<DriverSearchCC />} />
-            <Route path="complaints" element={<Complaints />} />
-            <Route path="tickets" element={<Tickets />} />
-            <Route path="delivery" element={<DeliveryOrdersCC />} />
-            <Route path="restaurants" element={<RestaurantsCC />} />
-            <Route path="auto-import" element={<AutoImport />} />
-            <Route path="google-import" element={<GoogleMapsImport />} />
-            <Route path="emergency" element={<Emergency />} />
-            <Route path="history" element={<CallHistory />} />
-            <Route path="reports" element={<CCReports />} />
-          </Route>
+          <AdminRoutes />
 
           {/* ─── AI ─── */}
           <Route path="/ai" element={<RequireRole><AgentHub /></RequireRole>} />
@@ -216,7 +146,6 @@ const App = () => (
           {/* ═══════════════════════════════════════════
               LEGACY REDIRECTS — transitional only
              ═══════════════════════════════════════════ */}
-          {/* Client legacy */}
           <Route path="/client" element={<Navigate to="/customer" replace />} />
           <Route path="/client/tracking" element={<Navigate to="/customer/tracking" replace />} />
           <Route path="/client/booking" element={<Navigate to="/customer/booking" replace />} />
@@ -227,7 +156,6 @@ const App = () => (
           <Route path="/client/support" element={<Navigate to="/customer/support" replace />} />
           <Route path="/customer-tracking" element={<Navigate to="/customer/tracking" replace />} />
 
-          {/* Driver legacy */}
           <Route path="/driver" element={<Navigate to="/driver-panel" replace />} />
           <Route path="/driver/tracking" element={<Navigate to="/driver-panel/tracking" replace />} />
           <Route path="/driver/history" element={<Navigate to="/driver-panel/history" replace />} />
