@@ -63,7 +63,7 @@ import AgentHub from "./pages/ai/AgentHub";
 import AIAssistant from "./pages/AIAssistant";
 
 // ─── Admin Panel (logically separated module) ───
-import { AdminRoutes } from "./admin";
+import { adminRouteElements } from "./admin";
 
 const queryClient = new QueryClient();
 
@@ -137,7 +137,7 @@ const App = () => (
           {/* ═══════════════════════════════════════════
               ADMIN PANEL (separated module)
              ═══════════════════════════════════════════ */}
-          <AdminRoutes />
+          {adminRouteElements}
 
           {/* ─── AI ─── */}
           <Route path="/ai" element={<RequireRole><AgentHub /></RequireRole>} />

@@ -42,7 +42,7 @@ import RestaurantsCC from "@/admin/pages/callcenter/RestaurantsCC";
 import AutoImport from "@/admin/pages/callcenter/AutoImport";
 import GoogleMapsImport from "@/admin/pages/callcenter/GoogleMapsImport";
 
-const AdminRoutes = () => (
+export const adminRouteElements = (
   <>
     <Route path="/setup-admin" element={<RequireRole><SetupAdmin /></RequireRole>} />
 
@@ -82,5 +82,3 @@ const AdminRoutes = () => (
     </Route>
   </>
 );
-
-export default AdminRoutes;
