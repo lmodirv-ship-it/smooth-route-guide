@@ -7,7 +7,7 @@ import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { sanitizePlainText, validateChatMessage } from "@/lib/inputSecurity";
-import logo from "@/assets/hn-driver-logo.png";
+import logo from "@/assets/hn-driver-badge.png";
 
 type Msg = { role: "user" | "assistant"; content: string };
 

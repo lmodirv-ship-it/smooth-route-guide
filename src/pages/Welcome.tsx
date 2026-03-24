@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Car, User, Headphones, Shield, LogOut, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { dashboardForRole, ROLE_LABELS } from "@/lib/routes";
-import logo from "@/assets/hn-driver-logo.png";
+import logo from "@/assets/hn-driver-badge.png";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 import NativeDownloadSection from "@/components/welcome/NativeDownloadSection";
 
