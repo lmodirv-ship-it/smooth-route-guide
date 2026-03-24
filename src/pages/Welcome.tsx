@@ -117,6 +117,14 @@ const Welcome = () => {
       glowClass: "glow-ring-green",
       iconColor: "text-success",
     },
+    {
+      id: "store_owner" as const,
+      icon: StoreIcon,
+      title: "صاحب محل",
+      desc: "إدارة محلك ومنتجاتك",
+      glowClass: "glow-ring-blue",
+      iconColor: "text-accent-foreground",
+    },
   ];
 
   return (
