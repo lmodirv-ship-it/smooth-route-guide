@@ -111,6 +111,7 @@ export interface TranslationSet {
     deliveryAccount: string;
     adminAccount: string;
     agentAccount: string;
+    storeOwnerAccount: string;
     emailMethod: string;
     phoneMethod: string;
     loginBtn: string;
