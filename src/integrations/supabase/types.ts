@@ -1007,6 +1007,69 @@ export type Database = {
           },
         ]
       }
+      platform_languages: {
+        Row: {
+          code: string
+          created_at: string
+          flag: string
+          id: string
+          is_active: boolean
+          is_rtl: boolean
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          flag?: string
+          id?: string
+          is_active?: boolean
+          is_rtl?: boolean
+          label?: string
+          sort_order?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          flag?: string
+          id?: string
+          is_active?: boolean
+          is_rtl?: boolean
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      platform_translations: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          locale: string
+          namespace: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          locale: string
+          namespace?: string
+          updated_at?: string
+          value?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          locale?: string
+          namespace?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       product_images: {
         Row: {
           created_at: string
