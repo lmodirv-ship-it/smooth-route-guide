@@ -41,6 +41,16 @@ export default function LandingPage() {
     { icon: MapPin, title: lt.why4Title, desc: lt.why4Desc },
   ];
 
+  const serviceCategories = [
+    { key: "shops", icon: Store, label: lt.catShops },
+    { key: "cafes", icon: Coffee, label: lt.catCafes },
+    { key: "clothing", icon: Shirt, label: lt.catClothing },
+    { key: "bakeries", icon: Croissant, label: lt.catBakeries },
+    { key: "online-stores", icon: ShoppingCart, label: lt.catOnlineStores },
+    { key: "restaurants", icon: UtensilsCrossed, label: lt.catRestaurants },
+    { key: "printing", icon: Printer, label: lt.catPrinting },
+  ];
+
   const stats = [
     { value: "10K+", label: dir === "rtl" ? "أكثر من 10 آلاف" : "Users", icon: MapPin },
     { value: "500+", label: dir === "rtl" ? "أكثر من 500" : "Drivers", icon: Truck },
