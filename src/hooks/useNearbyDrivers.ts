@@ -14,27 +14,14 @@ export function useNearbyDrivers() {
 
   const fetchDrivers = async () => {
     // Get active drivers with location
+    // Use the secure public view instead of the drivers table directly
     const { data, error } = await supabase
-      .from('drivers')
-      .select('id, user_id, current_lat, current_lng, rating, status')
-      .eq('status', 'active')
+      .from('active_drivers_public')
+      .select('id, car_id, current_lat, current_lng, rating')
       .not('current_lat', 'is', null)
       .not('current_lng', 'is', null) as any;
 
     if (error || !data) return;
-
-    const userIds = data.map((d: any) => d.user_id).filter(Boolean);
-    if (userIds.length === 0) {
-      setDrivers([]);
-      return;
-    }
-
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, name')
-      .in('id', userIds);
-
-    const nameMap = new Map(profiles?.map(p => [p.id, p.name]) || []);
 
     setDrivers(
       data
@@ -43,7 +30,7 @@ export function useNearbyDrivers() {
           id: d.id,
           lat: Number(d.current_lat),
           lng: Number(d.current_lng),
-          name: nameMap.get(d.user_id) || 'سائق',
+          name: 'سائق',
           rating: d.rating,
         }))
     );
