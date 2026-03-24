@@ -222,7 +222,9 @@ const ar: TranslationSet = {
     driverStatus: "الحالة",
     notifications: "الإشعارات",
     trip: "الرحلة",
-  },
+    connected: "متصل",
+    action: "إجراء",
+    km: "كم",
   delivery: {
     home: "الرئيسية",
     whatDoYouWant: "ماذا تريد اليوم؟",
