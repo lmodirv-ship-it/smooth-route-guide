@@ -1,11 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Phone, Navigation, CheckCircle, XCircle, MapPin, User, Clock, Car, Send } from "lucide-react";
+import { ArrowRight, Phone, Navigation, CheckCircle, XCircle, MapPin, Clock, Car, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
-import NavigationLinks from "@/components/NavigationLinks";
 import RideChat from "@/components/RideChat";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 
