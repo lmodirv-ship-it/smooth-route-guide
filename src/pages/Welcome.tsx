@@ -10,7 +10,7 @@ import logo from "@/assets/hn-driver-badge.png";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 import NativeDownloadSection from "@/components/welcome/NativeDownloadSection";
 
-type RoleId = "driver" | "client" | "delivery";
+type RoleId = "driver" | "client" | "delivery" | "store_owner";
 
 const Welcome = () => {
   const navigate = useNavigate();
