@@ -276,6 +276,7 @@ const fr: TranslationSet = {
     storeOwnerAccount: "Compte propriétaire",
     errorLoadingStores: "Erreur lors du chargement",
     unexpectedError: "Une erreur inattendue s'est produite",
+  },
   admin: {
     panelTitle: "Panneau d'administration",
     dashboard: "Tableau de bord",
