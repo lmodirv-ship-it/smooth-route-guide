@@ -222,7 +222,9 @@ const en: TranslationSet = {
     driverStatus: "Status",
     notifications: "Notifications",
     trip: "Trip",
-  },
+    connected: "Online",
+    action: "Action",
+    km: "km",
   delivery: {
     home: "Home",
     whatDoYouWant: "What do you want today?",
