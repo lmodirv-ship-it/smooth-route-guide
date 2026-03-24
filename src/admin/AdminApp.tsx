@@ -45,8 +45,8 @@ import RestaurantsCC from "./pages/callcenter/RestaurantsCC";
 import AutoImport from "./pages/callcenter/AutoImport";
 import GoogleMapsImport from "./pages/callcenter/GoogleMapsImport";
 
-// Auth page (needed for login within admin domain)
-import AuthPage from "@/pages/AuthPage";
+// Admin-specific login page
+import AdminLogin from "./pages/AdminLogin";
 
 const queryClient = new QueryClient();
 
