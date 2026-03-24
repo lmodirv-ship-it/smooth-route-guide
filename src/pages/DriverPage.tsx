@@ -409,7 +409,7 @@ const DriverPage = () => {
                         </div>
                       </td>
                       <td className="py-2.5 px-3 text-center">
-                        <span className="text-emerald-400 font-semibold text-xs">{order.totalDistance} كم</span>
+                        <span className="text-emerald-400 font-semibold text-xs">{order.totalDistance} {t.driver.km}</span>
                       </td>
                       <td className="py-2.5 px-3 text-center">
                         <div className="flex items-center justify-center gap-1 text-yellow-400 text-xs">
