@@ -45,8 +45,8 @@ import RestaurantsCC from "./pages/callcenter/RestaurantsCC";
 import AutoImport from "./pages/callcenter/AutoImport";
 import GoogleMapsImport from "./pages/callcenter/GoogleMapsImport";
 
-// Auth page (needed for login within admin domain)
-import AuthPage from "@/pages/AuthPage";
+// Admin-specific login page
+import AdminLogin from "./pages/AdminLogin";
 
 const queryClient = new QueryClient();
 
@@ -58,7 +58,7 @@ const AdminApp = () => (
       <BrowserRouter>
         <Routes>
           {/* Login for standalone admin */}
-          <Route path="/login" element={<AuthPage />} />
+          <Route path="/login" element={<AdminLogin />} />
 
           {/* Setup admin */}
           <Route path="/setup-admin" element={<RequireRole><SetupAdmin /></RequireRole>} />
