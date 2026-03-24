@@ -212,7 +212,7 @@ const DriverPage = () => {
   const handleAccept = async (orderId: string) => {
     if (activeRideId) {
       toast({ title: "لديك رحلة نشطة بالفعل", description: "أكمل الرحلة الحالية أولاً", variant: "destructive" });
-      navigate(`/driver-tracking?id=${activeRideId}`);
+      navigate(`/driver/tracking?id=${activeRideId}`);
       return;
     }
     const { data: { user } } = await supabase.auth.getUser();
