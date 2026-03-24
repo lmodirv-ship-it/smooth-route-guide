@@ -114,10 +114,24 @@ const OrderTracking = () => {
                 </p>
               </div>
             </div>
-            {order.estimated_price && (
-              <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
-                <span className="text-lg font-bold text-primary">{order.estimated_price} DH</span>
-                <span className="text-xs text-muted-foreground">المجموع</span>
+            {(order.total_price || order.estimated_price) && (
+              <div className="mt-3 pt-3 border-t border-border space-y-1">
+                {order.subtotal > 0 && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-foreground">{order.subtotal} DH</span>
+                    <span className="text-muted-foreground">المنتجات</span>
+                  </div>
+                )}
+                {order.delivery_fee > 0 && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-foreground">{order.delivery_fee} DH</span>
+                    <span className="text-muted-foreground">التوصيل</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-lg font-bold text-primary">{order.total_price || order.estimated_price} DH</span>
+                  <span className="text-xs text-muted-foreground">المجموع</span>
+                </div>
               </div>
             )}
           </motion.div>
