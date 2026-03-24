@@ -374,13 +374,13 @@ const DriverPage = () => {
             <table className="w-full text-sm">
               <thead className="sticky top-0 z-10 bg-[#0d1320] border-b border-white/5">
                 <tr className="text-white/50 text-xs">
-                  <th className="py-2 px-3 text-right font-medium">الانطلاق</th>
-                  <th className="py-2 px-3 text-right font-medium">الوجهة</th>
-                  <th className="py-2 px-3 text-center font-medium">المسافة</th>
-                  <th className="py-2 px-3 text-center font-medium">البُعد</th>
-                  <th className="py-2 px-3 text-center font-medium">ETA</th>
-                  <th className="py-2 px-3 text-center font-medium">السعر</th>
-                  <th className="py-2 px-3 text-center font-medium">إجراء</th>
+                  <th className="py-2 px-3 text-right font-medium">{t.driver.pickup}</th>
+                  <th className="py-2 px-3 text-right font-medium">{t.driver.destination}</th>
+                  <th className="py-2 px-3 text-center font-medium">{t.driver.distance}</th>
+                  <th className="py-2 px-3 text-center font-medium">{t.driver.distanceToPickup}</th>
+                  <th className="py-2 px-3 text-center font-medium">{t.driver.eta}</th>
+                  <th className="py-2 px-3 text-center font-medium">{t.common.price}</th>
+                  <th className="py-2 px-3 text-center font-medium">{t.driver.action}</th>
                 </tr>
               </thead>
               <tbody>
