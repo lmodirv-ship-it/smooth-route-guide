@@ -17,7 +17,7 @@ type StoredRole = RoleId | "user";
 const roleConfig: Record<string, { label: string; color: string; icon: any }> = {
   driver: { label: "حساب سائق", color: "text-primary", icon: Car },
   client: { label: "حساب عميل", color: "text-info", icon: UserIcon },
-  delivery: { label: "حساب توصيل", color: "text-success", icon: ShoppingBag },
+  delivery: { label: "حساب سائق توصيل", color: "text-success", icon: ShoppingBag },
   admin: { label: "حساب مسؤول", color: "text-destructive", icon: UserIcon },
   agent: { label: "حساب مركز اتصال", color: "text-warning", icon: Phone },
 };
@@ -25,7 +25,7 @@ const roleConfig: Record<string, { label: string; color: string; icon: any }> = 
 const roleDashboard: Record<StoredRole, string> = {
   driver: "/driver",
   client: "/customer",
-  delivery: "/delivery",
+  delivery: "/driver/delivery",
   admin: "/admin",
   agent: "/call-center",
   user: "/customer",
