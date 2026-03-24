@@ -130,11 +130,28 @@ export default function LandingPage() {
                 variants={scaleIn}
                 className="relative mb-6"
               >
+                {/* Animated golden glow rings */}
+                <motion.div
+                  className="absolute inset-0 rounded-full scale-125"
+                  style={{ background: "radial-gradient(circle, hsl(32 95% 55% / 0.25) 0%, transparent 70%)" }}
+                  animate={{ scale: [1.2, 1.35, 1.2], opacity: [0.4, 0.7, 0.4] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                />
+                <motion.div
+                  className="absolute inset-0 rounded-full scale-110 border-2 border-primary/30"
+                  animate={{ scale: [1.1, 1.2, 1.1], opacity: [0.3, 0.6, 0.3], rotate: [0, 360] }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                />
+                <motion.div
+                  className="absolute inset-0 rounded-full scale-105 border border-primary/20"
+                  animate={{ scale: [1.05, 1.15, 1.05], opacity: [0.2, 0.5, 0.2] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                />
                 <div className="absolute inset-0 blur-3xl bg-primary/20 rounded-full scale-110" />
                 <img
                   src={heroEmblem}
                   alt="HN Driver Emblem"
-                  className="relative w-56 h-56 md:w-72 md:h-72 lg:w-[360px] lg:h-[360px] object-contain drop-shadow-2xl"
+                  className="relative w-56 h-56 md:w-72 md:h-72 lg:w-[360px] lg:h-[360px] object-contain drop-shadow-[0_0_30px_hsl(32,95%,55%,0.4)]"
                   width={800}
                   height={800}
                 />
