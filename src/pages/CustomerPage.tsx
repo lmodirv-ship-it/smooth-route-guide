@@ -35,6 +35,11 @@ const CustomerPage = () => {
   const { drivers: nearbyDrivers } = useNearbyDrivers();
   const { name: pickupName, loading: pickupLoading } = useReverseGeocode(userLocation);
   const { name: destName, loading: destLoading } = useReverseGeocode(destCoords);
+  const pricing = usePricingSettings();
+
+  const calcPrice = useCallback((km: number) => {
+    return Math.max(pricing.minFare, Math.round(pricing.baseFare + km * pricing.perKmRate));
+  }, [pricing.minFare, pricing.baseFare, pricing.perKmRate]);
 
   const [showPickupPicker, setShowPickupPicker] = useState(false);
   const [showDestPicker, setShowDestPicker] = useState(false);
