@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowRight, Search, Star, Clock, MapPin, ChevronLeft,
+  ArrowRight, Search, Star, Clock, MapPin,
   UtensilsCrossed, Loader2, Globe, Filter, ShoppingBag,
-  Coffee, Store, Eye, Navigation, Sparkles, ChevronDown
+  Coffee, Store, Navigation, Sparkles, ChevronDown,
+  SlidersHorizontal, X, TrendingUp, DollarSign
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,22 +36,34 @@ interface RestaurantItem {
   distance?: number;
 }
 
-type FilterType = "all" | "open";
+type SortMode = "nearest" | "rating" | "price" | "default";
+type CategoryFilter = "all" | "restaurant" | "cafe" | "bakery" | "pharmacy" | "grocery" | "store";
 
-const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  restaurant: <UtensilsCrossed className="w-3.5 h-3.5" />,
-  cafe: <Coffee className="w-3.5 h-3.5" />,
-  store: <Store className="w-3.5 h-3.5" />,
+const CATEGORY_META: Record<string, { label: string; icon: React.ReactNode }> = {
+  all: { label: "الكل", icon: <Filter className="w-4 h-4" /> },
+  restaurant: { label: "مطاعم", icon: <UtensilsCrossed className="w-4 h-4" /> },
+  cafe: { label: "مقاهي", icon: <Coffee className="w-4 h-4" /> },
+  bakery: { label: "مخبزات", icon: <Store className="w-4 h-4" /> },
+  pharmacy: { label: "صيدليات", icon: <Store className="w-4 h-4" /> },
+  grocery: { label: "بقالة", icon: <ShoppingBag className="w-4 h-4" /> },
+  store: { label: "متاجر", icon: <Store className="w-4 h-4" /> },
 };
 
-const CATEGORY_LABELS: Record<string, string> = {
-  restaurant: "مطعم",
-  cafe: "مقهى",
-  store: "متجر",
-  bakery: "مخبزة",
-  pharmacy: "صيدلية",
-  grocery: "بقالة",
-};
+const SORT_OPTIONS: { value: SortMode; label: string; icon: React.ReactNode }[] = [
+  { value: "default", label: "الافتراضي", icon: <SlidersHorizontal className="w-3.5 h-3.5" /> },
+  { value: "nearest", label: "الأقرب", icon: <Navigation className="w-3.5 h-3.5" /> },
+  { value: "rating", label: "التقييم", icon: <TrendingUp className="w-3.5 h-3.5" /> },
+  { value: "price", label: "السعر", icon: <DollarSign className="w-3.5 h-3.5" /> },
+];
+
+const DEFAULT_IMAGES = [
+  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop",
+  "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=300&fit=crop",
+  "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop",
+  "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=400&h=300&fit=crop",
+  "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=400&h=300&fit=crop",
+  "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop",
+];
 
 function calcDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
@@ -60,6 +73,12 @@ function calcDistance(lat1: number, lng1: number, lat2: number, lng2: number): n
     Math.sin(dLat / 2) ** 2 +
     Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function getDefaultImage(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
+  return DEFAULT_IMAGES[Math.abs(hash) % DEFAULT_IMAGES.length];
 }
 
 const RestaurantsList = () => {
@@ -73,11 +92,12 @@ const RestaurantsList = () => {
   const [userCity, setUserCity] = useState("Tanger");
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
-  const [filter, setFilter] = useState<FilterType>("all");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+  const [sortMode, setSortMode] = useState<SortMode>("default");
+  const [showOnlyOpen, setShowOnlyOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch DB stores
-  const fetchDbStores = async () => {
+  const fetchDbStores = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -87,90 +107,87 @@ const RestaurantsList = () => {
         .order("rating", { ascending: false });
 
       if (dbErr) {
-        console.error("[restaurants] db fetch error:", dbErr);
         setError("حدث خطأ أثناء جلب المطاعم");
+        console.error("[restaurants] db:", dbErr);
       }
 
-      const mapped: RestaurantItem[] = (data || []).map((s: any) => ({
-        id: s.id,
-        name: s.name,
-        description: s.description,
-        address: s.address,
-        area: s.area,
-        category: s.category || "restaurant",
-        rating: s.rating,
-        image_url: s.image_url,
-        is_open: s.is_open,
-        delivery_fee: s.delivery_fee,
-        delivery_time_min: s.delivery_time_min,
-        delivery_time_max: s.delivery_time_max,
-        city: s.city || s.area,
-        source: "db" as const,
-        google_place_id: s.google_place_id,
-        lat: s.lat ? Number(s.lat) : undefined,
-        lng: s.lng ? Number(s.lng) : undefined,
-      }));
-      setDbStores(mapped);
-    } catch (err) {
-      console.error("[restaurants] unexpected error:", err);
+      setDbStores(
+        (data || []).map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          description: s.description,
+          address: s.address,
+          area: s.area,
+          category: s.category || "restaurant",
+          rating: s.rating,
+          image_url: s.image_url,
+          is_open: s.is_open,
+          delivery_fee: s.delivery_fee,
+          delivery_time_min: s.delivery_time_min,
+          delivery_time_max: s.delivery_time_max,
+          city: s.city || s.area,
+          source: "db" as const,
+          google_place_id: s.google_place_id,
+          lat: s.lat ? Number(s.lat) : undefined,
+          lng: s.lng ? Number(s.lng) : undefined,
+        }))
+      );
+    } catch {
       setError("حدث خطأ غير متوقع");
       setDbStores([]);
     }
     setLoading(false);
-  };
+  }, []);
 
-  // Fetch Google Places nearby restaurants
-  const fetchGooglePlaces = async (city: string) => {
+  const fetchGooglePlaces = useCallback(async (city: string) => {
     setGoogleLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("google-places-search", {
         body: { city, type: "restaurants", useGoogle: true },
       });
-
       if (error) {
-        console.error("[google-places] error:", error);
         setGoogleStores([]);
         setGoogleLoading(false);
         return;
       }
-
-      const restaurants = (data?.restaurants || [])
-        .filter((r: any) => r.is_open !== false)
-        .map((r: any, i: number) => ({
-          id: `google_${r.google_place_id || i}`,
-          name: r.name,
-          description: r.address,
-          address: r.address,
-          area: r.area,
-          category: "restaurant",
-          rating: r.rating,
-          image_url: r.image_url,
-          is_open: r.is_open,
-          delivery_fee: 15,
-          delivery_time_min: 25,
-          delivery_time_max: 45,
-          city: city,
-          source: "google" as const,
-          google_place_id: r.google_place_id,
-          lat: r.lat ? Number(r.lat) : undefined,
-          lng: r.lng ? Number(r.lng) : undefined,
-        }));
-
-      setGoogleStores(restaurants);
-    } catch (err) {
-      console.error("[google-places] unexpected:", err);
+      setGoogleStores(
+        (data?.restaurants || [])
+          .filter((r: any) => r.is_open !== false)
+          .map((r: any, i: number) => ({
+            id: `google_${r.google_place_id || i}`,
+            name: r.name,
+            description: r.address,
+            address: r.address,
+            area: r.area,
+            category: "restaurant",
+            rating: r.rating,
+            image_url: r.image_url,
+            is_open: r.is_open,
+            delivery_fee: 15,
+            delivery_time_min: 25,
+            delivery_time_max: 45,
+            city,
+            source: "google" as const,
+            google_place_id: r.google_place_id,
+            lat: r.lat ? Number(r.lat) : undefined,
+            lng: r.lng ? Number(r.lng) : undefined,
+          }))
+      );
+    } catch {
       setGoogleStores([]);
     }
     setGoogleLoading(false);
-  };
+  }, []);
 
-  // Detect user city from geolocation
+  useEffect(() => {
+    fetchDbStores();
+  }, [fetchDbStores]);
+
   useEffect(() => {
     if (!navigator.geolocation) {
       fetchGooglePlaces(userCity);
       return;
     }
-
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const lat = pos.coords.latitude;
@@ -182,48 +199,32 @@ const RestaurantsList = () => {
             `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=fr`
           );
           const geo = await res.json();
-          const city =
-            geo?.address?.city ||
-            geo?.address?.town ||
-            geo?.address?.village ||
-            geo?.address?.state ||
-            "Tanger";
+          const city = geo?.address?.city || geo?.address?.town || geo?.address?.village || "Tanger";
           setUserCity(city);
           fetchGooglePlaces(city);
         } catch {
           fetchGooglePlaces(userCity);
         }
       },
-      () => {
-        fetchGooglePlaces(userCity);
-      },
+      () => fetchGooglePlaces(userCity),
       { timeout: 8000 }
     );
   }, []);
 
   useEffect(() => {
-    fetchDbStores();
-  }, []);
-
-  // Realtime for DB stores
-  useEffect(() => {
     const ch = supabase
       .channel("stores-client-rt")
       .on("postgres_changes", { event: "*", schema: "public", table: "stores" }, () => fetchDbStores())
       .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
-  }, []);
+    return () => { supabase.removeChannel(ch); };
+  }, [fetchDbStores]);
 
-  // All stores with distance (no filter/search applied)
   const allWithDistance = useMemo(() => {
     const dbPlaceIds = new Set(dbStores.map((s) => s.google_place_id).filter(Boolean));
     const uniqueGoogle = googleStores.filter(
       (g) => !g.google_place_id || !dbPlaceIds.has(g.google_place_id)
     );
     let all = [...dbStores, ...uniqueGoogle];
-
     if (userLat && userLng) {
       all = all.map((s) => ({
         ...s,
@@ -235,33 +236,22 @@ const RestaurantsList = () => {
 
   // Horizontal sections
   const nearestStores = useMemo(() =>
-    [...allWithDistance]
-      .filter((s) => s.distance != null)
-      .sort((a, b) => (a.distance || 99) - (b.distance || 99))
-      .slice(0, 8),
-    [allWithDistance]
-  );
-
-  const openNowStores = useMemo(() =>
-    allWithDistance.filter((s) => s.is_open !== false).slice(0, 8),
+    [...allWithDistance].filter((s) => s.distance != null && s.is_open !== false)
+      .sort((a, b) => (a.distance || 99) - (b.distance || 99)).slice(0, 8),
     [allWithDistance]
   );
 
   const recommendedStores = useMemo(() =>
-    [...allWithDistance]
-      .filter((s) => s.is_open !== false && (s.rating || 0) >= 4)
-      .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-      .slice(0, 8),
+    [...allWithDistance].filter((s) => s.is_open !== false && (s.rating || 0) >= 4)
+      .sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 8),
     [allWithDistance]
   );
 
-  // Filtered main list (with search + filter)
   const displayStores = useMemo(() => {
     let all = [...allWithDistance];
 
-    if (filter === "open") {
-      all = all.filter((s) => s.is_open !== false);
-    }
+    if (showOnlyOpen) all = all.filter((s) => s.is_open !== false);
+    if (categoryFilter !== "all") all = all.filter((s) => s.category === categoryFilter);
 
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -270,38 +260,58 @@ const RestaurantsList = () => {
           s.name?.toLowerCase().includes(q) ||
           s.description?.toLowerCase().includes(q) ||
           s.address?.toLowerCase().includes(q) ||
-          s.area?.toLowerCase().includes(q)
+          s.area?.toLowerCase().includes(q) ||
+          (CATEGORY_META[s.category || ""]?.label || "").includes(q)
       );
     }
 
-    all.sort((a, b) => {
-      const aOpen = a.is_open !== false ? 0 : 1;
-      const bOpen = b.is_open !== false ? 0 : 1;
-      if (aOpen !== bOpen) return aOpen - bOpen;
-      if (a.distance != null && b.distance != null) return a.distance - b.distance;
-      if (a.distance != null) return -1;
-      if (b.distance != null) return 1;
-      return (b.rating || 0) - (a.rating || 0);
-    });
-
+    switch (sortMode) {
+      case "nearest":
+        all.sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
+        break;
+      case "rating":
+        all.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      case "price":
+        all.sort((a, b) => (a.delivery_fee || 10) - (b.delivery_fee || 10));
+        break;
+      default:
+        all.sort((a, b) => {
+          const aOpen = a.is_open !== false ? 0 : 1;
+          const bOpen = b.is_open !== false ? 0 : 1;
+          if (aOpen !== bOpen) return aOpen - bOpen;
+          if (a.distance != null && b.distance != null) return a.distance - b.distance;
+          return (b.rating || 0) - (a.rating || 0);
+        });
+    }
     return all;
-  }, [allWithDistance, filter, search]);
+  }, [allWithDistance, showOnlyOpen, categoryFilter, search, sortMode]);
 
   const isLoading = loading && googleLoading;
-  const dbCount = dbStores.length;
-  const googleCount = googleStores.length;
-  const showSections = !search.trim() && !isLoading;
+  const showSections = !search.trim() && !isLoading && categoryFilter === "all";
+  const activeFiltersCount = (categoryFilter !== "all" ? 1 : 0) + (showOnlyOpen ? 1 : 0) + (sortMode !== "default" ? 1 : 0);
+
+  const handleStoreClick = useCallback((store: RestaurantItem) => {
+    if (store.source === "db") {
+      navigate(`/delivery/restaurant/${store.id}`);
+    } else {
+      toast({ title: store.name, description: `📍 ${store.address || store.area || userCity}` });
+    }
+  }, [navigate, userCity]);
+
+  const clearFilters = () => {
+    setCategoryFilter("all");
+    setSortMode("default");
+    setShowOnlyOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
-      {/* Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/15 via-primary/5 to-transparent pointer-events-none" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full bg-primary/8 blur-[100px] pointer-events-none" />
-
-        <div className="relative pt-6 pb-6 px-5">
+      {/* ── Header ── */}
+      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/50">
+        <div className="px-4 pt-4 pb-3">
           {/* Top bar */}
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center justify-between mb-3">
             <button
               onClick={() => navigate("/delivery")}
               className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center hover:border-primary/40 transition-colors"
@@ -310,10 +320,10 @@ const RestaurantsList = () => {
             </button>
 
             <div className="text-center flex-1">
-              <h1 className="text-xl font-bold text-foreground font-cairo">المطاعم والمتاجر</h1>
-              <div className="flex items-center justify-center gap-1.5 mt-1">
+              <h1 className="text-lg font-bold text-foreground font-cairo">المطاعم والمتاجر</h1>
+              <div className="flex items-center justify-center gap-1.5 mt-0.5">
                 <MapPin className="w-3 h-3 text-primary" />
-                <span className="text-xs text-muted-foreground">{userCity}</span>
+                <span className="text-[11px] text-muted-foreground">{userCity}</span>
                 {googleLoading && <Loader2 className="w-3 h-3 text-primary animate-spin" />}
               </div>
             </div>
@@ -332,66 +342,104 @@ const RestaurantsList = () => {
           </div>
 
           {/* Search */}
-          <div className="relative mb-4">
+          <div className="relative">
             <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="ابحث عن مطعم أو متجر..."
+              placeholder="ابحث عن مطعم، مقهى، متجر..."
               className="bg-card border-border h-11 rounded-xl pr-10 text-right placeholder:text-muted-foreground/60 focus:border-primary/50"
             />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-muted flex items-center justify-center"
+              >
+                <X className="w-3 h-3 text-muted-foreground" />
+              </button>
+            )}
           </div>
+        </div>
 
-          {/* Filter tabs */}
-          <div className="flex items-center gap-2">
-            <FilterTab
-              active={filter === "all"}
-              onClick={() => setFilter("all")}
-              icon={<Filter className="w-3.5 h-3.5" />}
-              label="الكل"
-              count={dbCount + googleCount}
-            />
-            <FilterTab
-              active={filter === "open"}
-              onClick={() => setFilter("open")}
-              icon={<span className="w-2 h-2 rounded-full bg-green-500" />}
-              label="مفتوح الآن"
-            />
-          </div>
+        {/* Category pills */}
+        <div className="flex gap-2 overflow-x-auto px-4 pb-3 scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+          {Object.entries(CATEGORY_META).map(([key, meta]) => (
+            <button
+              key={key}
+              onClick={() => setCategoryFilter(key as CategoryFilter)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                categoryFilter === key
+                  ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                  : "bg-card border border-border text-muted-foreground hover:border-primary/30"
+              }`}
+            >
+              {meta.icon}
+              {meta.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Sort & filters bar */}
+        <div className="flex items-center gap-2 px-4 pb-3">
+          {SORT_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setSortMode(opt.value)}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
+                sortMode === opt.value
+                  ? "bg-accent/20 text-accent border border-accent/30"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {opt.icon}
+              {opt.label}
+            </button>
+          ))}
+          <div className="h-4 w-px bg-border mx-1" />
+          <button
+            onClick={() => setShowOnlyOpen(!showOnlyOpen)}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
+              showOnlyOpen
+                ? "bg-green-500/15 text-green-400 border border-green-500/30"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <span className={`w-2 h-2 rounded-full ${showOnlyOpen ? "bg-green-500" : "bg-muted-foreground/40"}`} />
+            مفتوح
+          </button>
+          {activeFiltersCount > 0 && (
+            <button onClick={clearFilters} className="text-[11px] text-destructive hover:underline mr-auto">
+              مسح ({activeFiltersCount})
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="px-5 pb-28 space-y-3">
-        {/* Error state */}
+      {/* ── Content ── */}
+      <div className="px-4 pb-28">
+        {/* Error */}
         {error && !loading && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 text-center"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 text-center mt-4">
             <p className="text-destructive text-sm font-medium">{error}</p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchDbStores}
-              className="mt-2 border-destructive/30 text-destructive hover:bg-destructive/10"
-            >
+            <Button variant="outline" size="sm" onClick={fetchDbStores} className="mt-2 border-destructive/30 text-destructive">
               إعادة المحاولة
             </Button>
           </motion.div>
         )}
 
-        {/* Loading state */}
+        {/* Loading skeleton */}
         {isLoading && (
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-card border border-border rounded-2xl p-4 flex gap-3">
-                <Skeleton className="w-20 h-20 rounded-xl flex-shrink-0" />
-                <div className="flex-1 space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-card border border-border rounded-2xl overflow-hidden">
+                <Skeleton className="w-full h-40" />
+                <div className="p-3.5 space-y-2">
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-3 w-1/2" />
-                  <Skeleton className="h-3 w-2/3" />
+                  <div className="flex justify-between">
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
                 </div>
               </div>
             ))}
@@ -400,106 +448,36 @@ const RestaurantsList = () => {
 
         {/* ═══ Horizontal Sections ═══ */}
         {showSections && (
-          <>
-            {/* أقرب إليك */}
+          <div className="space-y-5 mt-4">
             {nearestStores.length > 0 && (
               <HorizontalSection
                 title="أقرب إليك"
                 icon={<Navigation className="w-4 h-4 text-primary" />}
                 stores={nearestStores}
-                onStoreClick={(store) => {
-                  if (store.source === "db") navigate(`/delivery/restaurant/${store.id}`);
-                  else toast({ title: store.name, description: `📍 ${store.address || store.area || userCity}` });
-                }}
+                onStoreClick={handleStoreClick}
               />
             )}
-
-            {/* مفتوح الآن */}
-            {openNowStores.length > 0 && (
-              <HorizontalSection
-                title="مفتوح الآن"
-                icon={<span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />}
-                stores={openNowStores}
-                onStoreClick={(store) => {
-                  if (store.source === "db") navigate(`/delivery/restaurant/${store.id}`);
-                  else toast({ title: store.name, description: `📍 ${store.address || store.area || userCity}` });
-                }}
-              />
-            )}
-
-            {/* موصى به */}
             {recommendedStores.length > 0 && (
               <HorizontalSection
                 title="موصى به"
                 icon={<Sparkles className="w-4 h-4 text-warning" />}
                 stores={recommendedStores}
-                onStoreClick={(store) => {
-                  if (store.source === "db") navigate(`/delivery/restaurant/${store.id}`);
-                  else toast({ title: store.name, description: `📍 ${store.address || store.area || userCity}` });
-                }}
+                onStoreClick={handleStoreClick}
                 accent="warning"
               />
             )}
-
-            {/* Divider before full list */}
-            <div className="flex items-center gap-3 pt-4 pb-1">
+            <div className="flex items-center gap-3 pt-2">
               <div className="h-px flex-1 bg-border" />
               <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
                 <ChevronDown className="w-3.5 h-3.5" />
-                جميع المطاعم
+                جميع المطاعم ({displayStores.length})
               </span>
               <div className="h-px flex-1 bg-border" />
             </div>
-          </>
-        )}
-
-        {/* DB section label */}
-        {!loading && dbStores.length > 0 && !search.trim() && (
-          <div className="flex items-center gap-2 pt-1">
-            <UtensilsCrossed className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-bold text-foreground">مطاعمنا الشريكة</h2>
-            <Badge className="bg-primary/15 text-primary border-0 text-[10px] px-1.5">{dbCount}</Badge>
           </div>
         )}
 
-        {/* Restaurant cards */}
-        <AnimatePresence mode="popLayout">
-          {!isLoading && displayStores.length > 0 && displayStores.map((store, i) => {
-            const isGoogleSection = store.source === "google" && i > 0 && displayStores[i - 1]?.source !== "google";
-            return (
-              <div key={store.id}>
-                {isGoogleSection && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex items-center gap-2 pt-3 pb-1"
-                  >
-                    <Globe className="w-4 h-4 text-info" />
-                    <h2 className="text-sm font-bold text-foreground">مطاعم قريبة</h2>
-                    <Badge variant="outline" className="text-[10px] border-info/30 text-info px-1.5">{googleCount}</Badge>
-                  </motion.div>
-                )}
-                <RestaurantCard
-                  store={store}
-                  index={i}
-                  onView={() => {
-                    if (store.source === "db") {
-                      navigate(`/delivery/restaurant/${store.id}`);
-                    } else {
-                      toast({
-                        title: store.name,
-                        description: `📍 ${store.address || store.area || userCity}`,
-                      });
-                    }
-                  }}
-                  isGoogle={store.source === "google"}
-                />
-              </div>
-            );
-          })}
-        </AnimatePresence>
-
-        {/* Google loading inline */}
+        {/* Google loading */}
         {!loading && googleLoading && (
           <div className="flex items-center justify-center gap-2 py-6">
             <Loader2 className="w-5 h-5 text-primary animate-spin" />
@@ -507,28 +485,40 @@ const RestaurantsList = () => {
           </div>
         )}
 
-        {/* Empty state */}
+        {/* ═══ Main Grid ═══ */}
+        <AnimatePresence mode="popLayout">
+          {!isLoading && displayStores.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4"
+            >
+              {displayStores.map((store, i) => (
+                <RestaurantCard
+                  key={store.id}
+                  store={store}
+                  index={i}
+                  onView={() => handleStoreClick(store)}
+                  isGoogle={store.source === "google"}
+                />
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Empty */}
         {!isLoading && displayStores.length === 0 && !error && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-16"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16 mt-4">
             <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
               <UtensilsCrossed className="w-8 h-8 text-muted-foreground/40" />
             </div>
-            <p className="text-foreground font-bold text-lg">لا توجد مطاعم</p>
+            <p className="text-foreground font-bold text-lg">لا توجد نتائج</p>
             <p className="text-muted-foreground text-sm mt-1">
-              {search ? "لا توجد نتائج لبحثك" : "لا توجد مطاعم متاحة حالياً"}
+              {search ? "جرب بحثاً مختلفاً" : "لا توجد مطاعم بهذه الفلاتر"}
             </p>
-            {search && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSearch("")}
-                className="mt-3"
-              >
-                مسح البحث
+            {(search || activeFiltersCount > 0) && (
+              <Button variant="outline" size="sm" onClick={() => { setSearch(""); clearFilters(); }} className="mt-3">
+                مسح الفلاتر
               </Button>
             )}
           </motion.div>
@@ -546,139 +536,66 @@ const HorizontalSection = ({
   icon: React.ReactNode;
   stores: RestaurantItem[];
   onStoreClick: (store: RestaurantItem) => void;
-  accent?: "primary" | "warning" | "info";
-}) => {
-  if (stores.length === 0) return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-2.5"
-    >
-      <div className="flex items-center gap-2">
-        {icon}
-        <h2 className="text-sm font-bold text-foreground">{title}</h2>
-        <Badge className={`border-0 text-[10px] px-1.5 ${
-          accent === "warning" ? "bg-warning/15 text-warning" :
-          accent === "info" ? "bg-info/15 text-info" :
-          "bg-primary/15 text-primary"
-        }`}>{stores.length}</Badge>
-      </div>
-
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-5 px-5" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-        {stores.map((store, i) => (
-          <HorizontalCard
-            key={`h-${store.id}`}
-            store={store}
-            index={i}
-            onClick={() => onStoreClick(store)}
-            accent={accent}
-          />
-        ))}
-      </div>
-    </motion.div>
-  );
-};
-
-/* ─── Horizontal Card (compact) ─── */
-const HorizontalCard = ({
-  store, index, onClick, accent = "primary",
-}: {
-  store: RestaurantItem;
-  index: number;
-  onClick: () => void;
-  accent?: "primary" | "warning" | "info";
-}) => {
-  const isClosed = store.is_open === false;
-  const accentBorder = accent === "warning" ? "hover:border-warning/40" :
-    accent === "info" ? "hover:border-info/40" : "hover:border-primary/40";
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.05 }}
-      onClick={onClick}
-      className={`flex-shrink-0 w-40 bg-card rounded-xl border border-border overflow-hidden cursor-pointer transition-all active:scale-95 ${accentBorder} ${isClosed ? "opacity-60" : ""}`}
-    >
-      {/* Image */}
-      <div className="relative w-full h-24 bg-secondary overflow-hidden">
-        {store.image_url ? (
-          <img
-            src={store.image_url}
-            alt={store.name}
-            className={`w-full h-full object-cover ${isClosed ? "grayscale" : ""}`}
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <UtensilsCrossed className="w-6 h-6 text-muted-foreground/30" />
-          </div>
-        )}
-        {/* Status */}
-        <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md text-[8px] font-bold backdrop-blur-sm ${
-          isClosed ? "bg-destructive/80 text-destructive-foreground" : "bg-green-500/80 text-white"
-        }`}>
-          {isClosed ? "مغلق" : "مفتوح"}
-        </div>
-        {/* Distance badge */}
-        {store.distance != null && (
-          <div className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-md text-[8px] font-bold bg-background/80 text-primary backdrop-blur-sm">
-            {store.distance < 1 ? `${Math.round(store.distance * 1000)} م` : `${store.distance.toFixed(1)} كم`}
-          </div>
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="p-2.5 space-y-1">
-        <h3 className="font-bold text-foreground text-xs truncate">{store.name}</h3>
-        <div className="flex items-center justify-between">
-          {store.rating != null && store.rating > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] font-bold text-warning">
-              <Star className="w-3 h-3 fill-current" />
-              {store.rating.toFixed(1)}
-            </span>
-          )}
-          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-            <Clock className="w-2.5 h-2.5" />
-            {store.delivery_time_min || 20} د
-          </span>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-/* ─── Filter Tab ─── */
-const FilterTab = ({
-  active, onClick, icon, label, count,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
-  count?: number;
+  accent?: "primary" | "warning";
 }) => (
-  <button
-    onClick={onClick}
-    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
-      active
-        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-        : "bg-card border border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
-    }`}
-  >
-    {icon}
-    <span>{label}</span>
-    {count != null && (
-      <span className={`text-[10px] ${active ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}>
-        ({count})
-      </span>
-    )}
-  </button>
+  <div className="space-y-2.5">
+    <div className="flex items-center gap-2">
+      {icon}
+      <h2 className="text-sm font-bold text-foreground">{title}</h2>
+      <Badge className={`border-0 text-[10px] px-1.5 ${accent === "warning" ? "bg-warning/15 text-warning" : "bg-primary/15 text-primary"}`}>
+        {stores.length}
+      </Badge>
+    </div>
+    <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+      {stores.map((store, i) => (
+        <motion.div
+          key={`h-${store.id}`}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: i * 0.05 }}
+          onClick={() => onStoreClick(store)}
+          className={`flex-shrink-0 w-44 bg-card rounded-xl border border-border overflow-hidden cursor-pointer transition-all active:scale-95 hover:border-primary/40 ${store.is_open === false ? "opacity-60" : ""}`}
+        >
+          <div className="relative w-full h-28 bg-secondary overflow-hidden">
+            <img
+              src={store.image_url || getDefaultImage(store.id)}
+              alt={store.name}
+              className={`w-full h-full object-cover ${store.is_open === false ? "grayscale" : ""}`}
+              loading="lazy"
+            />
+            <div className={`absolute top-2 right-2 px-1.5 py-0.5 rounded-md text-[9px] font-bold backdrop-blur-md ${
+              store.is_open === false ? "bg-destructive/80 text-destructive-foreground" : "bg-green-500/80 text-white"
+            }`}>
+              {store.is_open === false ? "مغلق" : "مفتوح"}
+            </div>
+            {store.distance != null && (
+              <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-background/80 text-primary backdrop-blur-md">
+                {store.distance < 1 ? `${Math.round(store.distance * 1000)} م` : `${store.distance.toFixed(1)} كم`}
+              </div>
+            )}
+          </div>
+          <div className="p-2.5 space-y-1">
+            <h3 className="font-bold text-foreground text-xs truncate">{store.name}</h3>
+            <div className="flex items-center justify-between">
+              {store.rating != null && store.rating > 0 && (
+                <span className="flex items-center gap-0.5 text-[10px] font-bold text-warning">
+                  <Star className="w-3 h-3 fill-current" />
+                  {store.rating.toFixed(1)}
+                </span>
+              )}
+              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                <Clock className="w-2.5 h-2.5" />
+                {store.delivery_time_min || 20} د
+              </span>
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  </div>
 );
 
-/* ─── Restaurant Card ─── */
+/* ─── Restaurant Card (Grid) ─── */
 const RestaurantCard = ({
   store, index, onView, isGoogle = false,
 }: {
@@ -688,126 +605,83 @@ const RestaurantCard = ({
   isGoogle?: boolean;
 }) => {
   const isClosed = store.is_open === false;
-  const categoryLabel = CATEGORY_LABELS[store.category || "restaurant"] || store.category || "مطعم";
-  const categoryIcon = CATEGORY_ICONS[store.category || "restaurant"] || <Store className="w-3.5 h-3.5" />;
+  const categoryLabel = CATEGORY_META[store.category || "restaurant"]?.label || store.category || "مطعم";
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ delay: Math.min(index * 0.04, 0.3) }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ delay: Math.min(index * 0.03, 0.25) }}
       onClick={onView}
-      className={`group bg-card rounded-2xl border overflow-hidden cursor-pointer transition-all hover:shadow-lg hover:shadow-primary/5 active:scale-[0.98] ${
-        isClosed
-          ? "border-border/50 opacity-70"
-          : isGoogle
-          ? "border-info/20 hover:border-info/40"
-          : "border-border hover:border-primary/40"
-      }`}
+      className={`group bg-card rounded-2xl border overflow-hidden cursor-pointer transition-all duration-300
+        hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 active:scale-[0.98]
+        ${isClosed ? "border-border/50 opacity-70" : isGoogle ? "border-info/20 hover:border-info/40" : "border-border hover:border-primary/40"}`}
     >
-      <div className="flex gap-3 p-3">
-        {/* Image */}
-        <div className="relative w-24 h-24 rounded-xl bg-secondary flex-shrink-0 overflow-hidden">
-          {store.image_url ? (
-            <img
-              src={store.image_url}
-              alt={store.name}
-              className={`w-full h-full object-cover ${isClosed ? "grayscale" : ""}`}
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <UtensilsCrossed className="w-8 h-8 text-muted-foreground/30" />
-            </div>
-          )}
-          {/* Status badge on image */}
-          <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold backdrop-blur-sm ${
-            isClosed
-              ? "bg-destructive/80 text-destructive-foreground"
-              : "bg-green-500/80 text-white"
-          }`}>
-            {isClosed ? "مغلق" : "مفتوح"}
+      {/* Cover Image */}
+      <div className="relative w-full h-44 bg-secondary overflow-hidden">
+        <img
+          src={store.image_url || getDefaultImage(store.id)}
+          alt={store.name}
+          className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${isClosed ? "grayscale" : ""}`}
+          loading="lazy"
+        />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+        {/* Status badge */}
+        <div className={`absolute top-3 right-3 px-2 py-1 rounded-lg text-[10px] font-bold backdrop-blur-md ${
+          isClosed ? "bg-destructive/90 text-destructive-foreground" : "bg-green-500/90 text-white"
+        }`}>
+          {isClosed ? "مغلق" : "✓ مفتوح"}
+        </div>
+
+        {/* Google badge */}
+        {isGoogle && (
+          <div className="absolute top-3 left-3 px-2 py-1 rounded-lg text-[10px] font-bold bg-info/90 text-white backdrop-blur-md flex items-center gap-1">
+            <Globe className="w-3 h-3" />
+            Google
           </div>
-          {isGoogle && (
-            <div className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-info/80 text-white backdrop-blur-sm">
-              Google
+        )}
+
+        {/* Bottom info on image */}
+        <div className="absolute bottom-3 right-3 left-3 flex items-end justify-between">
+          <div>
+            <h3 className="font-bold text-white text-base drop-shadow-lg leading-tight">{store.name}</h3>
+            <span className="text-white/70 text-[11px]">{categoryLabel}</span>
+          </div>
+          {store.rating != null && store.rating > 0 && (
+            <div className="flex items-center gap-1 bg-background/80 backdrop-blur-md px-2 py-1 rounded-lg">
+              <Star className="w-3.5 h-3.5 text-warning fill-current" />
+              <span className="text-xs font-bold text-foreground">{store.rating.toFixed(1)}</span>
             </div>
           )}
         </div>
+      </div>
 
-        {/* Info */}
-        <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-          <div>
-            <h3 className="font-bold text-foreground text-base truncate leading-tight">
-              {store.name || "مطعم"}
-            </h3>
+      {/* Info */}
+      <div className="p-3.5">
+        {store.description && (
+          <p className="text-[12px] text-muted-foreground line-clamp-1 mb-2.5">{store.description}</p>
+        )}
 
-            {/* Category & distance row */}
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                {categoryIcon}
-                {categoryLabel}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <Clock className="w-3.5 h-3.5" />
+              {store.delivery_time_min || 20}-{store.delivery_time_max || 40} د
+            </span>
+            {store.distance != null && (
+              <span className="flex items-center gap-1 text-[11px] text-primary font-medium">
+                <MapPin className="w-3.5 h-3.5" />
+                {store.distance < 1 ? `${Math.round(store.distance * 1000)} م` : `${store.distance.toFixed(1)} كم`}
               </span>
-              {store.distance != null && (
-                <span className="flex items-center gap-1 text-[11px] text-primary font-medium">
-                  <MapPin className="w-3 h-3" />
-                  {store.distance < 1
-                    ? `${Math.round(store.distance * 1000)} م`
-                    : `${store.distance.toFixed(1)} كم`}
-                </span>
-              )}
-            </div>
-
-            {store.description && (
-              <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1">{store.description}</p>
             )}
           </div>
-
-          {/* Bottom row: rating, time, action */}
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-3">
-              {store.rating != null && store.rating > 0 && (
-                <span className="flex items-center gap-0.5 text-xs font-bold text-warning">
-                  <Star className="w-3.5 h-3.5 fill-current" />
-                  {store.rating.toFixed(1)}
-                </span>
-              )}
-              <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
-                <Clock className="w-3 h-3" />
-                {store.delivery_time_min || 20}-{store.delivery_time_max || 40} د
-              </span>
-              <span className="text-[11px] font-bold text-primary">
-                {store.delivery_fee || 10} DH
-              </span>
-            </div>
-
-            <Button
-              size="sm"
-              variant={isClosed ? "outline" : "default"}
-              className={`h-7 text-[11px] px-2.5 rounded-lg ${
-                isClosed
-                  ? "border-border text-muted-foreground"
-                  : "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-              }`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onView();
-              }}
-            >
-              {isClosed ? (
-                <>
-                  <Eye className="w-3 h-3 ml-1" />
-                  عرض
-                </>
-              ) : (
-                <>
-                  <ShoppingBag className="w-3 h-3 ml-1" />
-                  اطلب
-                </>
-              )}
-            </Button>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-bold text-primary">{store.delivery_fee || 10} DH</span>
+            <span className="text-[10px] text-muted-foreground">توصيل</span>
           </div>
         </div>
       </div>
