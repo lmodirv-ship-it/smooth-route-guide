@@ -23,6 +23,7 @@ export const ROLE_DASHBOARD: Record<string, string> = {
   agent: "/call-center",
   delivery: "/driver/delivery",
   store_owner: "/delivery/my-store",
+  smart_admin_assistant: "/call-center",
 };
 
 /** Human-readable labels (Arabic) for each DB role. */
