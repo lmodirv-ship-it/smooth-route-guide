@@ -104,12 +104,11 @@ const RideChat = ({ rideId, role, rideContext }: RideChatProps) => {
 
     setSending(true);
     try {
-      await supabase.from("ride_messages" as any).insert({
-        ride_id: rideId,
-        sender_id: userId,
-        message: msg.text_ar,
-      } as any);
-    } catch (e) {
+      const { error } = await supabase.functions.invoke("validate-chat-message", {
+        body: { ride_id: rideId, message: msg.text_ar },
+      });
+      if (error) throw error;
+    } catch (e: any) {
       console.error("Chat send error:", e);
     } finally {
       setSending(false);
