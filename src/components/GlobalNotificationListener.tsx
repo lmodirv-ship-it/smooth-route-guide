@@ -83,7 +83,7 @@ const GlobalNotificationListener = () => {
         channels.push(rideChannel);
       }
 
-      // 3. Client-specific: ride status updates
+      // 3. Client-specific: ride status updates + delivery order updates
       if (userRoles.includes("user")) {
         const clientRideChannel = supabase
           .channel("global-client-ride")
@@ -94,6 +94,20 @@ const GlobalNotificationListener = () => {
               const row = payload.new as any;
               if (row.user_id === userIdRef.current) {
                 const statusMsg = getRideStatusMessage(row.status);
+                if (statusMsg) {
+                  notifyNewOrder();
+                  toast({ title: statusMsg.title, description: statusMsg.desc });
+                }
+              }
+            }
+          )
+          .on(
+            "postgres_changes",
+            { event: "UPDATE", schema: "public", table: "delivery_orders" },
+            (payload) => {
+              const row = payload.new as any;
+              if (row.user_id === userIdRef.current) {
+                const statusMsg = getDeliveryStatusMessage(row.status);
                 if (statusMsg) {
                   notifyNewOrder();
                   toast({ title: statusMsg.title, description: statusMsg.desc });
