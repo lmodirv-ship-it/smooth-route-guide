@@ -52,6 +52,8 @@ function dbRoleSatisfies(dbRole: string, requiredLabel: string): boolean {
     case "call_center":
     case "agent":
       return dbRole === "agent";
+    case "store_owner":
+      return dbRole === "store_owner";
     default:
       return false;
   }
