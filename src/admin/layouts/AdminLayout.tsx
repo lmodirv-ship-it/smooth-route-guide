@@ -12,6 +12,8 @@ import ReactMarkdown from "react-markdown";
 import logo from "@/assets/hn-driver-badge.png";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizePlainText } from "@/lib/inputSecurity";
+import { useI18n } from "@/i18n/context";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 type AiMsg = { role: "user" | "assistant"; content: string };
 
@@ -31,32 +33,16 @@ async function callAdminAI({ messages, onResult, onError }: {
     body: JSON.stringify({ messages }),
   });
   if (!resp.ok) {
-    const err = await resp.json().catch(() => ({ error: "خطأ" }));
-    onError(err.error || "خطأ في الخدمة");
+    const err = await resp.json().catch(() => ({ error: "Error" }));
+    onError(err.error || "Service error");
     return;
   }
   const data = await resp.json();
-  onResult(data.reply || "لم أتمكن من معالجة الطلب");
+  onResult(data.reply || "Could not process the request");
 }
 
-const navItems = [
-  { path: "/admin", icon: BarChart3, label: "Dashboard" },
-  { path: "/admin/users", icon: UserCog, label: "Registered Users" },
-  { path: "/admin/requests", icon: FileText, label: "Ride Requests" },
-  { path: "/admin/drivers", icon: Car, label: "Drivers" },
-  { path: "/admin/clients", icon: Users, label: "Clients" },
-  { path: "/admin/earnings", icon: TrendingUp, label: "Earnings" },
-  { path: "/admin/map", icon: MapPin, label: "Live Map" },
-  { path: "/admin/alerts", icon: AlertTriangle, label: "Alerts" },
-  { path: "/admin/documents", icon: FileCheck, label: "Documents" },
-  { path: "/admin/delivery", icon: Send, label: "Delivery" },
-  { path: "/admin/call-center", icon: Headphones, label: "Call Center" },
-  { path: "/admin/restaurants", icon: UtensilsCrossed, label: "Restaurants" },
-  { path: "/admin/zones", icon: MapPin, label: "Zones & Pricing" },
-  { path: "/admin/settings", icon: Settings, label: "Settings" },
-];
-
 const AdminLayout = () => {
+  const { t, dir } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
   const [aiOpen, setAiOpen] = useState(false);
@@ -66,6 +52,23 @@ const AdminLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const aiScrollRef = useRef<HTMLDivElement>(null);
   const [pendingCount, setPendingCount] = useState(0);
+
+  const navItems = [
+    { path: "/admin", icon: BarChart3, label: t.admin.dashboard },
+    { path: "/admin/users", icon: UserCog, label: t.admin.registeredUsers },
+    { path: "/admin/requests", icon: FileText, label: t.admin.rideRequests },
+    { path: "/admin/drivers", icon: Car, label: t.admin.drivers },
+    { path: "/admin/clients", icon: Users, label: t.admin.clients },
+    { path: "/admin/earnings", icon: TrendingUp, label: t.admin.earningsMenu },
+    { path: "/admin/map", icon: MapPin, label: t.admin.liveMap },
+    { path: "/admin/alerts", icon: AlertTriangle, label: t.admin.alerts },
+    { path: "/admin/documents", icon: FileCheck, label: t.admin.documentsMenu },
+    { path: "/admin/delivery", icon: Send, label: t.admin.deliveryMenu },
+    { path: "/admin/call-center", icon: Headphones, label: t.admin.callCenterMenu },
+    { path: "/admin/restaurants", icon: UtensilsCrossed, label: t.admin.restaurantsMenu },
+    { path: "/admin/zones", icon: MapPin, label: t.admin.zonesPricing },
+    { path: "/admin/settings", icon: Settings, label: t.admin.settingsMenu },
+  ];
 
   useEffect(() => {
     aiScrollRef.current?.scrollTo({ top: aiScrollRef.current.scrollHeight, behavior: "smooth" });
@@ -109,12 +112,12 @@ const AdminLayout = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-dark flex" dir="rtl">
+    <div className="min-h-screen gradient-dark flex" dir={dir}>
       {/* Sidebar */}
       <aside className={`${sidebarCollapsed ? "w-16" : "w-64"} glass-strong border-l border-border hidden lg:flex flex-col transition-all duration-300`}>
         <div className="p-4 flex items-center gap-3 border-b border-border">
           <img src={logo} alt="HN" className="w-9 h-9 flex-shrink-0" />
-          {!sidebarCollapsed && <span className="font-bold text-lg text-gradient-primary font-display">Admin Panel</span>}
+          {!sidebarCollapsed && <span className="font-bold text-lg text-gradient-primary font-display">{t.admin.panelTitle}</span>}
         </div>
         {!sidebarCollapsed && (
           <div className="p-4 border-b border-border flex items-center gap-3">
@@ -122,8 +125,8 @@ const AdminLayout = () => {
               <Shield className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-foreground">Administrator</p>
-              <p className="text-xs text-muted-foreground">مسؤول النظام</p>
+              <p className="text-sm font-semibold text-foreground">{t.admin.administrator}</p>
+              <p className="text-xs text-muted-foreground">{t.admin.systemAdmin}</p>
             </div>
           </div>
         )}
@@ -154,7 +157,7 @@ const AdminLayout = () => {
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             className="w-full flex items-center justify-center px-3 py-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors text-xs"
           >
-            {sidebarCollapsed ? "»" : "طي القائمة «"}
+            {sidebarCollapsed ? "»" : `${t.admin.collapseMenu} «`}
           </button>
         </div>
       </aside>
@@ -166,16 +169,17 @@ const AdminLayout = () => {
           <div className="flex items-center gap-3">
             <div className="relative w-64">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="بحث..." className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm" />
+              <Input placeholder={t.admin.searchPlaceholder} className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm" />
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <button className="p-2 relative hover:bg-secondary rounded-lg transition-colors">
               <Bell className="w-5 h-5 text-muted-foreground" />
               {pendingCount > 0 && <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-destructive animate-pulse" />}
             </button>
             <button className="p-2 hover:bg-secondary rounded-lg transition-colors"><Activity className="w-5 h-5 text-muted-foreground" /></button>
-            <button onClick={() => setAiOpen(true)} className="p-2 hover:bg-secondary rounded-lg transition-colors" title="AI Agent">
+            <button onClick={() => setAiOpen(true)} className="p-2 hover:bg-secondary rounded-lg transition-colors" title={t.admin.aiAgent}>
               <Bot className="w-5 h-5 text-primary" />
             </button>
             <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center">
@@ -195,12 +199,12 @@ const AdminLayout = () => {
           <motion.div
             initial={{ opacity: 0, x: 300 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 300 }}
             className="fixed left-4 bottom-4 top-16 w-96 z-50 glass-strong rounded-2xl border border-border flex flex-col overflow-hidden shadow-2xl"
-            dir="rtl"
+            dir={dir}
           >
             <div className="p-4 border-b border-border flex items-center justify-between">
               <button onClick={() => setAiOpen(false)} className="p-1 hover:bg-secondary rounded-lg"><X className="w-4 h-4 text-muted-foreground" /></button>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-foreground text-sm">🤖 AI Agent</span>
+                <span className="font-bold text-foreground text-sm">🤖 {t.admin.aiAgent}</span>
                 <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center"><Bot className="w-4 h-4 text-primary-foreground" /></div>
               </div>
             </div>
@@ -208,13 +212,8 @@ const AdminLayout = () => {
               {aiMessages.length === 0 && (
                 <div className="text-center pt-8 space-y-3">
                   <Bot className="w-12 h-12 text-primary mx-auto" />
-                  <p className="text-sm text-foreground font-semibold">مساعد الأدمن الذكي</p>
-                   <p className="text-xs text-muted-foreground">لدي صلاحيات كاملة - أقرأ وأعدّل قاعدة البيانات مباشرة</p>
-                   <div className="space-y-2 pt-2">
-                     {["أعطني إحصائيات المنصة الآن", "اعرض جميع السائقين النشطين", "أضف إشعار لجميع المستخدمين", "غيّر دور مستخدم معين", "اعرض الشكاوى المفتوحة"].map((q, i) => (
-                       <button key={i} onClick={() => sendAiMessage(q)} className="w-full text-right text-xs p-2 rounded-lg bg-secondary/50 hover:bg-secondary text-foreground transition-colors">{q}</button>
-                     ))}
-                  </div>
+                  <p className="text-sm text-foreground font-semibold">{t.admin.aiAgentDesc}</p>
+                   <p className="text-xs text-muted-foreground">{t.admin.aiFullAccess}</p>
                 </div>
               )}
               {aiMessages.map((msg, i) => (
@@ -235,7 +234,7 @@ const AdminLayout = () => {
               )}
             </div>
             <form onSubmit={e => { e.preventDefault(); sendAiMessage(aiInput); }} className="p-3 border-t border-border flex gap-2">
-              <Input value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder="اسأل المساعد..." className="flex-1 bg-secondary/80 border-border rounded-xl text-sm text-right" disabled={aiLoading} />
+              <Input value={aiInput} onChange={e => setAiInput(e.target.value)} placeholder={t.admin.searchPlaceholder} className="flex-1 bg-secondary/80 border-border rounded-xl text-sm text-right" disabled={aiLoading} />
               <Button type="submit" size="icon" disabled={!aiInput.trim() || aiLoading} className="gradient-primary rounded-xl"><Send className="w-4 h-4" /></Button>
             </form>
           </motion.div>
