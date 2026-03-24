@@ -212,17 +212,6 @@ const ActiveTrip = () => {
         </div>
 
         <AnimatePresence mode="wait">
-          {/* Navigation launcher for driver */}
-          {tripPhase !== "completed" && (
-            <div className="mb-3">
-              <NavigationLinks
-                lat={35.7595}
-                lng={-5.8340}
-                label={tripPhase === "arriving" ? clientInfo.pickup : clientInfo.dropoff}
-                compact
-              />
-            </div>
-          )}
 
           {tripPhase === "arriving" && (
             <motion.div key="arriving" exit={{ opacity: 0 }}>

@@ -273,14 +273,6 @@ const DriverDelivery = () => {
               </div>
             </div>
 
-            {targetPosition && (
-              <NavigationLinks
-                lat={targetPosition.lat}
-                lng={targetPosition.lng}
-                label={["driver_assigned", "on_the_way_to_vendor"].includes(activeOrder.status) ? (activeOrder.pickup_address || "") : (activeOrder.delivery_address || "")}
-                compact
-              />
-            )}
 
             <div className="grid gap-3">
               {activeOrder.status === "driver_assigned" && (
