@@ -6,35 +6,36 @@ import {
   ShoppingBag, UtensilsCrossed,
   type LucideIcon,
 } from "lucide-react";
+import { useI18n } from "@/i18n/context";
 
 interface NavItem {
   icon: LucideIcon;
-  label: string;
+  labelKey: string;
   path: string;
 }
 
 const clientNav: NavItem[] = [
-  { icon: Home, label: "الرئيسية", path: "/customer" },
-  { icon: MapPin, label: "حجز", path: "/customer/ride" },
-  { icon: Clock, label: "السجل", path: "/customer/history" },
-  { icon: Wallet, label: "المحفظة", path: "/customer/wallet" },
-  { icon: User, label: "حسابي", path: "/customer/profile" },
+  { icon: Home, labelKey: "home", path: "/customer" },
+  { icon: MapPin, labelKey: "booking", path: "/customer/ride" },
+  { icon: Clock, labelKey: "history", path: "/customer/history" },
+  { icon: Wallet, labelKey: "wallet", path: "/customer/wallet" },
+  { icon: User, labelKey: "myAccount", path: "/customer/profile" },
 ];
 
 const driverNav: NavItem[] = [
-  { icon: Car, label: "الرئيسية", path: "/driver" },
-  { icon: TrendingUp, label: "الأرباح", path: "/driver/earnings" },
-  { icon: Clock, label: "السجل", path: "/driver/history" },
-  { icon: FileText, label: "الوثائق", path: "/driver/documents" },
-  { icon: Settings, label: "الإعدادات", path: "/driver/settings" },
+  { icon: Car, labelKey: "home", path: "/driver" },
+  { icon: TrendingUp, labelKey: "earnings", path: "/driver/earnings" },
+  { icon: Clock, labelKey: "history", path: "/driver/history" },
+  { icon: FileText, labelKey: "documents", path: "/driver/documents" },
+  { icon: Settings, labelKey: "settings", path: "/driver/settings" },
 ];
 
 const deliveryNav: NavItem[] = [
-  { icon: Home, label: "الرئيسية", path: "/delivery" },
-  { icon: UtensilsCrossed, label: "مطاعم", path: "/delivery/restaurants" },
-  { icon: ShoppingBag, label: "السلة", path: "/delivery/cart" },
-  { icon: Clock, label: "السجل", path: "/delivery/history" },
-  { icon: User, label: "حسابي", path: "/customer/profile" },
+  { icon: Home, labelKey: "home", path: "/delivery" },
+  { icon: UtensilsCrossed, labelKey: "restaurants", path: "/delivery/restaurants" },
+  { icon: ShoppingBag, labelKey: "cart", path: "/delivery/cart" },
+  { icon: Clock, labelKey: "history", path: "/delivery/history" },
+  { icon: User, labelKey: "myAccount", path: "/customer/profile" },
 ];
 
 type Role = "client" | "driver" | "delivery";
@@ -45,6 +46,13 @@ const navMap: Record<Role, NavItem[]> = {
   delivery: deliveryNav,
 };
 
+// Map role to translation section
+const labelSections: Record<Role, "customer" | "driver" | "customer"> = {
+  client: "customer",
+  driver: "driver",
+  delivery: "customer",
+};
+
 interface BottomNavProps {
   role: Role;
 }
@@ -52,15 +60,21 @@ interface BottomNavProps {
 const BottomNav = ({ role }: BottomNavProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t, dir } = useI18n();
   const items = navMap[role];
 
-  // Determine the root path for this role (used for exact-match on home)
+  const section = labelSections[role];
+  const getLabel = (key: string): string => {
+    const s = t[section] as Record<string, string>;
+    return s[key] || key;
+  };
+
   const rootPath = items[0]?.path || "/";
 
   return (
     <nav
       className="shrink-0 border-t border-border/30 bg-card/95 backdrop-blur-xl safe-area-bottom"
-      dir="rtl"
+      dir={dir}
     >
       <div className="flex items-center justify-around px-1 py-1.5">
         {items.map((item) => {
@@ -93,7 +107,7 @@ const BottomNav = ({ role }: BottomNavProps) => {
                   isActive ? "text-primary" : "text-muted-foreground"
                 }`}
               >
-                {item.label}
+                {getLabel(item.labelKey)}
               </span>
             </motion.button>
           );
