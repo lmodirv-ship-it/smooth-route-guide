@@ -42,9 +42,9 @@ const CallCenterLayout = () => {
   ];
 
   const operationalNavItems = [
-    { path: "/call-center/map", icon: Map, label: t.admin.liveMap },
-    { path: "/call-center/alerts", icon: Bell, label: t.admin.alerts },
-    { path: "/call-center/knowledge", icon: Brain, label: t.callCenter.knowledge || "Knowledge Base" },
+    { path: "/call-center/map", icon: Map, label: t.callCenter.liveMap },
+    { path: "/call-center/alerts", icon: Bell, label: t.callCenter.alertsPage },
+    { path: "/call-center/knowledge", icon: Brain, label: t.callCenter.knowledge },
   ];
 
   useEffect(() => {
