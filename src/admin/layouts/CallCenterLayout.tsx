@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
   BarChart3, Phone, Car, Users, Search, AlertTriangle, FileText,
@@ -8,7 +9,8 @@ import {
 import { Input } from "@/components/ui/input";
 import logo from "@/assets/hn-driver-badge.png";
 
-const navItems = [
+/** Nav items visible to all call center users (agents + admins) */
+const baseNavItems = [
   { path: "/call-center", icon: BarChart3, label: "لوحة التحكم" },
   { path: "/call-center/delivery", icon: PlusCircle, label: "طلبات التوصيل" },
   { path: "/call-center/drivers", icon: Car, label: "السائقون" },
@@ -20,10 +22,14 @@ const navItems = [
   { path: "/call-center/tickets", icon: FileText, label: "التذاكر" },
   { path: "/call-center/emergency", icon: AlertTriangle, label: "الطوارئ" },
   { path: "/call-center/restaurants", icon: UtensilsCrossed, label: "المطاعم" },
-  { path: "/call-center/auto-import", icon: Download, label: "استيراد تلقائي" },
-  { path: "/call-center/google-import", icon: MapPin, label: "استيراد Google Maps" },
   { path: "/call-center/history", icon: Clock, label: "سجل المكالمات" },
   { path: "/call-center/reports", icon: BarChart, label: "التقارير" },
+];
+
+/** Admin-only nav items (hidden from agents) */
+const adminOnlyNavItems = [
+  { path: "/call-center/auto-import", icon: Download, label: "استيراد تلقائي" },
+  { path: "/call-center/google-import", icon: MapPin, label: "استيراد Google Maps" },
 ];
 
 const CallCenterLayout = () => {
@@ -31,6 +37,18 @@ const CallCenterLayout = () => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return;
+      supabase.from("user_roles").select("role").eq("user_id", data.user.id).eq("role", "admin").then(({ data: roles }) => {
+        setIsAdmin((roles || []).length > 0);
+      });
+    });
+  }, []);
+
+  const navItems = [...baseNavItems, ...(isAdmin ? adminOnlyNavItems : [])];
 
   const isActive = (path: string) =>
     path === "/call-center" ? location.pathname === "/call-center" : location.pathname.startsWith(path);
