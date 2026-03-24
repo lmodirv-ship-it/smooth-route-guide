@@ -137,7 +137,7 @@ const App = () => (
           {/* ═══════════════════════════════════════════
               ADMIN PANEL (separated module)
              ═══════════════════════════════════════════ */}
-          <AdminRoutes />
+          {adminRouteElements}
 
           {/* ─── AI ─── */}
           <Route path="/ai" element={<RequireRole><AgentHub /></RequireRole>} />
