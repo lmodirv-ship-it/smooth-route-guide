@@ -62,6 +62,14 @@ export default function LandingPage() {
 
           <div className="hidden md:flex items-center gap-4">
             <LanguageSwitcher variant="ghost" />
+            <Button variant="ghost" size="sm" onClick={() => navigate("/call-center/login")} className="text-muted-foreground hover:text-primary gap-1.5">
+              <Headphones className="w-4 h-4" />
+              {dir === "rtl" ? "مركز الاتصال" : "Call Center"}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/admin/login")} className="text-muted-foreground hover:text-primary gap-1.5">
+              <ShieldCheck className="w-4 h-4" />
+              {dir === "rtl" ? "الإدارة" : "Admin"}
+            </Button>
             <Button variant="ghost" onClick={() => navigate("/login")} className="text-foreground hover:text-primary">
               {t.common.login}
             </Button>
