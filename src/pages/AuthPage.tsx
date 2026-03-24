@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Eye, EyeOff, Mail, Lock, ArrowRight, User as UserIcon,
-  Phone, Loader2, Car, ShoppingBag,
+  Phone, Loader2, Car, ShoppingBag, Store as StoreIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
