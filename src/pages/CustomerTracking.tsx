@@ -305,6 +305,12 @@ const CustomerTracking = () => {
                 <p className="text-orange-400 font-black text-base mt-0.5">{totalPrice || "—"} <span className="text-[9px] font-normal">DH</span></p>
               </div>
             </div>
+
+            {/* Cancel button */}
+            <Button onClick={handleCancelRide} disabled={cancelling} variant="outline"
+              className="w-full border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded-xl font-bold gap-2">
+              <XCircle className="w-4 h-4" /> {cancelling ? "جارٍ الإلغاء..." : "إلغاء الرحلة"}
+            </Button>
           </div>
         )}
 
