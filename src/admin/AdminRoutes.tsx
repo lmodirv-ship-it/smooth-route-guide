@@ -41,6 +41,7 @@ import DeliveryOrdersCC from "@/admin/pages/callcenter/DeliveryOrdersCC";
 import RestaurantsCC from "@/admin/pages/callcenter/RestaurantsCC";
 import AutoImport from "@/admin/pages/callcenter/AutoImport";
 import GoogleMapsImport from "@/admin/pages/callcenter/GoogleMapsImport";
+import AssistantKnowledge from "@/admin/pages/callcenter/AssistantKnowledge";
 import CallCenterLogin from "@/admin/pages/CallCenterLogin";
 import AdminLogin from "@/admin/pages/AdminLogin";
 
