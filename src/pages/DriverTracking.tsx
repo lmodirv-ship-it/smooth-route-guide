@@ -48,7 +48,8 @@ const STATUS_FLOW: Record<string, { label: string; icon: string }> = {
 const DriverTracking = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const rideId = searchParams.get("id");
+  const rideIdParam = searchParams.get("id");
+  const [rideId, setRideId] = useState<string | null>(rideIdParam);
   const [ride, setRide] = useState<RideData | null>(null);
   const [driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [clientName, setClientName] = useState("الزبون");
@@ -56,6 +57,33 @@ const DriverTracking = () => {
   const [updating, setUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-find active ride if no ID provided
+  useEffect(() => {
+    if (rideIdParam) {
+      setRideId(rideIdParam);
+      return;
+    }
+    const findActiveRide = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setLoading(false); return; }
+      const { data } = await supabase
+        .from("ride_requests")
+        .select("id")
+        .eq("driver_id", user.id)
+        .in("status", ["accepted", "in_progress", "arriving"])
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (data && data.length > 0) {
+        setRideId(data[0].id);
+        console.log("[DriverTracking] Auto-found active ride:", data[0].id);
+      } else {
+        console.log("[DriverTracking] No active ride found for user:", user.id);
+        setLoading(false);
+      }
+    };
+    findActiveRide();
+  }, [rideIdParam]);
 
   // Watch driver GPS
   useEffect(() => {
@@ -205,22 +233,22 @@ const DriverTracking = () => {
     }
   };
 
-  // No ride ID provided
-  if (!rideId) {
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
+        <div className="text-primary animate-pulse">جارٍ التحميل...</div>
+      </div>
+    );
+  }
+
+  // No ride found
+  if (!rideId || (!ride && !error)) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4" dir="rtl">
         <MapPin className="w-14 h-14 text-muted-foreground/30" />
         <p className="text-muted-foreground text-lg">لا توجد رحلة نشطة</p>
         <Button onClick={() => navigate("/driver")} className="rounded-xl">العودة للرئيسية</Button>
-      </div>
-    );
-  }
-
-  // Loading state with timeout protection
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
-        <div className="text-primary animate-pulse">جارٍ التحميل...</div>
       </div>
     );
   }

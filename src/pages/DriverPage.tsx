@@ -212,7 +212,7 @@ const DriverPage = () => {
   const handleAccept = async (orderId: string) => {
     if (activeRideId) {
       toast({ title: "لديك رحلة نشطة بالفعل", description: "أكمل الرحلة الحالية أولاً", variant: "destructive" });
-      navigate(`/driver-tracking?id=${activeRideId}`);
+      navigate(`/driver/tracking?id=${activeRideId}`);
       return;
     }
     const { data: { user } } = await supabase.auth.getUser();
@@ -234,7 +234,7 @@ const DriverPage = () => {
       if (error) throw error;
       setActiveRideId(orderId);
       toast({ title: "تم قبول الطلب ✅", description: `السعر: ${totalPrice} DH` });
-      navigate(`/driver-tracking?id=${orderId}`);
+      navigate(`/driver/tracking?id=${orderId}`);
     } catch (err: any) {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
     } finally { setAccepting(null); }
@@ -324,7 +324,7 @@ const DriverPage = () => {
             >
               <Button
                 size="sm"
-                onClick={() => navigate(`/driver-tracking?id=${activeRideId}`)}
+                onClick={() => navigate(`/driver/tracking?id=${activeRideId}`)}
                 className="h-8 px-4 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold"
               >
                 <Navigation className="w-3.5 h-3.5 ml-1" />
