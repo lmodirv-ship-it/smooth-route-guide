@@ -282,7 +282,7 @@ const DriverPage = () => {
         </div>
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[1000] bg-black/60 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-xs flex items-center gap-2 border border-white/10">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          نطاق البحث: {MAX_RADIUS_KM} كم
+          {t.driver.searchRadius}: {MAX_RADIUS_KM} {t.driver.km}
         </div>
       </div>
 
