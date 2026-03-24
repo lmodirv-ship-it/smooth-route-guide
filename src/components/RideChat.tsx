@@ -1,9 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, X, Loader2, MapPin, ShieldAlert } from "lucide-react";
+import { MessageCircle, X, Loader2, ShieldAlert, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { validateChatMessage } from "@/lib/inputSecurity";
+import {
+  DRIVER_CANNED_MESSAGES,
+  CUSTOMER_CANNED_MESSAGES,
+  filterMessageForDisplay,
+  validateCannedMessage,
+  type MessageContext,
+  type CannedMessage,
+} from "@/lib/cannedMessages";
 
 interface Message {
   id: string;
@@ -14,20 +20,26 @@ interface Message {
 
 interface RideChatProps {
   rideId: string;
-  /** "driver" or "customer" — determines bubble alignment */
   role: "driver" | "customer";
+  /** Optional ride context to show relevant quick replies */
+  rideContext?: MessageContext;
 }
 
-const RideChat = ({ rideId, role }: RideChatProps) => {
+const RideChat = ({ rideId, role, rideContext }: RideChatProps) => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [unread, setUnread] = useState(0);
   const [warning, setWarning] = useState<string | null>(null);
+  const [showAllMessages, setShowAllMessages] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastSeenCount = useRef(0);
+
+  const cannedList = role === "driver" ? DRIVER_CANNED_MESSAGES : CUSTOMER_CANNED_MESSAGES;
+
+  // Get context-relevant messages first, then general
+  const contextMessages = getContextMessages(cannedList, rideContext);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -35,7 +47,6 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
     });
   }, []);
 
-  // Fetch messages + realtime
   useEffect(() => {
     if (!rideId) return;
 
@@ -66,16 +77,13 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
       }, (payload) => {
         const newMsg = payload.new as Message;
         setMessages((prev) => [...prev, newMsg]);
-        if (!open) {
-          setUnread((u) => u + 1);
-        }
+        if (!open) setUnread((u) => u + 1);
       })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, [rideId]);
 
-  // Auto-scroll & mark read
   useEffect(() => {
     if (open && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -84,26 +92,23 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
     }
   }, [messages, open]);
 
-  const handleSend = async (msgText?: string) => {
-    const content = msgText || text.trim();
-    if (!content || !userId || sending) return;
+  const handleSendCanned = async (msg: CannedMessage) => {
+    if (!userId || sending) return;
 
-    const validation = validateChatMessage(content);
-    if (!validation.allowed) {
-      setWarning(validation.reason || "رسالة غير مسموحة");
-      setTimeout(() => setWarning(null), 4000);
+    // Validate it's a real canned message
+    if (!validateCannedMessage(msg.text_ar, role)) {
+      setWarning("رسالة غير مسموحة");
+      setTimeout(() => setWarning(null), 3000);
       return;
     }
-    setWarning(null);
 
     setSending(true);
     try {
       await supabase.from("ride_messages" as any).insert({
         ride_id: rideId,
         sender_id: userId,
-        message: content,
+        message: msg.text_ar,
       } as any);
-      if (!msgText) setText("");
     } catch (e) {
       console.error("Chat send error:", e);
     } finally {
@@ -111,30 +116,15 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
     }
   };
 
-  const handleSendLocation = () => {
-    if (!navigator.geolocation || sending) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const loc = `📍 موقعي الحالي\nhttps://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-        handleSend(loc);
-      },
-      () => {
-        console.error("Location permission denied");
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
-  };
-
-  const accentColor = role === "driver" ? "emerald" : "blue";
+  const accentBg = role === "driver" ? "#10b981" : "#3b82f6";
 
   return (
     <>
-      {/* Floating chat button */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className={`fixed bottom-6 ${role === "driver" ? "left-5" : "right-5"} z-[2000] w-14 h-14 rounded-full bg-${accentColor}-500 hover:bg-${accentColor}-600 text-white flex items-center justify-center shadow-lg transition-transform active:scale-90`}
-          style={{ backgroundColor: role === "driver" ? "#10b981" : "#3b82f6" }}
+          className="fixed bottom-6 z-[2000] w-14 h-14 rounded-full text-white flex items-center justify-center shadow-lg transition-transform active:scale-90"
+          style={{ backgroundColor: accentBg, [role === "driver" ? "left" : "right"]: 20 }}
         >
           <MessageCircle className="w-6 h-6" />
           {unread > 0 && (
@@ -145,11 +135,10 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
         </button>
       )}
 
-      {/* Chat panel */}
       {open && (
         <div
-          className={`fixed bottom-4 ${role === "driver" ? "left-4 right-4" : "left-4 right-4"} z-[2000] max-w-md mx-auto flex flex-col rounded-2xl border border-white/10 overflow-hidden shadow-2xl`}
-          style={{ height: "min(400px, 55vh)", backgroundColor: "#0d1320" }}
+          className="fixed bottom-4 left-4 right-4 z-[2000] max-w-md mx-auto flex flex-col rounded-2xl border border-white/10 overflow-hidden shadow-2xl"
+          style={{ height: "min(480px, 65vh)", backgroundColor: "#0d1320" }}
         >
           {/* Header */}
           <div
@@ -162,7 +151,7 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
             <span className="text-white font-bold text-sm">
               {role === "driver" ? "محادثة مع الزبون" : "محادثة مع السائق"}
             </span>
-            <MessageCircle className="w-4 h-4" style={{ color: role === "driver" ? "#10b981" : "#3b82f6" }} />
+            <MessageCircle className="w-4 h-4" style={{ color: accentBg }} />
           </div>
 
           {/* Messages */}
@@ -172,24 +161,16 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
             )}
             {messages.map((msg) => {
               const isMine = msg.sender_id === userId;
+              const displayText = filterMessageForDisplay(msg.message);
               return (
                 <div key={msg.id} className={`flex ${isMine ? "justify-start" : "justify-end"}`}>
                   <div
                     className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm ${
-                      isMine
-                        ? "rounded-bl-sm text-white"
-                        : "rounded-br-sm bg-white/10 text-white/90"
+                      isMine ? "rounded-bl-sm text-white" : "rounded-br-sm bg-white/10 text-white/90"
                     }`}
-                    style={isMine ? { backgroundColor: role === "driver" ? "#10b981" : "#3b82f6" } : {}}
+                    style={isMine ? { backgroundColor: accentBg } : {}}
                   >
-                    {msg.message.includes("google.com/maps") ? (
-                      <a href={msg.message.split("\n")[1]} target="_blank" rel="noopener noreferrer" className="block">
-                        <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> موقعي الحالي</span>
-                        <span className="text-[10px] underline opacity-70">فتح في الخريطة</span>
-                      </a>
-                    ) : (
-                      msg.message
-                    )}
+                    {displayText}
                     <span className="block text-[9px] mt-0.5 opacity-50">
                       {new Date(msg.created_at).toLocaleTimeString("ar", { hour: "2-digit", minute: "2-digit" })}
                     </span>
@@ -207,38 +188,46 @@ const RideChat = ({ rideId, role }: RideChatProps) => {
             </div>
           )}
 
-          {/* Input */}
-          <div className="shrink-0 flex items-center gap-2 p-3 border-t border-white/5 bg-white/[0.02]" dir="rtl">
-            <Input
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder="اكتب رسالة..."
-              className="flex-1 bg-white/5 border-white/10 text-white placeholder:text-white/30 text-sm h-9 rounded-xl"
-            />
-            <Button
-              size="sm"
-              onClick={handleSendLocation}
-              disabled={sending}
-              variant="outline"
-              className="h-9 w-9 p-0 rounded-xl border-white/10 hover:bg-white/5"
+          {/* Quick replies — no free text input */}
+          <div className="shrink-0 border-t border-white/5 bg-white/[0.02]" dir="rtl">
+            {/* Toggle show all */}
+            <button
+              onClick={() => setShowAllMessages(!showAllMessages)}
+              className="w-full flex items-center justify-center gap-1 py-1.5 text-[10px] text-white/40 hover:text-white/60"
             >
-              <MapPin className="w-4 h-4 text-white/60" />
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => handleSend()}
-              disabled={!text.trim() || sending}
-              className="h-9 w-9 p-0 rounded-xl"
-              style={{ backgroundColor: role === "driver" ? "#10b981" : "#3b82f6" }}
-            >
-              {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-            </Button>
+              {showAllMessages ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+              {showAllMessages ? "عرض أقل" : "عرض كل الردود الجاهزة"}
+            </button>
+
+            <div className={`px-3 pb-3 flex flex-wrap gap-1.5 ${showAllMessages ? "max-h-48" : "max-h-24"} overflow-y-auto`}>
+              {contextMessages.map((msg) => (
+                <Button
+                  key={msg.id}
+                  size="sm"
+                  variant="outline"
+                  disabled={sending}
+                  onClick={() => handleSendCanned(msg)}
+                  className="h-auto py-1.5 px-3 text-xs rounded-xl border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white whitespace-nowrap"
+                >
+                  {sending ? <Loader2 className="w-3 h-3 animate-spin ml-1" /> : null}
+                  {msg.text_ar}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       )}
     </>
   );
 };
+
+function getContextMessages(list: CannedMessage[], context?: MessageContext): CannedMessage[] {
+  if (!context) return list;
+  // Show context-specific first, then general, then rest
+  const contextSpecific = list.filter((m) => m.context.includes(context));
+  const general = list.filter((m) => m.context.includes("general") && !m.context.includes(context));
+  const rest = list.filter((m) => !contextSpecific.includes(m) && !general.includes(m));
+  return [...contextSpecific, ...general, ...rest];
+}
 
 export default RideChat;
