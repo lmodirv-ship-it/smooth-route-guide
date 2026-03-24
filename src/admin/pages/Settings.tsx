@@ -304,6 +304,9 @@ const AdminSettings = () => {
           النهار: {deliveryPricing.dayStartHour}:00 → {deliveryPricing.dayEndHour}:00 | الليل: {deliveryPricing.dayEndHour}:00 → {deliveryPricing.dayStartHour}:00
         </p>
       </div>
+
+      {/* Language Management Section */}
+      <LanguageManagement />
     </div>
   );
 };
