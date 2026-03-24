@@ -2,7 +2,7 @@ import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, Package, BarChart3, Zap, Shield, DollarSign, MapPin, ArrowRight, Menu, X, Users, Truck, Headphones, ShieldCheck } from "lucide-react";
+import { Car, Package, BarChart3, Zap, Shield, DollarSign, MapPin, ArrowRight, Menu, X, Users, Truck, Headphones, ShieldCheck, Store, Coffee, Shirt, Croissant, ShoppingCart, UtensilsCrossed, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import logo from "@/assets/hn-driver-badge.png";
@@ -39,6 +39,16 @@ export default function LandingPage() {
     { icon: Shield, title: lt.why2Title, desc: lt.why2Desc },
     { icon: DollarSign, title: lt.why3Title, desc: lt.why3Desc },
     { icon: MapPin, title: lt.why4Title, desc: lt.why4Desc },
+  ];
+
+  const serviceCategories = [
+    { key: "shops", icon: Store, label: lt.catShops },
+    { key: "cafes", icon: Coffee, label: lt.catCafes },
+    { key: "clothing", icon: Shirt, label: lt.catClothing },
+    { key: "bakeries", icon: Croissant, label: lt.catBakeries },
+    { key: "online-stores", icon: ShoppingCart, label: lt.catOnlineStores },
+    { key: "restaurants", icon: UtensilsCrossed, label: lt.catRestaurants },
+    { key: "printing", icon: Printer, label: lt.catPrinting },
   ];
 
   const stats = [
@@ -364,6 +374,37 @@ export default function LandingPage() {
                 </div>
                 <h3 className="font-bold mb-2 text-foreground">{f.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Browse Services ─── */}
+      <section className="py-20 md:py-28 relative">
+        <div className="absolute inset-0 particles-bg opacity-20" />
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.h2 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-3xl md:text-4xl font-bold text-center font-display mb-4">
+            <span className="text-gradient-primary">{lt.browseServicesTitle}</span>
+          </motion.h2>
+          <div className="w-20 h-1 gradient-primary mx-auto rounded-full mb-14" />
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
+            {serviceCategories.map((cat, i) => (
+              <motion.div
+                key={cat.key}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeUp}
+                custom={i + 1}
+                onClick={() => navigate(`/delivery/${cat.key}`)}
+                className="group cursor-pointer rounded-2xl p-6 gradient-card border border-border hover:border-primary/40 transition-all duration-500 text-center"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
+                  <cat.icon className="w-7 h-7 text-primary" />
+                </div>
+                <h3 className="font-bold text-foreground text-sm md:text-base">{cat.label}</h3>
               </motion.div>
             ))}
           </div>

@@ -29,6 +29,14 @@ export interface TranslationSet {
     footerTerms: string;
     footerPrivacy: string;
     footerContact: string;
+    browseServicesTitle: string;
+    catShops: string;
+    catCafes: string;
+    catClothing: string;
+    catBakeries: string;
+    catOnlineStores: string;
+    catRestaurants: string;
+    catPrinting: string;
   };
   // Common
   common: {
