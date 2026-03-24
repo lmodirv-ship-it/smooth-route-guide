@@ -108,7 +108,7 @@ const ar: TranslationSet = {
     deliveryAccount: "حساب توصيل",
     adminAccount: "حساب مسؤول",
     agentAccount: "حساب مركز اتصال",
-    emailMethod: "بريد إلكتروني",
+    storeOwnerAccount: "حساب صاحب محل",
     phoneMethod: "رقم الهاتف",
     loginBtn: "دخول",
     createAccount: "إنشاء حساب جديد",
