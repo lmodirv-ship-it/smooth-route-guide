@@ -8,6 +8,9 @@ import { useState } from "react";
 import logo from "@/assets/hn-driver-badge.png";
 import heroSkyline from "@/assets/hero-skyline.jpg";
 import heroEmblem from "@/assets/hero-emblem.png";
+import heroDriver from "@/assets/hero-driver.png";
+import heroCustomer from "@/assets/hero-customer.png";
+import heroDelivery from "@/assets/hero-delivery.png";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -118,44 +121,40 @@ export default function LandingPage() {
 
         {/* Hero content */}
         <div className="container mx-auto px-4 relative z-10 pt-24">
-          <div className="grid lg:grid-cols-2 gap-8 items-center max-w-6xl mx-auto">
-            {/* Left: Emblem */}
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={scaleIn}
-              className="flex justify-center lg:justify-start order-2 lg:order-1"
-            >
-              <div className="relative">
-                {/* Glow behind emblem */}
+          <div className="grid lg:grid-cols-2 gap-8 items-center max-w-7xl mx-auto">
+            {/* Left: Emblem + Text */}
+            <div className="flex flex-col items-center lg:items-start order-2 lg:order-1">
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={scaleIn}
+                className="relative mb-6"
+              >
                 <div className="absolute inset-0 blur-3xl bg-primary/20 rounded-full scale-110" />
                 <img
                   src={heroEmblem}
                   alt="HN Driver Emblem"
-                  className="relative w-64 h-64 md:w-80 md:h-80 lg:w-[420px] lg:h-[420px] object-contain drop-shadow-2xl"
+                  className="relative w-56 h-56 md:w-72 md:h-72 lg:w-[360px] lg:h-[360px] object-contain drop-shadow-2xl"
                   width={800}
                   height={800}
                 />
-              </div>
-            </motion.div>
+              </motion.div>
 
-            {/* Right: Text */}
-            <div className="text-center lg:text-start order-1 lg:order-2">
               <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-semibold mb-6">
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-semibold mb-4">
                   🚀 {dir === "rtl" ? "متوفر الآن بطنجة" : "Now available in Tangier"}
                 </span>
               </motion.div>
 
-              <motion.h1 initial="hidden" animate="visible" variants={fadeUp} custom={1} className="text-4xl md:text-5xl lg:text-6xl font-bold font-display leading-tight">
+              <motion.h1 initial="hidden" animate="visible" variants={fadeUp} custom={1} className="text-3xl md:text-4xl lg:text-5xl font-bold font-display leading-tight text-center lg:text-start">
                 <span className="text-gradient-primary glow-text">{lt.heroTitle}</span>
               </motion.h1>
 
-              <motion.p initial="hidden" animate="visible" variants={fadeUp} custom={2} className="mt-5 text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed">
+              <motion.p initial="hidden" animate="visible" variants={fadeUp} custom={2} className="mt-4 text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed text-center lg:text-start">
                 {lt.heroSubtitle}
               </motion.p>
 
-              <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3} className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3} className="mt-6 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button
                   size="lg"
                   onClick={() => navigate("/welcome")}
@@ -174,6 +173,51 @@ export default function LandingPage() {
                 </Button>
               </motion.div>
             </div>
+
+            {/* Right: 3 Categories */}
+            <div className="order-1 lg:order-2 flex flex-col gap-4">
+              {[
+                { img: heroDriver, label: dir === "rtl" ? "سائق" : "Driver", desc: dir === "rtl" ? "سائقون محترفون وموثوقون" : "Professional & trusted drivers", route: "/auth/driver" },
+                { img: heroCustomer, label: dir === "rtl" ? "زبون" : "Customer", desc: dir === "rtl" ? "احجز رحلتك بسهولة" : "Book your ride easily", route: "/auth/client" },
+                { img: heroDelivery, label: dir === "rtl" ? "توصيل" : "Delivery", desc: dir === "rtl" ? "توصيل سريع وفعّال" : "Fast & efficient delivery", route: "/delivery" },
+              ].map((cat, i) => (
+                <motion.div
+                  key={cat.label}
+                  initial="hidden"
+                  animate="visible"
+                  variants={fadeUp}
+                  custom={i + 1}
+                  onClick={() => navigate(cat.route)}
+                  className="group relative flex items-center gap-4 p-3 rounded-2xl glass border border-border hover:border-primary/40 cursor-pointer transition-all duration-500 overflow-hidden"
+                >
+                  {/* Hover glow */}
+                  <div className="absolute inset-0 rounded-2xl gradient-primary opacity-0 group-hover:opacity-[0.06] transition-opacity duration-500" />
+                  
+                  {/* Image */}
+                  <div className="relative w-24 h-24 md:w-28 md:h-28 flex-shrink-0 rounded-xl overflow-hidden bg-secondary/30">
+                    <img
+                      src={cat.img}
+                      alt={cat.label}
+                      className="w-full h-full object-cover object-top scale-110 group-hover:scale-125 transition-transform duration-700"
+                      width={768}
+                      height={768}
+                      loading="lazy"
+                    />
+                  </div>
+
+                  {/* Text */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg md:text-xl font-bold font-display text-foreground group-hover:text-primary transition-colors">
+                      {cat.label}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">{cat.desc}</p>
+                  </div>
+
+                  {/* Arrow */}
+                  <ArrowRight className={`w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0 ${dir === "rtl" ? "rotate-180" : ""}`} />
+                </motion.div>
+              ))}
+            </div>
           </div>
 
           {/* Stats bar */}
@@ -182,7 +226,7 @@ export default function LandingPage() {
             animate="visible"
             variants={fadeUp}
             custom={5}
-            className="mt-16 md:mt-24 max-w-3xl mx-auto"
+            className="mt-16 md:mt-20 max-w-3xl mx-auto"
           >
             <div className="glass rounded-2xl p-6 grid grid-cols-3 gap-6">
               {stats.map((stat) => (
