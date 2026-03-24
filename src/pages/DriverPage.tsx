@@ -354,11 +354,11 @@ const DriverPage = () => {
                 className="h-8 px-4 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold"
               >
                 <Navigation className="w-3.5 h-3.5 ml-1" />
-                متابعة الرحلة
+                {t.driver.continueRide}
               </Button>
               <div className="text-right">
-                <p className="text-orange-400 font-bold text-sm">لديك رحلة نشطة</p>
-                <p className="text-white/40 text-[11px]">أكمل الرحلة الحالية لقبول طلبات جديدة</p>
+                <p className="text-orange-400 font-bold text-sm">{t.driver.activeRide}</p>
+                <p className="text-white/40 text-[11px]">{t.driver.completeCurrentFirst}</p>
               </div>
             </motion.div>
           )}
