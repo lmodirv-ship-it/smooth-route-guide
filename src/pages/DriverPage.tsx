@@ -241,7 +241,7 @@ const DriverPage = () => {
       toast({ title: t.driver.orderAccepted, description: `${t.common.price}: ${totalPrice} DH` });
       navigate(`/driver/tracking?id=${orderId}`);
     } catch (err: any) {
-      toast({ title: "خطأ", description: err.message, variant: "destructive" });
+      toast({ title: t.common.error, description: err.message, variant: "destructive" });
     } finally { setAccepting(null); }
   };
 
