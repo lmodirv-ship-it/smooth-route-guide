@@ -71,6 +71,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <I18nProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -80,7 +81,8 @@ const App = () => (
         <GlobalNotificationListener />
         <Routes>
           {/* ─── Core (public) ─── */}
-          <Route path="/" element={<Splash />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/splash" element={<Splash />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/login" element={<AuthPage />} />
           <Route path="/auth/:role" element={<AuthPage />} />
