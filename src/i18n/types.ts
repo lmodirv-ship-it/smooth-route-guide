@@ -230,6 +230,9 @@ export interface TranslationSet {
     driverStatus: string;
     notifications: string;
     trip: string;
+    connected: string;
+    action: string;
+    km: string;
   };
   // Delivery pages
   delivery: {
