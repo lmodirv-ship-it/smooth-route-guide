@@ -102,12 +102,14 @@ const DriverPage = () => {
       const grossEarnings = completedRides?.reduce((sum, r) => sum + (Number(r.price) || 0), 0) || 0;
       const earnings = driverNetEarnings(grossEarnings);
 
-      // Rating
+      // Rating + driver_type
       const { data: driverData } = await supabase
         .from("drivers")
-        .select("rating")
+        .select("rating, driver_type")
         .eq("user_id", user.id)
         .single();
+
+      if (driverData?.driver_type) setDriverType(driverData.driver_type);
 
       setTodayStats({
         trips,
