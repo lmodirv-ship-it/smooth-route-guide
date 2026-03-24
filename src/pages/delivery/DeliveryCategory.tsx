@@ -190,18 +190,11 @@ const DeliveryCategory = () => {
               <div className="flex items-start justify-between gap-3">
                 <Button
                   size="sm"
-                  onClick={() => handleOrder(store)}
-                  disabled={loading && selectedStore === store.id}
+                  onClick={() => navigate(`/delivery/store/${store.id}`)}
                   className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 gap-1.5 flex-shrink-0"
                 >
-                  {loading && selectedStore === store.id ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      <ShoppingBag className="w-4 h-4" />
-                      اطلب
-                    </>
-                  )}
+                  <ShoppingBag className="w-4 h-4" />
+                  عرض
                 </Button>
                 <div className="flex-1 text-right">
                   <h3 className="font-bold text-foreground">{store.name}</h3>
