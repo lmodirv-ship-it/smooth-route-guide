@@ -255,8 +255,8 @@ const CustomerTracking = () => {
               className="mt-4 w-full border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded-xl font-bold gap-2">
               <XCircle className="w-4 h-4" /> {cancelling ? "جارٍ الإلغاء..." : "إلغاء الطلب"}
             </Button>
-
-        {/* Active ride info */}
+          </div>
+        )}
         {isActive && ride.status !== "pending" && (
           <div className="p-4 space-y-3">
             {/* Driver card */}
