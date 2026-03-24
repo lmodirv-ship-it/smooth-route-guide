@@ -420,12 +420,67 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
   }
 }
 
+async function authenticateAdmin(req: Request): Promise<{ userId: string }> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    console.warn("[AUTH] Missing or malformed Authorization header");
+    throw new HttpError(401, "unauthorized: missing token");
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new HttpError(500, "backend_not_configured");
+  }
+
+  // Create a client scoped to the caller's JWT to verify identity
+  const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  const { data, error } = await userClient.auth.getUser(token);
+  if (error || !data?.user) {
+    console.warn("[AUTH] Invalid JWT:", error?.message);
+    throw new HttpError(401, "unauthorized: invalid token");
+  }
+
+  const userId = data.user.id;
+
+  // Use service role to check admin role (bypasses RLS on user_roles)
+  const adminClient = createClient(
+    supabaseUrl,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    { auth: { persistSession: false, autoRefreshToken: false } }
+  );
+
+  const { data: roles, error: rolesError } = await adminClient
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "admin");
+
+  if (rolesError || !roles?.length) {
+    console.warn(`[AUTH] User ${userId} denied: not admin. Roles query error: ${rolesError?.message}`);
+    throw new HttpError(403, "forbidden: admin role required");
+  }
+
+  console.log(`[AUTH] Admin authenticated: ${userId} (${data.user.email})`);
+  return { userId };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    await enforceRateLimit(req, "admin-ai-agent", 30, 60);
+    // 1. Rate limit
+    await enforceRateLimit(req, "admin-ai-agent", 20, 60);
 
+    // 2. CRITICAL: Authenticate and verify admin role
+    const { userId: adminUserId } = await authenticateAdmin(req);
+
+    // 3. Parse and validate request body
     let body: unknown;
     try { body = await req.json(); } catch {
       return new Response(JSON.stringify({ error: "invalid_json_body" }), {
@@ -445,75 +500,34 @@ serve(async (req) => {
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!lovableApiKey) throw new Error("LOVABLE_API_KEY not configured");
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (!supabaseUrl || !supabaseKey) throw new Error("Backend credentials not configured");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     const supabase = createClient(supabaseUrl, supabaseKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    const systemPrompt = `أنت المساعد الذكي الخارق للمسؤول في منصة HN Driver - لديك صلاحيات كاملة ومطلقة.
+    const systemPrompt = `أنت المساعد الذكي للمسؤول في منصة HN Driver.
+المسؤول الحالي: ${adminUserId}
 
-## 🔥 صلاحياتك الكاملة:
+## صلاحياتك:
+- قراءة وعرض البيانات من الجداول المتاحة
+- تعديل الإعدادات والتكوينات
+- إدارة أدوار المستخدمين (بحذر)
+- إرسال إشعارات
+- عرض إحصائيات المنصة
 
-### 📊 إدارة قاعدة البيانات (CRUD كامل):
-- قراءة وعرض أي بيانات من أي جدول
-- إضافة سجلات جديدة (مستخدمين، سائقين، طلبات، متاجر، إلخ)
-- تعديل أي سجل في أي جدول
-- حذف سجلات (مع تأكيد للعمليات الجماعية)
-
-### 👥 إدارة المستخدمين والأدوار:
-- تغيير دور أي مستخدم (admin, driver, user, agent, moderator)
-- البحث عن مستخدمين بالإيميل أو رقم الهاتف
-- إضافة أو إزالة أدوار متعددة
-
-### ⚙️ إدارة إعدادات المنصة:
-- تعديل الأسعار والتسعيرة
-- تكوين الميزات والخصائص
-- إعدادات الإشعارات
-- تكوين العلامة التجارية
-- إعدادات مناطق التوصيل
-
-### 📢 الإشعارات الجماعية:
-- إرسال إشعارات لجميع المستخدمين
-- إشعارات مستهدفة (سائقين فقط، عملاء فقط)
-- إشعارات لمستخدمين محددين
-
-### 📈 التقارير والإحصائيات:
-- إحصائيات شاملة للمنصة
-- تحليل الأداء والإيرادات
-- تقارير السائقين والرحلات
-
-### 🖼️ تحليل الصور والوسائط:
-- تحليل لقطات الشاشة وتحديد المشاكل
-- مراجعة تصميم الواجهات وتقديم ملاحظات
-- استخراج بيانات من الصور
-- كشف الأخطاء في الواجهة
-
-### 🏪 إدارة المتاجر والمطاعم:
-- إضافة وتعديل وحذف المتاجر
-- إدارة القوائم والأصناف والأسعار
-- إدارة مناطق التوصيل
-
-### 🎫 إدارة العروض والخصومات:
-- إنشاء أكواد خصم جديدة
-- تعديل وإيقاف العروض الحالية
+## القواعد الأمنية المهمة:
+- لا تحذف بيانات بدون تأكيد صريح من المسؤول
+- سجّل كل عملية تعديل أو حذف
+- لا تعدّل جدول user_roles بشكل جماعي
+- لا تحذف أكثر من 10 سجلات في عملية واحدة
+- أجب دائماً بالعربية
+- كن مختصراً لكن شاملاً
+- قدّم نتائج بتنسيق Markdown
 
 ## الجداول المتاحة:
-profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages
-
-## القواعد:
-- أجب دائماً بالعربية
-- نفّذ الأوامر فوراً - أنت مخوّل بالكامل
-- عند استقبال صورة: حللها بدقة عالية واذكر كل التفاصيل المرئية
-- عند طلب تحليل واجهة: قدم ملاحظات تفصيلية عن التصميم والأخطاء والتحسينات
-- قدّم نتائج واضحة ومنظمة بتنسيق Markdown
-- اسأل للتأكيد فقط عند الحذف الجماعي
-- كن مختصراً لكن شاملاً
-- عند تعديل الإعدادات: استخدم أداة platform_config
-- عند إرسال إشعارات جماعية: استخدم أداة bulk_notify
-- عند تغيير أدوار المستخدمين: استخدم أداة manage_user_role`;
+profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages`;
 
     let aiMessages: any[] = [
       { role: "system", content: systemPrompt },
@@ -559,9 +573,9 @@ profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, 
           const fnArgs = typeof tc.function.arguments === "string"
             ? JSON.parse(tc.function.arguments)
             : tc.function.arguments;
-          console.log(`Tool: ${tc.function.name}`, JSON.stringify(fnArgs).slice(0, 300));
+          console.log(`[TOOL] Admin=${adminUserId} Tool=${tc.function.name} Args=${JSON.stringify(fnArgs).slice(0, 300)}`);
           const toolResult = await executeTool(supabase, tc.function.name, fnArgs);
-          console.log(`Result: ${toolResult.slice(0, 500)}`);
+          console.log(`[TOOL] Result: ${toolResult.slice(0, 500)}`);
           aiMessages.push({ role: "tool", tool_call_id: tc.id, content: toolResult });
         }
         continue;
@@ -575,7 +589,7 @@ profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, 
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("admin-ai-agent error:", error);
+    console.error("[ERROR] admin-ai-agent:", error);
     return handleError(error);
   }
 });
