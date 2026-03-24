@@ -10,7 +10,7 @@ export type NativeDownload = {
   version?: string;
 };
 
-export const nativeDownloadPageUrl = "https://smooth-route-guide.lovable.app/welcome#mobile-download";
+export const nativeDownloadPageUrl = "/welcome#mobile-download";
 
 export const nativeDownloads: NativeDownload[] = [
   {
