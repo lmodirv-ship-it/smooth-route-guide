@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Car, Package, BarChart3, Zap, Shield, DollarSign, MapPin, ArrowRight, Menu, X, Users, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import logo from "@/assets/hn-driver-logo.png";
+import logo from "@/assets/hn-driver-badge.png";
 import heroSkyline from "@/assets/hero-skyline.jpg";
 import heroEmblem from "@/assets/hero-emblem.png";
 

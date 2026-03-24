@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { emailSchema, getSafeWindowOrigin, sanitizeEmail } from "@/lib/inputSecurity";
-import logo from "@/assets/hn-driver-logo.png";
+import logo from "@/assets/hn-driver-badge.png";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();

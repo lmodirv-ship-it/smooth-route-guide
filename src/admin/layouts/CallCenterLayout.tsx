@@ -6,7 +6,7 @@ import {
   Menu, X, UtensilsCrossed, Download, MapPin
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import logo from "@/assets/hn-driver-logo.png";
+import logo from "@/assets/hn-driver-badge.png";
 
 const navItems = [
   { path: "/call-center", icon: BarChart3, label: "لوحة التحكم" },
