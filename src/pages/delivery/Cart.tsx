@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useDeliveryPricingSettings } from "@/hooks/useDeliveryPricingSettings";
 
 const Cart = () => {
   const navigate = useNavigate();
