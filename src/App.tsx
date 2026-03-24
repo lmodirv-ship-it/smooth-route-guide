@@ -121,7 +121,7 @@ const App = () => (
           <Route path="/driver/support" element={<RequireRole allowed={["driver"]}><DriverSupport /></RequireRole>} />
           <Route path="/driver/status" element={<RequireRole allowed={["driver"]}><DriverStatus /></RequireRole>} />
           <Route path="/driver/earnings" element={<RequireRole allowed={["driver"]}><DriverEarnings /></RequireRole>} />
-          <Route path="/driver/delivery" element={<RequireRole allowed={["driver"]}><DriverDelivery /></RequireRole>} />
+          <Route path="/driver/delivery" element={<RequireRole allowed={["driver", "delivery"]}><DriverDelivery /></RequireRole>} />
 
           {/* ═══════════════════════════════════════════
               CANONICAL: Delivery  /delivery/*
