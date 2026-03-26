@@ -470,11 +470,14 @@ const ZonesManagement = () => {
                 <Select value={selectedCountry} onValueChange={handleCountryChange}>
                   <SelectTrigger><SelectValue placeholder={`— ${tz.selectCountry} —`} /></SelectTrigger>
                   <SelectContent>
-                    {availableCountries.map(c => (
-                      <SelectItem key={c} value={c}>
-                        {tc(c)} ({zones.filter(z => z.country === c).length} {tz.zoneCount})
-                      </SelectItem>
-                    ))}
+                    {availableCountries.map(c => {
+                      const gc = getGeoCode("country", c);
+                      return (
+                        <SelectItem key={c} value={c}>
+                          {tc(c)} {gc ? `[${gc.code}]` : ""} ({zones.filter(z => z.country === c).length} {tz.zoneCount})
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </CardContent>
