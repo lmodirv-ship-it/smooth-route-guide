@@ -36,12 +36,13 @@ async function callAdminAI({ messages, onResult, onError }: {
 
 const SmartAssistantPage = () => {
   const { t, dir } = useI18n();
-  const { smartAssistantActive: isActive, smartPreviewUrl: previewUrl, smartSiteUrl: siteUrl, setSmartSiteUrl: setSiteUrl, setSmartPreviewUrl: setPreviewUrl } = useOutletContext<{
+  const { smartAssistantActive: isActive, smartPreviewUrl: previewUrl, smartSiteUrl: siteUrl, setSmartSiteUrl: setSiteUrl, setSmartPreviewUrl: setPreviewUrl, smartRefreshKey } = useOutletContext<{
     smartAssistantActive: boolean;
     smartPreviewUrl: string;
     smartSiteUrl: string;
     setSmartSiteUrl: (v: string) => void;
     setSmartPreviewUrl: (v: string) => void;
+    smartRefreshKey: number;
   }>();
   const [messages, setMessages] = useState<AiMsg[]>([]);
   const [input, setInput] = useState("");
@@ -58,14 +59,12 @@ const SmartAssistantPage = () => {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-  // Auto-refresh preview every 5 seconds for live updates
+  // Refresh preview when smartRefreshKey changes (manual refresh via Actualiser button)
   useEffect(() => {
-    if (!previewUrl) return;
-    const interval = setInterval(() => {
+    if (smartRefreshKey > 0) {
       setIframeKey(k => k + 1);
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [previewUrl]);
+    }
+  }, [smartRefreshKey]);
 
 
 
