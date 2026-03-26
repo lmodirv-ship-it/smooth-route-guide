@@ -424,7 +424,7 @@ const ZonesManagement = () => {
                   <SelectContent>
                     {availableCountries.map(c => (
                       <SelectItem key={c} value={c}>
-                        {c} ({zones.filter(z => z.country === c).length} {tz.zoneCount})
+                        {tc(c)} ({zones.filter(z => z.country === c).length} {tz.zoneCount})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -486,7 +486,7 @@ const ZonesManagement = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <List className="w-5 h-5 text-primary" />
-                  {selectedCity} — {selectedCountry}
+                  {selectedCity} — {tc(selectedCountry)}
                   <Badge variant="secondary" className="mr-2">{filteredZones.length} {tz.zoneCount}</Badge>
                 </CardTitle>
               </CardHeader>
