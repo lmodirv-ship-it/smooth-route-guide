@@ -107,10 +107,13 @@ const SmartAssistantPage = () => {
       return;
     }
 
-    const pageContext = previewUrl
-      ? `\n\n[السياق: الصفحة المحملة حالياً هي: ${previewUrl}]\nقم بتحليل هذه الصفحة وتنفيذ التعليمات التالية عليها.`
+    const currentSiteContext = siteUrl
+      ? `\n\n[السياق: الموقع المعروض حالياً في جدول صفحة 1 هو: ${siteUrl}]\nاستخدم أداة fetch_webpage لقراءة وتحليل محتوى هذا الموقع إذا طُلب منك ذلك.`
       : "";
-    const userMsg: AiMsg = { role: "user", content: safeText + pageContext };
+    const pageContext = previewUrl
+      ? `\n[معاينة الصفحة: ${previewUrl}]`
+      : "";
+    const userMsg: AiMsg = { role: "user", content: safeText + currentSiteContext + pageContext };
     const displayMsg: AiMsg = { role: "user", content: safeText };
     setMessages((prev) => [...prev, displayMsg]);
     setInput("");

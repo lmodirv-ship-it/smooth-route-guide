@@ -301,6 +301,21 @@ Supported block types:
   {
     type: "function",
     function: {
+      name: "fetch_webpage",
+      description: "Fetch and read the content of a webpage URL. Returns the page title, text content, meta description, and links. Use this when the admin asks you to read or analyze a website displayed in the preview panel.",
+      parameters: {
+        type: "object",
+        properties: {
+          url: { type: "string", description: "The full URL of the webpage to fetch (e.g. https://example.com)" },
+          extract: { type: "string", enum: ["text", "links", "meta", "all"], default: "all", description: "What to extract from the page" },
+        },
+        required: ["url"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "manage_theme",
       description: "View or update the site theme/branding. Controls colors, fonts, logo, and visual identity stored in app_settings.",
       parameters: {
@@ -480,6 +495,65 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
           analysis_type: args.analysis_type,
           focus_areas: args.focus_areas || "general",
         });
+      }
+      case "fetch_webpage": {
+        try {
+          const targetUrl = args.url;
+          if (!targetUrl || typeof targetUrl !== "string") return JSON.stringify({ error: "URL required" });
+          // Basic URL validation
+          let parsedUrl: URL;
+          try { parsedUrl = new URL(targetUrl); } catch { return JSON.stringify({ error: "Invalid URL format" }); }
+          if (!["http:", "https:"].includes(parsedUrl.protocol)) return JSON.stringify({ error: "Only HTTP/HTTPS URLs allowed" });
+
+          const fetchResp = await fetch(targetUrl, {
+            headers: {
+              "User-Agent": "Mozilla/5.0 (compatible; HNBot/1.0)",
+              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+              "Accept-Language": "ar,fr,en;q=0.5",
+            },
+            redirect: "follow",
+          });
+
+          if (!fetchResp.ok) return JSON.stringify({ error: `Failed to fetch: HTTP ${fetchResp.status}` });
+
+          const html = await fetchResp.text();
+          const maxLen = 12000;
+
+          // Extract title
+          const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+          const title = titleMatch ? titleMatch[1].trim().slice(0, 200) : "";
+
+          // Extract meta description
+          const metaMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i);
+          const metaDesc = metaMatch ? metaMatch[1].trim().slice(0, 500) : "";
+
+          // Extract text content (strip tags)
+          let textContent = html
+            .replace(/<script[\s\S]*?<\/script>/gi, "")
+            .replace(/<style[\s\S]*?<\/style>/gi, "")
+            .replace(/<[^>]+>/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+            .slice(0, maxLen);
+
+          // Extract links
+          const linkRegex = /<a[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+          const links: { href: string; text: string }[] = [];
+          let linkMatch;
+          while ((linkMatch = linkRegex.exec(html)) !== null && links.length < 30) {
+            links.push({ href: linkMatch[1], text: linkMatch[2].replace(/<[^>]+>/g, "").trim().slice(0, 100) });
+          }
+
+          const extract = args.extract || "all";
+          const result: any = { url: targetUrl, title };
+          if (extract === "all" || extract === "text") result.text_content = textContent;
+          if (extract === "all" || extract === "meta") result.meta_description = metaDesc;
+          if (extract === "all" || extract === "links") result.links = links;
+
+          return JSON.stringify(result);
+        } catch (e: any) {
+          return JSON.stringify({ error: `Fetch failed: ${e.message}` });
+        }
       }
       case "manage_commission_rates": {
         if (args.action === "list") {
@@ -760,6 +834,7 @@ serve(async (req) => {
 - **إنشاء وتعديل صفحات ديناميكية** (صفحات تسويقية، محتوى، لوحات بيانات)
 - **تعديل الهوية البصرية والثيم** (ألوان، خطوط، شعار)
 - **إنشاء محتوى التواصل الاجتماعي** (منشورات، إعلانات، قصص لفيسبوك وإنستغرام وتويتر وتيك توك ولينكدإن)
+- **قراءة وتحليل صفحات الويب** عبر أداة fetch_webpage (لتحليل المواقع المعروضة في جدول صفحة 1)
 
 ## ⛔ ممنوع تماماً:
 - لا يمكنك إدارة المستخدمين أو تعديل الأدوار (user_roles)
