@@ -33,7 +33,7 @@ const ALLOWED_TABLES = [
   "assistant_knowledge_entries", "assistant_recommendations", "assistant_issue_patterns",
   "assistant_campaign_ideas", "assistant_activity_log", "product_images",
   "platform_languages", "platform_translations", "dynamic_pages",
-  "social_media_posts",
+  "social_media_posts", "smart_assistant_commands",
 ];
 
 const tools = [
@@ -341,6 +341,40 @@ Supported block types:
           },
         },
         required: ["action"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "generate_code",
+      description: `Generate code files for the website. Supports React/TypeScript components, CSS/Tailwind styles, SQL queries, HTML pages, and configuration files. The generated code is saved locally for the admin to review and deploy manually. Use this when the admin asks to create or modify components, pages, styles, or any code.`,
+      parameters: {
+        type: "object",
+        properties: {
+          file_path: { type: "string", description: "Target file path relative to project root (e.g. 'src/pages/NewPage.tsx', 'src/components/Banner.tsx', 'src/index.css')" },
+          language: { type: "string", enum: ["typescript", "tsx", "css", "html", "sql", "json", "javascript"], description: "Programming language" },
+          code: { type: "string", description: "The complete code content for the file" },
+          description: { type: "string", description: "Brief description of what this code does" },
+          action: { type: "string", enum: ["create", "modify", "delete"], default: "create", description: "Whether to create a new file, modify existing, or mark for deletion" },
+        },
+        required: ["file_path", "language", "code", "description"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "generate_deployment_package",
+      description: "Generate a complete deployment package with all pending code changes, SQL migrations, and file modifications. This creates a downloadable JSON file containing everything the admin needs to deploy.",
+      parameters: {
+        type: "object",
+        properties: {
+          package_name: { type: "string", description: "Name for the deployment package" },
+          include_sql: { type: "boolean", default: true, description: "Include SQL migration scripts" },
+          include_files: { type: "boolean", default: true, description: "Include generated code files" },
+        },
+        required: ["package_name"],
       },
     },
   },
@@ -723,6 +757,97 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         }
         return JSON.stringify({ error: "Invalid action" });
       }
+      case "generate_code": {
+        // Save generated code to smart_assistant_commands as a code artifact
+        const fileEntry = {
+          file_path: args.file_path,
+          language: args.language,
+          code: args.code,
+          description: args.description,
+          action: args.action || "create",
+          generated_at: new Date().toISOString(),
+        };
+        
+        // Store in smart_assistant_commands table
+        const { error: saveErr } = await supabase.from("smart_assistant_commands").insert({
+          admin_id: "system",
+          command_text: `generate_code: ${args.description}`,
+          command_type: "code_generation",
+          ai_response: args.code,
+          generated_files: [fileEntry],
+          status: "pending_review",
+        });
+        
+        if (saveErr) return JSON.stringify({ error: saveErr.message });
+        
+        // Also upload the code file to storage
+        const encoder = new TextEncoder();
+        const fileContent = encoder.encode(args.code);
+        const storagePath = `generated-code/${Date.now()}_${args.file_path.replace(/\//g, "_")}`;
+        
+        await supabase.storage.from("smart-assistant-files").upload(storagePath, fileContent, {
+          contentType: "text/plain",
+          upsert: true,
+        });
+        
+        const { data: urlData } = supabase.storage.from("smart-assistant-files").getPublicUrl(storagePath);
+        
+        return JSON.stringify({
+          success: true,
+          file_path: args.file_path,
+          language: args.language,
+          description: args.description,
+          action: args.action || "create",
+          download_url: urlData.publicUrl,
+          message: `✅ تم توليد الكود بنجاح: ${args.file_path}\n📥 الملف محفوظ محلياً ويمكن تحميله من سجل الأوامر.\n⚠️ لن يُطبق على السيرفر حتى ترفعه يدوياً.`,
+        });
+      }
+      case "generate_deployment_package": {
+        // Collect all pending code generations
+        const { data: pendingCmds, error: fetchErr } = await supabase
+          .from("smart_assistant_commands")
+          .select("*")
+          .eq("command_type", "code_generation")
+          .eq("status", "pending_review")
+          .order("created_at", { ascending: true });
+          
+        if (fetchErr) return JSON.stringify({ error: fetchErr.message });
+        
+        const deployPackage = {
+          package_name: args.package_name,
+          generated_at: new Date().toISOString(),
+          total_files: pendingCmds?.length || 0,
+          files: (pendingCmds || []).map((cmd: any) => ({
+            ...((cmd.generated_files as any[])?.[0] || {}),
+            command_id: cmd.id,
+          })),
+          instructions: [
+            "1. راجع كل الملفات في القائمة أدناه",
+            "2. انسخ كل ملف إلى المسار المحدد في مشروعك المحلي",
+            "3. شغّل npm run build للتأكد من عدم وجود أخطاء",
+            "4. ارفع التغييرات إلى السيرفر",
+          ],
+        };
+        
+        // Save package to storage
+        const packageContent = new TextEncoder().encode(JSON.stringify(deployPackage, null, 2));
+        const packagePath = `packages/${args.package_name}_${Date.now()}.json`;
+        
+        await supabase.storage.from("smart-assistant-files").upload(packagePath, packageContent, {
+          contentType: "application/json",
+          upsert: true,
+        });
+        
+        const { data: pkgUrl } = supabase.storage.from("smart-assistant-files").getPublicUrl(packagePath);
+        
+        return JSON.stringify({
+          success: true,
+          package_name: args.package_name,
+          total_files: deployPackage.total_files,
+          download_url: pkgUrl.publicUrl,
+          message: `📦 تم إنشاء حزمة النشر "${args.package_name}" بـ ${deployPackage.total_files} ملفات.\n📥 يمكنك تحميلها من الرابط أدناه.`,
+        });
+      }
       default:
         return JSON.stringify({ error: `Unknown tool: ${name}` });
     }
@@ -818,61 +943,72 @@ serve(async (req) => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    const systemPrompt = `أنت المساعد الذكي للمسؤول في منصة HN Driver.
+    const systemPrompt = `أنت المساعد الذكي والمطور التلقائي للمسؤول في منصة HN Driver.
 المسؤول الحالي: ${adminUserId}
 
-## صلاحياتك:
-- قراءة وعرض البيانات من جميع الجداول المتاحة
-- إضافة وتعديل وحذف البيانات (مطاعم، منتجات، طلبات، سائقين، شكاوى، تذاكر...)
-- تعديل إعدادات المنصة (الأسعار، الهوية البصرية، التكوينات)
-- إرسال إشعارات جماعية للمستخدمين والسائقين
-- عرض إحصائيات ولوحة بيانات المنصة
-- إدارة نسب أرباح المنصة (العمولات)
-- إدارة المناطق والمتاجر وقوائم الطعام
-- إدارة قاعدة المعرفة والتوصيات والحملات
-- إدارة الترجمات واللغات
-- **إنشاء وتعديل صفحات ديناميكية** (صفحات تسويقية، محتوى، لوحات بيانات)
-- **تعديل الهوية البصرية والثيم** (ألوان، خطوط، شعار)
-- **إنشاء محتوى التواصل الاجتماعي** (منشورات، إعلانات، قصص لفيسبوك وإنستغرام وتويتر وتيك توك ولينكدإن)
-- **قراءة وتحليل صفحات الويب** عبر أداة fetch_webpage (لتحليل المواقع المعروضة في جدول صفحة 1)
+## 🔧 هويتك:
+أنت مطور Full-Stack متخصص يعمل كمساعد تنفيذي للمدير. تفهم وتكتب الكود بجميع اللغات المستخدمة في المشروع.
+
+## 📐 التقنيات المستخدمة في المشروع:
+- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS + shadcn/ui + Framer Motion
+- **Backend**: Supabase (PostgreSQL + Edge Functions + Auth + Storage)
+- **Routing**: React Router v6
+- **State**: React Query (TanStack Query) + React Context
+- **UI Components**: shadcn/ui (Button, Card, Dialog, Table, etc.)
+- **Styling**: Tailwind CSS with design tokens from index.css
+- **i18n**: نظام ترجمة مخصص (ar, fr, en, es)
+- **Mobile**: Capacitor (Android/iOS) + PWA
+- **Desktop**: Electron
+
+## 💻 قدراتك البرمجية:
+- **إنشاء مكونات React/TSX**: صفحات، مكونات، hooks، contexts
+- **تعديل CSS/Tailwind**: أنماط، ثيمات، تصميم متجاوب
+- **كتابة SQL**: استعلامات، migrations، triggers، RLS policies
+- **إنشاء Edge Functions**: Deno/TypeScript للخلفية
+- **تعديل HTML**: صفحات ثابتة، قوالب
+- **إدارة JSON**: إعدادات، بيانات، ترجمات
+
+## 📋 آلية العمل:
+1. المدير يرسل تعليمات (نص + ملفات اختيارية)
+2. أنت تقرأ التعليمات وتحلل المحتوى المعروض في صفحة 1
+3. تولّد الكود المناسب باستخدام أداة generate_code
+4. الكود يُحفظ محلياً (لا يُنشر تلقائياً)
+5. المدير يراجع ويقرر النشر يدوياً
+
+## 🛠️ أدوات التطوير:
+- **generate_code**: لإنشاء أو تعديل ملفات الكود (TSX, CSS, SQL, HTML, JSON)
+- **generate_deployment_package**: لتجميع كل التغييرات المعلقة في حزمة واحدة للنشر
+- **manage_page**: لإنشاء صفحات ديناميكية (محتوى مرن عبر JSON blocks)
+- **manage_theme**: لتعديل الهوية البصرية
+- **fetch_webpage**: لقراءة وتحليل المواقع
+
+## 📝 قواعد كتابة الكود:
+- استخدم TypeScript strict mode
+- استخدم design tokens من Tailwind (لا ألوان مباشرة)
+- استخدم shadcn/ui components
+- أضف التعليقات بالعربية
+- اتبع بنية المشروع: src/pages/, src/components/, src/hooks/, src/lib/
+- استخدم imports مطلقة (@/components/..., @/lib/..., @/hooks/...)
+- كل ملف يجب أن يكون قابلاً للنسخ مباشرة إلى المشروع
+
+## صلاحياتك الإدارية:
+- قراءة وتعديل جميع الجداول المتاحة
+- تعديل إعدادات المنصة والهوية البصرية
+- إرسال إشعارات جماعية
+- إدارة العمولات والمناطق والمتاجر
+- إنشاء صفحات ديناميكية ومحتوى تواصل اجتماعي
+- قراءة وتحليل صفحات الويب
 
 ## ⛔ ممنوع تماماً:
 - لا يمكنك إدارة المستخدمين أو تعديل الأدوار (user_roles)
 - لا يمكنك إنشاء حسابات جديدة أو حذف حسابات
-- لا يمكنك تغيير صلاحيات أي مستخدم
-
-## إدارة الصفحات:
-- استخدم أداة manage_page لإنشاء وتعديل الصفحات
-- الصفحات تُعرض على المسار /p/{slug}
-- يمكنك إنشاء أي نوع: صفحات تسويقية، محتوى، لوحات بيانات
-- المحتوى عبارة عن مصفوفة من الأقسام (blocks) بأنواع متعددة
-- يجب نشر الصفحة (publish) لتكون مرئية للمستخدمين
-- استخدم block types المتاحة لبناء صفحات غنية ومتنوعة
-
-## تعديل الثيم:
-- استخدم أداة manage_theme لتعديل الهوية البصرية
-- يمكنك تغيير الألوان، الخطوط، الشعار، والتنسيقات العامة
-
-## نسب الأرباح:
-- استخدم أداة manage_commission_rates لعرض أو تعديل نسب الأرباح
-
-## محتوى التواصل الاجتماعي:
-- استخدم أداة manage_social_content لإنشاء منشورات وإعلانات للتواصل الاجتماعي
-- المنشورات تُنشأ كمسودات وتحتاج موافقة المدير قبل النشر
-- المنصات المدعومة: Facebook, Instagram, Twitter, TikTok, LinkedIn
-- أنواع المنشورات: post, story, reel, ad, carousel
-- أنشئ محتوى جذاب مع هاشتاقات وصور مناسبة
-- المنشورات المعتمدة يمكن نسخها ونشرها يدوياً على المنصات
-
-## القواعد الأمنية:
-- لا تحذف بيانات بدون تأكيد صريح من المسؤول
+- لا تحذف بيانات بدون تأكيد صريح
 - لا تحذف أكثر من 10 سجلات في عملية واحدة
-- أجب دائماً بالعربية
-- كن مختصراً لكن شاملاً
+- أجب دائماً بالعربية مع كتابة الكود بالإنجليزية
 - قدّم نتائج بتنسيق Markdown
 
 ## الجداول المتاحة:
-profiles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates, assistant_knowledge_entries, assistant_recommendations, assistant_issue_patterns, assistant_campaign_ideas, assistant_activity_log, product_images, platform_languages, platform_translations, dynamic_pages, social_media_posts`;
+profiles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates, assistant_knowledge_entries, assistant_recommendations, assistant_issue_patterns, assistant_campaign_ideas, assistant_activity_log, product_images, platform_languages, platform_translations, dynamic_pages, social_media_posts, smart_assistant_commands`;
 
     let aiMessages: any[] = [
       { role: "system", content: systemPrompt },
