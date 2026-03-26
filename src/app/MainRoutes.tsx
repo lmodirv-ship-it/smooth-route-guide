@@ -133,6 +133,9 @@ export const mainRouteElements = (
       <Route path="/assistant" element={<RequireRole><AIAssistant /></RequireRole>} />
     </Route>
 
+    {/* ─── Dynamic CMS Pages ─── */}
+    <Route path="/p/:slug" element={<DynamicPage />} />
+
     {/* ═══════════════════════════════════════════
         SHORTCUT + LEGACY REDIRECTS
         Consolidated: /client/* → /customer/*, /driver-panel/* → /driver/*
