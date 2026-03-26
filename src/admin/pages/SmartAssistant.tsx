@@ -56,9 +56,25 @@ const SmartAssistantPage = () => {
     setPreviewUrl(url);
   };
 
+  const toggleActive = () => {
+    const next = !isActive;
+    setIsActive(next);
+    if (next) {
+      toast.success("✅ تم تفعيل المساعد الذكي — سيتم تنفيذ الأوامر على الموقع", { duration: 3000 });
+    } else {
+      toast.info("⛔ تم إلغاء التفعيل — لن يتم تنفيذ أي تغيير على الموقع", { duration: 3000 });
+    }
+  };
+
   const sendMessage = async () => {
     const safeText = sanitizePlainText(input, 8000);
-    if (!safeText || loading || !isActive) return;
+    if (!safeText || loading) return;
+
+    if (!isActive) {
+      toast.warning("⚠️ المساعد غير مفعّل — فعّل المساعد أولاً لتنفيذ الأوامر");
+      return;
+    }
+
     const userMsg: AiMsg = { role: "user", content: safeText };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
@@ -81,6 +97,7 @@ const SmartAssistantPage = () => {
           t.id === newTask.id ? { ...t, status: "success" as const, code: reply } : t
         ));
         setLoading(false);
+        toast.success("✅ تم تنفيذ الأمر بنجاح");
       },
       onError: (err) => {
         setMessages(prev => [...prev, { role: "assistant", content: `❌ ${err}` }]);
@@ -88,6 +105,7 @@ const SmartAssistantPage = () => {
           t.id === newTask.id ? { ...t, status: "error" as const, code: err } : t
         ));
         setLoading(false);
+        toast.error("❌ فشل تنفيذ الأمر");
       },
     });
   };
