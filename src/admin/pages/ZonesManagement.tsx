@@ -207,7 +207,7 @@ const ZonesManagement = () => {
         );
         const newCities = cities.filter((c: any) => !existingCities.has(c.name.trim()));
         if (newCities.length === 0) {
-          toast.info("جميع المدن المكتشفة موجودة بالفعل");
+          // No new cities, but don't just show a message - silently continue
           setAutoGenerating(false);
           return;
         }
