@@ -131,7 +131,22 @@ const SmartAssistantPage = () => {
   return (
     <div className="h-[calc(100vh-80px)] flex flex-col gap-3" dir={dir}>
       {/* Header */}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button
+            variant={isActive ? "destructive" : "default"}
+            size="sm"
+            onClick={toggleActive}
+            className={`gap-2 ${!isActive ? "bg-success hover:bg-success/90 text-white" : ""}`}
+          >
+            {isActive ? <ShieldOff className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
+            {isActive ? "إلغاء" : "تفعيل"}
+          </Button>
+          <Badge variant="outline" className={`text-xs ${isActive ? "text-success border-success/30 bg-success/10" : "text-destructive border-destructive/30 bg-destructive/10"}`}>
+            <span className={`inline-block w-2 h-2 rounded-full mr-1 ${isActive ? "bg-success animate-pulse" : "bg-destructive"}`} />
+            {isActive ? "نشط" : "متوقف"}
+          </Badge>
+        </div>
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-bold text-foreground">المساعد الذكي للمدير</h1>
           <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
