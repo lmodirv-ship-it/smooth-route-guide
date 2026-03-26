@@ -196,11 +196,48 @@ const AdminLayout = () => {
         </div>
       </aside>
 
+      {/* Mobile Sidebar */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-[100] lg:hidden">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
+          <aside className="absolute right-0 top-0 bottom-0 w-72 glass-strong border-l border-border flex flex-col z-10 overflow-auto">
+            <div className="p-4 flex items-center justify-between border-b border-border">
+              <button onClick={() => setMobileOpen(false)} className="p-1 hover:bg-secondary rounded-lg">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+              <div className="flex items-center gap-2">
+                <img src={logo} alt="HN" className="w-8 h-8" />
+                <span className="font-bold text-gradient-primary font-display">{t.admin.panelTitle}</span>
+              </div>
+            </div>
+            <nav className="flex-1 p-3 space-y-1 overflow-auto">
+              {navItems.map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => { navigate(item.path); setMobileOpen(false); }}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all ${
+                    isActive(item.path) ? "gradient-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                    <span className="text-sm">{item.label}</span>
+                  </div>
+                </button>
+              ))}
+            </nav>
+          </aside>
+        </div>
+      )}
+
       {/* Main */}
       <div className="flex-1 overflow-auto flex flex-col">
         {/* Top Bar */}
-        <header className="glass-strong border-b border-border px-6 py-3 flex items-center justify-between sticky top-0 z-40">
+        <header className="glass-strong border-b border-border px-3 md:px-6 py-3 flex items-center justify-between sticky top-0 z-40">
           <div className="flex items-center gap-2">
+            <button onClick={() => setMobileOpen(true)} className="lg:hidden p-1.5 hover:bg-secondary rounded-lg">
+              <Menu className="w-5 h-5 text-muted-foreground" />
+            </button>
             {isSmartAssistantRoute ? (
               <>
                 <Button size="sm" className="gap-1.5 shrink-0 h-9" onClick={() => {
