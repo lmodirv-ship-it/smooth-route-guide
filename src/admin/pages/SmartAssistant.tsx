@@ -160,22 +160,22 @@ const SmartAssistantPage = () => {
           </div>
 
           <div className="bg-secondary/60 px-3 py-1.5 flex items-center justify-center gap-2 border-t border-border shrink-0">
-            <Button variant="outline" size="icon" className="h-7 w-7 text-lg font-bold" onClick={() => setZoomLevel((z) => Math.max(0.1, z - 0.1))}>
+            <Button variant="outline" size="icon" className="h-7 w-7 text-lg font-bold" onClick={() => setZoomLevel((z) => Math.max(0.01, z - 0.1))}>
               −
             </Button>
             <Input
               type="number"
-              min={10}
-              max={100}
+              min={1}
+              max={100000}
               value={Math.round(zoomLevel * 100)}
               onChange={(e) => {
                 const v = parseInt(e.target.value);
-                if (!isNaN(v) && v >= 10 && v <= 100) setZoomLevel(v / 100);
+                if (!isNaN(v) && v >= 1 && v <= 100000) setZoomLevel(v / 100);
               }}
-              className="w-16 h-7 text-center text-xs bg-background border-border [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              className="w-20 h-7 text-center text-xs bg-background border-border [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               dir="ltr"
             />
-            <Button variant="outline" size="icon" className="h-7 w-7 text-lg font-bold" onClick={() => setZoomLevel((z) => Math.min(1, z + 0.1))}>
+            <Button variant="outline" size="icon" className="h-7 w-7 text-lg font-bold" onClick={() => setZoomLevel((z) => z + 0.1)}>
               +
             </Button>
           </div>
