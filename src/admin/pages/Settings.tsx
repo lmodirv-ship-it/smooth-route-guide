@@ -146,41 +146,25 @@ const AdminSettings = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="general" dir="rtl" className="w-full">
-        <TabsList className="w-full grid grid-cols-4 mb-6">
-          <TabsTrigger value="general">⚙️ عام</TabsTrigger>
-          <TabsTrigger value="pricing">💰 التسعيرة</TabsTrigger>
-          <TabsTrigger value="payment">💳 الدفع</TabsTrigger>
-          <TabsTrigger value="languages">🌐 اللغات</TabsTrigger>
-        </TabsList>
+      <PricingSettings
+        settings={settings}
+        onChange={(key, value) => setSettings(s => ({ ...s, [key]: value }))}
+      />
 
-        <TabsContent value="general">
-          <GeneralSettings
-            settings={settings}
-            onChange={(key, value) => setSettings(s => ({ ...s, [key]: value }))}
-          />
-        </TabsContent>
+      <GeneralSettings
+        settings={settings}
+        onChange={(key, value) => setSettings(s => ({ ...s, [key]: value }))}
+      />
 
-        <TabsContent value="pricing" className="space-y-6">
-          <PricingSettings
-            settings={settings}
-            onChange={(key, value) => setSettings(s => ({ ...s, [key]: value }))}
-          />
-          <DeliveryPricingSettings
-            pricing={deliveryPricing}
-            onChange={(key, value) => setDeliveryPricing(s => ({ ...s, [key]: value }))}
-            onReset={handleResetDeliveryPricing}
-          />
-        </TabsContent>
+      <DeliveryPricingSettings
+        pricing={deliveryPricing}
+        onChange={(key, value) => setDeliveryPricing(s => ({ ...s, [key]: value }))}
+        onReset={handleResetDeliveryPricing}
+      />
 
-        <TabsContent value="payment">
-          <PaymentSettings />
-        </TabsContent>
+      <PaymentSettings />
 
-        <TabsContent value="languages">
-          <LanguageManagement />
-        </TabsContent>
-      </Tabs>
+      <LanguageManagement />
     </div>
   );
 };
