@@ -190,29 +190,58 @@ serve(async (req) => {
       const data = await response.json();
 
       if (data.status === "OK" && data.results?.length > 0) {
-        const restaurants = data.results.map((place: any) => {
-          const addressParts = (place.formatted_address || "").split(",");
-          const areaLabel = addressParts.length > 1 ? addressParts[addressParts.length - 2]?.trim() : "";
+        // Fetch details (phone, website) for each place in parallel (max 10)
+        const placesToDetail = data.results.slice(0, 15);
+        const detailedRestaurants = await Promise.all(
+          placesToDetail.map(async (place: any) => {
+            const addressParts = (place.formatted_address || "").split(",");
+            const areaLabel = addressParts.length > 1 ? addressParts[addressParts.length - 2]?.trim() : "";
 
-          return {
-            name: sanitizePlainText(place.name || "", 120),
-            address: sanitizePlainText(place.formatted_address || "", 220),
-            area: sanitizePlainText(areaLabel || "", 80),
-            lat: Number(place.geometry?.location?.lat || 0),
-            lng: Number(place.geometry?.location?.lng || 0),
-            phone: "",
-            rating: Number(place.rating || 0),
-            image_url: "",
-            is_open: place.opening_hours?.open_now ?? true,
-            google_place_id: sanitizePlainText(place.place_id || "", 160),
-            category: "restaurant",
-          };
-        });
+            let phone = "";
+            let website = "";
+            // Fetch Place Details for phone number
+            if (place.place_id) {
+              try {
+                const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=formatted_phone_number,international_phone_number,website&key=${googleMapsApiKey}&language=fr`;
+                const detailRes = await fetch(detailUrl);
+                const detailData = await detailRes.json();
+                if (detailData.status === "OK" && detailData.result) {
+                  phone = detailData.result.international_phone_number || detailData.result.formatted_phone_number || "";
+                  website = detailData.result.website || "";
+                }
+              } catch (e) {
+                console.error("Place details error:", e);
+              }
+            }
+
+            // Get photo URL if available
+            let imageUrl = "";
+            if (place.photos && place.photos.length > 0) {
+              const photoRef = place.photos[0].photo_reference;
+              imageUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photoRef}&key=${googleMapsApiKey}`;
+            }
+
+            return {
+              name: sanitizePlainText(place.name || "", 120),
+              address: sanitizePlainText(place.formatted_address || "", 220),
+              area: sanitizePlainText(areaLabel || "", 80),
+              lat: Number(place.geometry?.location?.lat || 0),
+              lng: Number(place.geometry?.location?.lng || 0),
+              phone: sanitizePlainText(phone, 40),
+              rating: Number(place.rating || 0),
+              image_url: imageUrl,
+              is_open: place.opening_hours?.open_now ?? true,
+              google_place_id: sanitizePlainText(place.place_id || "", 160),
+              category: "restaurant",
+              website: sanitizePlainText(website, 200),
+            };
+          })
+        );
 
         return new Response(JSON.stringify({
-          restaurants,
+          restaurants: detailedRestaurants,
           source: "google",
-          total: restaurants.length,
+          total: detailedRestaurants.length,
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
