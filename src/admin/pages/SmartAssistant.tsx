@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Bot, Send, Loader2, CheckCircle, Code, Power, XCircle, Globe, ExternalLink, ShieldCheck, ShieldOff } from "lucide-react";
+import { Bot, Send, Loader2, CheckCircle, Code, Power, XCircle, Globe, ExternalLink, ShieldCheck, ShieldOff, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -52,6 +52,7 @@ const SmartAssistantPage = () => {
   const [displayUrl, setDisplayUrl] = useState("");
   const [iframeError, setIframeError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
+  const [zoomLevel, setZoomLevel] = useState(0.48);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -175,7 +176,7 @@ const SmartAssistantPage = () => {
                   ref={iframeRef}
                   key={`${previewUrl}-${iframeKey}`}
                   src={previewUrl}
-                  style={{ width: "1440px", height: "900px", transform: "scale(0.48)", transformOrigin: "top left" }}
+                  style={{ width: "1440px", height: "900px", transform: `scale(${zoomLevel})`, transformOrigin: "top left" }}
                   className="bg-white"
                   sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                   referrerPolicy="no-referrer"
@@ -193,6 +194,19 @@ const SmartAssistantPage = () => {
                     }
                   }}
                 />
+              </div>
+              {/* Zoom Controls */}
+              <div className="bg-secondary/60 px-3 py-1.5 flex items-center justify-center gap-3 border-t border-border">
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setZoomLevel(z => Math.max(0.2, z - 0.1))}>
+                  <ZoomOut className="w-3.5 h-3.5" />
+                </Button>
+                <span className="text-xs text-muted-foreground font-mono w-12 text-center">{Math.round(zoomLevel * 100)}%</span>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setZoomLevel(z => Math.min(1, z + 0.1))}>
+                  <ZoomIn className="w-3.5 h-3.5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setZoomLevel(0.48)}>
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </Button>
               </div>
             </div>
           )}
