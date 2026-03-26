@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, Loader2, CheckCircle, Code, Power, XCircle, Globe, ExternalLink } from "lucide-react";
+import { Bot, Send, Loader2, CheckCircle, Code, Power, XCircle, Globe, ExternalLink, ShieldCheck, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -55,9 +56,25 @@ const SmartAssistantPage = () => {
     setPreviewUrl(url);
   };
 
+  const toggleActive = () => {
+    const next = !isActive;
+    setIsActive(next);
+    if (next) {
+      toast.success("✅ تم تفعيل المساعد الذكي — سيتم تنفيذ الأوامر على الموقع", { duration: 3000 });
+    } else {
+      toast.info("⛔ تم إلغاء التفعيل — لن يتم تنفيذ أي تغيير على الموقع", { duration: 3000 });
+    }
+  };
+
   const sendMessage = async () => {
     const safeText = sanitizePlainText(input, 8000);
-    if (!safeText || loading || !isActive) return;
+    if (!safeText || loading) return;
+
+    if (!isActive) {
+      toast.warning("⚠️ المساعد غير مفعّل — فعّل المساعد أولاً لتنفيذ الأوامر");
+      return;
+    }
+
     const userMsg: AiMsg = { role: "user", content: safeText };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
@@ -80,6 +97,7 @@ const SmartAssistantPage = () => {
           t.id === newTask.id ? { ...t, status: "success" as const, code: reply } : t
         ));
         setLoading(false);
+        toast.success("✅ تم تنفيذ الأمر بنجاح");
       },
       onError: (err) => {
         setMessages(prev => [...prev, { role: "assistant", content: `❌ ${err}` }]);
@@ -87,6 +105,7 @@ const SmartAssistantPage = () => {
           t.id === newTask.id ? { ...t, status: "error" as const, code: err } : t
         ));
         setLoading(false);
+        toast.error("❌ فشل تنفيذ الأمر");
       },
     });
   };
@@ -99,14 +118,15 @@ const SmartAssistantPage = () => {
           <Button
             variant={isActive ? "destructive" : "default"}
             size="sm"
-            onClick={() => setIsActive(!isActive)}
-            className="gap-2"
+            onClick={toggleActive}
+            className={`gap-2 ${!isActive ? "bg-success hover:bg-success/90 text-white" : ""}`}
           >
-            {isActive ? <XCircle className="w-4 h-4" /> : <Power className="w-4 h-4" />}
+            {isActive ? <ShieldOff className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
             {isActive ? "إلغاء التفعيل" : "تفعيل"}
           </Button>
-          <Badge variant="outline" className={isActive ? "text-success border-success/30" : "text-destructive border-destructive/30"}>
-            {isActive ? "نشط" : "متوقف"}
+          <Badge variant="outline" className={`px-3 py-1 ${isActive ? "text-success border-success/30 bg-success/10" : "text-destructive border-destructive/30 bg-destructive/10"}`}>
+            <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${isActive ? "bg-success animate-pulse" : "bg-destructive"}`} />
+            {isActive ? "نشط — التغييرات ستُنفَّذ" : "متوقف — لن يُنفَّذ أي أمر"}
           </Badge>
         </div>
         <div className="flex items-center gap-3">
