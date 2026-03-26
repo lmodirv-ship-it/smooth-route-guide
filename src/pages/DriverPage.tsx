@@ -371,7 +371,71 @@ const DriverPage = () => {
               <p className="text-white/30 text-sm mt-1">{t.driver.ridesWillAppear}</p>
             </div>
           ) : (
-            <table className="w-full text-sm">
+            <>
+              {/* Mobile Cards */}
+              <div className="md:hidden space-y-2 p-3">
+                {nearbyOrders.map((order) => {
+                  const isSelected = selectedOrderId === order.id;
+                  return (
+                    <motion.div
+                      key={order.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      onClick={() => setSelectedOrderId(isSelected ? null : order.id)}
+                      className={`rounded-xl p-3 border transition-all cursor-pointer ${
+                        isSelected ? "bg-emerald-500/10 border-emerald-500/30" : "bg-white/[0.03] border-white/[0.06] hover:border-white/10"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <Button
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); handleAccept(order.id); }}
+                          disabled={accepting === order.id || !!activeRideId}
+                          className="h-8 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold shrink-0"
+                        >
+                          {accepting === order.id ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <>
+                              <CheckCircle className="w-3 h-3 ml-1" />
+                              {t.driver.accept}
+                            </>
+                          )}
+                        </Button>
+                        <div className="text-right flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 justify-end">
+                            <span className="text-white/80 text-sm truncate">{order.pickup || "\u2014"}</span>
+                            <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                          </div>
+                          <div className="flex items-center gap-1.5 justify-end mt-1">
+                            <span className="text-white/80 text-sm truncate">{order.destination || "\u2014"}</span>
+                            <div className="w-2 h-2 rounded-full bg-orange-400 shrink-0" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between pt-2 border-t border-white/[0.06]">
+                        <span className="text-emerald-400 font-black text-base">{order.totalPrice || "\u2014"} DH</span>
+                        <div className="flex items-center gap-3 text-xs">
+                          <span className="text-emerald-400">{order.totalDistance} {t.driver.km}</span>
+                          {order.distToPickup != null && (
+                            <span className="text-yellow-400 flex items-center gap-0.5">
+                              <MapPin className="w-3 h-3" />{order.distToPickup}
+                            </span>
+                          )}
+                          {order.eta && (
+                            <span className="text-blue-400 flex items-center gap-0.5">
+                              <Clock className="w-3 h-3" />{order.eta} \u062f
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table */}
+              <table className="w-full text-sm hidden md:table">
               <thead className="sticky top-0 z-10 bg-[#0d1320] border-b border-white/5">
                 <tr className="text-white/50 text-xs">
                   <th className="py-2 px-3 text-right font-medium">{t.driver.pickup}</th>
@@ -450,6 +514,7 @@ const DriverPage = () => {
                 })}
               </tbody>
             </table>
+            </>
           )}
         </div>
       </div>
