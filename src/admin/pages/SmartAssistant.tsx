@@ -188,41 +188,22 @@ const SmartAssistantPage = () => {
               <TabsTrigger value="social" className="text-xs">التواصل الاجتماعي</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="sites" className="flex-1 flex flex-col overflow-hidden m-0">
-              {/* Site selector bar */}
-              <div className="bg-secondary/60 px-2 py-1.5 flex items-center gap-1 border-b border-border overflow-x-auto shrink-0">
-                {websiteList.map((site, i) => (
+             <TabsContent value="sites" className="flex-1 flex flex-col overflow-auto m-0 p-4">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                {websiteList.map((site) => (
                   <button
                     key={site.name}
-                    onClick={() => setActiveSiteIndex(i)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap shrink-0 ${
-                      activeSiteIndex === i
-                        ? "gradient-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                    }`}
+                    onClick={() => window.open(site.url, "_blank", "noopener,noreferrer")}
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-secondary/30 hover:bg-secondary/60 hover:shadow-md transition-all group"
                   >
-                    <span className="text-base">{site.icon}</span>
-                    {site.name}
+                    <div className={`w-12 h-12 rounded-xl ${site.color} flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform`}>
+                      {site.icon}
+                    </div>
+                    <span className="text-xs font-medium text-foreground">{site.name}</span>
                   </button>
                 ))}
-                <button
-                  onClick={() => window.open(websiteList[activeSiteIndex].url, "_blank", "noopener,noreferrer")}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-muted-foreground hover:bg-secondary hover:text-foreground transition-all whitespace-nowrap shrink-0 mr-auto"
-                >
-                  🔗 فتح خارجياً
-                </button>
               </div>
-              {/* Site iframe */}
-              <div className="flex-1 bg-background relative" style={{ overflow: "hidden" }}>
-                <iframe
-                  key={`site-${activeSiteIndex}-${iframeKey}`}
-                  src={websiteList[activeSiteIndex].url}
-                  className="border-0 absolute inset-0 w-full h-full"
-                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-                  referrerPolicy="no-referrer"
-                  title={websiteList[activeSiteIndex].name}
-                />
-              </div>
+              <p className="text-center text-muted-foreground/60 text-[10px] mt-4">اضغط على أي موقع لفتحه في نافذة جديدة</p>
             </TabsContent>
 
             <TabsContent value="preview" className="flex-1 flex flex-col overflow-hidden m-0">
