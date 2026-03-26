@@ -9,9 +9,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Pencil, Store, UtensilsCrossed, Loader2 } from "lucide-react";
+import { Plus, Pencil, Store, UtensilsCrossed, Loader2, Sparkles, Save } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CsvMenuImport from "@/admin/components/CsvMenuImport";
+import { Badge } from "@/components/ui/badge";
 
 const AdminRestaurants = () => {
   const { selectedCountry, selectedCity } = useAdminGeo();
