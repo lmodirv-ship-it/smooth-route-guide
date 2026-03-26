@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   BarChart3, FileText, Car, Users, TrendingUp, MapPin,
   AlertTriangle, FileCheck, Headphones, Settings, Shield,
-  Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog
+  Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog, Percent
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,7 @@ const AdminLayout = () => {
     { path: "/admin/call-center", icon: Headphones, label: t.admin.callCenterMenu },
     { path: "/admin/restaurants", icon: UtensilsCrossed, label: t.admin.restaurantsMenu },
     { path: "/admin/zones", icon: MapPin, label: t.admin.zonesPricing },
+    { path: "/admin/commission-rates", icon: Percent, label: "نسب الأرباح" },
     { path: "/admin/settings", icon: Settings, label: t.admin.settingsMenu },
   ];
 

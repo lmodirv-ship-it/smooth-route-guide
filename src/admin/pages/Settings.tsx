@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
-import { Settings, Save, DollarSign, MapPin, Bell, Shield, Loader2, Truck, Sun, Moon, RotateCcw, Globe } from "lucide-react";
-import LanguageManagement from "@/admin/components/LanguageManagement";
-import CommissionRatesManager from "@/admin/components/CommissionRatesManager";
-import { Input } from "@/components/ui/input";
+import { Settings, Save, Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { DELIVERY_PRICING_DEFAULTS } from "@/hooks/useDeliveryPricingSettings";
+import PricingSettings from "@/admin/components/settings/PricingSettings";
+import GeneralSettings from "@/admin/components/settings/GeneralSettings";
+import DeliveryPricingSettings from "@/admin/components/settings/DeliveryPricingSettings";
+import PaymentSettings from "@/admin/components/settings/PaymentSettings";
+import LanguageManagement from "@/admin/components/LanguageManagement";
 
 const AdminSettings = () => {
   const [saving, setSaving] = useState(false);
@@ -130,16 +131,6 @@ const AdminSettings = () => {
     toast({ title: "تم إعادة تعيين قيم تسعير التوصيل إلى الافتراضية (لم تُحفظ بعد)" });
   };
 
-  const Section = ({ title, icon: Icon, children }: { title: string; icon: any; children: React.ReactNode }) => (
-    <div className="gradient-card rounded-xl border border-border p-6">
-      <div className="flex items-center gap-2 mb-4 text-right">
-        <Icon className="w-5 h-5 text-primary" />
-        <h3 className="font-bold text-foreground">{title}</h3>
-      </div>
-      {children}
-    </div>
-  );
-
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
@@ -155,162 +146,41 @@ const AdminSettings = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Section title="التسعيرة" icon={DollarSign}>
-          <div className="space-y-4">
-            {[
-              { label: "التسعيرة الأساسية (DH)", key: "baseFare" },
-              { label: "سعر الكيلومتر (DH)", key: "perKmRate" },
-              { label: "سعر الدقيقة (DH)", key: "perMinRate" },
-              { label: "الحد الأدنى للأجرة (DH)", key: "minFare" },
-            ].map(field => (
-              <div key={field.key} className="flex items-center justify-between gap-4">
-                <Input value={settings[field.key as keyof typeof settings] as string}
-                  onChange={e => setSettings(s => ({ ...s, [field.key]: e.target.value }))}
-                  className="bg-secondary/60 border-border h-9 w-32 text-sm text-center" type="number" />
-                <label className="text-sm text-foreground">{field.label}</label>
-              </div>
-            ))}
-          </div>
-        </Section>
+      <Tabs defaultValue="general" dir="rtl" className="w-full">
+        <TabsList className="w-full grid grid-cols-4 mb-6">
+          <TabsTrigger value="general">⚙️ عام</TabsTrigger>
+          <TabsTrigger value="pricing">💰 التسعيرة</TabsTrigger>
+          <TabsTrigger value="payment">💳 الدفع</TabsTrigger>
+          <TabsTrigger value="languages">🌐 اللغات</TabsTrigger>
+        </TabsList>
 
-        <Section title="المناطق" icon={MapPin}>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between gap-4">
-              <Input value={settings.maxRadius}
-                onChange={e => setSettings(s => ({ ...s, maxRadius: e.target.value }))}
-                className="bg-secondary/60 border-border h-9 w-32 text-sm text-center" type="number" />
-              <label className="text-sm text-foreground">نطاق الخدمة (كم)</label>
-            </div>
-            <div className="flex items-center justify-between">
-              <Switch checked={settings.autoAssign} onCheckedChange={v => setSettings(s => ({ ...s, autoAssign: v }))} />
-              <label className="text-sm text-foreground">تعيين تلقائي للسائقين</label>
-            </div>
-          </div>
-        </Section>
+        <TabsContent value="general">
+          <GeneralSettings
+            settings={settings}
+            onChange={(key, value) => setSettings(s => ({ ...s, [key]: value }))}
+          />
+        </TabsContent>
 
-        <Section title="الإشعارات" icon={Bell}>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Switch checked={settings.emailNotifications} onCheckedChange={v => setSettings(s => ({ ...s, emailNotifications: v }))} />
-              <label className="text-sm text-foreground">إشعارات البريد الإلكتروني</label>
-            </div>
-            <div className="flex items-center justify-between">
-              <Switch checked={settings.pushNotifications} onCheckedChange={v => setSettings(s => ({ ...s, pushNotifications: v }))} />
-              <label className="text-sm text-foreground">إشعارات الدفع</label>
-            </div>
-          </div>
-        </Section>
+        <TabsContent value="pricing" className="space-y-6">
+          <PricingSettings
+            settings={settings}
+            onChange={(key, value) => setSettings(s => ({ ...s, [key]: value }))}
+          />
+          <DeliveryPricingSettings
+            pricing={deliveryPricing}
+            onChange={(key, value) => setDeliveryPricing(s => ({ ...s, [key]: value }))}
+            onReset={handleResetDeliveryPricing}
+          />
+        </TabsContent>
 
-        <Section title="النظام" icon={Shield}>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Switch checked={settings.maintenanceMode} onCheckedChange={v => setSettings(s => ({ ...s, maintenanceMode: v }))} />
-              <label className="text-sm text-foreground">وضع الصيانة</label>
-            </div>
-            <p className="text-xs text-muted-foreground text-right">عند تفعيل وضع الصيانة، لن يتمكن المستخدمون من الوصول إلى المنصة</p>
-          </div>
-        </Section>
-      </div>
+        <TabsContent value="payment">
+          <PaymentSettings />
+        </TabsContent>
 
-      {/* Delivery Pricing Section - Full Width */}
-      <div className="gradient-card rounded-xl border border-border p-6">
-        <div className="flex items-center justify-between mb-4">
-          <Button variant="outline" size="sm" onClick={handleResetDeliveryPricing} className="text-xs gap-1">
-            <RotateCcw className="w-3 h-3" />
-            إعادة تعيين
-          </Button>
-          <div className="flex items-center gap-2">
-            <Truck className="w-5 h-5 text-primary" />
-            <h3 className="font-bold text-foreground">إعدادات تسعير التوصيل</h3>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Day Pricing */}
-          <div className="space-y-4 border border-border rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Sun className="w-4 h-4 text-yellow-500" />
-              <h4 className="font-semibold text-sm text-foreground">التسعيرة النهارية</h4>
-            </div>
-            {[
-              { label: "السعر الأساسي (DH)", key: "dayBaseFare" },
-              { label: "الكيلومترات المشمولة", key: "dayIncludedKm" },
-              { label: "سعر كل كم إضافي (DH)", key: "dayExtraKmRate" },
-            ].map(field => (
-              <div key={field.key} className="flex items-center justify-between gap-4">
-                <Input
-                  value={deliveryPricing[field.key as keyof typeof deliveryPricing]}
-                  onChange={e => setDeliveryPricing(s => ({ ...s, [field.key]: e.target.value }))}
-                  className="bg-secondary/60 border-border h-9 w-32 text-sm text-center" type="number" />
-                <label className="text-sm text-foreground">{field.label}</label>
-              </div>
-            ))}
-          </div>
-
-          {/* Night Pricing */}
-          <div className="space-y-4 border border-border rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Moon className="w-4 h-4 text-blue-400" />
-              <h4 className="font-semibold text-sm text-foreground">التسعيرة الليلية</h4>
-            </div>
-            {[
-              { label: "السعر الأساسي (DH)", key: "nightBaseFare" },
-              { label: "الكيلومترات المشمولة", key: "nightIncludedKm" },
-              { label: "سعر كل كم إضافي (DH)", key: "nightExtraKmRate" },
-            ].map(field => (
-              <div key={field.key} className="flex items-center justify-between gap-4">
-                <Input
-                  value={deliveryPricing[field.key as keyof typeof deliveryPricing]}
-                  onChange={e => setDeliveryPricing(s => ({ ...s, [field.key]: e.target.value }))}
-                  className="bg-secondary/60 border-border h-9 w-32 text-sm text-center" type="number" />
-                <label className="text-sm text-foreground">{field.label}</label>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Time & Rounding settings */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-border">
-          <div className="flex items-center justify-between gap-4">
-            <Input
-              value={deliveryPricing.dayStartHour}
-              onChange={e => setDeliveryPricing(s => ({ ...s, dayStartHour: e.target.value }))}
-              className="bg-secondary/60 border-border h-9 w-20 text-sm text-center" type="number" min="0" max="23" />
-            <label className="text-sm text-foreground">بداية النهار (ساعة)</label>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            <Input
-              value={deliveryPricing.dayEndHour}
-              onChange={e => setDeliveryPricing(s => ({ ...s, dayEndHour: e.target.value }))}
-              className="bg-secondary/60 border-border h-9 w-20 text-sm text-center" type="number" min="0" max="23" />
-            <label className="text-sm text-foreground">بداية الليل (ساعة)</label>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            <Select value={deliveryPricing.roundingMethod} onValueChange={v => setDeliveryPricing(s => ({ ...s, roundingMethod: v as any }))}>
-              <SelectTrigger className="bg-secondary/60 border-border h-9 w-32 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="round">تقريب عادي</SelectItem>
-                <SelectItem value="ceil">تقريب لأعلى</SelectItem>
-                <SelectItem value="floor">تقريب لأسفل</SelectItem>
-                <SelectItem value="none">بدون تقريب</SelectItem>
-              </SelectContent>
-            </Select>
-            <label className="text-sm text-foreground">تقريب المسافة</label>
-          </div>
-        </div>
-
-        <p className="text-xs text-muted-foreground text-right mt-3">
-          النهار: {deliveryPricing.dayStartHour}:00 → {deliveryPricing.dayEndHour}:00 | الليل: {deliveryPricing.dayEndHour}:00 → {deliveryPricing.dayStartHour}:00
-        </p>
-      </div>
-
-      {/* Commission Rates */}
-      <CommissionRatesManager />
-
-      {/* Language Management Section */}
-      <LanguageManagement />
+        <TabsContent value="languages">
+          <LanguageManagement />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
