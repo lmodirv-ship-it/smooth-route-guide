@@ -313,7 +313,26 @@ const RegisteredUsers = () => {
                       <UserCog className="w-3.5 h-3.5" />
                       الأدوار
                     </Button>
-                    {/* Quick delivery role assignment for clients/drivers without delivery */}
+                    {/* Quick supervisor assignment */}
+                    {!u.roles.includes("moderator") && !u.roles.includes("admin") && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5 text-xs border-orange-500/30 text-orange-600 hover:bg-orange-500/10"
+                        onClick={async () => {
+                          const { error } = await supabase.from("user_roles").insert({ user_id: u.id, role: "moderator" as AppRole });
+                          if (error) {
+                            toast({ title: "خطأ في تعيين المشرف", description: error.message, variant: "destructive" });
+                            return;
+                          }
+                          toast({ title: `✅ تم تعيين "${u.name}" كمشرف` });
+                          setUsers(prev => prev.map(x => x.id === u.id ? { ...x, roles: [...x.roles, "moderator"] } : x));
+                        }}
+                      >
+                        🛡️ تعيين مشرف
+                      </Button>
+                    )}
+                    {/* Quick delivery role assignment */}
                     {(u.roles.includes("user") || u.roles.includes("driver")) && !u.roles.includes("delivery") && (
                       <Button
                         variant="outline"
@@ -321,13 +340,11 @@ const RegisteredUsers = () => {
                         className="gap-1.5 text-xs border-success/30 text-success hover:bg-success/10"
                         onClick={async () => {
                           const newRoles = [...u.roles, "delivery"];
-                          const inserts = [{ user_id: u.id, role: "delivery" as AppRole }];
-                          const { error } = await supabase.from("user_roles").insert(inserts);
+                          const { error } = await supabase.from("user_roles").insert({ user_id: u.id, role: "delivery" as AppRole });
                           if (error) {
                             toast({ title: "خطأ في إضافة دور التوصيل", description: error.message, variant: "destructive" });
                             return;
                           }
-                          // Ensure driver record exists
                           const { data: existing } = await supabase.from("drivers").select("id").eq("user_id", u.id).maybeSingle();
                           if (!existing) {
                             await supabase.from("drivers").insert({ user_id: u.id, status: "inactive", driver_type: "delivery" });
