@@ -144,11 +144,11 @@ const SmartAssistantPage = () => {
                 </div>
                 <span className="flex-1 text-muted-foreground truncate font-mono" dir="ltr">{previewUrl}</span>
               </div>
-              <div className="flex-1 overflow-hidden bg-white">
+              <div className="flex-1 overflow-hidden bg-white relative" style={{ minHeight: "400px" }}>
                 <iframe
                   key={`mirror-${iframeKey}`}
                   src={previewUrl}
-                  style={{ width: "1440px", height: "900px", transform: "scale(0.28)", transformOrigin: "top left" }}
+                  style={{ width: "1440px", height: "900px", transform: "scale(0.48)", transformOrigin: "top left" }}
                   className="bg-white pointer-events-none"
                   sandbox="allow-scripts allow-same-origin"
                   referrerPolicy="no-referrer"
@@ -186,12 +186,12 @@ const SmartAssistantPage = () => {
                   فتح <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
-              <div className="w-full overflow-auto bg-white" style={{ height: "calc(100% - 60px)", minHeight: "300px" }}>
+              <div className="w-full overflow-auto bg-white" style={{ height: "calc(100% - 60px)", minHeight: "400px" }}>
                 <iframe
                   ref={iframeRef}
                   key={`${previewUrl}-${iframeKey}`}
                   src={previewUrl}
-                  style={{ width: "1440px", height: "900px", transform: "scale(0.65)", transformOrigin: "top left" }}
+                  style={{ width: "1440px", height: "900px", transform: "scale(0.48)", transformOrigin: "top left" }}
                   className="bg-white"
                   sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                   referrerPolicy="no-referrer"
