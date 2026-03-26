@@ -134,7 +134,9 @@ const AdminRestaurants = () => {
               <Table>
                 <TableHeader>
                    <TableRow>
+                     <TableHead className="text-right w-12">#</TableHead>
                      <TableHead className="text-right">الاسم</TableHead>
+                     <TableHead className="text-right">الهاتف</TableHead>
                      <TableHead className="text-right">العنوان</TableHead>
                      <TableHead className="text-right">التقييم</TableHead>
                      <TableHead className="text-right">رسوم التوصيل</TableHead>
@@ -143,9 +145,11 @@ const AdminRestaurants = () => {
                    </TableRow>
                  </TableHeader>
                  <TableBody>
-                   {stores.map((s) => (
+                   {stores.map((s, idx) => (
                      <TableRow key={s.id}>
+                       <TableCell className="font-bold text-muted-foreground">{idx + 1}</TableCell>
                        <TableCell className="font-bold">{s.name}</TableCell>
+                       <TableCell className="text-muted-foreground direction-ltr">{s.phone || "—"}</TableCell>
                        <TableCell className="text-muted-foreground">{s.address}</TableCell>
                        <TableCell>⭐ {s.rating}</TableCell>
                        <TableCell>{s.delivery_fee} DH</TableCell>
