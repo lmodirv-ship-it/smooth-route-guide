@@ -82,14 +82,22 @@ const AdminRestaurants = () => {
 
   const openEditStore = (store: any) => {
     setEditingStore(store);
-    setStoreForm({ name: store.name, description: store.description || "", address: store.address || "", phone: store.phone || "", delivery_fee: store.delivery_fee || 10, delivery_time_min: store.delivery_time_min || 20, delivery_time_max: store.delivery_time_max || 40, rating: store.rating || 4.5 });
+    setStoreForm({ name: store.name, description: store.description || "", address: store.address || "", phone: store.phone || "", delivery_fee: store.delivery_fee || 10, delivery_time_min: store.delivery_time_min || 20, delivery_time_max: store.delivery_time_max || 40, rating: store.rating || 4.5, commission_rate: store.commission_rate ?? 5 });
     setShowStoreDialog(true);
   };
 
   const openAddStore = () => {
     setEditingStore(null);
-    setStoreForm({ name: "", description: "", address: "", phone: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5 });
+    setStoreForm({ name: "", description: "", address: "", phone: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5, commission_rate: 5 });
     setShowStoreDialog(true);
+  };
+
+  const updateCommission = async (storeId: string, value: number) => {
+    const { error } = await supabase.from("stores").update({ commission_rate: value } as any).eq("id", storeId);
+    if (!error) {
+      setStores(prev => prev.map(s => s.id === storeId ? { ...s, commission_rate: value } : s));
+      toast({ title: "✅ تم تحديث نسبة العمولة" });
+    }
   };
 
   const openEditItem = (item: any) => {
