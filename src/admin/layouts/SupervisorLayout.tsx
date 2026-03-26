@@ -32,6 +32,8 @@ const SupervisorLayout = () => {
   };
 
   return (
+    <>
+    <GlobalNotificationListener />
     <div className="min-h-screen gradient-dark flex" dir={dir}>
       {/* Sidebar */}
       <aside className={`${sidebarCollapsed ? "w-16" : "w-64"} glass-strong border-l border-border hidden lg:flex flex-col transition-all duration-300`}>

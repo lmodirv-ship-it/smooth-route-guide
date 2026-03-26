@@ -123,6 +123,8 @@ const CallCenterLayout = () => {
   );
 
   return (
+    <>
+    <GlobalNotificationListener />
     <div className="min-h-screen gradient-dark flex" dir={dir}>
       {/* Desktop Sidebar */}
       <aside
