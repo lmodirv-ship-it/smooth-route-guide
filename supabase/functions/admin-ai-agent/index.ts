@@ -1038,9 +1038,87 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
             type: "text",
             content: `## من نحن\n\n${args.description || `${args.name} - ${categoryLabel} متميز يقدم أفضل الخدمات والمنتجات.`}\n\n📍 **العنوان**: ${args.address || "سيتم التحديث"}\n📞 **الهاتف**: ${args.phone || "سيتم التحديث"}`,
             alignment: "right",
+  },
+  {
+    type: "function",
+    function: {
+      name: "db_schema_info",
+      description: "عرض معلومات هيكلية عن جداول قاعدة البيانات: أسماء الجداول، الأعمدة وأنواعها، العلاقات، عدد السجلات. يساعد المدير على فهم بنية البيانات.",
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["list_tables", "describe_table", "table_sizes"], description: "'list_tables' لعرض كل الجداول, 'describe_table' لوصف جدول محدد, 'table_sizes' لعرض أحجام الجداول" },
+          table_name: { type: "string", description: "اسم الجدول (مطلوب فقط لـ describe_table)" },
+        },
+        required: ["action"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "export_data",
+      description: "تصدير بيانات من جدول بصيغة JSON مع فلاتر اختيارية. يحفظ الملف في التخزين السحابي ويعطي رابط تحميل.",
+      parameters: {
+        type: "object",
+        properties: {
+          table: { type: "string", enum: ALLOWED_TABLES },
+          filters: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                column: { type: "string" },
+                operator: { type: "string", enum: ["eq", "neq", "gt", "gte", "lt", "lte", "like", "ilike"] },
+                value: { type: "string" },
+              },
+              required: ["column", "operator", "value"],
+            },
           },
-        ];
-        
+          columns: { type: "string", default: "*", description: "الأعمدة المطلوبة" },
+          limit: { type: "number", default: 500 },
+          file_name: { type: "string", description: "اسم الملف (اختياري)" },
+        },
+        required: ["table"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "import_data",
+      description: "استيراد بيانات إلى جدول من مصفوفة JSON. يتحقق من صحة البيانات قبل الإدراج ويعطي تقريراً بالنتائج.",
+      parameters: {
+        type: "object",
+        properties: {
+          table: { type: "string", enum: ALLOWED_TABLES },
+          rows: { type: "array", items: { type: "object" }, description: "مصفوفة السجلات للاستيراد" },
+          on_conflict: { type: "string", enum: ["skip", "update"], default: "skip", description: "عند التعارض: skip=تجاهل, update=تحديث" },
+          conflict_column: { type: "string", description: "العمود المستخدم لكشف التعارض (مثل id أو email)" },
+        },
+        required: ["table", "rows"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "manage_app_settings",
+      description: "إدارة شاملة لإعدادات المنصة. عرض، إضافة، تعديل أو حذف أي إعداد. يشمل: التسعير، الدفع، الهوية البصرية، الميزات، الإشعارات، وغيرها.",
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["list_all", "get", "set", "delete", "bulk_set"], description: "العملية المطلوبة" },
+          key: { type: "string", description: "مفتاح الإعداد" },
+          value: { type: "object", description: "قيمة الإعداد (JSON)" },
+          settings: { type: "array", items: { type: "object", properties: { key: { type: "string" }, value: { type: "object" } }, required: ["key", "value"] }, description: "مجموعة إعدادات (لـ bulk_set)" },
+        },
+        required: ["action"],
+      },
+    },
+  },
+];
+
         if (createdCategories.length) {
           pageContent.push({
             type: "text",
@@ -1399,6 +1477,123 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
           message: `🚀 تم تنسيق المهمة "${taskDesc.slice(0, 50)}..."\n✅ ${completed}/${subTasks.length} مهمة فرعية مكتملة\n${created > 0 ? `🤖 تم إنشاء ${created} مساعد فرعي جديد\n` : ""}${failed > 0 ? `❌ ${failed} مهمة فشلت` : ""}`,
         });
       }
+      case "db_schema_info": {
+        if (args.action === "list_tables") {
+          const tableInfo = await Promise.all(ALLOWED_TABLES.map(async (t: string) => {
+            const { count } = await supabase.from(t).select("*", { count: "exact", head: true });
+            return { table: t, rows: count || 0 };
+          }));
+          return JSON.stringify({ tables: tableInfo, total: ALLOWED_TABLES.length });
+        }
+        if (args.action === "describe_table") {
+          if (!args.table_name || !ALLOWED_TABLES.includes(args.table_name)) return JSON.stringify({ error: "جدول غير صالح" });
+          const { data: sample } = await supabase.from(args.table_name).select("*").limit(1);
+          const columns = sample?.[0] ? Object.keys(sample[0]).map(k => ({ name: k, type: typeof sample[0][k], sample_value: sample[0][k] })) : [];
+          const { count } = await supabase.from(args.table_name).select("*", { count: "exact", head: true });
+          return JSON.stringify({ table: args.table_name, columns, total_rows: count || 0 });
+        }
+        if (args.action === "table_sizes") {
+          const sizes = await Promise.all(ALLOWED_TABLES.map(async (t: string) => {
+            const { count } = await supabase.from(t).select("*", { count: "exact", head: true });
+            return { table: t, rows: count || 0 };
+          }));
+          sizes.sort((a: any, b: any) => b.rows - a.rows);
+          return JSON.stringify({ tables: sizes, total_tables: sizes.length, total_rows: sizes.reduce((s: number, t: any) => s + t.rows, 0) });
+        }
+        return JSON.stringify({ error: "Invalid action" });
+      }
+      case "export_data": {
+        let q = supabase.from(args.table).select(args.columns || "*");
+        if (args.filters?.length) q = applyFilters(q, args.filters);
+        q = q.limit(Math.min(args.limit || 500, 1000));
+        const { data, error } = await q;
+        if (error) return JSON.stringify({ error: error.message });
+        
+        const fileName = args.file_name || `${args.table}_export_${Date.now()}`;
+        const content = new TextEncoder().encode(JSON.stringify(data, null, 2));
+        const path = `exports/${fileName}.json`;
+        
+        await supabase.storage.from("smart-assistant-files").upload(path, content, { contentType: "application/json", upsert: true });
+        const { data: urlData } = supabase.storage.from("smart-assistant-files").getPublicUrl(path);
+        
+        return JSON.stringify({
+          success: true, table: args.table, exported_rows: data?.length || 0,
+          download_url: urlData.publicUrl,
+          message: `📥 تم تصدير ${data?.length || 0} سجل من جدول ${args.table}`,
+        });
+      }
+      case "import_data": {
+        if (!args.rows?.length) return JSON.stringify({ error: "لا توجد بيانات للاستيراد" });
+        if (args.rows.length > 200) return JSON.stringify({ error: "الحد الأقصى 200 سجل في المرة الواحدة" });
+        
+        let imported = 0, skipped = 0, errors: string[] = [];
+        
+        if (args.on_conflict === "update" && args.conflict_column) {
+          for (const row of args.rows) {
+            const conflictVal = row[args.conflict_column];
+            if (!conflictVal) { skipped++; continue; }
+            const { error } = await supabase.from(args.table).upsert(row, { onConflict: args.conflict_column });
+            if (error) { errors.push(error.message); skipped++; } else { imported++; }
+          }
+        } else {
+          const { data, error } = await supabase.from(args.table).insert(args.rows).select();
+          if (error) return JSON.stringify({ error: error.message });
+          imported = data?.length || 0;
+        }
+        
+        return JSON.stringify({
+          success: true, table: args.table, imported, skipped, errors: errors.slice(0, 5),
+          message: `✅ تم استيراد ${imported} سجل إلى ${args.table}${skipped ? ` (${skipped} تم تجاهلهم)` : ""}`,
+        });
+      }
+      case "manage_app_settings": {
+        if (args.action === "list_all") {
+          const { data, error } = await supabase.from("app_settings").select("*").order("key");
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ settings: data, total: data?.length || 0 });
+        }
+        if (args.action === "get") {
+          if (!args.key) return JSON.stringify({ error: "key مطلوب" });
+          const { data, error } = await supabase.from("app_settings").select("*").eq("key", args.key).maybeSingle();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify(data || { key: args.key, value: null, message: "الإعداد غير موجود" });
+        }
+        if (args.action === "set") {
+          if (!args.key) return JSON.stringify({ error: "key مطلوب" });
+          const { data: existing } = await supabase.from("app_settings").select("id").eq("key", args.key).maybeSingle();
+          if (existing) {
+            const { error } = await supabase.from("app_settings").update({ value: args.value, updated_at: new Date().toISOString() }).eq("key", args.key);
+            if (error) return JSON.stringify({ error: error.message });
+            return JSON.stringify({ success: true, action: "updated", key: args.key });
+          } else {
+            const { error } = await supabase.from("app_settings").insert({ key: args.key, value: args.value });
+            if (error) return JSON.stringify({ error: error.message });
+            return JSON.stringify({ success: true, action: "created", key: args.key });
+          }
+        }
+        if (args.action === "delete") {
+          if (!args.key) return JSON.stringify({ error: "key مطلوب" });
+          const { error } = await supabase.from("app_settings").delete().eq("key", args.key);
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "deleted", key: args.key });
+        }
+        if (args.action === "bulk_set") {
+          if (!args.settings?.length) return JSON.stringify({ error: "settings مطلوبة" });
+          let updated = 0, created = 0;
+          for (const s of args.settings) {
+            const { data: existing } = await supabase.from("app_settings").select("id").eq("key", s.key).maybeSingle();
+            if (existing) {
+              await supabase.from("app_settings").update({ value: s.value, updated_at: new Date().toISOString() }).eq("key", s.key);
+              updated++;
+            } else {
+              await supabase.from("app_settings").insert({ key: s.key, value: s.value });
+              created++;
+            }
+          }
+          return JSON.stringify({ success: true, updated, created, total: args.settings.length });
+        }
+        return JSON.stringify({ error: "Invalid action" });
+      }
       default:
         return JSON.stringify({ error: `Unknown tool: ${name}` });
     }
@@ -1533,6 +1728,10 @@ serve(async (req) => {
 - **manage_theme**: لتعديل الهوية البصرية
 - **fetch_webpage**: لقراءة وتحليل المواقع
 - **create_store_with_page**: ✨ أداة سحرية لإنشاء مطعم/متجر كامل بخطوة واحدة!
+- **db_schema_info**: 🗄️ عرض هيكل قاعدة البيانات (الجداول، الأعمدة، الأحجام)
+- **export_data**: 📤 تصدير بيانات من أي جدول بصيغة JSON مع رابط تحميل
+- **import_data**: 📥 استيراد بيانات إلى أي جدول (حتى 200 سجل)
+- **manage_app_settings**: ⚙️ إدارة شاملة لكل إعدادات المنصة (تسعير، دفع، ميزات...)
 - **delegate_to_assistant**: 🤖 تفويض مهمة لمساعد فرعي متخصص
 - **manage_sub_assistants**: إنشاء/حذف/تعديل المساعدين الفرعيين
 - **orchestrate_task**: 🚀 الأداة الأقوى! تحلل المهمة المعقدة وتقسمها تلقائياً لمهام فرعية، تُنشئ مساعدين متخصصين إذا لزم الأمر، وتنفذ كل شيء بالتوازي لتسريع العمل.
