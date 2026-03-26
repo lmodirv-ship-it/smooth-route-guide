@@ -177,6 +177,67 @@ const ZonesManagement = () => {
     else fetchZones();
   };
 
+  const handleAutoGenerate = async () => {
+    if (!selectedCountry || !selectedCity) {
+      toast.error("اختر البلد والمدينة أولاً");
+      return;
+    }
+    setAutoGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("search-neighborhoods", {
+        body: { city: selectedCity, country: selectedCountry },
+      });
+      if (error || !data?.success) {
+        toast.error(data?.error || "خطأ في البحث التلقائي");
+        setAutoGenerating(false);
+        return;
+      }
+      const neighborhoods = data.neighborhoods || [];
+      if (neighborhoods.length === 0) {
+        toast.info("لم يتم العثور على مناطق جديدة");
+        setAutoGenerating(false);
+        return;
+      }
+      // Filter out already existing zones (by name_ar in same city/country)
+      const existingNames = new Set(
+        zones
+          .filter(z => z.country === selectedCountry && z.city === selectedCity)
+          .map(z => z.name_ar.trim())
+      );
+      const newZones = neighborhoods.filter(
+        (n: any) => !existingNames.has(n.name_ar.trim())
+      );
+      if (newZones.length === 0) {
+        toast.info("جميع المناطق المكتشفة موجودة بالفعل");
+        setAutoGenerating(false);
+        return;
+      }
+      // Insert new zones
+      const toInsert = newZones.map((n: any) => ({
+        name_ar: n.name_ar,
+        name_fr: n.name_fr || "",
+        city: selectedCity,
+        country: selectedCountry,
+        center_lat: n.center_lat || 0,
+        center_lng: n.center_lng || 0,
+        radius_km: 3,
+        delivery_fee: 10,
+        is_active: true,
+      }));
+      const { error: insertError } = await supabase.from("zones").insert(toInsert);
+      if (insertError) {
+        toast.error("خطأ في إضافة المناطق");
+      } else {
+        toast.success(`تمت إضافة ${toInsert.length} منطقة جديدة من Google`);
+        fetchZones();
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("خطأ في الاتصال بالخدمة");
+    }
+    setAutoGenerating(false);
+  };
+
   return (
     <div className="space-y-6" dir="rtl">
       {/* Header */}
