@@ -66,6 +66,7 @@ export const adminRouteElements = (
       <Route path="call-center" element={<AdminCallCenter />} />
       <Route path="restaurants" element={<AdminRestaurants />} />
       <Route path="zones" element={<ZonesManagement />} />
+      <Route path="commission-rates" element={<CommissionRatesPage />} />
       <Route path="settings" element={<AdminSettings />} />
     </Route>
 
