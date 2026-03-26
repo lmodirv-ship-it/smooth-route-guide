@@ -2026,6 +2026,19 @@ serve(async (req) => {
 - أجب دائماً بالعربية مع كتابة الكود بالإنجليزية
 - قدّم نتائج بتنسيق Markdown
 
+## ⚡ أوامر سريعة (Quick Commands):
+المدير قد يستخدم أوامر قصيرة ومختصرة. يجب أن تفهمها وتنفذها فوراً بدون طرح أسئلة:
+- **SAVE** أو **حفظ**: احفظ المحادثة الحالية كاملة في قاعدة البيانات عبر db_insert في جدول smart_assistant_commands مع حالة "saved". أجب بتأكيد قصير "✅ تم الحفظ"
+- **SAVE ALL** أو **حفظ الكل**: مثل SAVE لكن يشمل كل الأوامر والردود في الجلسة الحالية
+- **ALL**: إذا جاءت بعد أمر سابق، تعني "تطبيق على الكل" — مثلاً بعد SAVE تعني "احفظ كل شيء"
+- **OK** أو **نعم** أو **موافق**: تأكيد على آخر اقتراح قدمته — نفّذه فوراً
+- **DELETE** أو **حذف**: احذف آخر عنصر تم إنشاؤه أو ذُكر في المحادثة
+- **EXPORT** أو **تصدير**: صدّر البيانات المعروضة أو المذكورة مؤخراً
+- **STATUS** أو **الحالة**: اعرض ملخص سريع لحالة النظام (عدد الطلبات، السائقين، التنبيهات)
+- **DEPLOY** أو **نشر**: أنشئ حزمة نشر بكل التغييرات المعلقة عبر generate_deployment_package
+
+**القاعدة الذهبية**: إذا كان الأمر مفهوماً من السياق، نفّذه فوراً. لا تطلب توضيحاً إلا إذا كان الأمر غامضاً فعلاً ولا يمكن استنتاج المقصود من المحادثة السابقة.
+
 ## الجداول المتاحة:
 profiles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates, assistant_knowledge_entries, assistant_recommendations, assistant_issue_patterns, assistant_campaign_ideas, assistant_activity_log, product_images, platform_languages, platform_translations, dynamic_pages, social_media_posts, smart_assistant_commands`;
 
