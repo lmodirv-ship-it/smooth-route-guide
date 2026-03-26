@@ -197,7 +197,6 @@ const ZonesManagement = () => {
         }
         const cities = data.cities || [];
         if (cities.length === 0) {
-          toast.info("لم يتم العثور على مدن جديدة");
           setAutoGenerating(false);
           return;
         }
@@ -242,7 +241,6 @@ const ZonesManagement = () => {
         }
         const neighborhoods = data.neighborhoods || [];
         if (neighborhoods.length === 0) {
-          toast.info("لم يتم العثور على مناطق جديدة");
           setAutoGenerating(false);
           return;
         }
@@ -255,7 +253,6 @@ const ZonesManagement = () => {
           (n: any) => !existingNames.has(n.name_ar.trim())
         );
         if (newZones.length === 0) {
-          toast.info("جميع المناطق المكتشفة موجودة بالفعل");
           setAutoGenerating(false);
           return;
         }
