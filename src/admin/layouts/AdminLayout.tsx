@@ -5,7 +5,7 @@ import {
   BarChart3, FileText, Car, Users, TrendingUp, MapPin,
   AlertTriangle, FileCheck, Headphones, Settings, Shield,
   Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog, Percent,
-  ShieldCheck, ShieldOff
+  ShieldCheck, ShieldOff, Globe
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -56,6 +56,8 @@ const AdminLayout = () => {
   const aiScrollRef = useRef<HTMLDivElement>(null);
   const [pendingCount, setPendingCount] = useState(0);
   const [smartAssistantActive, setSmartAssistantActive] = useState(true);
+  const [smartSiteUrl, setSmartSiteUrl] = useState("");
+  const [smartPreviewUrl, setSmartPreviewUrl] = useState("");
 
   const isSmartAssistantRoute = location.pathname === "/admin/smart-assistant";
 
@@ -174,11 +176,53 @@ const AdminLayout = () => {
       <div className="flex-1 overflow-auto flex flex-col">
         {/* Top Bar */}
         <header className="glass-strong border-b border-border px-6 py-3 flex items-center justify-between sticky top-0 z-40">
-          <div className="flex items-center gap-3">
-            <div className="relative w-64">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder={t.admin.searchPlaceholder} className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm" />
-            </div>
+          <div className="flex items-center gap-2">
+            {isSmartAssistantRoute ? (
+              <>
+                <Button size="sm" className="gap-1.5 shrink-0 h-9" onClick={() => {
+                  const raw = smartSiteUrl.trim();
+                  if (!raw) return;
+                  let url = raw.replace(/^wwww\./i, "www.");
+                  if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
+                  try {
+                    const normalized = new URL(url).toString();
+                    setSmartPreviewUrl(normalized);
+                    setSmartSiteUrl(normalized);
+                  } catch {}
+                }}>
+                  <Globe className="w-4 h-4" />
+                  عرض
+                </Button>
+                <div className="relative w-80">
+                  <Globe className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    value={smartSiteUrl}
+                    onChange={e => setSmartSiteUrl(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") {
+                        const raw = smartSiteUrl.trim();
+                        if (!raw) return;
+                        let url = raw.replace(/^wwww\./i, "www.");
+                        if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
+                        try {
+                          const normalized = new URL(url).toString();
+                          setSmartPreviewUrl(normalized);
+                          setSmartSiteUrl(normalized);
+                        } catch {}
+                      }
+                    }}
+                    placeholder="أدخل رابط الموقع..."
+                    className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm font-mono"
+                    dir="ltr"
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="relative w-64">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input placeholder={t.admin.searchPlaceholder} className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm" />
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-3">
             {isSmartAssistantRoute && (
@@ -217,7 +261,7 @@ const AdminLayout = () => {
         </header>
 
         <div className="flex-1 p-6">
-          <Outlet context={{ smartAssistantActive, setSmartAssistantActive }} />
+          <Outlet context={{ smartAssistantActive, setSmartAssistantActive, smartPreviewUrl, smartSiteUrl, setSmartSiteUrl, setSmartPreviewUrl }} />
         </div>
       </div>
 

@@ -36,14 +36,18 @@ async function callAdminAI({ messages, onResult, onError }: {
 
 const SmartAssistantPage = () => {
   const { t, dir } = useI18n();
-  const { smartAssistantActive: isActive } = useOutletContext<{ smartAssistantActive: boolean }>();
+  const { smartAssistantActive: isActive, smartPreviewUrl: previewUrl, smartSiteUrl: siteUrl, setSmartSiteUrl: setSiteUrl, setSmartPreviewUrl: setPreviewUrl } = useOutletContext<{
+    smartAssistantActive: boolean;
+    smartPreviewUrl: string;
+    smartSiteUrl: string;
+    setSmartSiteUrl: (v: string) => void;
+    setSmartPreviewUrl: (v: string) => void;
+  }>();
   const [messages, setMessages] = useState<AiMsg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [taskLogs, setTaskLogs] = useState<TaskLog[]>([]);
   const [selectedTask, setSelectedTask] = useState<TaskLog | null>(null);
-  const [siteUrl, setSiteUrl] = useState("");
-  const [previewUrl, setPreviewUrl] = useState("");
   const [displayUrl, setDisplayUrl] = useState("");
   const [iframeError, setIframeError] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -53,27 +57,6 @@ const SmartAssistantPage = () => {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-  const handleLoadSite = () => {
-    const rawUrl = siteUrl.trim();
-    if (!rawUrl) {
-      toast.warning("أدخل رابط الموقع أولاً");
-      return;
-    }
-
-    let url = rawUrl.replace(/^wwww\./i, "www.");
-    if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
-
-    try {
-      const normalizedUrl = new URL(url).toString();
-      setIframeError(false);
-      setPreviewUrl(normalizedUrl);
-      setDisplayUrl(normalizedUrl);
-      setSiteUrl(normalizedUrl);
-      toast.success(`🌐 تم تحميل الرابط: ${normalizedUrl}`);
-    } catch {
-      toast.error("الرابط غير صحيح");
-    }
-  };
 
 
   const sendMessage = async () => {
@@ -123,22 +106,6 @@ const SmartAssistantPage = () => {
   return (
     <div className="h-[calc(100vh-80px)] flex flex-col gap-3" dir={dir}>
 
-      {/* URL Input Bar */}
-      <div className="gradient-card rounded-xl border border-border p-2.5 flex items-center gap-2">
-        <Button size="sm" onClick={handleLoadSite} className="gap-1.5 shrink-0">
-          <Globe className="w-4 h-4" />
-          عرض
-        </Button>
-        <Input
-          value={siteUrl}
-          onChange={e => setSiteUrl(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && handleLoadSite()}
-          placeholder="أدخل رابط الموقع أو الصفحة المراد تعديلها..."
-          className="flex-1 text-left bg-secondary/40 border-border font-mono text-sm"
-          dir="ltr"
-        />
-        <Globe className="w-5 h-5 text-muted-foreground shrink-0" />
-      </div>
 
       {/* Main Content - Top Split */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 flex-1 min-h-0">
