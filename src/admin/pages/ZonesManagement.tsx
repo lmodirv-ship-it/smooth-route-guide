@@ -448,20 +448,18 @@ const ZonesManagement = () => {
                 )}
                 {autoGenerating ? "جاري التوليد..." : "توليد"}
               </Button>
-              {selectedCity && (
-                <Button
-                  onClick={handleSaveAll}
-                  disabled={savingAll}
-                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  {savingAll ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Save className="w-4 h-4" />
-                  )}
-                  {savingAll ? "جاري الحفظ..." : "حفظ"}
-                </Button>
-              )}
+              <Button
+                onClick={handleSaveAll}
+                disabled={savingAll || !selectedCity}
+                className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {savingAll ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                {savingAll ? "جاري الحفظ..." : "حفظ"}
+              </Button>
             </div>
           )}
 
