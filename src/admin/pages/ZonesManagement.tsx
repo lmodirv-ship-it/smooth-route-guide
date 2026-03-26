@@ -410,10 +410,8 @@ const ZonesManagement = () => {
                   <Wand2 className="w-4 h-4" />
                 )}
                 {autoGenerating
-                  ? "جاري البحث في Google..."
-                  : selectedCity
-                    ? "توليد تلقائي للمناطق من Google"
-                    : "توليد تلقائي للمدن من Google"
+                  ? "جاري التوليد..."
+                  : "توليد"
                 }
               </Button>
             </div>
