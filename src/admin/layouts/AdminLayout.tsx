@@ -65,6 +65,7 @@ const AdminLayout = () => {
 
   const navItems = [
     { path: "/admin", icon: BarChart3, label: t.admin.dashboard },
+    { path: "/admin/supervisors", icon: ShieldCheck, label: "المشرفون" },
     { path: "/admin/users", icon: UserCog, label: t.admin.registeredUsers },
     { path: "/admin/requests", icon: FileText, label: t.admin.rideRequests },
     { path: "/admin/drivers", icon: Car, label: t.admin.drivers },
