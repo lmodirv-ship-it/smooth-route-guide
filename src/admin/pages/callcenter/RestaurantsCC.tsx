@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   UtensilsCrossed, Phone, MapPin, Clock, Star, Search, Plus, Edit, Trash2,
   CheckCircle, XCircle, Eye, PhoneCall, Store, ArrowRight, Image as ImageIcon,
-  ChevronLeft, Loader2, ToggleLeft, ToggleRight, Upload, X, FolderOpen, Package
+  ChevronLeft, Loader2, ToggleLeft, ToggleRight, Upload, X, FolderOpen, Package,
+  Sparkles, Save
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
