@@ -545,6 +545,7 @@ export type Database = {
           cancel_reason: string | null
           category: string
           city: string | null
+          country: string | null
           created_at: string
           delivered_at: string | null
           delivery_address: string | null
@@ -576,6 +577,7 @@ export type Database = {
           cancel_reason?: string | null
           category?: string
           city?: string | null
+          country?: string | null
           created_at?: string
           delivered_at?: string | null
           delivery_address?: string | null
@@ -607,6 +609,7 @@ export type Database = {
           cancel_reason?: string | null
           category?: string
           city?: string | null
+          country?: string | null
           created_at?: string
           delivered_at?: string | null
           delivery_address?: string | null
@@ -1303,6 +1306,8 @@ export type Database = {
           cancel_reason: string | null
           cancelled_at: string | null
           cancelled_by: string | null
+          city: string | null
+          country: string | null
           created_at: string
           destination: string
           destination_lat: number | null
@@ -1316,12 +1321,15 @@ export type Database = {
           price: number | null
           status: string
           user_id: string
+          zone_id: string | null
         }
         Insert: {
           accepted_at?: string | null
           cancel_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           destination?: string
           destination_lat?: number | null
@@ -1335,12 +1343,15 @@ export type Database = {
           price?: number | null
           status?: string
           user_id: string
+          zone_id?: string | null
         }
         Update: {
           accepted_at?: string | null
           cancel_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           destination?: string
           destination_lat?: number | null
@@ -1354,8 +1365,17 @@ export type Database = {
           price?: number | null
           status?: string
           user_id?: string
+          zone_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ride_requests_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       smart_assistant_commands: {
         Row: {
@@ -1473,6 +1493,8 @@ export type Database = {
           address: string | null
           area: string | null
           category: string
+          city: string | null
+          country: string | null
           created_at: string
           delivery_fee: number | null
           delivery_time_max: number | null
@@ -1495,6 +1517,8 @@ export type Database = {
           address?: string | null
           area?: string | null
           category?: string
+          city?: string | null
+          country?: string | null
           created_at?: string
           delivery_fee?: number | null
           delivery_time_max?: number | null
@@ -1517,6 +1541,8 @@ export type Database = {
           address?: string | null
           area?: string | null
           category?: string
+          city?: string | null
+          country?: string | null
           created_at?: string
           delivery_fee?: number | null
           delivery_time_max?: number | null
