@@ -412,6 +412,16 @@ serve(async (req) => {
           `major cities ${countryEn}`,
           `towns in ${countryEn}`,
         ];
+        // Extended mode: add more search queries
+        if (extended) {
+          queries.push(
+            `small cities in ${countryEn}`,
+            `popular towns ${countryEn}`,
+            `regions in ${countryEn}`,
+            `provinces in ${countryEn}`,
+            `municipalities in ${countryEn}`,
+          );
+        }
         for (const q of queries) {
           const googleResults = await searchGooglePlaces(q, googleMapsApiKey);
           for (const r of googleResults) {
