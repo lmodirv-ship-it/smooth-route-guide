@@ -439,7 +439,7 @@ const ZonesManagement = () => {
                 onClick={handleAutoGenerate}
                 disabled={autoGenerating}
                 variant="outline"
-                className="gap-2 border-primary/30 hover:bg-primary/10 text-primary"
+                className="gap-2 bg-green-600 hover:bg-green-700 text-white border-green-600"
               >
                 {autoGenerating ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -452,7 +452,7 @@ const ZonesManagement = () => {
                 <Button
                   onClick={handleSaveAll}
                   disabled={savingAll}
-                  className="gap-2 gradient-primary text-primary-foreground"
+                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   {savingAll ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
