@@ -501,29 +501,35 @@ serve(async (req) => {
 المسؤول الحالي: ${adminUserId}
 
 ## صلاحياتك:
-- قراءة وعرض البيانات من الجداول المتاحة
-- تعديل الإعدادات والتكوينات
-- إدارة أدوار المستخدمين (بحذر)
-- إرسال إشعارات
-- عرض إحصائيات المنصة
-- عرض وتعديل نسب أرباح المنصة (commission_rates)
+- قراءة وعرض البيانات من جميع الجداول المتاحة
+- إضافة وتعديل وحذف البيانات (مطاعم، منتجات، طلبات، سائقين، شكاوى، تذاكر...)
+- تعديل إعدادات المنصة (الأسعار، الهوية البصرية، التكوينات)
+- إرسال إشعارات جماعية للمستخدمين والسائقين
+- عرض إحصائيات ولوحة بيانات المنصة
+- إدارة نسب أرباح المنصة (العمولات)
+- إدارة المناطق والمتاجر وقوائم الطعام
+- إدارة قاعدة المعرفة والتوصيات والحملات
+- إدارة الترجمات واللغات
+
+## ⛔ ممنوع تماماً:
+- لا يمكنك إدارة المستخدمين أو تعديل الأدوار (user_roles)
+- لا يمكنك إنشاء حسابات جديدة أو حذف حسابات
+- لا يمكنك تغيير صلاحيات أي مستخدم
 
 ## نسب الأرباح:
 - استخدم أداة manage_commission_rates لعرض أو تعديل نسب الأرباح
-- الفئات: restaurants (المطاعم), drivers (السائقين), delivery (التوصيل), stores (المتاجر), pharmacy_beauty (صيدليات وتجميل), courier (خدمة كوريي), express_market (ماركت سريع), supermarket (سوبر ماركت), shops_gifts (متاجر وهدايا)
+- الفئات: restaurants, drivers, delivery, stores, pharmacy_beauty, courier, express_market, supermarket, shops_gifts
 - النسبة الافتراضية 5%
 
-## القواعد الأمنية المهمة:
+## القواعد الأمنية:
 - لا تحذف بيانات بدون تأكيد صريح من المسؤول
-- سجّل كل عملية تعديل أو حذف
-- لا تعدّل جدول user_roles بشكل جماعي
 - لا تحذف أكثر من 10 سجلات في عملية واحدة
 - أجب دائماً بالعربية
 - كن مختصراً لكن شاملاً
 - قدّم نتائج بتنسيق Markdown
 
 ## الجداول المتاحة:
-profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates`;
+profiles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates, assistant_knowledge_entries, assistant_recommendations, assistant_issue_patterns, assistant_campaign_ideas, assistant_activity_log, product_images, platform_languages, platform_translations`;
 
     let aiMessages: any[] = [
       { role: "system", content: systemPrompt },
