@@ -437,7 +437,7 @@ const SmartAssistantPage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-[220px] min-h-[180px]">
         {/* جدول المساعد الذكي */}
-        <div className="rounded-xl border border-blue-300 flex flex-col bg-blue-100 overflow-hidden">
+        <div className="rounded-xl border border-blue-400/30 flex flex-col bg-[#0a1628] overflow-hidden">
           <div className="px-3 py-1.5 border-b border-blue-200 flex items-center gap-2 shrink-0">
             <Bot className="w-4 h-4 text-blue-600" />
             <span className="text-xs font-semibold text-blue-800">المساعد الذكي</span>
