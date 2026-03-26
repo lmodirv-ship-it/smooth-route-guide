@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import logo from "@/assets/hn-driver-badge.png";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import { useI18n } from "@/i18n/context";
 
 const SupervisorLayout = () => {
@@ -31,6 +32,8 @@ const SupervisorLayout = () => {
   };
 
   return (
+    <>
+    <GlobalNotificationListener />
     <div className="min-h-screen gradient-dark flex" dir={dir}>
       {/* Sidebar */}
       <aside className={`${sidebarCollapsed ? "w-16" : "w-64"} glass-strong border-l border-border hidden lg:flex flex-col transition-all duration-300`}>
@@ -105,6 +108,7 @@ const SupervisorLayout = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

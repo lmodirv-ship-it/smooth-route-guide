@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
+import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import logo from "@/assets/hn-driver-badge.png";
 
 const CallCenterLayout = () => {
@@ -122,6 +123,8 @@ const CallCenterLayout = () => {
   );
 
   return (
+    <>
+    <GlobalNotificationListener />
     <div className="min-h-screen gradient-dark flex" dir={dir}>
       {/* Desktop Sidebar */}
       <aside
@@ -176,6 +179,7 @@ const CallCenterLayout = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
