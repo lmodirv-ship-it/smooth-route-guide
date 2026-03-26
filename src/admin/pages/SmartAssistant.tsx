@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Bot, Send, Loader2, Paperclip, X, Image, Film, Download, History } from "lucide-react";
+import { Bot, Send, Loader2, Paperclip, X, Image, Film, Download, History, FolderOpen, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -95,6 +95,11 @@ const SmartAssistantPage = () => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [showHistory, setShowHistory] = useState(false);
   const [commandHistory, setCommandHistory] = useState<any[]>([]);
+  const [localLogPath, setLocalLogPath] = useState(() => localStorage.getItem("smart_assistant_log_path") || "C:\\HNDriver\\logs");
+  const [showLogSettings, setShowLogSettings] = useState(false);
+  const [localLog, setLocalLog] = useState<any[]>(() => {
+    try { return JSON.parse(localStorage.getItem("smart_assistant_local_log") || "[]"); } catch { return []; }
+  });
 
   // File upload state
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -185,6 +190,46 @@ const SmartAssistantPage = () => {
     setUploadedFileType("");
   };
 
+  // Local logging functions
+  const addToLocalLog = (entry: { type: string; content: string; context?: string; file?: string }) => {
+    const logEntry = { ...entry, timestamp: new Date().toISOString(), id: crypto.randomUUID() };
+    setLocalLog(prev => {
+      const updated = [...prev, logEntry];
+      localStorage.setItem("smart_assistant_local_log", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const saveLogPath = (path: string) => {
+    setLocalLogPath(path);
+    localStorage.setItem("smart_assistant_log_path", path);
+    toast.success(`✅ تم تحديد مسار التسجيل: ${path}`);
+  };
+
+  const downloadLocalLog = () => {
+    if (!localLog.length) { toast.error("لا توجد سجلات للتحميل"); return; }
+    const logData = {
+      export_path: localLogPath,
+      exported_at: new Date().toISOString(),
+      total_entries: localLog.length,
+      entries: localLog,
+    };
+    const blob = new Blob([JSON.stringify(logData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `smart-assistant-log-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`📥 تم تحميل السجل (${localLog.length} إدخال)\nاحفظه في: ${localLogPath}`);
+  };
+
+  const clearLocalLog = () => {
+    setLocalLog([]);
+    localStorage.removeItem("smart_assistant_local_log");
+    toast.success("🗑️ تم مسح السجل المحلي");
+  };
+
   const sendMessage = async () => {
     const safeText = sanitizePlainText(input, 8000);
     if (!safeText || loading) return;
@@ -245,6 +290,10 @@ const SmartAssistantPage = () => {
         setLoading(false);
         setIframeKey((k) => k + 1);
         toast.success("✅ تم تنفيذ الأمر بنجاح");
+
+        // Log locally
+        addToLocalLog({ type: "command", content: safeText, context: siteUrl || previewUrl || undefined, file: uploadedFile?.name });
+        addToLocalLog({ type: "response", content: reply, context: siteUrl || previewUrl || undefined });
 
         // Save to database
         await saveCommand({
@@ -349,7 +398,17 @@ const SmartAssistantPage = () => {
           <div className="px-3 py-1.5 border-b border-blue-200 flex items-center gap-2 shrink-0">
             <Bot className="w-4 h-4 text-blue-600" />
             <span className="text-xs font-semibold text-blue-800">المساعد الذكي</span>
+            <Badge variant="outline" className="text-[9px] border-blue-300 text-blue-600 gap-1">
+              <Save className="w-2.5 h-2.5" />
+              {localLog.length} سجل
+            </Badge>
             <div className="mr-auto flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600 hover:bg-blue-200" onClick={() => setShowLogSettings(!showLogSettings)} title="إعدادات التسجيل المحلي">
+                <FolderOpen className="w-3.5 h-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600 hover:bg-blue-200" onClick={downloadLocalLog} title="تحميل السجل المحلي">
+                <Save className="w-3.5 h-3.5" />
+              </Button>
               <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600 hover:bg-blue-200" onClick={loadHistory} title="سجل الأوامر">
                 <History className="w-3.5 h-3.5" />
               </Button>
@@ -358,6 +417,32 @@ const SmartAssistantPage = () => {
               </Button>
             </div>
           </div>
+          {showLogSettings && (
+            <div className="px-3 py-2 bg-blue-50 border-b border-blue-200 space-y-2">
+              <div className="flex items-center gap-2">
+                <FolderOpen className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                <span className="text-[10px] font-semibold text-blue-700">مسار التسجيل المحلي:</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Input
+                  value={localLogPath}
+                  onChange={(e) => setLocalLogPath(e.target.value)}
+                  placeholder="C:\HNDriver\logs"
+                  className="h-6 text-[10px] bg-white border-blue-200 flex-1"
+                  dir="ltr"
+                />
+                <Button size="sm" className="h-6 text-[10px] bg-blue-600 hover:bg-blue-700 text-white px-2" onClick={() => saveLogPath(localLogPath)}>
+                  حفظ
+                </Button>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] text-blue-500">📁 الملف: smart-assistant-log-{new Date().toISOString().slice(0, 10)}.json</span>
+                <Button variant="ghost" size="sm" className="h-5 text-[9px] text-red-500 hover:text-red-700 hover:bg-red-50" onClick={clearLocalLog}>
+                  🗑️ مسح السجل
+                </Button>
+              </div>
+            </div>
+          )}
           <div ref={chatRef} className="flex-1 overflow-auto p-3 space-y-2">
             {showHistory ? (
               <div className="space-y-2">
