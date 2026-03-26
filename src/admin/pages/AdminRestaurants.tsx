@@ -22,7 +22,7 @@ const AdminRestaurants = () => {
   const [showItemDialog, setShowItemDialog] = useState(false);
   const [editingStore, setEditingStore] = useState<any>(null);
   const [editingItem, setEditingItem] = useState<any>(null);
-  const [storeForm, setStoreForm] = useState({ name: "", description: "", address: "", phone: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5 });
+  const [storeForm, setStoreForm] = useState({ name: "", description: "", address: "", phone: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5, commission_rate: 5 });
   const [itemForm, setItemForm] = useState({ name_ar: "", name_fr: "", description_ar: "", price: 0, category_id: "", is_available: true });
 
   const fetchAll = async () => {
@@ -82,14 +82,22 @@ const AdminRestaurants = () => {
 
   const openEditStore = (store: any) => {
     setEditingStore(store);
-    setStoreForm({ name: store.name, description: store.description || "", address: store.address || "", phone: store.phone || "", delivery_fee: store.delivery_fee || 10, delivery_time_min: store.delivery_time_min || 20, delivery_time_max: store.delivery_time_max || 40, rating: store.rating || 4.5 });
+    setStoreForm({ name: store.name, description: store.description || "", address: store.address || "", phone: store.phone || "", delivery_fee: store.delivery_fee || 10, delivery_time_min: store.delivery_time_min || 20, delivery_time_max: store.delivery_time_max || 40, rating: store.rating || 4.5, commission_rate: store.commission_rate ?? 5 });
     setShowStoreDialog(true);
   };
 
   const openAddStore = () => {
     setEditingStore(null);
-    setStoreForm({ name: "", description: "", address: "", phone: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5 });
+    setStoreForm({ name: "", description: "", address: "", phone: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5, commission_rate: 5 });
     setShowStoreDialog(true);
+  };
+
+  const updateCommission = async (storeId: string, value: number) => {
+    const { error } = await supabase.from("stores").update({ commission_rate: value } as any).eq("id", storeId);
+    if (!error) {
+      setStores(prev => prev.map(s => s.id === storeId ? { ...s, commission_rate: value } : s));
+      toast({ title: "✅ تم تحديث نسبة العمولة" });
+    }
   };
 
   const openEditItem = (item: any) => {
@@ -125,32 +133,48 @@ const AdminRestaurants = () => {
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-right">الاسم</TableHead>
-                    <TableHead className="text-right">العنوان</TableHead>
-                    <TableHead className="text-right">التقييم</TableHead>
-                    <TableHead className="text-right">رسوم التوصيل</TableHead>
-                    <TableHead className="text-right">إجراءات</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {stores.map((s) => (
-                    <TableRow key={s.id}>
-                      <TableCell className="font-bold">{s.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{s.address}</TableCell>
-                      <TableCell>⭐ {s.rating}</TableCell>
-                      <TableCell>{s.delivery_fee} DH</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" onClick={() => openEditStore(s)}><Pencil className="w-3 h-3" /></Button>
-                          <Button size="sm" variant="outline" onClick={() => setSelectedStore(s.id)}>
-                            <UtensilsCrossed className="w-3 h-3 mr-1" />المنيو
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
+                   <TableRow>
+                     <TableHead className="text-right">الاسم</TableHead>
+                     <TableHead className="text-right">العنوان</TableHead>
+                     <TableHead className="text-right">التقييم</TableHead>
+                     <TableHead className="text-right">رسوم التوصيل</TableHead>
+                     <TableHead className="text-right">العمولة %</TableHead>
+                     <TableHead className="text-right">إجراءات</TableHead>
+                   </TableRow>
+                 </TableHeader>
+                 <TableBody>
+                   {stores.map((s) => (
+                     <TableRow key={s.id}>
+                       <TableCell className="font-bold">{s.name}</TableCell>
+                       <TableCell className="text-muted-foreground">{s.address}</TableCell>
+                       <TableCell>⭐ {s.rating}</TableCell>
+                       <TableCell>{s.delivery_fee} DH</TableCell>
+                       <TableCell>
+                         <Input
+                           type="number"
+                           min="0"
+                           max="100"
+                           step="0.5"
+                           value={s.commission_rate ?? 5}
+                           onChange={(e) => {
+                             const val = Number(e.target.value);
+                             setStores(prev => prev.map(x => x.id === s.id ? { ...x, commission_rate: val } : x));
+                           }}
+                           onBlur={(e) => updateCommission(s.id, Number(e.target.value) || 5)}
+                           className="w-20 h-8 text-center text-sm"
+                         />
+                       </TableCell>
+                       <TableCell>
+                         <div className="flex gap-2">
+                           <Button size="sm" variant="outline" onClick={() => openEditStore(s)}><Pencil className="w-3 h-3" /></Button>
+                           <Button size="sm" variant="outline" onClick={() => setSelectedStore(s.id)}>
+                             <UtensilsCrossed className="w-3 h-3 mr-1" />المنيو
+                           </Button>
+                         </div>
+                       </TableCell>
+                     </TableRow>
+                   ))}
+                 </TableBody>
               </Table>
             </CardContent>
           </Card>
@@ -230,6 +254,7 @@ const AdminRestaurants = () => {
               <div><Label>رسوم التوصيل (DH)</Label><Input type="number" value={storeForm.delivery_fee} onChange={(e) => setStoreForm({ ...storeForm, delivery_fee: +e.target.value })} /></div>
               <div><Label>التقييم</Label><Input type="number" step="0.1" value={storeForm.rating} onChange={(e) => setStoreForm({ ...storeForm, rating: +e.target.value })} /></div>
             </div>
+            <div><Label>نسبة العمولة (%)</Label><Input type="number" min="0" max="100" step="0.5" value={storeForm.commission_rate} onChange={(e) => setStoreForm({ ...storeForm, commission_rate: +e.target.value })} /></div>
             <Button onClick={saveStore} className="w-full">{editingStore ? "تحديث" : "إضافة"}</Button>
           </div>
         </DialogContent>
