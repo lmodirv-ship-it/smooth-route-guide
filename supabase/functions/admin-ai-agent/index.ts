@@ -33,6 +33,7 @@ const ALLOWED_TABLES = [
   "assistant_knowledge_entries", "assistant_recommendations", "assistant_issue_patterns",
   "assistant_campaign_ideas", "assistant_activity_log", "product_images",
   "platform_languages", "platform_translations", "dynamic_pages",
+  "social_media_posts",
 ];
 
 const tools = [
@@ -268,6 +269,30 @@ Supported block types:
           meta_description: { type: "string", description: "SEO meta description" },
           css_overrides: { type: "string", description: "Custom CSS for this page" },
           is_published: { type: "boolean", description: "Whether page is live" },
+        },
+        required: ["action"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "manage_social_content",
+      description: `Create, manage and schedule social media posts/ads for platforms like Facebook, Instagram, Twitter, TikTok, LinkedIn. Posts are saved as drafts and must be approved by the admin before they can be published. Use this to prepare marketing content, promotions, and ads.`,
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["create", "list", "update", "delete", "approve", "reject"], description: "Action to perform" },
+          id: { type: "string", description: "Post ID (for update/delete/approve/reject)" },
+          platform: { type: "string", enum: ["facebook", "instagram", "twitter", "tiktok", "linkedin", "all"], description: "Target platform" },
+          post_type: { type: "string", enum: ["post", "story", "reel", "ad", "carousel"], description: "Type of post" },
+          title: { type: "string", description: "Post title/headline" },
+          content: { type: "string", description: "Post text content / caption" },
+          image_url: { type: "string", description: "Image URL for the post" },
+          hashtags: { type: "array", items: { type: "string" }, description: "Hashtags array" },
+          target_audience: { type: "string", description: "Target audience description" },
+          scheduled_at: { type: "string", description: "ISO date for scheduled publishing" },
+          metadata: { type: "object", description: "Additional platform-specific data" },
         },
         required: ["action"],
       },
@@ -555,6 +580,75 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         }
         return JSON.stringify({ error: "Invalid action" });
       }
+      case "manage_social_content": {
+        if (args.action === "list") {
+          const { data, error } = await supabase.from("social_media_posts").select("*").order("created_at", { ascending: false }).limit(50);
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ posts: data });
+        }
+        if (args.action === "create") {
+          if (!args.content) return JSON.stringify({ error: "content required" });
+          const { data, error } = await supabase.from("social_media_posts").insert({
+            platform: args.platform || "facebook",
+            post_type: args.post_type || "post",
+            title: args.title || "",
+            content: args.content,
+            image_url: args.image_url || null,
+            hashtags: args.hashtags || [],
+            target_audience: args.target_audience || "general",
+            scheduled_at: args.scheduled_at || null,
+            metadata: args.metadata || {},
+            status: "draft",
+            admin_approved: false,
+          }).select().single();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "created", post: data, message: "تم إنشاء المنشور كمسودة. يحتاج موافقة المدير قبل النشر." });
+        }
+        if (args.action === "update") {
+          if (!args.id) return JSON.stringify({ error: "id required" });
+          const updates: any = { updated_at: new Date().toISOString() };
+          if (args.title !== undefined) updates.title = args.title;
+          if (args.content !== undefined) updates.content = args.content;
+          if (args.platform !== undefined) updates.platform = args.platform;
+          if (args.post_type !== undefined) updates.post_type = args.post_type;
+          if (args.image_url !== undefined) updates.image_url = args.image_url;
+          if (args.hashtags !== undefined) updates.hashtags = args.hashtags;
+          if (args.target_audience !== undefined) updates.target_audience = args.target_audience;
+          if (args.scheduled_at !== undefined) updates.scheduled_at = args.scheduled_at;
+          if (args.metadata !== undefined) updates.metadata = args.metadata;
+          const { data, error } = await supabase.from("social_media_posts").update(updates).eq("id", args.id).select().single();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "updated", post: data });
+        }
+        if (args.action === "delete") {
+          if (!args.id) return JSON.stringify({ error: "id required" });
+          const { error } = await supabase.from("social_media_posts").delete().eq("id", args.id);
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "deleted" });
+        }
+        if (args.action === "approve") {
+          if (!args.id) return JSON.stringify({ error: "id required" });
+          const { data, error } = await supabase.from("social_media_posts").update({
+            admin_approved: true,
+            approved_at: new Date().toISOString(),
+            status: "approved",
+            updated_at: new Date().toISOString(),
+          }).eq("id", args.id).select().single();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "approved", post: data, message: "تمت الموافقة على المنشور. يمكن نشره الآن." });
+        }
+        if (args.action === "reject") {
+          if (!args.id) return JSON.stringify({ error: "id required" });
+          const { data, error } = await supabase.from("social_media_posts").update({
+            admin_approved: false,
+            status: "rejected",
+            updated_at: new Date().toISOString(),
+          }).eq("id", args.id).select().single();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "rejected", post: data });
+        }
+        return JSON.stringify({ error: "Invalid action" });
+      }
       default:
         return JSON.stringify({ error: `Unknown tool: ${name}` });
     }
@@ -665,6 +759,7 @@ serve(async (req) => {
 - إدارة الترجمات واللغات
 - **إنشاء وتعديل صفحات ديناميكية** (صفحات تسويقية، محتوى، لوحات بيانات)
 - **تعديل الهوية البصرية والثيم** (ألوان، خطوط، شعار)
+- **إنشاء محتوى التواصل الاجتماعي** (منشورات، إعلانات، قصص لفيسبوك وإنستغرام وتويتر وتيك توك ولينكدإن)
 
 ## ⛔ ممنوع تماماً:
 - لا يمكنك إدارة المستخدمين أو تعديل الأدوار (user_roles)
@@ -686,6 +781,14 @@ serve(async (req) => {
 ## نسب الأرباح:
 - استخدم أداة manage_commission_rates لعرض أو تعديل نسب الأرباح
 
+## محتوى التواصل الاجتماعي:
+- استخدم أداة manage_social_content لإنشاء منشورات وإعلانات للتواصل الاجتماعي
+- المنشورات تُنشأ كمسودات وتحتاج موافقة المدير قبل النشر
+- المنصات المدعومة: Facebook, Instagram, Twitter, TikTok, LinkedIn
+- أنواع المنشورات: post, story, reel, ad, carousel
+- أنشئ محتوى جذاب مع هاشتاقات وصور مناسبة
+- المنشورات المعتمدة يمكن نسخها ونشرها يدوياً على المنصات
+
 ## القواعد الأمنية:
 - لا تحذف بيانات بدون تأكيد صريح من المسؤول
 - لا تحذف أكثر من 10 سجلات في عملية واحدة
@@ -694,7 +797,7 @@ serve(async (req) => {
 - قدّم نتائج بتنسيق Markdown
 
 ## الجداول المتاحة:
-profiles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates, assistant_knowledge_entries, assistant_recommendations, assistant_issue_patterns, assistant_campaign_ideas, assistant_activity_log, product_images, platform_languages, platform_translations, dynamic_pages`;
+profiles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates, assistant_knowledge_entries, assistant_recommendations, assistant_issue_patterns, assistant_campaign_ideas, assistant_activity_log, product_images, platform_languages, platform_translations, dynamic_pages, social_media_posts`;
 
     let aiMessages: any[] = [
       { role: "system", content: systemPrompt },

@@ -1357,6 +1357,66 @@ export type Database = {
         }
         Relationships: []
       }
+      social_media_posts: {
+        Row: {
+          admin_approved: boolean
+          approved_at: string | null
+          content: string
+          created_at: string
+          created_by: string | null
+          hashtags: string[] | null
+          id: string
+          image_url: string | null
+          metadata: Json | null
+          platform: string
+          post_type: string
+          published_at: string | null
+          scheduled_at: string | null
+          status: string
+          target_audience: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          admin_approved?: boolean
+          approved_at?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          hashtags?: string[] | null
+          id?: string
+          image_url?: string | null
+          metadata?: Json | null
+          platform?: string
+          post_type?: string
+          published_at?: string | null
+          scheduled_at?: string | null
+          status?: string
+          target_audience?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_approved?: boolean
+          approved_at?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          hashtags?: string[] | null
+          id?: string
+          image_url?: string | null
+          metadata?: Json | null
+          platform?: string
+          post_type?: string
+          published_at?: string | null
+          scheduled_at?: string | null
+          status?: string
+          target_audience?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       stores: {
         Row: {
           address: string | null

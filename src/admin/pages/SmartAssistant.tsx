@@ -6,10 +6,12 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizePlainText } from "@/lib/inputSecurity";
 import { useI18n } from "@/i18n/context";
+import { SocialMediaPreview } from "@/admin/components/SocialMediaPreview";
 
 type AiMsg = { role: "user" | "assistant"; content: string };
 type TaskLog = { id: string; title: string; status: "success" | "error" | "pending"; code?: string; timestamp: string; targetPage?: string };
@@ -159,53 +161,61 @@ const SmartAssistantPage = () => {
 
         {/* Left: Code Used + Site Preview */}
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2">
+          <Tabs defaultValue="preview" className="flex-1 flex flex-col overflow-hidden">
+            <TabsList className="w-full rounded-none border-b border-border bg-secondary/40 shrink-0">
+              <TabsTrigger value="preview" className="flex-1 text-xs">معاينة الموقع</TabsTrigger>
+              <TabsTrigger value="social" className="flex-1 text-xs">📱 التواصل الاجتماعي</TabsTrigger>
+            </TabsList>
 
-          {/* Content area */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Browser Preview inside Code panel */}
-            {previewUrl ? (
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="bg-secondary/60 px-3 py-1.5 flex items-center gap-2 text-xs">
-                  <div className="flex gap-1">
-                    <span className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-warning/60" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-success/60" />
+            <TabsContent value="preview" className="flex-1 flex flex-col overflow-hidden m-0">
+              {previewUrl ? (
+                <div className="flex-1 flex flex-col overflow-hidden">
+                  <div className="bg-secondary/60 px-3 py-1.5 flex items-center gap-2 text-xs">
+                    <div className="flex gap-1">
+                      <span className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-warning/60" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-success/60" />
+                    </div>
+                    <span className="flex-1 text-muted-foreground truncate font-mono text-[11px]" dir="ltr">{displayUrl || previewUrl}</span>
                   </div>
-                  <span className="flex-1 text-muted-foreground truncate font-mono text-[11px]" dir="ltr">{displayUrl || previewUrl}</span>
-                </div>
-                <div className="flex-1 overflow-auto bg-white">
-                  <iframe
-                    ref={iframeRef}
-                    key={`${previewUrl}-${iframeKey}`}
-                    src={previewUrl}
-                    style={{ width: "1440px", height: "900px", transform: `scale(${zoomLevel})`, transformOrigin: "top left" }}
-                    className="bg-white"
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                    referrerPolicy="no-referrer"
-                    title="معاينة الموقع"
-                    onError={() => setIframeError(true)}
-                    onLoad={() => {
-                      try {
-                        const currentUrl = iframeRef.current?.contentWindow?.location?.href;
-                        if (currentUrl && currentUrl !== "about:blank") {
-                          setDisplayUrl(currentUrl);
-                          setSiteUrl(currentUrl);
+                  <div className="flex-1 overflow-auto bg-white">
+                    <iframe
+                      ref={iframeRef}
+                      key={`${previewUrl}-${iframeKey}`}
+                      src={previewUrl}
+                      style={{ width: "1440px", height: "900px", transform: `scale(${zoomLevel})`, transformOrigin: "top left" }}
+                      className="bg-white"
+                      sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                      referrerPolicy="no-referrer"
+                      title="معاينة الموقع"
+                      onError={() => setIframeError(true)}
+                      onLoad={() => {
+                        try {
+                          const currentUrl = iframeRef.current?.contentWindow?.location?.href;
+                          if (currentUrl && currentUrl !== "about:blank") {
+                            setDisplayUrl(currentUrl);
+                            setSiteUrl(currentUrl);
+                          }
+                        } catch {
+                          // Cross-origin
                         }
-                      } catch {
-                        // Cross-origin - can't read URL
-                      }
-                    }}
-                  />
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-                لا توجد صفحة محملة
-              </div>
-            )}
-          </div>
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+                  لا توجد صفحة محملة
+                </div>
+              )}
+            </TabsContent>
 
-          {/* Zoom Controls - always at bottom */}
+            <TabsContent value="social" className="flex-1 overflow-hidden m-0">
+              <SocialMediaPreview />
+            </TabsContent>
+          </Tabs>
+
+          {/* Zoom Controls */}
           <div className="bg-secondary/60 px-3 py-1.5 flex items-center justify-center gap-2 border-t border-border shrink-0">
             <Button variant="outline" size="icon" className="h-7 w-7 text-lg font-bold" onClick={() => setZoomLevel(z => Math.max(0.1, z - 0.1))}>
               −
