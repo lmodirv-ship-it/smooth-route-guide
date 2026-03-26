@@ -187,8 +187,8 @@ const SmartAssistantPage = () => {
               />
             </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-              اكتب رابط الموقع في شريط العرض واضغط "عرض"
+            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm bg-gray-800">
+              <span className="text-gray-400">اكتب رابط الموقع في شريط العرض واضغط "عرض"</span>
             </div>
           )}
 
