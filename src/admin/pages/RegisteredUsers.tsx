@@ -292,13 +292,16 @@ const RegisteredUsers = () => {
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
                   لا يوجد مستخدمون
                 </TableCell>
               </TableRow>
             ) : filtered.map(u => (
               <TableRow key={u.id}>
                 <TableCell className="font-medium text-right">{u.name}</TableCell>
+                <TableCell className="text-center">
+                  <Badge variant="outline" className="font-mono text-xs">{u.userCode}</Badge>
+                </TableCell>
                 <TableCell className="text-right text-muted-foreground text-sm">{u.email}</TableCell>
                 <TableCell className="text-right text-muted-foreground text-sm">{u.phone}</TableCell>
                 <TableCell className="text-center">
@@ -309,6 +312,25 @@ const RegisteredUsers = () => {
                       </Badge>
                     ))}
                   </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={u.isConfirmed ? "text-green-600" : "text-muted-foreground"}
+                    onClick={async () => {
+                      const newVal = !u.isConfirmed;
+                      const { error } = await supabase.from("profiles").update({ is_confirmed: newVal } as any).eq("id", u.id);
+                      if (error) {
+                        toast({ title: "خطأ", description: error.message, variant: "destructive" });
+                        return;
+                      }
+                      setUsers(prev => prev.map(x => x.id === u.id ? { ...x, isConfirmed: newVal } : x));
+                      toast({ title: newVal ? "✅ تم التأكيد" : "❌ تم إلغاء التأكيد" });
+                    }}
+                  >
+                    {u.isConfirmed ? <Check className="w-4 h-4 text-green-600" /> : "—"}
+                  </Button>
                 </TableCell>
                 <TableCell className="text-center text-muted-foreground text-xs">
                   {new Date(u.createdAt).toLocaleDateString("ar-MA")}
