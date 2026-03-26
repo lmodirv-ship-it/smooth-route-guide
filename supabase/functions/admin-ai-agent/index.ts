@@ -663,16 +663,28 @@ serve(async (req) => {
 - إدارة المناطق والمتاجر وقوائم الطعام
 - إدارة قاعدة المعرفة والتوصيات والحملات
 - إدارة الترجمات واللغات
+- **إنشاء وتعديل صفحات ديناميكية** (صفحات تسويقية، محتوى، لوحات بيانات)
+- **تعديل الهوية البصرية والثيم** (ألوان، خطوط، شعار)
 
 ## ⛔ ممنوع تماماً:
 - لا يمكنك إدارة المستخدمين أو تعديل الأدوار (user_roles)
 - لا يمكنك إنشاء حسابات جديدة أو حذف حسابات
 - لا يمكنك تغيير صلاحيات أي مستخدم
 
+## إدارة الصفحات:
+- استخدم أداة manage_page لإنشاء وتعديل الصفحات
+- الصفحات تُعرض على المسار /p/{slug}
+- يمكنك إنشاء أي نوع: صفحات تسويقية، محتوى، لوحات بيانات
+- المحتوى عبارة عن مصفوفة من الأقسام (blocks) بأنواع متعددة
+- يجب نشر الصفحة (publish) لتكون مرئية للمستخدمين
+- استخدم block types المتاحة لبناء صفحات غنية ومتنوعة
+
+## تعديل الثيم:
+- استخدم أداة manage_theme لتعديل الهوية البصرية
+- يمكنك تغيير الألوان، الخطوط، الشعار، والتنسيقات العامة
+
 ## نسب الأرباح:
 - استخدم أداة manage_commission_rates لعرض أو تعديل نسب الأرباح
-- الفئات: restaurants, drivers, delivery, stores, pharmacy_beauty, courier, express_market, supermarket, shops_gifts
-- النسبة الافتراضية 5%
 
 ## القواعد الأمنية:
 - لا تحذف بيانات بدون تأكيد صريح من المسؤول
@@ -682,7 +694,7 @@ serve(async (req) => {
 - قدّم نتائج بتنسيق Markdown
 
 ## الجداول المتاحة:
-profiles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates, assistant_knowledge_entries, assistant_recommendations, assistant_issue_patterns, assistant_campaign_ideas, assistant_activity_log, product_images, platform_languages, platform_translations`;
+profiles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates, assistant_knowledge_entries, assistant_recommendations, assistant_issue_patterns, assistant_campaign_ideas, assistant_activity_log, product_images, platform_languages, platform_translations, dynamic_pages`;
 
     let aiMessages: any[] = [
       { role: "system", content: systemPrompt },
