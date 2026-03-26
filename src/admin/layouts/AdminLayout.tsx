@@ -69,6 +69,7 @@ const AdminLayout = () => {
     { path: "/admin/restaurants", icon: UtensilsCrossed, label: t.admin.restaurantsMenu },
     { path: "/admin/zones", icon: MapPin, label: t.admin.zonesPricing },
     { path: "/admin/commission-rates", icon: Percent, label: "نسب الأرباح" },
+    { path: "/admin/smart-assistant", icon: Bot, label: "المساعد الذكي" },
     { path: "/admin/settings", icon: Settings, label: t.admin.settingsMenu },
   ];
 
