@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   UtensilsCrossed, Phone, MapPin, Clock, Star, Search, Plus, Edit, Trash2,
   CheckCircle, XCircle, Eye, PhoneCall, Store, ArrowRight, Image as ImageIcon,
-  ChevronLeft, Loader2, ToggleLeft, ToggleRight, Upload, X, FolderOpen, Package
+  ChevronLeft, Loader2, ToggleLeft, ToggleRight, Upload, X, FolderOpen, Package,
+  Sparkles, Save
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,8 +14,11 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useAdminGeo } from "@/admin/contexts/AdminGeoContext";
 
 type ViewMode = "list" | "store-detail";
 
@@ -34,6 +38,12 @@ const RestaurantsCC = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedStore, setSelectedStore] = useState<any>(null);
+  const [generatedStores, setGeneratedStores] = useState<any[]>([]);
+  const [generating, setGenerating] = useState(false);
+  const [savingGenerated, setSavingGenerated] = useState(false);
+  const { selectedCountry, selectedCity } = useAdminGeo();
+
+  const generateStoreCode = () => String(Math.floor(100000 + Math.random() * 900000));
 
   // Store form
   const [storeDialog, setStoreDialog] = useState(false);
@@ -248,11 +258,60 @@ const RestaurantsCC = () => {
     (s.address || "").toLowerCase().includes(search.toLowerCase())
   );
 
+  const generateRestaurants = async () => {
+    if (selectedCountry === "all") {
+      toast({ title: "⚠️ اختر البلد أولاً", variant: "destructive" });
+      return;
+    }
+    setGenerating(true);
+    try {
+      const cityParam = selectedCity !== "all" ? selectedCity : undefined;
+      const { data, error } = await supabase.functions.invoke("google-places-search", {
+        body: { city: cityParam || selectedCountry, type: "restaurants", useGoogle: true },
+      });
+      if (error) throw error;
+      const results = data?.restaurants || [];
+      const existingNames = new Set(stores.map((s: any) => s.name?.toLowerCase()));
+      const newOnes = results.filter((r: any) => !existingNames.has(r.name?.toLowerCase())).map((r: any) => ({
+        ...r, store_code: generateStoreCode(), commission_rate: 5,
+      }));
+      setGeneratedStores(newOnes);
+      toast({ title: `✅ تم توليد ${newOnes.length} مطعم جديد` });
+    } catch (err: any) {
+      toast({ title: "خطأ في التوليد", description: err.message, variant: "destructive" });
+    }
+    setGenerating(false);
+  };
+
+  const saveGeneratedStores = async () => {
+    if (generatedStores.length === 0) return;
+    setSavingGenerated(true);
+    try {
+      const toInsert = generatedStores.map((r: any) => ({
+        name: r.name, address: r.address || "", area: r.area || "", phone: r.phone || "",
+        rating: r.rating || 0, delivery_fee: r.delivery_fee || 10, is_open: true,
+        category: r.category || "restaurant", image_url: r.image_url || "",
+        google_place_id: r.google_place_id || "", lat: r.lat || null, lng: r.lng || null,
+        country: selectedCountry !== "all" ? selectedCountry : "المغرب",
+        city: selectedCity !== "all" ? selectedCity : "",
+        commission_rate: r.commission_rate || 5, store_code: r.store_code || generateStoreCode(), is_confirmed: false,
+      }));
+      const { error } = await supabase.from("stores").insert(toInsert);
+      if (error) throw error;
+      toast({ title: `✅ تم حفظ ${toInsert.length} مطعم` });
+      setGeneratedStores([]);
+      fetchStores();
+    } catch (err: any) {
+      toast({ title: "خطأ في الحفظ", description: err.message, variant: "destructive" });
+    }
+    setSavingGenerated(false);
+  };
+
   // ===== STORE LIST VIEW =====
   if (viewMode === "list") {
     return (
       <div className="space-y-6" dir="rtl">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <UtensilsCrossed className="w-7 h-7 text-primary" />
@@ -260,10 +319,17 @@ const RestaurantsCC = () => {
             </h1>
             <p className="text-sm text-muted-foreground mt-1">إضافة وتعديل المطاعم والقوائم</p>
           </div>
-          <Button onClick={() => openStoreForm()} className="gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all text-sm font-bold px-6 h-11">
-            <Plus className="w-5 h-5" />
-            ➕ إضافة مطعم
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={generateRestaurants} disabled={generating} className="gap-1 bg-green-600 hover:bg-green-700 text-white">
+              {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} توليد
+            </Button>
+            <Button onClick={saveGeneratedStores} disabled={savingGenerated || generatedStores.length === 0} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white">
+              {savingGenerated ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} حفظ
+            </Button>
+            <Button onClick={() => openStoreForm()} className="gap-2 text-sm font-bold">
+              <Plus className="w-5 h-5" /> إضافة مطعم
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -284,6 +350,51 @@ const RestaurantsCC = () => {
             </div>
           ))}
         </div>
+
+        {/* Generated stores preview */}
+        {generatedStores.length > 0 && (
+          <Card className="border-green-500/30 bg-green-500/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-green-500" />
+                مطاعم مكتشفة ({generatedStores.length})
+                <Badge variant="secondary" className="bg-green-100 text-green-700">جديد</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-right">#</TableHead>
+                    <TableHead className="text-right">الاسم</TableHead>
+                    <TableHead className="text-right">الهاتف</TableHead>
+                    <TableHead className="text-right">العنوان</TableHead>
+                    <TableHead className="text-right">التقييم</TableHead>
+                    <TableHead className="text-right">رسوم التوصيل</TableHead>
+                    <TableHead className="text-right">العمولة %</TableHead>
+                    <TableHead className="text-right">رقم</TableHead>
+                    <TableHead className="text-right">تأكيد</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {generatedStores.map((r, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell className="font-bold text-muted-foreground">{idx + 1}</TableCell>
+                      <TableCell className="font-bold">{r.name}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm" dir="ltr">{r.phone || "—"}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{r.address}</TableCell>
+                      <TableCell>⭐ {r.rating || "—"}</TableCell>
+                      <TableCell>{r.delivery_fee || 10} DH</TableCell>
+                      <TableCell>{r.commission_rate || 5}%</TableCell>
+                      <TableCell className="font-mono text-sm">{r.store_code || "—"}</TableCell>
+                      <TableCell><Badge variant="outline" className="text-orange-500 border-orange-500/30">غير مؤكد</Badge></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Search */}
         <div className="relative max-w-sm">

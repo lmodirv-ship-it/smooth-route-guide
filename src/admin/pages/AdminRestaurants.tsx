@@ -31,6 +31,10 @@ const AdminRestaurants = () => {
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const generateStoreCode = () => {
+    return String(Math.floor(100000 + Math.random() * 900000));
+  };
+
   const generateRestaurants = async () => {
     if (selectedCountry === "all") {
       toast({ title: "⚠️ اختر البلد أولاً", variant: "destructive" });
@@ -51,7 +55,11 @@ const AdminRestaurants = () => {
       }
       // Filter out already existing stores by name
       const existingNames = new Set(stores.map((s: any) => s.name?.toLowerCase()));
-      const newOnes = results.filter((r: any) => !existingNames.has(r.name?.toLowerCase()));
+      const newOnes = results.filter((r: any) => !existingNames.has(r.name?.toLowerCase())).map((r: any) => ({
+        ...r,
+        store_code: generateStoreCode(),
+        commission_rate: 5,
+      }));
       setGeneratedStores(newOnes);
       toast({ title: `✅ تم توليد ${newOnes.length} مطعم جديد` });
     } catch (err: any) {
@@ -83,6 +91,9 @@ const AdminRestaurants = () => {
         lng: r.lng || null,
         country: selectedCountry !== "all" ? selectedCountry : "المغرب",
         city: selectedCity !== "all" ? selectedCity : "",
+        commission_rate: r.commission_rate || 5,
+        store_code: r.store_code || generateStoreCode(),
+        is_confirmed: false,
       }));
       const { error } = await supabase.from("stores").insert(toInsert);
       if (error) throw error;
@@ -225,8 +236,11 @@ const AdminRestaurants = () => {
                   <TableHead className="text-right">الاسم</TableHead>
                   <TableHead className="text-right">الهاتف</TableHead>
                   <TableHead className="text-right">العنوان</TableHead>
-                  <TableHead className="text-right">المنطقة</TableHead>
                   <TableHead className="text-right">التقييم</TableHead>
+                  <TableHead className="text-right">رسوم التوصيل</TableHead>
+                  <TableHead className="text-right">العمولة %</TableHead>
+                  <TableHead className="text-right">رقم</TableHead>
+                  <TableHead className="text-right">تأكيد</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -236,8 +250,13 @@ const AdminRestaurants = () => {
                     <TableCell className="font-bold">{r.name}</TableCell>
                     <TableCell className="text-muted-foreground text-sm" dir="ltr">{r.phone || "—"}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{r.address}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{r.area}</TableCell>
                     <TableCell>⭐ {r.rating || "—"}</TableCell>
+                    <TableCell>{r.delivery_fee || 10} DH</TableCell>
+                    <TableCell>{r.commission_rate || 5}%</TableCell>
+                    <TableCell className="font-mono text-sm">{r.store_code || "—"}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-orange-500 border-orange-500/30">غير مؤكد</Badge>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -254,7 +273,7 @@ const AdminRestaurants = () => {
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                   <TableRow>
+                 <TableRow>
                      <TableHead className="text-right w-12">#</TableHead>
                      <TableHead className="text-right">الاسم</TableHead>
                      <TableHead className="text-right">الهاتف</TableHead>
@@ -262,6 +281,8 @@ const AdminRestaurants = () => {
                      <TableHead className="text-right">التقييم</TableHead>
                      <TableHead className="text-right">رسوم التوصيل</TableHead>
                      <TableHead className="text-right">العمولة %</TableHead>
+                     <TableHead className="text-right">رقم</TableHead>
+                     <TableHead className="text-right">تأكيد</TableHead>
                      <TableHead className="text-right">إجراءات</TableHead>
                    </TableRow>
                  </TableHeader>
@@ -288,6 +309,22 @@ const AdminRestaurants = () => {
                            onBlur={(e) => updateCommission(s.id, Number(e.target.value) || 5)}
                            className="w-20 h-8 text-center text-sm"
                          />
+                       </TableCell>
+                       <TableCell className="font-mono text-sm">{s.store_code || "—"}</TableCell>
+                       <TableCell>
+                         <Button
+                           size="sm"
+                           variant="outline"
+                           className={s.is_confirmed ? "text-emerald-500 border-emerald-500/30" : "text-orange-500 border-orange-500/30"}
+                           onClick={async () => {
+                             const newVal = !s.is_confirmed;
+                             await supabase.from("stores").update({ is_confirmed: newVal } as any).eq("id", s.id);
+                             setStores(prev => prev.map(x => x.id === s.id ? { ...x, is_confirmed: newVal } : x));
+                             toast({ title: newVal ? "✅ تم التأكيد" : "⚠️ تم إلغاء التأكيد" });
+                           }}
+                         >
+                           {s.is_confirmed ? "مؤكد" : "غير مؤكد"}
+                         </Button>
                        </TableCell>
                        <TableCell>
                          <div className="flex gap-2">
