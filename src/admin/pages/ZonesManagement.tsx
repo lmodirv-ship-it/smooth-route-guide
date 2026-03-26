@@ -434,7 +434,7 @@ const ZonesManagement = () => {
 
           {/* Auto Generate Button */}
           {selectedCountry && (
-            <div className="flex justify-center">
+            <div className="flex justify-center gap-3">
               <Button
                 onClick={handleAutoGenerate}
                 disabled={autoGenerating}
@@ -446,11 +446,22 @@ const ZonesManagement = () => {
                 ) : (
                   <Wand2 className="w-4 h-4" />
                 )}
-                {autoGenerating
-                  ? "جاري التوليد..."
-                  : "توليد"
-                }
+                {autoGenerating ? "جاري التوليد..." : "توليد"}
               </Button>
+              {selectedCity && (
+                <Button
+                  onClick={handleSaveAll}
+                  disabled={savingAll}
+                  className="gap-2 gradient-primary text-primary-foreground"
+                >
+                  {savingAll ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  {savingAll ? "جاري الحفظ..." : "حفظ"}
+                </Button>
+              )}
             </div>
           )}
 
