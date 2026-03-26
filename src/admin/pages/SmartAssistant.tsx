@@ -214,14 +214,17 @@ const SmartAssistantPage = () => {
         return;
       }
     } else {
-      const currentSiteContext = siteUrl
-        ? `\n\n[السياق: الموقع المعروض حالياً: ${siteUrl}]\nاستخدم أداة fetch_webpage لقراءة وتحليل محتوى هذا الموقع إذا طُلب منك ذلك.`
+      // Build rich context about what's displayed in Page 1
+      const page1Context = siteUrl
+        ? `\n\n[📺 المحتوى المعروض في صفحة 1: ${siteUrl}]\n⚠️ أي طلب مني الآن يتعلق بهذا الموقع المعروض. استخدم أداة fetch_webpage لقراءة محتواه أولاً ثم نفّذ ما أطلبه عليه.`
+        : uploadedFile
+        ? `\n\n[📺 المحتوى المعروض في صفحة 1: ملف ${uploadedFileType === "image" ? "صورة" : "فيديو"} - ${uploadedFile.name}]\n⚠️ أي طلب مني الآن يتعلق بهذا الملف المعروض.`
         : "";
-      const fileContext = uploadedFile
+      const fileContext = uploadedFile && !siteUrl
         ? `\n[ملف مرفق: ${uploadedFile.name} (${uploadedFileType}) - فيديو لا يمكن تحليله مباشرة]`
         : "";
-      const pageContext = previewUrl ? `\n[معاينة الصفحة: ${previewUrl}]` : "";
-      userContent = safeText + fileContext + currentSiteContext + pageContext;
+      const pageContext = previewUrl ? `\n[معاينة صفحة 2: ${previewUrl}]` : "";
+      userContent = safeText + page1Context + fileContext + pageContext;
       if (uploadedFile) displayContent = `📎 ${uploadedFile.name}\n${safeText}`;
     }
 
