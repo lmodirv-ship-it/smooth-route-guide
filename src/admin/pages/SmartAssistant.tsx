@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, Loader2, CheckCircle, Code, Power, XCircle } from "lucide-react";
+import { Bot, Send, Loader2, CheckCircle, Code, Power, XCircle, Globe, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,7 @@ import { sanitizePlainText } from "@/lib/inputSecurity";
 import { useI18n } from "@/i18n/context";
 
 type AiMsg = { role: "user" | "assistant"; content: string };
-type TaskLog = { id: string; title: string; status: "success" | "error" | "pending"; code?: string; timestamp: string };
+type TaskLog = { id: string; title: string; status: "success" | "error" | "pending"; code?: string; timestamp: string; targetPage?: string };
 
 const AI_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-ai-agent`;
 
@@ -40,11 +40,20 @@ const SmartAssistantPage = () => {
   const [isActive, setIsActive] = useState(true);
   const [taskLogs, setTaskLogs] = useState<TaskLog[]>([]);
   const [selectedTask, setSelectedTask] = useState<TaskLog | null>(null);
+  const [siteUrl, setSiteUrl] = useState("");
+  const [previewUrl, setPreviewUrl] = useState("");
   const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
+  const handleLoadSite = () => {
+    let url = siteUrl.trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+    setPreviewUrl(url);
+  };
 
   const sendMessage = async () => {
     const safeText = sanitizePlainText(input, 8000);
@@ -59,6 +68,7 @@ const SmartAssistantPage = () => {
       title: safeText.slice(0, 60) + (safeText.length > 60 ? "..." : ""),
       status: "pending",
       timestamp: new Date().toLocaleTimeString("ar-SA"),
+      targetPage: previewUrl || undefined,
     };
     setTaskLogs(prev => [newTask, ...prev]);
 
@@ -82,7 +92,7 @@ const SmartAssistantPage = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-80px)] flex flex-col gap-4" dir={dir}>
+    <div className="h-[calc(100vh-80px)] flex flex-col gap-3" dir={dir}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -107,18 +117,59 @@ const SmartAssistantPage = () => {
         </div>
       </div>
 
+      {/* URL Input Bar */}
+      <div className="gradient-card rounded-xl border border-border p-2.5 flex items-center gap-2">
+        <Button size="sm" onClick={handleLoadSite} className="gap-1.5 shrink-0">
+          <Globe className="w-4 h-4" />
+          تحميل
+        </Button>
+        <Input
+          value={siteUrl}
+          onChange={e => setSiteUrl(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handleLoadSite()}
+          placeholder="أدخل رابط الموقع أو الصفحة المراد تعديلها..."
+          className="flex-1 text-left bg-secondary/40 border-border font-mono text-sm"
+          dir="ltr"
+        />
+        <Globe className="w-5 h-5 text-muted-foreground shrink-0" />
+      </div>
+
       {/* Main Content - Top Split */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0">
-        {/* Right: Executed Tasks */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+        {/* Right: Executed Tasks with Browser Preview */}
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-2 lg:order-1">
-          <div className="p-3 border-b border-border flex items-center justify-between">
+          <div className="p-2.5 border-b border-border flex items-center justify-between">
             <Badge variant="outline" className="text-xs">{taskLogs.length}</Badge>
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-success" />
               ما تم تنفيذه
             </h3>
           </div>
-          <ScrollArea className="flex-1 p-3">
+
+          {/* Browser Preview Frame */}
+          {previewUrl && (
+            <div className="border-b border-border">
+              <div className="bg-secondary/60 px-3 py-1.5 flex items-center gap-2 text-xs">
+                <div className="flex gap-1">
+                  <span className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-warning/60" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-success/60" />
+                </div>
+                <span className="flex-1 text-muted-foreground truncate font-mono text-[11px]" dir="ltr">{previewUrl}</span>
+                <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
+                </a>
+              </div>
+              <iframe
+                src={previewUrl}
+                className="w-full h-[180px] bg-white"
+                sandbox="allow-scripts allow-same-origin"
+                title="معاينة الموقع"
+              />
+            </div>
+          )}
+
+          <ScrollArea className="flex-1 p-2.5">
             {taskLogs.length === 0 && (
               <div className="text-center text-muted-foreground text-sm py-8">لا توجد مهام بعد</div>
             )}
@@ -141,6 +192,11 @@ const SmartAssistantPage = () => {
                   </div>
                 </div>
                 <p className="text-xs text-foreground truncate">{task.title}</p>
+                {task.targetPage && (
+                  <p className="text-[10px] text-muted-foreground truncate mt-1 font-mono" dir="ltr">
+                    🌐 {task.targetPage}
+                  </p>
+                )}
               </button>
             ))}
           </ScrollArea>
@@ -148,7 +204,7 @@ const SmartAssistantPage = () => {
 
         {/* Left: Code Used */}
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2">
-          <div className="p-3 border-b border-border">
+          <div className="p-2.5 border-b border-border">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2 justify-end">
               <Code className="w-4 h-4 text-info" />
               الكود المستعمل
@@ -167,6 +223,12 @@ const SmartAssistantPage = () => {
                   </Badge>
                   <p className="text-xs font-medium text-foreground">{selectedTask.title}</p>
                 </div>
+                {selectedTask.targetPage && (
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground bg-secondary/40 rounded-md px-2 py-1">
+                    <Globe className="w-3 h-3" />
+                    <span className="font-mono" dir="ltr">{selectedTask.targetPage}</span>
+                  </div>
+                )}
                 <div className="bg-secondary/50 rounded-lg p-3 text-xs font-mono text-foreground/80 whitespace-pre-wrap leading-relaxed" dir="ltr">
                   <ReactMarkdown>{selectedTask.code || "لا يوجد كود"}</ReactMarkdown>
                 </div>
@@ -181,12 +243,11 @@ const SmartAssistantPage = () => {
       </div>
 
       {/* Chat Area */}
-      <div className="gradient-card rounded-xl border border-border flex flex-col h-[320px] min-h-[250px]">
-        {/* Messages */}
+      <div className="gradient-card rounded-xl border border-border flex flex-col h-[280px] min-h-[220px]">
         <div ref={chatRef} className="flex-1 overflow-auto p-4 space-y-3">
           {messages.length === 0 && (
-            <div className="text-center py-8">
-              <Bot className="w-12 h-12 mx-auto text-primary/40 mb-3" />
+            <div className="text-center py-6">
+              <Bot className="w-10 h-10 mx-auto text-primary/40 mb-2" />
               <p className="text-muted-foreground text-sm">مرحبًا! أنا المساعد الذكي للمدير. كيف يمكنني مساعدتك؟</p>
               <p className="text-muted-foreground/60 text-xs mt-1">يمكنني إدارة العمولات، تحليل البيانات، وإرسال الإشعارات</p>
             </div>
@@ -215,8 +276,6 @@ const SmartAssistantPage = () => {
             </div>
           )}
         </div>
-
-        {/* Input */}
         <div className="p-3 border-t border-border">
           <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="flex gap-2">
             <Button type="submit" disabled={!input.trim() || loading || !isActive} size="sm" className="gap-2">
