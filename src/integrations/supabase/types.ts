@@ -1494,6 +1494,7 @@ export type Database = {
           area: string | null
           category: string
           city: string | null
+          commission_rate: number | null
           country: string | null
           created_at: string
           delivery_fee: number | null
@@ -1503,6 +1504,7 @@ export type Database = {
           google_place_id: string | null
           id: string
           image_url: string | null
+          is_confirmed: boolean | null
           is_open: boolean
           lat: number | null
           lng: number | null
@@ -1511,6 +1513,7 @@ export type Database = {
           owner_id: string | null
           phone: string | null
           rating: number | null
+          store_code: string | null
           zone_id: string | null
         }
         Insert: {
@@ -1518,6 +1521,7 @@ export type Database = {
           area?: string | null
           category?: string
           city?: string | null
+          commission_rate?: number | null
           country?: string | null
           created_at?: string
           delivery_fee?: number | null
@@ -1527,6 +1531,7 @@ export type Database = {
           google_place_id?: string | null
           id?: string
           image_url?: string | null
+          is_confirmed?: boolean | null
           is_open?: boolean
           lat?: number | null
           lng?: number | null
@@ -1535,6 +1540,7 @@ export type Database = {
           owner_id?: string | null
           phone?: string | null
           rating?: number | null
+          store_code?: string | null
           zone_id?: string | null
         }
         Update: {
@@ -1542,6 +1548,7 @@ export type Database = {
           area?: string | null
           category?: string
           city?: string | null
+          commission_rate?: number | null
           country?: string | null
           created_at?: string
           delivery_fee?: number | null
@@ -1551,6 +1558,7 @@ export type Database = {
           google_place_id?: string | null
           id?: string
           image_url?: string | null
+          is_confirmed?: boolean | null
           is_open?: boolean
           lat?: number | null
           lng?: number | null
@@ -1559,6 +1567,7 @@ export type Database = {
           owner_id?: string | null
           phone?: string | null
           rating?: number | null
+          store_code?: string | null
           zone_id?: string | null
         }
         Relationships: [
