@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Wifi, WifiOff, Signal, MapPin, Activity, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/i18n/context";
 
 const DriverStatus = () => {
   const navigate = useNavigate();
+  const { t, dir } = useI18n();
   const [isOnline, setIsOnline] = useState(false);
   const [loading, setLoading] = useState(true);
   const [todayTrips, setTodayTrips] = useState(0);
@@ -36,18 +38,18 @@ const DriverStatus = () => {
   };
 
   const statusInfo = [
-    { icon: Signal, label: "الحالة", value: isOnline ? "متصل" : "غير متصل", color: isOnline ? "text-success" : "text-destructive" },
-    { icon: MapPin, label: "تحديد الموقع", value: "GPS نشط", color: "text-success" },
-    { icon: Activity, label: "الرحلات اليوم", value: `${todayTrips} رحلات`, color: "text-primary" },
+    { icon: Signal, label: t.driver.statusLabel, value: isOnline ? t.driver.connected : t.driver.disconnectedLabel, color: isOnline ? "text-success" : "text-destructive" },
+    { icon: MapPin, label: t.driver.gpsLocation, value: t.driver.gpsActive, color: "text-success" },
+    { icon: Activity, label: t.driver.todayTrips, value: `${todayTrips} ${t.driver.tripsLabel}`, color: "text-primary" },
   ];
 
   if (loading) return <div className="min-h-screen gradient-dark flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
-    <div className="min-h-screen gradient-dark pb-6" dir="rtl">
+    <div className="min-h-screen gradient-dark pb-6" dir={dir}>
       <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate(-1)}><ArrowRight className="w-5 h-5 text-muted-foreground" /></button>
-        <span className="font-bold text-foreground">حالة السائق</span>
+        <span className="font-bold text-foreground">{t.driver.driverStatus}</span>
         <div className="w-5" />
       </div>
 
@@ -58,10 +60,10 @@ const DriverStatus = () => {
               {isOnline ? <Wifi className="w-12 h-12 text-primary-foreground" /> : <WifiOff className="w-12 h-12 text-muted-foreground" />}
             </div>
             <h2 className={`text-2xl font-bold ${isOnline ? "text-primary-foreground" : "text-foreground"}`}>
-              {isOnline ? "متصل" : "غير متصل"}
+              {isOnline ? t.driver.connected : t.driver.disconnectedLabel}
             </h2>
             <p className={`text-sm mt-1 ${isOnline ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-              {isOnline ? "أنت ظاهر للعملاء ويمكنك استقبال الطلبات" : "اضغط للاتصال وبدء استقبال الطلبات"}
+              {isOnline ? t.driver.visibleMsg : t.driver.pressToConnectMsg}
             </p>
           </div>
         </motion.button>
