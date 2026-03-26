@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Users, Search, Filter, Loader2, Copy, Check, UserCog, Save } from "lucide-react";
+import { Users, Search, Filter, Loader2, Copy, Check, UserCog, Save, KeyRound, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
