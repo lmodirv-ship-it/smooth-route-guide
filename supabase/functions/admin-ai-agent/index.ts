@@ -24,12 +24,15 @@ const requestSchema = z.object({
 });
 
 const ALLOWED_TABLES = [
-  "profiles", "user_roles", "drivers", "vehicles", "ride_requests", "trips",
+  "profiles", "drivers", "vehicles", "ride_requests", "trips",
   "delivery_orders", "order_items", "stores", "menu_categories", "menu_items",
   "earnings", "payments", "wallet", "notifications", "alerts", "complaints",
   "tickets", "call_center", "call_logs", "promotions", "documents",
   "zones", "app_settings", "import_logs", "chat_conversations", "chat_messages",
   "trip_status_history", "ride_messages", "commission_rates",
+  "assistant_knowledge_entries", "assistant_recommendations", "assistant_issue_patterns",
+  "assistant_campaign_ideas", "assistant_activity_log", "product_images",
+  "platform_languages", "platform_translations",
 ];
 
 const tools = [
@@ -195,24 +198,6 @@ const tools = [
           type: { type: "string", default: "general", description: "Notification type: general, alert, promo, system" },
         },
         required: ["target", "message"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "manage_user_role",
-      description: "Add, remove, or change a user's role. Supports: admin, moderator, user, driver, agent.",
-      parameters: {
-        type: "object",
-        properties: {
-          user_id: { type: "string", description: "The user's ID" },
-          action: { type: "string", enum: ["add", "remove", "change"] },
-          role: { type: "string", enum: ["admin", "moderator", "user", "driver", "agent"] },
-          find_by_email: { type: "string", description: "Find user by email instead of ID" },
-          find_by_phone: { type: "string", description: "Find user by phone instead of ID" },
-        },
-        required: ["action", "role"],
       },
     },
   },
@@ -391,42 +376,6 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         if (error) return JSON.stringify({ error: error.message });
         return JSON.stringify({ success: true, notified: userIds.length });
       }
-      case "manage_user_role": {
-        let userId = args.user_id;
-        if (!userId && args.find_by_email) {
-          const { data } = await supabase.from("profiles").select("id").eq("email", args.find_by_email).maybeSingle();
-          userId = data?.id;
-        }
-        if (!userId && args.find_by_phone) {
-          const { data } = await supabase.from("profiles").select("id").eq("phone", args.find_by_phone).maybeSingle();
-          userId = data?.id;
-        }
-        if (!userId) return JSON.stringify({ error: "User not found" });
-
-        if (args.action === "add") {
-          const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: args.role });
-          if (error) return JSON.stringify({ error: error.message });
-          if (args.role === "driver") {
-            await supabase.from("drivers").upsert({ user_id: userId, status: "inactive" }, { onConflict: "user_id" });
-          }
-          return JSON.stringify({ success: true, action: "role_added", user_id: userId, role: args.role });
-        }
-        if (args.action === "remove") {
-          const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", args.role);
-          if (error) return JSON.stringify({ error: error.message });
-          return JSON.stringify({ success: true, action: "role_removed", user_id: userId, role: args.role });
-        }
-        if (args.action === "change") {
-          await supabase.from("user_roles").delete().eq("user_id", userId);
-          const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: args.role });
-          if (error) return JSON.stringify({ error: error.message });
-          if (args.role === "driver") {
-            await supabase.from("drivers").upsert({ user_id: userId, status: "inactive" }, { onConflict: "user_id" });
-          }
-          return JSON.stringify({ success: true, action: "role_changed", user_id: userId, new_role: args.role });
-        }
-        return JSON.stringify({ error: "Invalid action" });
-      }
       case "analyze_image": {
         return JSON.stringify({
           success: true,
@@ -552,29 +501,35 @@ serve(async (req) => {
 المسؤول الحالي: ${adminUserId}
 
 ## صلاحياتك:
-- قراءة وعرض البيانات من الجداول المتاحة
-- تعديل الإعدادات والتكوينات
-- إدارة أدوار المستخدمين (بحذر)
-- إرسال إشعارات
-- عرض إحصائيات المنصة
-- عرض وتعديل نسب أرباح المنصة (commission_rates)
+- قراءة وعرض البيانات من جميع الجداول المتاحة
+- إضافة وتعديل وحذف البيانات (مطاعم، منتجات، طلبات، سائقين، شكاوى، تذاكر...)
+- تعديل إعدادات المنصة (الأسعار، الهوية البصرية، التكوينات)
+- إرسال إشعارات جماعية للمستخدمين والسائقين
+- عرض إحصائيات ولوحة بيانات المنصة
+- إدارة نسب أرباح المنصة (العمولات)
+- إدارة المناطق والمتاجر وقوائم الطعام
+- إدارة قاعدة المعرفة والتوصيات والحملات
+- إدارة الترجمات واللغات
+
+## ⛔ ممنوع تماماً:
+- لا يمكنك إدارة المستخدمين أو تعديل الأدوار (user_roles)
+- لا يمكنك إنشاء حسابات جديدة أو حذف حسابات
+- لا يمكنك تغيير صلاحيات أي مستخدم
 
 ## نسب الأرباح:
 - استخدم أداة manage_commission_rates لعرض أو تعديل نسب الأرباح
-- الفئات: restaurants (المطاعم), drivers (السائقين), delivery (التوصيل), stores (المتاجر), pharmacy_beauty (صيدليات وتجميل), courier (خدمة كوريي), express_market (ماركت سريع), supermarket (سوبر ماركت), shops_gifts (متاجر وهدايا)
+- الفئات: restaurants, drivers, delivery, stores, pharmacy_beauty, courier, express_market, supermarket, shops_gifts
 - النسبة الافتراضية 5%
 
-## القواعد الأمنية المهمة:
+## القواعد الأمنية:
 - لا تحذف بيانات بدون تأكيد صريح من المسؤول
-- سجّل كل عملية تعديل أو حذف
-- لا تعدّل جدول user_roles بشكل جماعي
 - لا تحذف أكثر من 10 سجلات في عملية واحدة
 - أجب دائماً بالعربية
 - كن مختصراً لكن شاملاً
 - قدّم نتائج بتنسيق Markdown
 
 ## الجداول المتاحة:
-profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates`;
+profiles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates, assistant_knowledge_entries, assistant_recommendations, assistant_issue_patterns, assistant_campaign_ideas, assistant_activity_log, product_images, platform_languages, platform_translations`;
 
     let aiMessages: any[] = [
       { role: "system", content: systemPrompt },
