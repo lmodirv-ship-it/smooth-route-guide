@@ -232,8 +232,11 @@ const AdminRestaurants = () => {
                   <TableHead className="text-right">الاسم</TableHead>
                   <TableHead className="text-right">الهاتف</TableHead>
                   <TableHead className="text-right">العنوان</TableHead>
-                  <TableHead className="text-right">المنطقة</TableHead>
                   <TableHead className="text-right">التقييم</TableHead>
+                  <TableHead className="text-right">رسوم التوصيل</TableHead>
+                  <TableHead className="text-right">العمولة %</TableHead>
+                  <TableHead className="text-right">رقم</TableHead>
+                  <TableHead className="text-right">تأكيد</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -243,8 +246,13 @@ const AdminRestaurants = () => {
                     <TableCell className="font-bold">{r.name}</TableCell>
                     <TableCell className="text-muted-foreground text-sm" dir="ltr">{r.phone || "—"}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{r.address}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{r.area}</TableCell>
                     <TableCell>⭐ {r.rating || "—"}</TableCell>
+                    <TableCell>{r.delivery_fee || 10} DH</TableCell>
+                    <TableCell>{r.commission_rate || 5}%</TableCell>
+                    <TableCell className="font-mono text-sm">{r.store_code || "—"}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-orange-500 border-orange-500/30">غير مؤكد</Badge>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
