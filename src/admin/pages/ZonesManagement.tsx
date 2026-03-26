@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { MapPin, Plus, Pencil, Trash2, DollarSign, Navigation, Loader2, Globe, Building2, List, Wand2, Save } from "lucide-react";
+import { useI18n } from "@/i18n/context";
 
 type Zone = {
   id: string;
@@ -47,6 +48,8 @@ const emptyForm = {
 };
 
 const ZonesManagement = () => {
+  const { t, dir } = useI18n();
+  const tz = t.zones;
   const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -56,7 +59,6 @@ const ZonesManagement = () => {
   const [autoGenerating, setAutoGenerating] = useState(false);
   const [savingAll, setSavingAll] = useState(false);
 
-  // Filter state
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<string>("");
 
@@ -68,7 +70,7 @@ const ZonesManagement = () => {
       .order("country")
       .order("city")
       .order("name_ar");
-    if (error) toast.error("خطأ في تحميل المناطق");
+    if (error) toast.error(tz.loadError);
     else {
       const zonesData = (data || []) as Zone[];
       setZones(zonesData);
@@ -78,7 +80,6 @@ const ZonesManagement = () => {
 
   useEffect(() => { fetchZones(); }, []);
 
-  // Auto-select first country and city on load
   useEffect(() => {
     if (zones.length > 0 && !selectedCountry) {
       const firstCountry = zones[0]?.country || "المغرب";
@@ -88,7 +89,6 @@ const ZonesManagement = () => {
     }
   }, [zones]);
 
-  // Derived data
   const availableCountries = useMemo(() => {
     const dbCountries = new Set(zones.map(z => z.country || "المغرب"));
     const all = new Set([...COUNTRIES, ...dbCountries]);
@@ -107,14 +107,12 @@ const ZonesManagement = () => {
     return zones.filter(z => z.country === selectedCountry && z.city === selectedCity);
   }, [zones, selectedCountry, selectedCity]);
 
-  // Stats
   const countryCount = availableCountries.length;
   const cityCount = useMemo(() => {
     const set = new Set(zones.map(z => `${z.country}|${z.city}`));
     return set.size;
   }, [zones]);
 
-  // Reset city when country changes
   const handleCountryChange = (country: string) => {
     setSelectedCountry(country);
     setSelectedCity("");
@@ -147,18 +145,18 @@ const ZonesManagement = () => {
   };
 
   const handleSave = async () => {
-    if (!form.name_ar.trim()) { toast.error("اسم المنطقة بالعربية مطلوب"); return; }
-    if (!form.country.trim()) { toast.error("البلد مطلوب"); return; }
-    if (!form.city.trim()) { toast.error("المدينة مطلوبة"); return; }
+    if (!form.name_ar.trim()) { toast.error(tz.nameRequired); return; }
+    if (!form.country.trim()) { toast.error(tz.countryRequired); return; }
+    if (!form.city.trim()) { toast.error(tz.cityRequired); return; }
     setSaving(true);
     if (editingId) {
       const { error } = await supabase.from("zones").update(form).eq("id", editingId);
-      if (error) toast.error("خطأ في التحديث");
-      else toast.success("تم تحديث المنطقة");
+      if (error) toast.error(tz.updateError);
+      else toast.success(tz.updated);
     } else {
       const { error } = await supabase.from("zones").insert(form);
-      if (error) toast.error("خطأ في الإضافة");
-      else toast.success("تمت إضافة المنطقة");
+      if (error) toast.error(tz.addError);
+      else toast.success(tz.added);
     }
     setSaving(false);
     setDialogOpen(false);
@@ -166,32 +164,31 @@ const ZonesManagement = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("هل تريد حذف هذه المنطقة؟")) return;
+    if (!confirm(tz.deleteConfirm)) return;
     const { error } = await supabase.from("zones").delete().eq("id", id);
-    if (error) toast.error("خطأ في الحذف");
-    else { toast.success("تم الحذف"); fetchZones(); }
+    if (error) toast.error(tz.deleteError);
+    else { toast.success(tz.deleted); fetchZones(); }
   };
 
   const toggleActive = async (z: Zone) => {
     const { error } = await supabase.from("zones").update({ is_active: !z.is_active }).eq("id", z.id);
-    if (error) toast.error("خطأ");
+    if (error) toast.error(tz.error);
     else fetchZones();
   };
 
   const handleAutoGenerate = async () => {
     if (!selectedCountry) {
-      toast.error("اختر البلد أولاً");
+      toast.error(tz.selectCountryFirst);
       return;
     }
     setAutoGenerating(true);
     try {
       if (!selectedCity) {
-        // MODE: Search for cities in this country
         const { data, error } = await supabase.functions.invoke("search-neighborhoods", {
           body: { country: selectedCountry, mode: "cities" },
         });
         if (error || !data?.success) {
-          toast.error(data?.error || "خطأ في البحث التلقائي");
+          toast.error(data?.error || tz.serviceError);
           setAutoGenerating(false);
           return;
         }
@@ -200,17 +197,14 @@ const ZonesManagement = () => {
           setAutoGenerating(false);
           return;
         }
-        // Filter out cities that already exist
         const existingCities = new Set(
           zones.filter(z => z.country === selectedCountry).map(z => z.city.trim())
         );
         const newCities = cities.filter((c: any) => !existingCities.has(c.name.trim()));
         if (newCities.length === 0) {
-          // No new cities, but don't just show a message - silently continue
           setAutoGenerating(false);
           return;
         }
-        // Insert one zone per city as a placeholder
         const toInsert = newCities.map((c: any) => ({
           name_ar: "وسط المدينة",
           name_fr: "Centre Ville",
@@ -224,18 +218,17 @@ const ZonesManagement = () => {
         }));
         const { error: insertError } = await supabase.from("zones").insert(toInsert);
         if (insertError) {
-          toast.error("خطأ في إضافة المدن");
+          toast.error(tz.addCitiesError);
         } else {
-          toast.success(`تمت إضافة ${toInsert.length} مدينة جديدة من Google`);
+          toast.success(tz.citiesAdded.replace("{count}", String(toInsert.length)));
           fetchZones();
         }
       } else {
-        // MODE: Search for neighborhoods in this city
         const { data, error } = await supabase.functions.invoke("search-neighborhoods", {
           body: { city: selectedCity, country: selectedCountry },
         });
         if (error || !data?.success) {
-          toast.error(data?.error || "خطأ في البحث التلقائي");
+          toast.error(data?.error || tz.serviceError);
           setAutoGenerating(false);
           return;
         }
@@ -269,32 +262,31 @@ const ZonesManagement = () => {
         }));
         const { error: insertError } = await supabase.from("zones").insert(toInsert);
         if (insertError) {
-          toast.error("خطأ في إضافة المناطق");
+          toast.error(tz.addZonesError);
         } else {
-          toast.success(`تمت إضافة ${toInsert.length} منطقة جديدة من Google`);
+          toast.success(tz.zonesAdded.replace("{count}", String(toInsert.length)));
           fetchZones();
         }
       }
     } catch (err) {
       console.error(err);
-      toast.error("خطأ في الاتصال بالخدمة");
+      toast.error(tz.serviceError);
     }
     setAutoGenerating(false);
   };
 
   const handleSaveAll = async () => {
     if (!selectedCountry || !selectedCity) {
-      toast.error("اختر البلد والمدينة أولاً");
+      toast.error(tz.selectCountryAndCity);
       return;
     }
     const currentZones = zones.filter(z => z.country === selectedCountry && z.city === selectedCity);
     if (currentZones.length === 0) {
-      toast.info("لا توجد مناطق لحفظها");
+      toast.info(tz.noZonesToSave);
       return;
     }
     setSavingAll(true);
     try {
-      // Re-insert (upsert) all current zones to ensure they're saved
       let savedCount = 0;
       for (const z of currentZones) {
         const { error } = await supabase.from("zones").update({
@@ -310,31 +302,29 @@ const ZonesManagement = () => {
         }).eq("id", z.id);
         if (!error) savedCount++;
       }
-      toast.success(`تم حفظ ${savedCount} منطقة بنجاح`);
+      toast.success(tz.zonesSaved.replace("{count}", String(savedCount)));
       fetchZones();
     } catch {
-      toast.error("خطأ في الحفظ");
+      toast.error(tz.saveError);
     }
     setSavingAll(false);
   };
 
   return (
-    <div className="space-y-6" dir="rtl">
-      {/* Header */}
+    <div className="space-y-6" dir={dir}>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <MapPin className="w-6 h-6 text-primary" />
-            إدارة المناطق والأسعار
+            {tz.title}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">اختر البلد ← المدينة ← تظهر المناطق</p>
+          <p className="text-sm text-muted-foreground mt-1">{tz.subtitle}</p>
         </div>
         <Button onClick={openCreate} className="gradient-primary text-primary-foreground gap-2">
-          <Plus className="w-4 h-4" /> إضافة منطقة
+          <Plus className="w-4 h-4" /> {tz.addZone}
         </Button>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card className="glass-strong border-border">
           <CardContent className="p-4 flex items-center gap-3">
@@ -343,7 +333,7 @@ const ZonesManagement = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">{countryCount}</p>
-              <p className="text-xs text-muted-foreground">بلد</p>
+              <p className="text-xs text-muted-foreground">{tz.country}</p>
             </div>
           </CardContent>
         </Card>
@@ -354,7 +344,7 @@ const ZonesManagement = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">{cityCount}</p>
-              <p className="text-xs text-muted-foreground">مدينة</p>
+              <p className="text-xs text-muted-foreground">{tz.city}</p>
             </div>
           </CardContent>
         </Card>
@@ -365,7 +355,7 @@ const ZonesManagement = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">{zones.filter(z => z.is_active).length}</p>
-              <p className="text-xs text-muted-foreground">حي نشط</p>
+              <p className="text-xs text-muted-foreground">{tz.activeZone}</p>
             </div>
           </CardContent>
         </Card>
@@ -378,30 +368,28 @@ const ZonesManagement = () => {
               <p className="text-2xl font-bold text-foreground">
                 {zones.length > 0 ? (zones.reduce((s, z) => s + z.delivery_fee, 0) / zones.length).toFixed(0) : 0} DH
               </p>
-              <p className="text-xs text-muted-foreground">متوسط رسوم التوصيل</p>
+              <p className="text-xs text-muted-foreground">{tz.avgDeliveryFee}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filter: Country → City */}
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Country Select */}
             <Card className="glass-strong border-border">
               <CardContent className="p-4">
                 <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
-                  <Globe className="w-4 h-4 text-primary" /> اختر البلد
+                  <Globe className="w-4 h-4 text-primary" /> {tz.selectCountry}
                 </Label>
                 <Select value={selectedCountry} onValueChange={handleCountryChange}>
-                  <SelectTrigger><SelectValue placeholder="— اختر البلد —" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={`— ${tz.selectCountry} —`} /></SelectTrigger>
                   <SelectContent>
                     {availableCountries.map(c => (
                       <SelectItem key={c} value={c}>
-                        {c} ({zones.filter(z => z.country === c).length} منطقة)
+                        {c} ({zones.filter(z => z.country === c).length} {tz.zoneCount})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -409,18 +397,17 @@ const ZonesManagement = () => {
               </CardContent>
             </Card>
 
-            {/* City Select */}
             <Card className="glass-strong border-border">
               <CardContent className="p-4">
                 <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
-                  <Building2 className="w-4 h-4 text-primary" /> اختر المدينة
+                  <Building2 className="w-4 h-4 text-primary" /> {tz.selectCity}
                 </Label>
                 <Select value={selectedCity} onValueChange={setSelectedCity} disabled={!selectedCountry}>
-                  <SelectTrigger><SelectValue placeholder={selectedCountry ? "— اختر المدينة —" : "اختر البلد أولاً"} /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={selectedCountry ? `— ${tz.selectCity} —` : tz.selectCountryFirst} /></SelectTrigger>
                   <SelectContent>
                     {availableCities.map(c => (
                       <SelectItem key={c} value={c}>
-                        {c} ({zones.filter(z => z.country === selectedCountry && z.city === c).length} منطقة)
+                        {c} ({zones.filter(z => z.country === selectedCountry && z.city === c).length} {tz.zoneCount})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -429,7 +416,6 @@ const ZonesManagement = () => {
             </Card>
           </div>
 
-          {/* Auto Generate Button */}
           {selectedCountry && (
             <div className="flex justify-center gap-3">
               <Button
@@ -443,7 +429,7 @@ const ZonesManagement = () => {
                 ) : (
                   <Wand2 className="w-4 h-4" />
                 )}
-                {autoGenerating ? "جاري التوليد..." : "توليد"}
+                {autoGenerating ? tz.generating : tz.generate}
               </Button>
               <Button
                 onClick={handleSaveAll}
@@ -455,28 +441,27 @@ const ZonesManagement = () => {
                 ) : (
                   <Save className="w-4 h-4" />
                 )}
-                {savingAll ? "جاري الحفظ..." : "حفظ"}
+                {savingAll ? tz.saving : tz.save}
               </Button>
             </div>
           )}
 
-          {/* Zones Table */}
           {selectedCountry && selectedCity && (
             <Card className="glass-strong border-border">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <List className="w-5 h-5 text-primary" />
-                  مناطق {selectedCity} — {selectedCountry}
-                  <Badge variant="secondary" className="mr-2">{filteredZones.length} منطقة</Badge>
+                  {selectedCity} — {selectedCountry}
+                  <Badge variant="secondary" className="mr-2">{filteredZones.length} {tz.zoneCount}</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {filteredZones.length === 0 ? (
                   <div className="text-center py-8">
                     <MapPin className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-muted-foreground">لا توجد مناطق في هذه المدينة</p>
+                    <p className="text-muted-foreground">{tz.noZonesInCity}</p>
                     <Button onClick={openCreate} variant="outline" className="mt-3 gap-2">
-                      <Plus className="w-4 h-4" /> إضافة منطقة
+                      <Plus className="w-4 h-4" /> {tz.addZone}
                     </Button>
                   </div>
                 ) : (
@@ -484,13 +469,13 @@ const ZonesManagement = () => {
                     <Table>
                       <TableHeader>
                         <TableRow className="bg-muted/30">
-                          <TableHead className="text-right">#</TableHead>
-                          <TableHead className="text-right">الاسم بالعربية</TableHead>
-                          <TableHead className="text-right">الاسم بالفرنسية</TableHead>
-                          <TableHead className="text-right">النطاق (كم)</TableHead>
-                          <TableHead className="text-right">رسوم التوصيل</TableHead>
-                          <TableHead className="text-right">الحالة</TableHead>
-                          <TableHead className="text-right">إجراءات</TableHead>
+                          <TableHead>#</TableHead>
+                          <TableHead>{tz.nameAr}</TableHead>
+                          <TableHead>{tz.nameFr}</TableHead>
+                          <TableHead>{tz.radiusKm}</TableHead>
+                          <TableHead>{tz.deliveryFee}</TableHead>
+                          <TableHead>{tz.status}</TableHead>
+                          <TableHead>{tz.actions}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -499,13 +484,13 @@ const ZonesManagement = () => {
                             <TableCell className="font-bold text-muted-foreground">{idx + 1}</TableCell>
                             <TableCell className="font-semibold">{z.name_ar}</TableCell>
                             <TableCell className="text-muted-foreground">{z.name_fr || "—"}</TableCell>
-                            <TableCell>{z.radius_km} كم</TableCell>
+                            <TableCell>{z.radius_km} km</TableCell>
                             <TableCell className="font-bold text-primary">{z.delivery_fee} DH</TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <Switch checked={z.is_active} onCheckedChange={() => toggleActive(z)} />
                                 <Badge variant={z.is_active ? "default" : "secondary"} className="text-xs">
-                                  {z.is_active ? "نشط" : "معطل"}
+                                  {z.is_active ? tz.active : tz.inactive}
                                 </Badge>
                               </div>
                             </TableCell>
@@ -529,12 +514,11 @@ const ZonesManagement = () => {
             </Card>
           )}
 
-          {/* Prompt to select */}
           {!selectedCountry && zones.length > 0 && (
             <Card className="glass-strong border-border">
               <CardContent className="py-12 text-center">
                 <Globe className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">اختر بلداً لعرض مدنه ومناطقه</p>
+                <p className="text-muted-foreground">{tz.selectCountryPrompt}</p>
               </CardContent>
             </Card>
           )}
@@ -543,7 +527,7 @@ const ZonesManagement = () => {
             <Card className="glass-strong border-border">
               <CardContent className="py-12 text-center">
                 <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">اختر مدينة لعرض مناطقها</p>
+                <p className="text-muted-foreground">{tz.selectCityPrompt}</p>
               </CardContent>
             </Card>
           )}
@@ -552,22 +536,21 @@ const ZonesManagement = () => {
             <Card className="glass-strong border-border">
               <CardContent className="py-12 text-center">
                 <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">لا توجد مناطق بعد</p>
+                <p className="text-muted-foreground">{tz.noZonesYet}</p>
               </CardContent>
             </Card>
           )}
         </>
       )}
 
-      {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="glass-strong border-border max-w-md" dir="rtl">
+        <DialogContent className="glass-strong border-border max-w-md" dir={dir}>
           <DialogHeader>
-            <DialogTitle>{editingId ? "تعديل المنطقة" : "إضافة منطقة جديدة"}</DialogTitle>
+            <DialogTitle>{editingId ? tz.editZone : tz.addNewZone}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="text-xs">البلد *</Label>
+              <Label className="text-xs">{tz.country} *</Label>
               <Select
                 value={COUNTRIES.includes(form.country) ? form.country : "__other__"}
                 onValueChange={v => {
@@ -575,56 +558,56 @@ const ZonesManagement = () => {
                   else setForm(f => ({ ...f, country: "" }));
                 }}
               >
-                <SelectTrigger className="mt-1"><SelectValue placeholder="اختر البلد" /></SelectTrigger>
+                <SelectTrigger className="mt-1"><SelectValue placeholder={tz.selectCountry} /></SelectTrigger>
                 <SelectContent>
                   {COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  <SelectItem value="__other__">أخرى...</SelectItem>
+                  <SelectItem value="__other__">{tz.otherCountry}</SelectItem>
                 </SelectContent>
               </Select>
               {!COUNTRIES.includes(form.country) && (
-                <Input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} placeholder="أدخل اسم البلد" className="mt-2" />
+                <Input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} placeholder={tz.country} className="mt-2" />
               )}
             </div>
             <div>
-              <Label className="text-xs">المدينة *</Label>
-              <Input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} placeholder="مثال: طنجة" className="mt-1" />
+              <Label className="text-xs">{tz.city} *</Label>
+              <Input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} placeholder={tz.cityExample} className="mt-1" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">اسم الحي بالعربية *</Label>
-                <Input value={form.name_ar} onChange={e => setForm(f => ({ ...f, name_ar: e.target.value }))} placeholder="مثال: مسنانة" className="mt-1" />
+                <Label className="text-xs">{tz.nameAr} *</Label>
+                <Input value={form.name_ar} onChange={e => setForm(f => ({ ...f, name_ar: e.target.value }))} placeholder={tz.neighborhoodArExample} className="mt-1" />
               </div>
               <div>
-                <Label className="text-xs">اسم الحي بالفرنسية</Label>
-                <Input value={form.name_fr} onChange={e => setForm(f => ({ ...f, name_fr: e.target.value }))} placeholder="ex: Mesnana" className="mt-1" />
+                <Label className="text-xs">{tz.nameFr}</Label>
+                <Input value={form.name_fr} onChange={e => setForm(f => ({ ...f, name_fr: e.target.value }))} placeholder={tz.neighborhoodFrExample} className="mt-1" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">خط العرض (Lat)</Label>
+                <Label className="text-xs">{tz.lat}</Label>
                 <Input type="number" step="0.0001" value={form.center_lat} onChange={e => setForm(f => ({ ...f, center_lat: parseFloat(e.target.value) || 0 }))} className="mt-1" />
               </div>
               <div>
-                <Label className="text-xs">خط الطول (Lng)</Label>
+                <Label className="text-xs">{tz.lng}</Label>
                 <Input type="number" step="0.0001" value={form.center_lng} onChange={e => setForm(f => ({ ...f, center_lng: parseFloat(e.target.value) || 0 }))} className="mt-1" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">النطاق (كم)</Label>
+                <Label className="text-xs">{tz.radius}</Label>
                 <Input type="number" step="0.5" value={form.radius_km} onChange={e => setForm(f => ({ ...f, radius_km: parseFloat(e.target.value) || 1 }))} className="mt-1" />
               </div>
               <div>
-                <Label className="text-xs">رسوم التوصيل (DH)</Label>
+                <Label className="text-xs">{tz.deliveryFee} (DH)</Label>
                 <Input type="number" step="1" value={form.delivery_fee} onChange={e => setForm(f => ({ ...f, delivery_fee: parseFloat(e.target.value) || 0 }))} className="mt-1" />
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={form.is_active} onCheckedChange={v => setForm(f => ({ ...f, is_active: v }))} />
-              <Label className="text-sm">منطقة نشطة</Label>
+              <Label className="text-sm">{tz.activeZoneLabel}</Label>
             </div>
             <Button onClick={handleSave} disabled={saving} className="w-full gradient-primary text-primary-foreground">
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : editingId ? "تحديث" : "إضافة"}
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : editingId ? tz.update : tz.add}
             </Button>
           </div>
         </DialogContent>
