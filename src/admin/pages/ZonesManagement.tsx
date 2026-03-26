@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { MapPin, Plus, Pencil, Trash2, DollarSign, Navigation, Loader2, Globe, Building2, List, Wand2, Save } from "lucide-react";
 import { useI18n } from "@/i18n/context";
+import { translateCountry } from "@/lib/countryTranslations";
 
 type Zone = {
   id: string;
