@@ -256,10 +256,10 @@ const SmartAssistantPage = () => {
         </div>
 
         {/* جدول تعليمات المدير */}
-        <div className="rounded-xl border border-border flex flex-col bg-white overflow-hidden">
-          <div className="px-3 py-1.5 border-b border-gray-200 flex items-center gap-2 shrink-0">
-            <Send className="w-4 h-4 text-red-500" />
-            <span className="text-xs font-semibold text-black">جدول المدير</span>
+        <div className="rounded-xl border border-green-900 flex flex-col bg-green-950 overflow-hidden">
+          <div className="px-3 py-1.5 border-b border-green-800 flex items-center gap-2 shrink-0">
+            <Send className="w-4 h-4 text-green-400" />
+            <span className="text-xs font-semibold text-green-200">جدول المدير</span>
           </div>
           <div className="flex-1 p-3 flex flex-col">
             <textarea
@@ -267,7 +267,7 @@ const SmartAssistantPage = () => {
               onChange={(e) => setInput(e.target.value)}
               placeholder={isActive ? "اكتب تعليماتك هنا للمساعد الذكي..." : "المساعد متوقف حالياً"}
               disabled={!isActive}
-              className="flex-1 w-full resize-none rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-black placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="flex-1 w-full resize-none rounded-lg border border-green-800 bg-green-900/50 p-3 text-sm text-green-100 placeholder:text-green-400/50 focus:outline-none focus:ring-2 focus:ring-green-500/30"
               dir="rtl"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -277,12 +277,12 @@ const SmartAssistantPage = () => {
               }}
             />
             <div className="flex items-center justify-between mt-2">
-              <span className="text-[10px] text-black/40">Shift+Enter لسطر جديد</span>
+              <span className="text-[10px] text-green-400/50">Shift+Enter لسطر جديد</span>
               <Button
                 onClick={sendMessage}
                 disabled={!input.trim() || loading || !isActive}
                 size="sm"
-                className="gap-2 bg-black hover:bg-black/80 text-red-500"
+                className="gap-2 bg-green-700 hover:bg-green-600 text-green-100"
               >
                 <Send className="w-3.5 h-3.5" />
                 إرسال
