@@ -245,13 +245,23 @@ const AdminLayout = () => {
               <>
                 <span className="text-sm font-bold text-foreground">المساعد الذكي</span>
                 <Button
-                  variant={smartAssistantActive ? "destructive" : "default"}
+                  variant="default"
                   size="sm"
-                  onClick={() => setSmartAssistantActive(!smartAssistantActive)}
-                  className={`gap-1.5 h-8 ${!smartAssistantActive ? "bg-success hover:bg-success/90 text-white" : ""}`}
+                  onClick={() => setSmartAssistantActive(true)}
+                  className="gap-1.5 h-8 bg-success hover:bg-success/90 text-white"
                 >
-                  {smartAssistantActive ? <ShieldOff className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
-                  {smartAssistantActive ? "إلغاء" : "تفعيل"}
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  قبول
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setSmartAssistantActive(false)}
+                  className="gap-1.5 h-8"
+                >
+                  <ShieldOff className="w-3.5 h-3.5" />
+                  رفض
+                </Button>
                 </Button>
                 <Button
                   variant="outline"
