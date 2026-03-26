@@ -151,33 +151,8 @@ const SmartAssistantPage = () => {
     <div className="h-[calc(100vh-80px)] flex flex-col gap-3" dir={dir}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-2 lg:order-1">
-          {previewUrl ? (
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="bg-secondary/60 px-2 py-1 flex items-center gap-1.5 text-[10px]">
-                <div className="flex gap-0.5">
-                  <span className="w-2 h-2 rounded-full bg-destructive/60" />
-                  <span className="w-2 h-2 rounded-full bg-warning/60" />
-                  <span className="w-2 h-2 rounded-full bg-success/60" />
-                </div>
-                <span className="flex-1 text-muted-foreground truncate font-mono" dir="ltr">{previewUrl}</span>
-              </div>
-              <div className="flex-1 overflow-hidden bg-background relative" style={{ minHeight: "400px" }}>
-                <iframe
-                  key={`mirror-${iframeKey}`}
-                  src={previewUrl}
-                  style={{ width: "1440px", height: "900px", transform: "scale(0.48)", transformOrigin: "top left" }}
-                  className="bg-background"
-                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                  referrerPolicy="no-referrer"
-                  title="معاينة ما تم تنفيذه"
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-              لا توجد صفحة محملة
-            </div>
-          )}
+          <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+          </div>
         </div>
 
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2">
