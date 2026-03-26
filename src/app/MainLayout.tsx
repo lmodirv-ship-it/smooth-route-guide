@@ -10,9 +10,9 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const MainLayout = () => (
   <>
-    <GlobalLogoutButton />
     <GlobalNotificationListener />
-    <div className="fixed top-3 left-3 z-[60]">
+    <div className="fixed top-3 left-3 z-[60] flex items-center gap-2">
+      <GlobalLogoutButton />
       <LanguageSwitcher />
     </div>
     <Outlet />
