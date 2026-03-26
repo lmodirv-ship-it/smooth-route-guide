@@ -364,8 +364,8 @@ const AdminLayout = () => {
           <Bot className="w-6 h-6 text-primary-foreground" />
         </motion.button>
       )}
-    </AdminGeoProvider>
     </div>
+    </AdminGeoProvider>
   );
 };
 
