@@ -38,6 +38,12 @@ const RestaurantsCC = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedStore, setSelectedStore] = useState<any>(null);
+  const [generatedStores, setGeneratedStores] = useState<any[]>([]);
+  const [generating, setGenerating] = useState(false);
+  const [savingGenerated, setSavingGenerated] = useState(false);
+  const { selectedCountry, selectedCity } = useAdminGeo();
+
+  const generateStoreCode = () => String(Math.floor(100000 + Math.random() * 900000));
 
   // Store form
   const [storeDialog, setStoreDialog] = useState(false);
