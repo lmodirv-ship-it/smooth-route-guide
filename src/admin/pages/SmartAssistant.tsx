@@ -437,38 +437,38 @@ const SmartAssistantPage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-[220px] min-h-[180px]">
         {/* جدول المساعد الذكي */}
-        <div className="rounded-xl border border-blue-300 flex flex-col bg-blue-100 overflow-hidden">
-          <div className="px-3 py-1.5 border-b border-blue-200 flex items-center gap-2 shrink-0">
-            <Bot className="w-4 h-4 text-blue-600" />
-            <span className="text-xs font-semibold text-blue-800">المساعد الذكي</span>
-            <Badge variant="outline" className="text-[9px] border-blue-300 text-blue-600 gap-1">
+        <div className="rounded-xl border border-blue-400/30 flex flex-col bg-[#0a1628] overflow-hidden">
+          <div className="px-3 py-1.5 border-b border-blue-500/30 flex items-center gap-2 shrink-0">
+            <Bot className="w-4 h-4 text-blue-400" />
+            <span className="text-xs font-semibold text-blue-200">المساعد الذكي</span>
+            <Badge variant="outline" className="text-[9px] border-blue-500/40 text-blue-300 gap-1">
               <Save className="w-2.5 h-2.5" />
               {localLog.length} سجل
             </Badge>
             <div className="mr-auto flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600 hover:bg-blue-200" onClick={() => setShowLogSettings(!showLogSettings)} title="إعدادات التسجيل المحلي">
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-400 hover:bg-blue-900/50" onClick={() => setShowLogSettings(!showLogSettings)} title="إعدادات التسجيل المحلي">
                 <FolderOpen className="w-3.5 h-3.5" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600 hover:bg-blue-200" onClick={downloadLocalLog} title="تحميل السجل المحلي">
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-400 hover:bg-blue-900/50" onClick={downloadLocalLog} title="تحميل السجل المحلي">
                 <Save className="w-3.5 h-3.5" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600 hover:bg-blue-200" onClick={loadHistory} title="سجل الأوامر">
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-400 hover:bg-blue-900/50" onClick={loadHistory} title="سجل الأوامر">
                 <History className="w-3.5 h-3.5" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600 hover:bg-blue-200" onClick={exportHistory} title="تصدير السجل">
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-400 hover:bg-blue-900/50" onClick={exportHistory} title="تصدير السجل">
                 <Download className="w-3.5 h-3.5" />
               </Button>
             </div>
           </div>
           {showLogSettings && (
-            <div className="px-3 py-2 bg-blue-50 border-b border-blue-200 space-y-2">
+            <div className="px-3 py-2 bg-blue-950/80 border-b border-blue-500/30 space-y-2">
               <div className="flex items-center gap-2">
-                <FolderOpen className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                <span className="text-[10px] font-semibold text-blue-700">مسار التسجيل المحلي:</span>
+                <FolderOpen className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                <span className="text-[10px] font-semibold text-blue-300">مسار التسجيل المحلي:</span>
                 {dirHandleRef.current ? (
-                  <Badge variant="outline" className="text-[9px] border-green-400 text-green-700 bg-green-50">✅ مربوط — حفظ تلقائي</Badge>
+                  <Badge variant="outline" className="text-[9px] border-green-500/40 text-green-400 bg-green-900/30">✅ مربوط — حفظ تلقائي</Badge>
                 ) : (
-                  <Badge variant="outline" className="text-[9px] border-orange-400 text-orange-700 bg-orange-50">⚠️ غير مربوط</Badge>
+                  <Badge variant="outline" className="text-[9px] border-orange-500/40 text-orange-400 bg-orange-900/30">⚠️ غير مربوط</Badge>
                 )}
               </div>
               <div className="flex items-center gap-1.5">
@@ -480,7 +480,7 @@ const SmartAssistantPage = () => {
                   value={localLogPath}
                   onChange={(e) => setLocalLogPath(e.target.value)}
                   placeholder="C:\HNDriver\logs"
-                  className="h-6 text-[10px] bg-white border-blue-200 flex-1"
+                  className="h-6 text-[10px] bg-blue-900/50 border-blue-500/30 text-blue-200 flex-1"
                   dir="ltr"
                 />
                 <Button size="sm" className="h-6 text-[10px] bg-blue-600 hover:bg-blue-700 text-white px-2" onClick={() => saveLogPath(localLogPath)}>
@@ -488,8 +488,8 @@ const SmartAssistantPage = () => {
                 </Button>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[9px] text-blue-500">📁 الملف: smart-assistant-log.json (يُحدَّث تلقائياً)</span>
-                <Button variant="ghost" size="sm" className="h-5 text-[9px] text-red-500 hover:text-red-700 hover:bg-red-50" onClick={clearLocalLog}>
+                <span className="text-[9px] text-blue-400/70">📁 الملف: smart-assistant-log.json (يُحدَّث تلقائياً)</span>
+                <Button variant="ghost" size="sm" className="h-5 text-[9px] text-red-400 hover:text-red-300 hover:bg-red-900/30" onClick={clearLocalLog}>
                   🗑️ مسح السجل
                 </Button>
               </div>
@@ -499,38 +499,38 @@ const SmartAssistantPage = () => {
             {showHistory ? (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-blue-800">📋 سجل الأوامر ({commandHistory.length})</span>
-                  <Button variant="ghost" size="sm" className="h-5 text-[10px] text-blue-600" onClick={() => setShowHistory(false)}>رجوع للمحادثة</Button>
+                  <span className="text-xs font-semibold text-blue-300">📋 سجل الأوامر ({commandHistory.length})</span>
+                  <Button variant="ghost" size="sm" className="h-5 text-[10px] text-blue-400" onClick={() => setShowHistory(false)}>رجوع للمحادثة</Button>
                 </div>
                 {commandHistory.map((cmd: any) => (
-                  <div key={cmd.id} className="bg-white rounded-lg p-2 border border-blue-200 text-xs space-y-1">
+                  <div key={cmd.id} className="bg-blue-900/40 rounded-lg p-2 border border-blue-500/20 text-xs space-y-1">
                     <div className="flex items-center justify-between">
-                      <Badge variant="outline" className={`text-[9px] ${cmd.status === "completed" ? "border-green-400 text-green-700" : "border-red-400 text-red-700"}`}>
+                      <Badge variant="outline" className={`text-[9px] ${cmd.status === "completed" ? "border-green-500/40 text-green-400" : "border-red-500/40 text-red-400"}`}>
                         {cmd.status === "completed" ? "✅ منفذ" : "❌ فشل"}
                       </Badge>
-                      <span className="text-[9px] text-gray-400">{new Date(cmd.created_at).toLocaleString("ar-SA")}</span>
+                      <span className="text-[9px] text-blue-400/60">{new Date(cmd.created_at).toLocaleString("ar-SA")}</span>
                     </div>
-                    <p className="text-black font-medium">{cmd.command_text?.slice(0, 100)}</p>
-                    {cmd.attached_file_url && <span className="text-blue-500 text-[9px]">📎 ملف مرفق</span>}
-                    {cmd.target_page && <span className="text-gray-500 text-[9px] block">🌐 {cmd.target_page}</span>}
+                    <p className="text-blue-100 font-medium">{cmd.command_text?.slice(0, 100)}</p>
+                    {cmd.attached_file_url && <span className="text-blue-400 text-[9px]">📎 ملف مرفق</span>}
+                    {cmd.target_page && <span className="text-blue-400/60 text-[9px] block">🌐 {cmd.target_page}</span>}
                   </div>
                 ))}
-                {commandHistory.length === 0 && <p className="text-center text-xs text-blue-400 py-4">لا توجد أوامر سابقة</p>}
+                {commandHistory.length === 0 && <p className="text-center text-xs text-blue-400/50 py-4">لا توجد أوامر سابقة</p>}
               </div>
             ) : (
               <>
                 {messages.length === 0 && (
                   <div className="text-center py-4">
-                    <Bot className="w-8 h-8 mx-auto text-primary/40 mb-1" />
-                    <p className="text-black/60 text-xs">مرحبًا! أنا المساعد الذكي للمدير</p>
-                    <p className="text-black/40 text-[10px] mt-1">جميع الأوامر تُحفظ محلياً في قاعدة البيانات</p>
+                    <Bot className="w-8 h-8 mx-auto text-blue-400/40 mb-1" />
+                    <p className="text-blue-200/60 text-xs">مرحبًا! أنا المساعد الذكي للمدير</p>
+                    <p className="text-blue-300/40 text-[10px] mt-1">جميع الأوامر تُحفظ محلياً في قاعدة البيانات</p>
                   </div>
                 )}
                 {messages.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs ${msg.role === "user" ? "bg-black text-red-500" : "bg-gray-100 text-black"}`}>
+                    <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs ${msg.role === "user" ? "bg-black text-red-500" : "bg-blue-900/50 text-blue-100"}`}>
                       {msg.role === "assistant" ? (
-                        <div className="prose prose-sm max-w-none text-black [&_*]:text-black">
+                        <div className="prose prose-sm max-w-none text-blue-100 [&_*]:text-blue-100">
                           <ReactMarkdown>{typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)}</ReactMarkdown>
                         </div>
                       ) : (
@@ -541,9 +541,9 @@ const SmartAssistantPage = () => {
                 ))}
                 {loading && (
                   <div className="flex justify-start">
-                    <div className="bg-gray-100 rounded-lg px-3 py-2 flex items-center gap-2">
-                      <Loader2 className="w-3 h-3 animate-spin text-primary" />
-                      <span className="text-xs text-black/60">جاري المعالجة...</span>
+                    <div className="bg-blue-900/50 rounded-lg px-3 py-2 flex items-center gap-2">
+                      <Loader2 className="w-3 h-3 animate-spin text-blue-400" />
+                      <span className="text-xs text-blue-200/60">جاري المعالجة...</span>
                     </div>
                   </div>
                 )}
