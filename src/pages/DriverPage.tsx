@@ -287,8 +287,8 @@ const DriverPage = () => {
       </div>
 
       {/* Stats bar */}
-      <div className="shrink-0 px-4 py-3 border-b border-white/5 bg-[#0d1320]">
-        <div className="grid grid-cols-4 gap-2">
+      <div className="shrink-0 px-3 md:px-4 py-2 md:py-3 border-b border-white/5 bg-[#0d1320]">
+        <div className="grid grid-cols-4 gap-1.5 md:gap-2">
           <StatsCard icon={TrendingUp} label={t.driver.todayTrips} value={`${todayStats.trips}`} accent="text-emerald-400" bg="bg-emerald-500/10" />
           <StatsCard icon={Wallet} label={t.driver.netEarnings} value={`${todayStats.earnings} DH`} accent="text-orange-400" bg="bg-orange-500/10" />
           <StatsCard icon={Percent} label={t.driver.platformFee} value={`${Math.round(COMMISSION_RATE * 100)}%`} accent="text-red-400" bg="bg-red-500/10" />
@@ -463,10 +463,10 @@ const DriverPage = () => {
 const StatsCard = ({ icon: Icon, label, value, accent, bg }: {
   icon: typeof TrendingUp; label: string; value: string; accent: string; bg: string;
 }) => (
-  <div className={`${bg} rounded-xl p-3 border border-white/[0.04] text-center`}>
-    <Icon className={`w-4 h-4 ${accent} mx-auto mb-1`} />
-    <p className={`text-base font-black ${accent}`}>{value}</p>
-    <p className="text-[10px] text-white/40 mt-0.5">{label}</p>
+  <div className={`${bg} rounded-xl p-2 md:p-3 border border-white/[0.04] text-center`}>
+    <Icon className={`w-3.5 h-3.5 md:w-4 md:h-4 ${accent} mx-auto mb-0.5 md:mb-1`} />
+    <p className={`text-sm md:text-base font-black ${accent} truncate`}>{value}</p>
+    <p className="text-[9px] md:text-[10px] text-white/40 mt-0.5 truncate">{label}</p>
   </div>
 );
 
