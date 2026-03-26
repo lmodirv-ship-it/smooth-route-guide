@@ -33,7 +33,7 @@ const ALLOWED_TABLES = [
   "assistant_knowledge_entries", "assistant_recommendations", "assistant_issue_patterns",
   "assistant_campaign_ideas", "assistant_activity_log", "product_images",
   "platform_languages", "platform_translations", "dynamic_pages",
-  "social_media_posts", "smart_assistant_commands",
+  "social_media_posts", "smart_assistant_commands", "sub_assistants",
 ];
 
 const tools = [
