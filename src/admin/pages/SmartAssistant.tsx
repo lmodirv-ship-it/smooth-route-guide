@@ -257,9 +257,9 @@ const SmartAssistantPage = () => {
 
         {/* جدول تعليمات المدير */}
         <div className="rounded-xl border border-green-900 flex flex-col bg-green-950 overflow-hidden">
-          <div className="px-3 py-1.5 border-b border-gray-200 flex items-center gap-2 shrink-0">
-            <Send className="w-4 h-4 text-red-500" />
-            <span className="text-xs font-semibold text-black">جدول المدير</span>
+          <div className="px-3 py-1.5 border-b border-green-800 flex items-center gap-2 shrink-0">
+            <Send className="w-4 h-4 text-green-400" />
+            <span className="text-xs font-semibold text-green-200">جدول المدير</span>
           </div>
           <div className="flex-1 p-3 flex flex-col">
             <textarea
