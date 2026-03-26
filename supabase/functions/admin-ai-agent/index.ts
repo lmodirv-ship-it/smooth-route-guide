@@ -24,12 +24,15 @@ const requestSchema = z.object({
 });
 
 const ALLOWED_TABLES = [
-  "profiles", "user_roles", "drivers", "vehicles", "ride_requests", "trips",
+  "profiles", "drivers", "vehicles", "ride_requests", "trips",
   "delivery_orders", "order_items", "stores", "menu_categories", "menu_items",
   "earnings", "payments", "wallet", "notifications", "alerts", "complaints",
   "tickets", "call_center", "call_logs", "promotions", "documents",
   "zones", "app_settings", "import_logs", "chat_conversations", "chat_messages",
   "trip_status_history", "ride_messages", "commission_rates",
+  "assistant_knowledge_entries", "assistant_recommendations", "assistant_issue_patterns",
+  "assistant_campaign_ideas", "assistant_activity_log", "product_images",
+  "platform_languages", "platform_translations",
 ];
 
 const tools = [
