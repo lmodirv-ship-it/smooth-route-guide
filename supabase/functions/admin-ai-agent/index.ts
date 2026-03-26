@@ -32,7 +32,7 @@ const ALLOWED_TABLES = [
   "trip_status_history", "ride_messages", "commission_rates",
   "assistant_knowledge_entries", "assistant_recommendations", "assistant_issue_patterns",
   "assistant_campaign_ideas", "assistant_activity_log", "product_images",
-  "platform_languages", "platform_translations",
+  "platform_languages", "platform_translations", "dynamic_pages",
 ];
 
 const tools = [
@@ -232,6 +232,78 @@ const tools = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "manage_page",
+      description: `Create, update, list or delete dynamic pages. Pages are stored in the database and rendered dynamically on the site.
+Content is a JSON array of sections/blocks. Each block has a 'type' and properties.
+Supported block types:
+- hero: { type:"hero", title, subtitle, background_color, text_color, background_image, cta_text, cta_link }
+- text: { type:"text", content (markdown), alignment }
+- image: { type:"image", url, alt, width, caption }
+- cards: { type:"cards", columns(1-4), items:[{title, description, icon, image, link}] }
+- stats: { type:"stats", items:[{label, value, icon, color}] }
+- cta: { type:"cta", title, subtitle, button_text, button_link, background_color }
+- faq: { type:"faq", items:[{question, answer}] }
+- gallery: { type:"gallery", columns(2-4), images:[{url, alt, caption}] }
+- divider: { type:"divider", style:"line"|"space"|"dots" }
+- html: { type:"html", code (raw HTML) }
+- table: { type:"table", headers:[], rows:[[]] }
+- video: { type:"video", url, title }
+- form: { type:"form", title, fields:[{name,type,label,required}], submit_text }
+- map: { type:"map", lat, lng, zoom, marker_title }
+- pricing: { type:"pricing", plans:[{name,price,period,features:[],cta_text,highlighted}] }
+- testimonials: { type:"testimonials", items:[{name,role,text,avatar}] }
+- timeline: { type:"timeline", items:[{date,title,description}] }
+- features: { type:"features", columns(2-4), items:[{title,description,icon}] }`,
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["create", "update", "list", "get", "delete", "publish", "unpublish"] },
+          slug: { type: "string", description: "URL slug for the page (e.g. 'about-us', 'promo-summer')" },
+          title: { type: "string", description: "Page title" },
+          page_type: { type: "string", enum: ["content", "landing", "dashboard", "marketing"], description: "Type of page" },
+          content: { type: "array", description: "Array of content blocks/sections" },
+          meta_description: { type: "string", description: "SEO meta description" },
+          css_overrides: { type: "string", description: "Custom CSS for this page" },
+          is_published: { type: "boolean", description: "Whether page is live" },
+        },
+        required: ["action"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "manage_theme",
+      description: "View or update the site theme/branding. Controls colors, fonts, logo, and visual identity stored in app_settings.",
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["get", "update"] },
+          theme: {
+            type: "object",
+            description: "Theme settings to update",
+            properties: {
+              primary_color: { type: "string", description: "Primary brand color (hex)" },
+              secondary_color: { type: "string", description: "Secondary color (hex)" },
+              accent_color: { type: "string", description: "Accent/highlight color (hex)" },
+              background_color: { type: "string", description: "Main background color (hex)" },
+              text_color: { type: "string", description: "Main text color (hex)" },
+              font_family: { type: "string", description: "Main font family" },
+              font_heading: { type: "string", description: "Heading font family" },
+              logo_url: { type: "string", description: "Logo image URL" },
+              favicon_url: { type: "string", description: "Favicon URL" },
+              border_radius: { type: "string", description: "Global border radius (e.g. '8px', '12px')" },
+              custom_css: { type: "string", description: "Additional custom CSS" },
+            },
+          },
+        },
+        required: ["action"],
+      },
+    },
+  },
 ];
 function applyFilters(query: any, filters: any[]) {
   for (const f of filters) {
@@ -402,6 +474,87 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         }
         return JSON.stringify({ error: "Invalid action" });
       }
+      case "manage_page": {
+        if (args.action === "list") {
+          const { data, error } = await supabase.from("dynamic_pages").select("id, slug, title, page_type, is_published, sort_order, updated_at").order("updated_at", { ascending: false });
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ pages: data });
+        }
+        if (args.action === "get") {
+          if (!args.slug) return JSON.stringify({ error: "slug required" });
+          const { data, error } = await supabase.from("dynamic_pages").select("*").eq("slug", args.slug).maybeSingle();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify(data || { error: "Page not found" });
+        }
+        if (args.action === "create") {
+          if (!args.slug || !args.title) return JSON.stringify({ error: "slug and title required" });
+          const { data, error } = await supabase.from("dynamic_pages").insert({
+            slug: args.slug,
+            title: args.title,
+            page_type: args.page_type || "content",
+            content: args.content || [],
+            meta_description: args.meta_description || "",
+            css_overrides: args.css_overrides || "",
+            is_published: args.is_published ?? false,
+          }).select().single();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "created", page: data });
+        }
+        if (args.action === "update") {
+          if (!args.slug) return JSON.stringify({ error: "slug required" });
+          const updates: any = { updated_at: new Date().toISOString() };
+          if (args.title !== undefined) updates.title = args.title;
+          if (args.content !== undefined) updates.content = args.content;
+          if (args.page_type !== undefined) updates.page_type = args.page_type;
+          if (args.meta_description !== undefined) updates.meta_description = args.meta_description;
+          if (args.css_overrides !== undefined) updates.css_overrides = args.css_overrides;
+          if (args.is_published !== undefined) updates.is_published = args.is_published;
+          const { data, error } = await supabase.from("dynamic_pages").update(updates).eq("slug", args.slug).select().single();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "updated", page: data });
+        }
+        if (args.action === "delete") {
+          if (!args.slug) return JSON.stringify({ error: "slug required" });
+          const { error } = await supabase.from("dynamic_pages").delete().eq("slug", args.slug);
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "deleted", slug: args.slug });
+        }
+        if (args.action === "publish") {
+          if (!args.slug) return JSON.stringify({ error: "slug required" });
+          const { error } = await supabase.from("dynamic_pages").update({ is_published: true, updated_at: new Date().toISOString() }).eq("slug", args.slug);
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "published", slug: args.slug });
+        }
+        if (args.action === "unpublish") {
+          if (!args.slug) return JSON.stringify({ error: "slug required" });
+          const { error } = await supabase.from("dynamic_pages").update({ is_published: false, updated_at: new Date().toISOString() }).eq("slug", args.slug);
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "unpublished", slug: args.slug });
+        }
+        return JSON.stringify({ error: "Invalid action" });
+      }
+      case "manage_theme": {
+        const THEME_KEY = "site_theme";
+        if (args.action === "get") {
+          const { data, error } = await supabase.from("app_settings").select("*").eq("key", THEME_KEY).maybeSingle();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify(data?.value || { message: "No theme configured, using defaults" });
+        }
+        if (args.action === "update") {
+          if (!args.theme) return JSON.stringify({ error: "theme object required" });
+          const { data: existing } = await supabase.from("app_settings").select("id, value").eq("key", THEME_KEY).maybeSingle();
+          const merged = { ...(existing?.value || {}), ...args.theme };
+          if (existing) {
+            const { error } = await supabase.from("app_settings").update({ value: merged, updated_at: new Date().toISOString() }).eq("key", THEME_KEY);
+            if (error) return JSON.stringify({ error: error.message });
+          } else {
+            const { error } = await supabase.from("app_settings").insert({ key: THEME_KEY, value: merged });
+            if (error) return JSON.stringify({ error: error.message });
+          }
+          return JSON.stringify({ success: true, theme: merged });
+        }
+        return JSON.stringify({ error: "Invalid action" });
+      }
       default:
         return JSON.stringify({ error: `Unknown tool: ${name}` });
     }
@@ -510,16 +663,28 @@ serve(async (req) => {
 - إدارة المناطق والمتاجر وقوائم الطعام
 - إدارة قاعدة المعرفة والتوصيات والحملات
 - إدارة الترجمات واللغات
+- **إنشاء وتعديل صفحات ديناميكية** (صفحات تسويقية، محتوى، لوحات بيانات)
+- **تعديل الهوية البصرية والثيم** (ألوان، خطوط، شعار)
 
 ## ⛔ ممنوع تماماً:
 - لا يمكنك إدارة المستخدمين أو تعديل الأدوار (user_roles)
 - لا يمكنك إنشاء حسابات جديدة أو حذف حسابات
 - لا يمكنك تغيير صلاحيات أي مستخدم
 
+## إدارة الصفحات:
+- استخدم أداة manage_page لإنشاء وتعديل الصفحات
+- الصفحات تُعرض على المسار /p/{slug}
+- يمكنك إنشاء أي نوع: صفحات تسويقية، محتوى، لوحات بيانات
+- المحتوى عبارة عن مصفوفة من الأقسام (blocks) بأنواع متعددة
+- يجب نشر الصفحة (publish) لتكون مرئية للمستخدمين
+- استخدم block types المتاحة لبناء صفحات غنية ومتنوعة
+
+## تعديل الثيم:
+- استخدم أداة manage_theme لتعديل الهوية البصرية
+- يمكنك تغيير الألوان، الخطوط، الشعار، والتنسيقات العامة
+
 ## نسب الأرباح:
 - استخدم أداة manage_commission_rates لعرض أو تعديل نسب الأرباح
-- الفئات: restaurants, drivers, delivery, stores, pharmacy_beauty, courier, express_market, supermarket, shops_gifts
-- النسبة الافتراضية 5%
 
 ## القواعد الأمنية:
 - لا تحذف بيانات بدون تأكيد صريح من المسؤول
@@ -529,7 +694,7 @@ serve(async (req) => {
 - قدّم نتائج بتنسيق Markdown
 
 ## الجداول المتاحة:
-profiles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates, assistant_knowledge_entries, assistant_recommendations, assistant_issue_patterns, assistant_campaign_ideas, assistant_activity_log, product_images, platform_languages, platform_translations`;
+profiles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates, assistant_knowledge_entries, assistant_recommendations, assistant_issue_patterns, assistant_campaign_ideas, assistant_activity_log, product_images, platform_languages, platform_translations, dynamic_pages`;
 
     let aiMessages: any[] = [
       { role: "system", content: systemPrompt },

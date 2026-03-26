@@ -64,6 +64,7 @@ import MyStore from "@/pages/delivery/MyStore";
 // ─── AI ───
 import AgentHub from "@/pages/ai/AgentHub";
 import AIAssistant from "@/pages/AIAssistant";
+import DynamicPage from "@/pages/DynamicPage";
 
 export const mainRouteElements = (
   <>
@@ -131,6 +132,9 @@ export const mainRouteElements = (
       <Route path="/ai" element={<RequireRole><AgentHub /></RequireRole>} />
       <Route path="/assistant" element={<RequireRole><AIAssistant /></RequireRole>} />
     </Route>
+
+    {/* ─── Dynamic CMS Pages ─── */}
+    <Route path="/p/:slug" element={<DynamicPage />} />
 
     {/* ═══════════════════════════════════════════
         SHORTCUT + LEGACY REDIRECTS
