@@ -461,6 +461,37 @@ Use this when the admin wants to add a new restaurant or store quickly.`,
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "orchestrate_task",
+      description: `تنسيق مهمة معقدة تلقائياً. يقوم بتحليل المهمة وتقسيمها لمهام فرعية، ثم يُنشئ مساعدين فرعيين مؤقتين إذا لزم الأمر أو يستخدم الموجودين، ويُفوّض لهم العمل بالتوازي لإنجاز المهمة بأسرع وقت.
+مثال: "أنشئ صفحة هوم بيج" → ينشئ مساعد تصميم + مساعد محتوى + مساعد بيانات ويعملون معاً.`,
+      parameters: {
+        type: "object",
+        properties: {
+          task_description: { type: "string", description: "وصف المهمة الكاملة" },
+          sub_tasks: {
+            type: "array",
+            description: "المهام الفرعية المطلوبة (اختياري - يمكن تركها للنظام ليحددها تلقائياً)",
+            items: {
+              type: "object",
+              properties: {
+                title: { type: "string", description: "عنوان المهمة الفرعية" },
+                description: { type: "string", description: "تفاصيل المهمة" },
+                type: { type: "string", enum: ["design", "content", "data", "code", "analysis", "communication"], description: "نوع المهمة" },
+                priority: { type: "string", enum: ["high", "medium", "low"], default: "medium" },
+              },
+              required: ["title", "description", "type"],
+            },
+          },
+          auto_create_assistants: { type: "boolean", default: true, description: "إنشاء مساعدين مؤقتين تلقائياً إذا لم يوجد مناسب" },
+          parallel: { type: "boolean", default: true, description: "تنفيذ المهام بالتوازي" },
+        },
+        required: ["task_description"],
+      },
+    },
+  },
 ];
 function applyFilters(query: any, filters: any[]) {
   for (const f of filters) {
@@ -1172,6 +1203,202 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         }
         return JSON.stringify({ error: "Invalid action" });
       }
+      case "orchestrate_task": {
+        const taskDesc = args.task_description;
+        const autoCreate = args.auto_create_assistants !== false;
+        const parallel = args.parallel !== false;
+
+        // 1. Fetch existing sub-assistants
+        const { data: existingAssistants } = await supabase
+          .from("sub_assistants").select("*").eq("is_active", true);
+        const activeAssistants = existingAssistants || [];
+
+        // 2. Define sub-task types and their default configs
+        const SUB_TASK_CONFIGS: Record<string, any> = {
+          design: {
+            name: "Design Worker", name_ar: "مساعد التصميم",
+            system_prompt: "أنت مصمم واجهات متخصص. تُنشئ مكونات React/TSX جميلة باستخدام Tailwind CSS وshadcn/ui. صمم واجهات عصرية وجذابة.",
+            allowed_tools: ["generate_code", "manage_page", "manage_theme"],
+            allowed_tables: ["dynamic_pages", "app_settings"],
+            icon: "zap", color: "#ec4899",
+          },
+          content: {
+            name: "Content Worker", name_ar: "مساعد المحتوى",
+            system_prompt: "أنت كاتب محتوى محترف. تكتب نصوصاً تسويقية وتعليمية بالعربية والفرنسية. أنشئ محتوى جذاباً ومقنعاً.",
+            allowed_tools: ["manage_page", "manage_social_content", "db_select"],
+            allowed_tables: ["dynamic_pages", "social_media_posts", "stores"],
+            icon: "brain", color: "#8b5cf6",
+          },
+          data: {
+            name: "Data Worker", name_ar: "مساعد البيانات",
+            system_prompt: "أنت محلل بيانات متخصص. تقرأ البيانات وتنشئ سجلات جديدة وتعدّل الموجودة بدقة.",
+            allowed_tools: ["db_select", "db_insert", "db_update", "db_count", "db_stats"],
+            allowed_tables: ALLOWED_TABLES,
+            icon: "bar-chart-3", color: "#10b981",
+          },
+          code: {
+            name: "Code Worker", name_ar: "مساعد البرمجة",
+            system_prompt: "أنت مبرمج Full-Stack متخصص في React/TypeScript/Tailwind/Supabase. اكتب كوداً نظيفاً وقابلاً للصيانة.",
+            allowed_tools: ["generate_code", "generate_deployment_package", "db_select"],
+            allowed_tables: ALLOWED_TABLES,
+            icon: "zap", color: "#f97316",
+          },
+          analysis: {
+            name: "Analysis Worker", name_ar: "مساعد التحليل",
+            system_prompt: "أنت محلل أعمال متخصص. تحلل البيانات وتستخرج رؤى وتوصيات.",
+            allowed_tools: ["db_select", "db_count", "db_stats", "fetch_webpage"],
+            allowed_tables: ALLOWED_TABLES,
+            icon: "bar-chart-3", color: "#3b82f6",
+          },
+          communication: {
+            name: "Communication Worker", name_ar: "مساعد التواصل",
+            system_prompt: "أنت مسؤول تواصل. ترسل إشعارات وتدير المحتوى التسويقي.",
+            allowed_tools: ["bulk_notify", "manage_social_content", "db_select"],
+            allowed_tables: ["notifications", "social_media_posts", "profiles"],
+            icon: "bell", color: "#14b8a6",
+          },
+        };
+
+        // 3. Determine sub-tasks (use provided or auto-generate)
+        let subTasks = args.sub_tasks;
+        if (!subTasks?.length) {
+          // Auto-generate sub-tasks using AI
+          const planResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: "google/gemini-2.5-flash",
+              messages: [
+                { role: "system", content: `أنت مخطط مهام. حلل المهمة التالية وقسمها إلى 2-5 مهام فرعية. أجب فقط بتنسيق JSON.` },
+                { role: "user", content: `المهمة: ${taskDesc}\n\nقسمها إلى مهام فرعية بالتنسيق:\n[{"title":"...","description":"...","type":"design|content|data|code|analysis|communication","priority":"high|medium|low"}]` },
+              ],
+              tools: [{
+                type: "function",
+                function: {
+                  name: "plan_tasks",
+                  description: "Return task breakdown",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      tasks: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            title: { type: "string" },
+                            description: { type: "string" },
+                            type: { type: "string", enum: ["design", "content", "data", "code", "analysis", "communication"] },
+                            priority: { type: "string", enum: ["high", "medium", "low"] },
+                          },
+                          required: ["title", "description", "type"],
+                        },
+                      },
+                    },
+                    required: ["tasks"],
+                  },
+                },
+              }],
+              tool_choice: { type: "function", function: { name: "plan_tasks" } },
+            }),
+          });
+
+          if (planResponse.ok) {
+            const planResult = await planResponse.json();
+            const toolCall = planResult.choices?.[0]?.message?.tool_calls?.[0];
+            if (toolCall) {
+              const planArgs = typeof toolCall.function.arguments === "string" ? JSON.parse(toolCall.function.arguments) : toolCall.function.arguments;
+              subTasks = planArgs.tasks || [];
+            }
+          }
+          if (!subTasks?.length) {
+            subTasks = [{ title: taskDesc, description: taskDesc, type: "code", priority: "high" }];
+          }
+        }
+
+        // 4. Match or create sub-assistants for each sub-task
+        const assignments: { task: any; assistant: any; created: boolean }[] = [];
+
+        for (const st of subTasks) {
+          // Try to find an existing assistant matching the type
+          const typeMap: Record<string, string[]> = {
+            design: ["design", "ui", "frontend"],
+            content: ["content", "marketing", "communications"],
+            data: ["data", "reports", "analytics"],
+            code: ["code", "development", "general"],
+            analysis: ["analysis", "reports"],
+            communication: ["communications", "notifications"],
+          };
+          const matchTypes = typeMap[st.type] || [st.type];
+          let matched = activeAssistants.find((a: any) => matchTypes.includes(a.assistant_type));
+
+          if (!matched && autoCreate) {
+            // Create a temporary sub-assistant
+            const config = SUB_TASK_CONFIGS[st.type] || SUB_TASK_CONFIGS.code;
+            const { data: newAst, error: createErr } = await supabase.from("sub_assistants").insert({
+              ...config,
+              assistant_type: st.type,
+              is_active: true,
+            }).select().single();
+            if (!createErr && newAst) {
+              matched = newAst;
+              assignments.push({ task: st, assistant: newAst, created: true });
+              continue;
+            }
+          }
+          assignments.push({ task: st, assistant: matched, created: false });
+        }
+
+        // 5. Execute delegations
+        const executeOne = async (assignment: any) => {
+          if (!assignment.assistant) {
+            return { task: assignment.task.title, status: "skipped", reason: "لا يوجد مساعد متاح" };
+          }
+          try {
+            const result = await executeTool(supabase, "delegate_to_assistant", {
+              assistant_id: assignment.assistant.id,
+              task: `${assignment.task.title}: ${assignment.task.description}`,
+              context: `جزء من مهمة أكبر: ${taskDesc}`,
+            });
+            return { task: assignment.task.title, status: "completed", assistant: assignment.assistant.name_ar, result: JSON.parse(result) };
+          } catch (e: any) {
+            return { task: assignment.task.title, status: "failed", error: e.message };
+          }
+        };
+
+        let results;
+        if (parallel) {
+          results = await Promise.all(assignments.map(executeOne));
+        } else {
+          results = [];
+          for (const a of assignments) {
+            results.push(await executeOne(a));
+          }
+        }
+
+        // 6. Log the orchestration
+        await supabase.from("assistant_activity_log").insert({
+          action_type: "orchestration",
+          title: `تنسيق مهمة: ${taskDesc.slice(0, 100)}`,
+          details: `تم تقسيم المهمة إلى ${subTasks.length} مهمة فرعية وتنفيذها ${parallel ? "بالتوازي" : "بالتسلسل"}`,
+          metadata: { task: taskDesc, sub_tasks: subTasks, results: results.map((r: any) => ({ task: r.task, status: r.status })) },
+        });
+
+        const completed = results.filter((r: any) => r.status === "completed").length;
+        const failed = results.filter((r: any) => r.status === "failed").length;
+        const created = assignments.filter(a => a.created).length;
+
+        return JSON.stringify({
+          success: true,
+          task: taskDesc,
+          total_sub_tasks: subTasks.length,
+          completed,
+          failed,
+          assistants_created: created,
+          execution_mode: parallel ? "parallel" : "sequential",
+          results,
+          message: `🚀 تم تنسيق المهمة "${taskDesc.slice(0, 50)}..."\n✅ ${completed}/${subTasks.length} مهمة فرعية مكتملة\n${created > 0 ? `🤖 تم إنشاء ${created} مساعد فرعي جديد\n` : ""}${failed > 0 ? `❌ ${failed} مهمة فشلت` : ""}`,
+        });
+      }
       default:
         return JSON.stringify({ error: `Unknown tool: ${name}` });
     }
@@ -1306,15 +1533,17 @@ serve(async (req) => {
 - **manage_theme**: لتعديل الهوية البصرية
 - **fetch_webpage**: لقراءة وتحليل المواقع
 - **create_store_with_page**: ✨ أداة سحرية لإنشاء مطعم/متجر كامل بخطوة واحدة!
-- **delegate_to_assistant**: 🤖 تفويض مهمة لمساعد فرعي متخصص. أنت المنسق الرئيسي، وتوزع المهام على المساعدين حسب تخصصهم.
+- **delegate_to_assistant**: 🤖 تفويض مهمة لمساعد فرعي متخصص
 - **manage_sub_assistants**: إنشاء/حذف/تعديل المساعدين الفرعيين
+- **orchestrate_task**: 🚀 الأداة الأقوى! تحلل المهمة المعقدة وتقسمها تلقائياً لمهام فرعية، تُنشئ مساعدين متخصصين إذا لزم الأمر، وتنفذ كل شيء بالتوازي لتسريع العمل.
 
-## 🤖 نظام المساعدين الفرعيين:
+## 🤖 نظام المساعدين الفرعيين (التنسيق التلقائي):
 أنت المساعد الرئيسي (المنسق). لديك فريق من المساعدين الفرعيين المتخصصين:
-- عند استلام مهمة، حدد أي مساعد فرعي هو الأنسب لها
-- استخدم delegate_to_assistant لتفويض المهمة
-- كل مساعد فرعي لديه جداول وأدوات محددة لا يتجاوزها
-- إذا لم يوجد مساعد مناسب، نفّذ المهمة بنفسك مباشرة
+- عند استلام مهمة معقدة (مثل إنشاء صفحة، تصميم واجهة، تحليل شامل)، استخدم **orchestrate_task** مباشرة
+- الأداة ستقسم المهمة تلقائياً وتنشئ مساعدين متخصصين وتوزع العمل بينهم بالتوازي
+- للمهام البسيطة، استخدم delegate_to_assistant مباشرة أو نفّذها بنفسك
+- يمكنك أيضاً إنشاء مساعدين جدد يدوياً عبر manage_sub_assistants
+- المساعدون المُنشأون تلقائياً يبقون متاحين للمهام المستقبلية
 
 ## 📝 قواعد كتابة الكود:
 - استخدم TypeScript strict mode
