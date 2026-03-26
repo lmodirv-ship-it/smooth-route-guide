@@ -53,6 +53,7 @@ const AdminLayout = () => {
   const [aiInput, setAiInput] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarNavVisible, setSidebarNavVisible] = useState(true);
   const aiScrollRef = useRef<HTMLDivElement>(null);
   const [pendingCount, setPendingCount] = useState(0);
   const [smartAssistantActive, setSmartAssistantActive] = useState(true);
@@ -173,6 +174,9 @@ const AdminLayout = () => {
             </button>
           ))}
         </nav>
+          </motion.div>
+        )}
+        </AnimatePresence>
         <div className="p-3 border-t border-border">
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
