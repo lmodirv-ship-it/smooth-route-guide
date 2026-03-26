@@ -1545,6 +1545,63 @@ export type Database = {
           },
         ]
       }
+      sub_assistants: {
+        Row: {
+          allowed_tables: string[]
+          allowed_tools: string[]
+          assistant_type: string
+          color: string
+          created_at: string
+          created_by: string | null
+          description: string
+          execution_log: Json
+          icon: string
+          id: string
+          is_active: boolean
+          max_actions_per_minute: number
+          name: string
+          name_ar: string
+          system_prompt: string
+          updated_at: string
+        }
+        Insert: {
+          allowed_tables?: string[]
+          allowed_tools?: string[]
+          assistant_type?: string
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          execution_log?: Json
+          icon?: string
+          id?: string
+          is_active?: boolean
+          max_actions_per_minute?: number
+          name?: string
+          name_ar?: string
+          system_prompt?: string
+          updated_at?: string
+        }
+        Update: {
+          allowed_tables?: string[]
+          allowed_tools?: string[]
+          assistant_type?: string
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          execution_log?: Json
+          icon?: string
+          id?: string
+          is_active?: boolean
+          max_actions_per_minute?: number
+          name?: string
+          name_ar?: string
+          system_prompt?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tickets: {
         Row: {
           agent_id: string | null

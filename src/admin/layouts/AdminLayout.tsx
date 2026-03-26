@@ -5,7 +5,7 @@ import {
   BarChart3, FileText, Car, Users, TrendingUp, MapPin,
   AlertTriangle, FileCheck, Headphones, Settings, Shield,
   Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog, Percent,
-  ShieldCheck, ShieldOff, Globe, RefreshCw
+  ShieldCheck, ShieldOff, Globe, RefreshCw, BrainCircuit
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -79,6 +79,7 @@ const AdminLayout = () => {
     { path: "/admin/zones", icon: MapPin, label: t.admin.zonesPricing },
     { path: "/admin/commission-rates", icon: Percent, label: "نسب الأرباح" },
     { path: "/admin/smart-assistant", icon: Bot, label: "المساعد الذكي" },
+    { path: "/admin/sub-assistants", icon: BrainCircuit, label: "المساعدون الفرعيون" },
     { path: "/admin/settings", icon: Settings, label: t.admin.settingsMenu },
   ];
 

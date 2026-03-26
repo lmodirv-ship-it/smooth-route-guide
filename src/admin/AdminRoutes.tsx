@@ -24,6 +24,7 @@ import ZonesManagement from "@/admin/pages/ZonesManagement";
 import AdminSettings from "@/admin/pages/Settings";
 import CommissionRatesPage from "@/admin/pages/CommissionRates";
 import SmartAssistantPage from "@/admin/pages/SmartAssistant";
+import SubAssistantsPage from "@/admin/pages/SubAssistants";
 import SetupAdmin from "@/admin/pages/SetupAdmin";
 
 // Call Center layout & pages
@@ -69,6 +70,7 @@ export const adminRouteElements = (
       <Route path="zones" element={<ZonesManagement />} />
       <Route path="commission-rates" element={<CommissionRatesPage />} />
       <Route path="smart-assistant" element={<SmartAssistantPage />} />
+      <Route path="sub-assistants" element={<SubAssistantsPage />} />
       <Route path="settings" element={<AdminSettings />} />
     </Route>
 

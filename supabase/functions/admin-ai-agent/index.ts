@@ -33,9 +33,8 @@ const ALLOWED_TABLES = [
   "assistant_knowledge_entries", "assistant_recommendations", "assistant_issue_patterns",
   "assistant_campaign_ideas", "assistant_activity_log", "product_images",
   "platform_languages", "platform_translations", "dynamic_pages",
-  "social_media_posts", "smart_assistant_commands",
+  "social_media_posts", "smart_assistant_commands", "sub_assistants",
 ];
-
 const tools = [
   {
     type: "function",
@@ -419,6 +418,46 @@ Use this when the admin wants to add a new restaurant or store quickly.`,
           publish_page: { type: "boolean", default: true, description: "Auto-publish the page" },
         },
         required: ["name"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "delegate_to_assistant",
+      description: `Delegate a task to a specialized sub-assistant. You act as an orchestrator: read the admin's request, pick the best sub-assistant, and delegate. The sub-assistant executes within its allowed scope. List sub-assistants first with db_select on sub_assistants table if needed.`,
+      parameters: {
+        type: "object",
+        properties: {
+          assistant_id: { type: "string", description: "UUID of the sub-assistant" },
+          task: { type: "string", description: "Clear task description" },
+          context: { type: "string", description: "Additional context or data" },
+        },
+        required: ["assistant_id", "task"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "manage_sub_assistants",
+      description: "Create, update, list, or delete sub-assistants.",
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["list", "create", "update", "delete", "activate", "deactivate"] },
+          id: { type: "string" },
+          name: { type: "string" },
+          name_ar: { type: "string" },
+          description: { type: "string" },
+          assistant_type: { type: "string" },
+          system_prompt: { type: "string" },
+          allowed_tables: { type: "array", items: { type: "string" } },
+          allowed_tools: { type: "array", items: { type: "string" } },
+          icon: { type: "string" },
+          color: { type: "string" },
+        },
+        required: ["action"],
       },
     },
   },
@@ -1016,6 +1055,123 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
           message: `✅ تم إنشاء ${categoryLabel} "${args.name}" بنجاح!\n📄 صفحة المتجر: /p/${slug}\n🛒 رابط المتجر: /delivery/store/${store.id}\n📂 الأقسام: ${createdCategories.length} قسم\n${page?.is_published ? "🌐 الصفحة منشورة ومتاحة للزوار" : "⚠️ الصفحة غير منشورة بعد"}`,
         });
       }
+      case "delegate_to_assistant": {
+        // Fetch the sub-assistant
+        const { data: subAst, error: astErr } = await supabase
+          .from("sub_assistants").select("*").eq("id", args.assistant_id).single();
+        if (astErr || !subAst) return JSON.stringify({ error: "المساعد الفرعي غير موجود" });
+        if (!subAst.is_active) return JSON.stringify({ error: `المساعد "${subAst.name_ar}" معطّل حالياً` });
+
+        // Build a restricted tool set based on sub-assistant's allowed_tools
+        const subTools = tools.filter((t: any) => subAst.allowed_tools.includes(t.function?.name));
+        
+        // Override ALLOWED_TABLES for the sub-assistant (restrict enum in db_select etc.)
+        const subSystemPrompt = `${subAst.system_prompt}\n\nأنت مساعد فرعي متخصص. الجداول المسموحة لك فقط: ${subAst.allowed_tables.join(", ")}.\nلا تتجاوز نطاق مهامك أبداً.\n\nالمهمة المطلوبة: ${args.task}\n${args.context ? `\nسياق إضافي: ${args.context}` : ""}`;
+
+        const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+        const subResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${lovableApiKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              { role: "system", content: subSystemPrompt },
+              { role: "user", content: args.task },
+            ],
+            tools: subTools.length ? subTools : undefined,
+            stream: false,
+          }),
+        });
+
+        if (!subResponse.ok) return JSON.stringify({ error: "فشل الاتصال بالمساعد الفرعي" });
+        const subResult = await subResponse.json();
+        const subChoice = subResult.choices?.[0];
+        
+        // If sub-assistant wants to use tools, execute them within its scope
+        let subFinalText = subChoice?.message?.content || "";
+        if (subChoice?.message?.tool_calls?.length) {
+          const toolResults: string[] = [];
+          for (const tc of subChoice.message.tool_calls) {
+            const fnName = tc.function.name;
+            // Security: only allow tools in the sub-assistant's allowed list
+            if (!subAst.allowed_tools.includes(fnName)) {
+              toolResults.push(`⛔ الأداة ${fnName} غير مسموحة لهذا المساعد`);
+              continue;
+            }
+            const fnArgs = typeof tc.function.arguments === "string" ? JSON.parse(tc.function.arguments) : tc.function.arguments;
+            // Security: restrict table access
+            if (fnArgs.table && !subAst.allowed_tables.includes(fnArgs.table)) {
+              toolResults.push(`⛔ الجدول ${fnArgs.table} غير مسموح لهذا المساعد`);
+              continue;
+            }
+            console.log(`[SUB-AGENT:${subAst.name}] Tool=${fnName} Args=${JSON.stringify(fnArgs).slice(0, 200)}`);
+            const result = await executeTool(supabase, fnName, fnArgs);
+            toolResults.push(result);
+          }
+          subFinalText = `نتائج تنفيذ المساعد "${subAst.name_ar}":\n${toolResults.join("\n")}`;
+        }
+
+        // Log execution
+        await supabase.from("sub_assistants").update({
+          execution_log: [...((subAst.execution_log as any[]) || []).slice(-49), {
+            task: args.task,
+            result: subFinalText.slice(0, 500),
+            executed_at: new Date().toISOString(),
+          }],
+          updated_at: new Date().toISOString(),
+        }).eq("id", args.assistant_id);
+
+        return JSON.stringify({
+          success: true,
+          assistant: subAst.name_ar,
+          type: subAst.assistant_type,
+          response: subFinalText,
+          message: `✅ المساعد "${subAst.name_ar}" نفّذ المهمة بنجاح`,
+        });
+      }
+      case "manage_sub_assistants": {
+        if (args.action === "list") {
+          const { data, error } = await supabase.from("sub_assistants").select("id, name, name_ar, assistant_type, is_active, icon, color, description, allowed_tools, allowed_tables").order("created_at");
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ assistants: data });
+        }
+        if (args.action === "create") {
+          const { data, error } = await supabase.from("sub_assistants").insert({
+            name: args.name || "", name_ar: args.name_ar || "", description: args.description || "",
+            assistant_type: args.assistant_type || "general", system_prompt: args.system_prompt || "",
+            allowed_tables: args.allowed_tables || [], allowed_tools: args.allowed_tools || [],
+            icon: args.icon || "bot", color: args.color || "#3b82f6",
+          }).select().single();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, assistant: data, message: "✅ تم إنشاء المساعد الفرعي" });
+        }
+        if (args.action === "update") {
+          if (!args.id) return JSON.stringify({ error: "id required" });
+          const updates: any = { updated_at: new Date().toISOString() };
+          if (args.name !== undefined) updates.name = args.name;
+          if (args.name_ar !== undefined) updates.name_ar = args.name_ar;
+          if (args.description !== undefined) updates.description = args.description;
+          if (args.system_prompt !== undefined) updates.system_prompt = args.system_prompt;
+          if (args.allowed_tables !== undefined) updates.allowed_tables = args.allowed_tables;
+          if (args.allowed_tools !== undefined) updates.allowed_tools = args.allowed_tools;
+          const { data, error } = await supabase.from("sub_assistants").update(updates).eq("id", args.id).select().single();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, assistant: data });
+        }
+        if (args.action === "delete") {
+          if (!args.id) return JSON.stringify({ error: "id required" });
+          const { error } = await supabase.from("sub_assistants").delete().eq("id", args.id);
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, message: "تم حذف المساعد" });
+        }
+        if (args.action === "activate" || args.action === "deactivate") {
+          if (!args.id) return JSON.stringify({ error: "id required" });
+          const { error } = await supabase.from("sub_assistants").update({ is_active: args.action === "activate", updated_at: new Date().toISOString() }).eq("id", args.id);
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, message: args.action === "activate" ? "✅ تم تفعيل المساعد" : "تم تعطيل المساعد" });
+        }
+        return JSON.stringify({ error: "Invalid action" });
+      }
       default:
         return JSON.stringify({ error: `Unknown tool: ${name}` });
     }
@@ -1149,7 +1305,16 @@ serve(async (req) => {
 - **manage_page**: لإنشاء صفحات ديناميكية (محتوى مرن عبر JSON blocks)
 - **manage_theme**: لتعديل الهوية البصرية
 - **fetch_webpage**: لقراءة وتحليل المواقع
-- **create_store_with_page**: ✨ أداة سحرية لإنشاء مطعم/متجر كامل بخطوة واحدة! تنشئ المتجر + أقسام المنيو + صفحة ديناميكية جاهزة تلقائياً. مثال: "أنشئ مطعم اسمه بيتزا الحي بأقسام: بيتزا، مشروبات، حلويات"
+- **create_store_with_page**: ✨ أداة سحرية لإنشاء مطعم/متجر كامل بخطوة واحدة!
+- **delegate_to_assistant**: 🤖 تفويض مهمة لمساعد فرعي متخصص. أنت المنسق الرئيسي، وتوزع المهام على المساعدين حسب تخصصهم.
+- **manage_sub_assistants**: إنشاء/حذف/تعديل المساعدين الفرعيين
+
+## 🤖 نظام المساعدين الفرعيين:
+أنت المساعد الرئيسي (المنسق). لديك فريق من المساعدين الفرعيين المتخصصين:
+- عند استلام مهمة، حدد أي مساعد فرعي هو الأنسب لها
+- استخدم delegate_to_assistant لتفويض المهمة
+- كل مساعد فرعي لديه جداول وأدوات محددة لا يتجاوزها
+- إذا لم يوجد مساعد مناسب، نفّذ المهمة بنفسك مباشرة
 
 ## 📝 قواعد كتابة الكود:
 - استخدم TypeScript strict mode
