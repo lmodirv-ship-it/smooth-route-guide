@@ -21,6 +21,8 @@ interface UserRecord {
   email: string;
   roles: string[];
   createdAt: string;
+  userCode: string;
+  isConfirmed: boolean;
 }
 
 const ROLE_LABELS: Record<string, string> = {
