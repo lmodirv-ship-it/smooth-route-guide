@@ -83,14 +83,18 @@ const SmartAssistantPage = () => {
   }, [previewUrl]);
 
   const websiteList = [
-    { name: "Wikipedia", url: "https://ar.wikipedia.org", icon: "📚" },
-    { name: "Google", url: "https://www.google.com/webhp?igu=1", icon: "🔎" },
-    { name: "Bing", url: "https://www.bing.com", icon: "🔍" },
-    { name: "Reddit", url: "https://www.reddit.com", icon: "🟠" },
-    { name: "DuckDuckGo", url: "https://duckduckgo.com", icon: "🦆" },
-    { name: "Archive", url: "https://archive.org", icon: "📦" },
-    { name: "W3Schools", url: "https://www.w3schools.com", icon: "🌐" },
-    { name: "CodePen", url: "https://codepen.io", icon: "✏️" },
+    { name: "Facebook", url: "https://www.facebook.com", icon: "📘", color: "bg-blue-600" },
+    { name: "Instagram", url: "https://www.instagram.com", icon: "📸", color: "bg-pink-500" },
+    { name: "TikTok", url: "https://www.tiktok.com", icon: "🎵", color: "bg-foreground" },
+    { name: "YouTube", url: "https://www.youtube.com", icon: "▶️", color: "bg-red-600" },
+    { name: "X", url: "https://x.com", icon: "𝕏", color: "bg-foreground" },
+    { name: "LinkedIn", url: "https://www.linkedin.com", icon: "💼", color: "bg-blue-700" },
+    { name: "WhatsApp", url: "https://web.whatsapp.com", icon: "💬", color: "bg-green-600" },
+    { name: "Google", url: "https://www.google.com", icon: "🔎", color: "bg-yellow-500" },
+    { name: "Snapchat", url: "https://www.snapchat.com", icon: "👻", color: "bg-yellow-400" },
+    { name: "Pinterest", url: "https://www.pinterest.com", icon: "📌", color: "bg-red-700" },
+    { name: "Telegram", url: "https://web.telegram.org", icon: "✈️", color: "bg-blue-500" },
+    { name: "Reddit", url: "https://www.reddit.com", icon: "🟠", color: "bg-orange-600" },
   ];
 
 
