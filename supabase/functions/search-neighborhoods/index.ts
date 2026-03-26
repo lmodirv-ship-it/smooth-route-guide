@@ -335,6 +335,51 @@ const KNOWN_NEIGHBORHOODS: Record<string, Array<{name_ar: string, name_fr: strin
   ],
 };
 
+// Use Google Places Text Search to find real neighborhoods
+async function searchGooglePlaces(query: string, apiKey: string, language = "ar"): Promise<Array<{name: string, lat: number, lng: number}>> {
+  const results: Array<{name: string, lat: number, lng: number}> = [];
+  try {
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${apiKey}&language=${language}&type=neighborhood|sublocality|locality`;
+    const response = await fetch(url);
+    const data = await response.json();
+    console.log(`Google Places search for "${query}": status=${data.status}, results=${data.results?.length || 0}`);
+    
+    if (data.status === "OK" && data.results) {
+      for (const place of data.results) {
+        if (place.name && place.geometry?.location) {
+          results.push({
+            name: place.name,
+            lat: place.geometry.location.lat,
+            lng: place.geometry.location.lng,
+          });
+        }
+      }
+    }
+    
+    // Try next page if available
+    if (data.next_page_token) {
+      await new Promise(r => setTimeout(r, 2000)); // Google requires delay before next_page_token works
+      const url2 = `https://maps.googleapis.com/maps/api/place/textsearch/json?pagetoken=${data.next_page_token}&key=${apiKey}&language=${language}`;
+      const response2 = await fetch(url2);
+      const data2 = await response2.json();
+      if (data2.status === "OK" && data2.results) {
+        for (const place of data2.results) {
+          if (place.name && place.geometry?.location) {
+            results.push({
+              name: place.name,
+              lat: place.geometry.location.lat,
+              lng: place.geometry.location.lng,
+            });
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Google Places search error:", e);
+  }
+  return results;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -351,30 +396,37 @@ serve(async (req) => {
     }
 
     const countryEn = COUNTRY_MAP[country] || country;
+    const googleMapsApiKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
 
     // MODE: cities
     if (mode === "cities") {
+      // Start with known cities
       const knownCities = KNOWN_CITIES[countryEn] || [];
-      
-      if (knownCities.length > 0) {
-        console.log(`Returning ${knownCities.length} known cities for ${country} (${countryEn})`);
-        return new Response(
-          JSON.stringify({ success: true, cities: knownCities, total: knownCities.length }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+      const allCities = [...knownCities];
+      const seenNames = new Set(knownCities.map(c => c.name));
 
-      // Fallback: try Google Geocoding API
-      const googleMapsApiKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
+      // Always try Google Places to find MORE cities
       if (googleMapsApiKey) {
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(countryEn)}&key=${googleMapsApiKey}&language=ar`;
-        const response = await fetch(url);
-        const data = await response.json();
-        console.log(`Geocoding status for ${countryEn}: ${data.status}`);
+        const queries = [
+          `cities in ${countryEn}`,
+          `major cities ${countryEn}`,
+          `towns in ${countryEn}`,
+        ];
+        for (const q of queries) {
+          const googleResults = await searchGooglePlaces(q, googleMapsApiKey);
+          for (const r of googleResults) {
+            if (!seenNames.has(r.name)) {
+              seenNames.add(r.name);
+              allCities.push(r);
+            }
+          }
+        }
       }
 
+      console.log(`Total cities for ${country}: ${allCities.length} (${knownCities.length} known + ${allCities.length - knownCities.length} from Google)`);
+      
       return new Response(
-        JSON.stringify({ success: true, cities: [], total: 0 }),
+        JSON.stringify({ success: true, cities: allCities, total: allCities.length }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -389,52 +441,66 @@ serve(async (req) => {
 
     const cityEn = CITY_MAP[city] || city;
     const knownNeighborhoods = KNOWN_NEIGHBORHOODS[cityEn] || [];
+    
+    // Start with known neighborhoods
+    const allNeighborhoods = knownNeighborhoods.map(n => ({
+      name_ar: n.name_ar,
+      name_fr: n.name_fr,
+      center_lat: n.lat,
+      center_lng: n.lng,
+    }));
+    const seenNames = new Set(knownNeighborhoods.map(n => n.name_ar));
 
-    if (knownNeighborhoods.length > 0) {
-      const neighborhoods = knownNeighborhoods.map(n => ({
-        name_ar: n.name_ar,
-        name_fr: n.name_fr,
-        center_lat: n.lat,
-        center_lng: n.lng,
-      }));
-      console.log(`Returning ${neighborhoods.length} known neighborhoods for ${city} (${cityEn})`);
-      return new Response(
-        JSON.stringify({ success: true, neighborhoods, total: neighborhoods.length }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Try Google Geocoding as fallback
-    const googleMapsApiKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
+    // Always try Google Places to find MORE neighborhoods
     if (googleMapsApiKey) {
-      try {
-        const query = `${cityEn}, ${countryEn}`;
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${googleMapsApiKey}&language=ar`;
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if (data.status === "OK" && data.results?.length > 0) {
-          const loc = data.results[0].geometry.location;
-          // Create a default neighborhood with the city center
-          const neighborhoods = [{
-            name_ar: "وسط المدينة",
-            name_fr: "Centre Ville",
-            center_lat: loc.lat,
-            center_lng: loc.lng,
-          }];
-          console.log(`Created default neighborhood for ${city} via Geocoding`);
-          return new Response(
-            JSON.stringify({ success: true, neighborhoods, total: 1 }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
+      const queries = [
+        `neighborhoods in ${cityEn} ${countryEn}`,
+        `quarters in ${cityEn} ${countryEn}`,
+        `districts in ${cityEn} ${countryEn}`,
+        `areas in ${cityEn} ${countryEn}`,
+      ];
+      
+      for (const q of queries) {
+        // Search in Arabic
+        const arResults = await searchGooglePlaces(q, googleMapsApiKey, "ar");
+        for (const r of arResults) {
+          if (!seenNames.has(r.name)) {
+            seenNames.add(r.name);
+            allNeighborhoods.push({
+              name_ar: r.name,
+              name_fr: r.name, // Use same name as fallback
+              center_lat: r.lat,
+              center_lng: r.lng,
+            });
+          }
         }
-      } catch (e) {
-        console.error("Geocoding fallback error:", e);
+        
+        // Also search in French/English for name_fr
+        const frResults = await searchGooglePlaces(q, googleMapsApiKey, "fr");
+        for (const r of frResults) {
+          // Try to match with existing by lat/lng proximity
+          const existing = allNeighborhoods.find(n => 
+            Math.abs(n.center_lat - r.lat) < 0.005 && Math.abs(n.center_lng - r.lng) < 0.005
+          );
+          if (existing && existing.name_fr === existing.name_ar) {
+            existing.name_fr = r.name; // Update French name
+          } else if (!seenNames.has(r.name)) {
+            seenNames.add(r.name);
+            allNeighborhoods.push({
+              name_ar: r.name,
+              name_fr: r.name,
+              center_lat: r.lat,
+              center_lng: r.lng,
+            });
+          }
+        }
       }
     }
 
+    console.log(`Total neighborhoods for ${city}: ${allNeighborhoods.length} (${knownNeighborhoods.length} known + ${allNeighborhoods.length - knownNeighborhoods.length} from Google)`);
+
     return new Response(
-      JSON.stringify({ success: true, neighborhoods: [], total: 0 }),
+      JSON.stringify({ success: true, neighborhoods: allNeighborhoods, total: allNeighborhoods.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
