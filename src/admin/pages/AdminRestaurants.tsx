@@ -9,9 +9,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Pencil, Store, UtensilsCrossed, Loader2 } from "lucide-react";
+import { Plus, Pencil, Store, UtensilsCrossed, Loader2, Sparkles, Save } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CsvMenuImport from "@/admin/components/CsvMenuImport";
+import { Badge } from "@/components/ui/badge";
 
 const AdminRestaurants = () => {
   const { selectedCountry, selectedCity } = useAdminGeo();
@@ -26,6 +27,74 @@ const AdminRestaurants = () => {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [storeForm, setStoreForm] = useState({ name: "", description: "", address: "", phone: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5, commission_rate: 5 });
   const [itemForm, setItemForm] = useState({ name_ar: "", name_fr: "", description_ar: "", price: 0, category_id: "", is_available: true });
+  const [generatedStores, setGeneratedStores] = useState<any[]>([]);
+  const [generating, setGenerating] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const generateRestaurants = async () => {
+    if (selectedCountry === "all") {
+      toast({ title: "⚠️ اختر البلد أولاً", variant: "destructive" });
+      return;
+    }
+    setGenerating(true);
+    try {
+      const cityParam = selectedCity !== "all" ? selectedCity : undefined;
+      const { data, error } = await supabase.functions.invoke("google-places-search", {
+        body: { city: cityParam || selectedCountry, type: "restaurants", useGoogle: true },
+      });
+      if (error) throw error;
+      const results = data?.restaurants || [];
+      if (results.length === 0) {
+        toast({ title: "لم يتم العثور على مطاعم جديدة" });
+        setGenerating(false);
+        return;
+      }
+      // Filter out already existing stores by name
+      const existingNames = new Set(stores.map((s: any) => s.name?.toLowerCase()));
+      const newOnes = results.filter((r: any) => !existingNames.has(r.name?.toLowerCase()));
+      setGeneratedStores(newOnes);
+      toast({ title: `✅ تم توليد ${newOnes.length} مطعم جديد` });
+    } catch (err: any) {
+      console.error("generate restaurants error:", err);
+      toast({ title: "خطأ في التوليد", description: err.message, variant: "destructive" });
+    }
+    setGenerating(false);
+  };
+
+  const saveGeneratedStores = async () => {
+    if (generatedStores.length === 0) {
+      toast({ title: "لا توجد مطاعم جديدة للحفظ" });
+      return;
+    }
+    setSaving(true);
+    try {
+      const toInsert = generatedStores.map((r: any) => ({
+        name: r.name,
+        address: r.address || "",
+        area: r.area || "",
+        phone: r.phone || "",
+        rating: r.rating || 0,
+        delivery_fee: r.delivery_fee || 10,
+        is_open: r.is_open ?? true,
+        category: r.category || "restaurant",
+        image_url: r.image_url || "",
+        google_place_id: r.google_place_id || "",
+        lat: r.lat || null,
+        lng: r.lng || null,
+        country: selectedCountry !== "all" ? selectedCountry : "المغرب",
+        city: selectedCity !== "all" ? selectedCity : "",
+      }));
+      const { error } = await supabase.from("stores").insert(toInsert);
+      if (error) throw error;
+      toast({ title: `✅ تم حفظ ${toInsert.length} مطعم في قاعدة البيانات` });
+      setGeneratedStores([]);
+      fetchAll();
+    } catch (err: any) {
+      console.error("save generated stores error:", err);
+      toast({ title: "خطأ في الحفظ", description: err.message, variant: "destructive" });
+    }
+    setSaving(false);
+  };
 
   const fetchAll = async () => {
     setLoading(true);
@@ -125,10 +194,55 @@ const AdminRestaurants = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Store className="w-6 h-6" /> إدارة المطاعم</h1>
-        <Button onClick={openAddStore} className="gap-1"><Plus className="w-4 h-4" /> إضافة مطعم</Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={generateRestaurants} disabled={generating} className="gap-1 bg-green-600 hover:bg-green-700 text-white">
+            {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} توليد
+          </Button>
+          <Button onClick={saveGeneratedStores} disabled={saving || generatedStores.length === 0} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} حفظ
+          </Button>
+          <Button onClick={openAddStore} className="gap-1"><Plus className="w-4 h-4" /> إضافة مطعم</Button>
+        </div>
       </div>
+
+      {/* Generated restaurants preview */}
+      {generatedStores.length > 0 && (
+        <Card className="border-green-500/30 bg-green-500/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-green-500" />
+              مطاعم مكتشفة ({generatedStores.length})
+              <Badge variant="secondary" className="bg-green-100 text-green-700">جديد</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-right">#</TableHead>
+                  <TableHead className="text-right">الاسم</TableHead>
+                  <TableHead className="text-right">العنوان</TableHead>
+                  <TableHead className="text-right">المنطقة</TableHead>
+                  <TableHead className="text-right">التقييم</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {generatedStores.map((r, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="font-bold text-muted-foreground">{idx + 1}</TableCell>
+                    <TableCell className="font-bold">{r.name}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{r.address}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{r.area}</TableCell>
+                    <TableCell>⭐ {r.rating || "—"}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="stores" dir="rtl">
         <TabsList><TabsTrigger value="stores">المطاعم</TabsTrigger><TabsTrigger value="menu">المنيو</TabsTrigger></TabsList>
