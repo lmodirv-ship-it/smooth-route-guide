@@ -398,7 +398,17 @@ const SmartAssistantPage = () => {
           <div className="px-3 py-1.5 border-b border-blue-200 flex items-center gap-2 shrink-0">
             <Bot className="w-4 h-4 text-blue-600" />
             <span className="text-xs font-semibold text-blue-800">المساعد الذكي</span>
+            <Badge variant="outline" className="text-[9px] border-blue-300 text-blue-600 gap-1">
+              <Save className="w-2.5 h-2.5" />
+              {localLog.length} سجل
+            </Badge>
             <div className="mr-auto flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600 hover:bg-blue-200" onClick={() => setShowLogSettings(!showLogSettings)} title="إعدادات التسجيل المحلي">
+                <FolderOpen className="w-3.5 h-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600 hover:bg-blue-200" onClick={downloadLocalLog} title="تحميل السجل المحلي">
+                <Save className="w-3.5 h-3.5" />
+              </Button>
               <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600 hover:bg-blue-200" onClick={loadHistory} title="سجل الأوامر">
                 <History className="w-3.5 h-3.5" />
               </Button>
@@ -407,6 +417,32 @@ const SmartAssistantPage = () => {
               </Button>
             </div>
           </div>
+          {showLogSettings && (
+            <div className="px-3 py-2 bg-blue-50 border-b border-blue-200 space-y-2">
+              <div className="flex items-center gap-2">
+                <FolderOpen className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                <span className="text-[10px] font-semibold text-blue-700">مسار التسجيل المحلي:</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Input
+                  value={localLogPath}
+                  onChange={(e) => setLocalLogPath(e.target.value)}
+                  placeholder="C:\HNDriver\logs"
+                  className="h-6 text-[10px] bg-white border-blue-200 flex-1"
+                  dir="ltr"
+                />
+                <Button size="sm" className="h-6 text-[10px] bg-blue-600 hover:bg-blue-700 text-white px-2" onClick={() => saveLogPath(localLogPath)}>
+                  حفظ
+                </Button>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] text-blue-500">📁 الملف: smart-assistant-log-{new Date().toISOString().slice(0, 10)}.json</span>
+                <Button variant="ghost" size="sm" className="h-5 text-[9px] text-red-500 hover:text-red-700 hover:bg-red-50" onClick={clearLocalLog}>
+                  🗑️ مسح السجل
+                </Button>
+              </div>
+            </div>
+          )}
           <div ref={chatRef} className="flex-1 overflow-auto p-3 space-y-2">
             {showHistory ? (
               <div className="space-y-2">
