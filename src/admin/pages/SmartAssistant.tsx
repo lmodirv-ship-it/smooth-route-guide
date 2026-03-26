@@ -131,7 +131,7 @@ const SmartAssistantPage = () => {
             <Badge variant="outline" className="text-xs">{taskLogs.length}</Badge>
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-success" />
-              ما تم تنفيذه
+              صفحة 2
             </h3>
           </div>
 
