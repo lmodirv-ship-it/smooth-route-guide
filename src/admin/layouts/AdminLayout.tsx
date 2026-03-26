@@ -352,7 +352,7 @@ const AdminLayout = () => {
         {aiOpen && (
           <motion.div
             initial={{ opacity: 0, x: 300 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 300 }}
-            className="fixed left-4 bottom-4 top-16 w-96 z-50 glass-strong rounded-2xl border border-border flex flex-col overflow-hidden shadow-2xl"
+            className="fixed left-2 right-2 bottom-2 top-16 md:left-4 md:bottom-4 md:right-auto md:w-96 z-50 glass-strong rounded-2xl border border-border flex flex-col overflow-hidden shadow-2xl"
             dir={dir}
           >
             <div className="p-4 border-b border-border flex items-center justify-between">
