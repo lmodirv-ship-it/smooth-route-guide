@@ -272,15 +272,6 @@ const SmartAssistantPage = () => {
                   }}
                 />
               </div>
-              <div className="px-3 py-2 text-[11px] text-muted-foreground bg-secondary/20 border-t border-border flex items-center justify-between gap-2">
-                <span>{iframeError ? "تعذر عرض الموقع هنا، استخدم فتح" : "إذا لم يظهر الموقع داخل المربع، افتحه من زر فتح"}</span>
-                {iframeError && (
-                  <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline shrink-0">
-                    فتح في نافذة جديدة
-                  </a>
-                )}
-              </div>
-            </div>
           )}
 
           <ScrollArea className="flex-1 p-3">
