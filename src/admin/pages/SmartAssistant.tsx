@@ -75,15 +75,6 @@ const SmartAssistantPage = () => {
     }
   };
 
-  const toggleActive = () => {
-    const next = !isActive;
-    setIsActive(next);
-    if (next) {
-      toast.success("✅ تم تفعيل المساعد الذكي — سيتم تنفيذ الأوامر على الموقع", { duration: 3000 });
-    } else {
-      toast.info("⛔ تم إلغاء التفعيل — لن يتم تنفيذ أي تغيير على الموقع", { duration: 3000 });
-    }
-  };
 
   const sendMessage = async () => {
     const safeText = sanitizePlainText(input, 8000);
