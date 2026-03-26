@@ -306,6 +306,9 @@ const AdminSettings = () => {
         </p>
       </div>
 
+      {/* Commission Rates */}
+      <CommissionRatesManager />
+
       {/* Language Management Section */}
       <LanguageManagement />
     </div>
