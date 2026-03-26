@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/i18n/context";
 import { DELIVERY_PRICING_DEFAULTS } from "@/hooks/useDeliveryPricingSettings";
 import PricingSettings from "@/admin/components/settings/PricingSettings";
 import GeneralSettings from "@/admin/components/settings/GeneralSettings";
@@ -13,6 +14,7 @@ import LanguageManagement from "@/admin/components/LanguageManagement";
 import GeoSettings from "@/admin/components/settings/GeoSettings";
 
 const AdminSettings = () => {
+  const { t } = useI18n();
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState({
@@ -139,10 +141,10 @@ const AdminSettings = () => {
       <div className="flex items-center justify-between">
         <Button onClick={handleSave} disabled={saving} className="gradient-primary text-primary-foreground">
           {saving ? <Loader2 className="w-4 h-4 ml-2 animate-spin" /> : <Save className="w-4 h-4 ml-2" />}
-          حفظ الإعدادات
+          {t.admin.saveBtn}
         </Button>
         <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold text-foreground">إعدادات المنصة</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t.admin.platformSettings}</h1>
           <Settings className="w-6 h-6 text-primary" />
         </div>
       </div>
