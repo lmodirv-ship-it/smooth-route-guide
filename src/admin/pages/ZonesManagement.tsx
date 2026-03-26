@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { MapPin, Plus, Pencil, Trash2, DollarSign, Navigation, Loader2, Globe, Building2, List, Wand2 } from "lucide-react";
+import { MapPin, Plus, Pencil, Trash2, DollarSign, Navigation, Loader2, Globe, Building2, List, Wand2, Save } from "lucide-react";
 
 type Zone = {
   id: string;
@@ -54,6 +54,7 @@ const ZonesManagement = () => {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [autoGenerating, setAutoGenerating] = useState(false);
+  const [savingAll, setSavingAll] = useState(false);
 
   // Filter state
   const [selectedCountry, setSelectedCountry] = useState<string>("");
@@ -284,6 +285,42 @@ const ZonesManagement = () => {
     setAutoGenerating(false);
   };
 
+  const handleSaveAll = async () => {
+    if (!selectedCountry || !selectedCity) {
+      toast.error("اختر البلد والمدينة أولاً");
+      return;
+    }
+    const currentZones = zones.filter(z => z.country === selectedCountry && z.city === selectedCity);
+    if (currentZones.length === 0) {
+      toast.info("لا توجد مناطق لحفظها");
+      return;
+    }
+    setSavingAll(true);
+    try {
+      // Re-insert (upsert) all current zones to ensure they're saved
+      let savedCount = 0;
+      for (const z of currentZones) {
+        const { error } = await supabase.from("zones").update({
+          name_ar: z.name_ar,
+          name_fr: z.name_fr,
+          city: z.city,
+          country: z.country,
+          center_lat: z.center_lat,
+          center_lng: z.center_lng,
+          radius_km: z.radius_km,
+          delivery_fee: z.delivery_fee,
+          is_active: z.is_active,
+        }).eq("id", z.id);
+        if (!error) savedCount++;
+      }
+      toast.success(`تم حفظ ${savedCount} منطقة بنجاح`);
+      fetchZones();
+    } catch {
+      toast.error("خطأ في الحفظ");
+    }
+    setSavingAll(false);
+  };
+
   return (
     <div className="space-y-6" dir="rtl">
       {/* Header */}
@@ -397,7 +434,7 @@ const ZonesManagement = () => {
 
           {/* Auto Generate Button */}
           {selectedCountry && (
-            <div className="flex justify-center">
+            <div className="flex justify-center gap-3">
               <Button
                 onClick={handleAutoGenerate}
                 disabled={autoGenerating}
@@ -409,11 +446,22 @@ const ZonesManagement = () => {
                 ) : (
                   <Wand2 className="w-4 h-4" />
                 )}
-                {autoGenerating
-                  ? "جاري التوليد..."
-                  : "توليد"
-                }
+                {autoGenerating ? "جاري التوليد..." : "توليد"}
               </Button>
+              {selectedCity && (
+                <Button
+                  onClick={handleSaveAll}
+                  disabled={savingAll}
+                  className="gap-2 gradient-primary text-primary-foreground"
+                >
+                  {savingAll ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  {savingAll ? "جاري الحفظ..." : "حفظ"}
+                </Button>
+              )}
             </div>
           )}
 
