@@ -27,6 +27,74 @@ const AdminRestaurants = () => {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [storeForm, setStoreForm] = useState({ name: "", description: "", address: "", phone: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5, commission_rate: 5 });
   const [itemForm, setItemForm] = useState({ name_ar: "", name_fr: "", description_ar: "", price: 0, category_id: "", is_available: true });
+  const [generatedStores, setGeneratedStores] = useState<any[]>([]);
+  const [generating, setGenerating] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const generateRestaurants = async () => {
+    if (selectedCountry === "all") {
+      toast({ title: "⚠️ اختر البلد أولاً", variant: "destructive" });
+      return;
+    }
+    setGenerating(true);
+    try {
+      const cityParam = selectedCity !== "all" ? selectedCity : undefined;
+      const { data, error } = await supabase.functions.invoke("google-places-search", {
+        body: { city: cityParam || selectedCountry, type: "restaurants", useGoogle: true },
+      });
+      if (error) throw error;
+      const results = data?.restaurants || [];
+      if (results.length === 0) {
+        toast({ title: "لم يتم العثور على مطاعم جديدة" });
+        setGenerating(false);
+        return;
+      }
+      // Filter out already existing stores by name
+      const existingNames = new Set(stores.map((s: any) => s.name?.toLowerCase()));
+      const newOnes = results.filter((r: any) => !existingNames.has(r.name?.toLowerCase()));
+      setGeneratedStores(newOnes);
+      toast({ title: `✅ تم توليد ${newOnes.length} مطعم جديد` });
+    } catch (err: any) {
+      console.error("generate restaurants error:", err);
+      toast({ title: "خطأ في التوليد", description: err.message, variant: "destructive" });
+    }
+    setGenerating(false);
+  };
+
+  const saveGeneratedStores = async () => {
+    if (generatedStores.length === 0) {
+      toast({ title: "لا توجد مطاعم جديدة للحفظ" });
+      return;
+    }
+    setSaving(true);
+    try {
+      const toInsert = generatedStores.map((r: any) => ({
+        name: r.name,
+        address: r.address || "",
+        area: r.area || "",
+        phone: r.phone || "",
+        rating: r.rating || 0,
+        delivery_fee: r.delivery_fee || 10,
+        is_open: r.is_open ?? true,
+        category: r.category || "restaurant",
+        image_url: r.image_url || "",
+        google_place_id: r.google_place_id || "",
+        lat: r.lat || null,
+        lng: r.lng || null,
+        country: selectedCountry !== "all" ? selectedCountry : "المغرب",
+        city: selectedCity !== "all" ? selectedCity : "",
+      }));
+      const { error } = await supabase.from("stores").insert(toInsert);
+      if (error) throw error;
+      toast({ title: `✅ تم حفظ ${toInsert.length} مطعم في قاعدة البيانات` });
+      setGeneratedStores([]);
+      fetchAll();
+    } catch (err: any) {
+      console.error("save generated stores error:", err);
+      toast({ title: "خطأ في الحفظ", description: err.message, variant: "destructive" });
+    }
+    setSaving(false);
+  };
 
   const fetchAll = async () => {
     setLoading(true);
