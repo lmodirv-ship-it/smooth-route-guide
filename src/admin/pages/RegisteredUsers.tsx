@@ -51,6 +51,11 @@ const RegisteredUsers = () => {
   const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [passwordUser, setPasswordUser] = useState<UserRecord | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
 
   const fetchUsers = async () => {
     setLoading(true);
