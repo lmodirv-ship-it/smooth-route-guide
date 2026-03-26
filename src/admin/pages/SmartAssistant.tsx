@@ -169,9 +169,6 @@ const SmartAssistantPage = () => {
                   <span className="w-2.5 h-2.5 rounded-full bg-success/60" />
                 </div>
                 <span className="flex-1 text-muted-foreground truncate font-mono text-[11px]" dir="ltr">{displayUrl || previewUrl}</span>
-                <a href={displayUrl || previewUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-[11px] flex items-center gap-1">
-                  فتح <ExternalLink className="w-3 h-3" />
-                </a>
               </div>
               <div className="w-full overflow-auto bg-white" style={{ height: "calc(100% - 60px)", minHeight: "400px" }}>
                 <iframe
