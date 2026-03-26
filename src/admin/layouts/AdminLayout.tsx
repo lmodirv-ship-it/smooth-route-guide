@@ -261,7 +261,7 @@ const AdminLayout = () => {
         </header>
 
         <div className="flex-1 p-6">
-          <Outlet context={{ smartAssistantActive, setSmartAssistantActive }} />
+          <Outlet context={{ smartAssistantActive, setSmartAssistantActive, smartPreviewUrl, smartSiteUrl, setSmartSiteUrl, setSmartPreviewUrl }} />
         </div>
       </div>
 

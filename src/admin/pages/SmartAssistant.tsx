@@ -36,14 +36,18 @@ async function callAdminAI({ messages, onResult, onError }: {
 
 const SmartAssistantPage = () => {
   const { t, dir } = useI18n();
-  const { smartAssistantActive: isActive } = useOutletContext<{ smartAssistantActive: boolean }>();
+  const { smartAssistantActive: isActive, smartPreviewUrl: previewUrl, smartSiteUrl: siteUrl, setSmartSiteUrl: setSiteUrl, setSmartPreviewUrl: setPreviewUrl } = useOutletContext<{
+    smartAssistantActive: boolean;
+    smartPreviewUrl: string;
+    smartSiteUrl: string;
+    setSmartSiteUrl: (v: string) => void;
+    setSmartPreviewUrl: (v: string) => void;
+  }>();
   const [messages, setMessages] = useState<AiMsg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [taskLogs, setTaskLogs] = useState<TaskLog[]>([]);
   const [selectedTask, setSelectedTask] = useState<TaskLog | null>(null);
-  const [siteUrl, setSiteUrl] = useState("");
-  const [previewUrl, setPreviewUrl] = useState("");
   const [displayUrl, setDisplayUrl] = useState("");
   const [iframeError, setIframeError] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
