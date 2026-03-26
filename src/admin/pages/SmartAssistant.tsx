@@ -143,8 +143,8 @@ const SmartAssistantPage = () => {
                   key={`mirror-${iframeKey}`}
                   src={previewUrl}
                   style={{ width: "1440px", height: "900px", transform: "scale(0.48)", transformOrigin: "top left" }}
-                  className="bg-white pointer-events-none"
-                  sandbox="allow-scripts allow-same-origin"
+                  className="bg-white"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                   referrerPolicy="no-referrer"
                   title="معاينة ما تم تنفيذه"
                 />
