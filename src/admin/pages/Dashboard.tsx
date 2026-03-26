@@ -179,7 +179,7 @@ const AdminDashboardPage = () => {
         };
       })
     );
-  }, []);
+  }, [geoCountry, geoCity]);
 
   useEffect(() => {
     void fetchDashboardData();
