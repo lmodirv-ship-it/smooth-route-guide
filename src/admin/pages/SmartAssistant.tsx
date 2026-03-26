@@ -131,22 +131,7 @@ const SmartAssistantPage = () => {
   return (
     <div className="h-[calc(100vh-80px)] flex flex-col gap-3" dir={dir}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button
-            variant={isActive ? "destructive" : "default"}
-            size="sm"
-            onClick={toggleActive}
-            className={`gap-2 ${!isActive ? "bg-success hover:bg-success/90 text-white" : ""}`}
-          >
-            {isActive ? <ShieldOff className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
-            {isActive ? "إلغاء التفعيل" : "تفعيل"}
-          </Button>
-          <Badge variant="outline" className={`px-3 py-1 ${isActive ? "text-success border-success/30 bg-success/10" : "text-destructive border-destructive/30 bg-destructive/10"}`}>
-            <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${isActive ? "bg-success animate-pulse" : "bg-destructive"}`} />
-            {isActive ? "نشط — التغييرات ستُنفَّذ" : "متوقف — لن يُنفَّذ أي أمر"}
-          </Badge>
-        </div>
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-bold text-foreground">المساعد الذكي للمدير</h1>
           <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
@@ -222,11 +207,19 @@ const SmartAssistantPage = () => {
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2 lg:col-span-2">
           <div className="p-2.5 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {previewUrl && (
-                <a href={previewUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
-                </a>
-              )}
+              <Button
+                variant={isActive ? "destructive" : "default"}
+                size="sm"
+                onClick={toggleActive}
+                className={`gap-2 ${!isActive ? "bg-success hover:bg-success/90 text-white" : ""}`}
+              >
+                {isActive ? <ShieldOff className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
+                {isActive ? "إلغاء" : "تفعيل"}
+              </Button>
+              <Badge variant="outline" className={`text-xs ${isActive ? "text-success border-success/30 bg-success/10" : "text-destructive border-destructive/30 bg-destructive/10"}`}>
+                <span className={`inline-block w-2 h-2 rounded-full mr-1 ${isActive ? "bg-success animate-pulse" : "bg-destructive"}`} />
+                {isActive ? "نشط" : "متوقف"}
+              </Badge>
             </div>
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
               <Code className="w-4 h-4 text-info" />
