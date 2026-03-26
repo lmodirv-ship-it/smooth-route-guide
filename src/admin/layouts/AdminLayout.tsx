@@ -291,7 +291,7 @@ const AdminLayout = () => {
           <div className="flex items-center gap-1.5 md:gap-3">
             {isSmartAssistantRoute && (
               <>
-                <span className="text-sm font-bold text-foreground">{t.admin.smartAssistantPage}</span>
+                <span className="text-sm font-bold text-foreground hidden md:inline">{t.admin.smartAssistantPage}</span>
                 <Button
                   variant="default"
                   size="sm"
@@ -332,7 +332,7 @@ const AdminLayout = () => {
               <Bell className="w-5 h-5 text-muted-foreground" />
               {pendingCount > 0 && <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-destructive animate-pulse" />}
             </button>
-            <button className="p-2 hover:bg-secondary rounded-lg transition-colors"><Activity className="w-5 h-5 text-muted-foreground" /></button>
+            <button className="p-2 hover:bg-secondary rounded-lg transition-colors hidden md:block"><Activity className="w-5 h-5 text-muted-foreground" /></button>
             <button onClick={() => setAiOpen(true)} className="p-2 hover:bg-secondary rounded-lg transition-colors" title={t.admin.aiAgent}>
               <Bot className="w-5 h-5 text-primary" />
             </button>
