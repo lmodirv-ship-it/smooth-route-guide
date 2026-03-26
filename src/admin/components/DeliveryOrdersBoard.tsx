@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminGeo } from "@/admin/contexts/AdminGeoContext";
 import { toast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -71,6 +72,7 @@ const STATUS_FILTERS: Array<{ key: string; label: string }> = [
 const statusClass = (status: string) => STATUS_META[status]?.badge || "bg-secondary text-muted-foreground";
 
 const DeliveryOrdersBoard = ({ title }: { title: string }) => {
+  const geoCtx = useAdminGeo();
   const [orders, setOrders] = useState<DeliveryOrder[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [search, setSearch] = useState("");
@@ -80,11 +82,14 @@ const DeliveryOrdersBoard = ({ title }: { title: string }) => {
   const [cancelReason, setCancelReason] = useState("");
 
   const fetchOrders = async () => {
-    const { data } = await supabase
+    let q = supabase
       .from("delivery_orders")
       .select("*")
       .order("created_at", { ascending: false })
       .limit(200);
+    if (geoCtx?.selectedCountry && geoCtx.selectedCountry !== "all") q = q.eq("country", geoCtx.selectedCountry);
+    if (geoCtx?.selectedCity && geoCtx.selectedCity !== "all") q = q.eq("city", geoCtx.selectedCity);
+    const { data } = await q;
     const ordersList = (data || []) as DeliveryOrder[];
     setOrders(ordersList);
 
@@ -105,7 +110,7 @@ const DeliveryOrdersBoard = ({ title }: { title: string }) => {
       .on("postgres_changes", { event: "*", schema: "public", table: "delivery_orders" }, () => fetchOrders())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, []);
+  }, [geoCtx?.selectedCountry, geoCtx?.selectedCity]);
 
   // Keep selected order synced
   useEffect(() => {

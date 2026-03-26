@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminGeo } from "@/admin/contexts/AdminGeoContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CsvMenuImport from "@/admin/components/CsvMenuImport";
 
 const AdminRestaurants = () => {
+  const { selectedCountry, selectedCity } = useAdminGeo();
   const [stores, setStores] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [menuItems, setMenuItems] = useState<any[]>([]);
@@ -27,8 +29,11 @@ const AdminRestaurants = () => {
 
   const fetchAll = async () => {
     setLoading(true);
+    let storeQuery = supabase.from("stores").select("*").order("name");
+    if (selectedCountry !== "all") storeQuery = storeQuery.eq("country", selectedCountry);
+    if (selectedCity !== "all") storeQuery = storeQuery.eq("city", selectedCity);
     const [s, c, m] = await Promise.all([
-      supabase.from("stores").select("*").order("name"),
+      storeQuery,
       supabase.from("menu_categories").select("*").order("sort_order"),
       supabase.from("menu_items").select("*").order("sort_order"),
     ]);
@@ -39,7 +44,7 @@ const AdminRestaurants = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => { fetchAll(); }, [selectedCountry, selectedCity]);
 
   const saveStore = async () => {
     try {

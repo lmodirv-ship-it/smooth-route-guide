@@ -10,6 +10,7 @@ import GeneralSettings from "@/admin/components/settings/GeneralSettings";
 import DeliveryPricingSettings from "@/admin/components/settings/DeliveryPricingSettings";
 import PaymentSettings from "@/admin/components/settings/PaymentSettings";
 import LanguageManagement from "@/admin/components/LanguageManagement";
+import GeoSettings from "@/admin/components/settings/GeoSettings";
 
 const AdminSettings = () => {
   const [saving, setSaving] = useState(false);
@@ -163,6 +164,8 @@ const AdminSettings = () => {
       />
 
       <PaymentSettings />
+
+      <GeoSettings />
 
       <LanguageManagement />
     </div>

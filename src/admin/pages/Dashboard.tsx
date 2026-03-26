@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { FileText, Car, DollarSign, Zap, MapPin, Clock, BatteryLow, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminGeo } from "@/admin/contexts/AdminGeoContext";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import LeafletMap from "@/components/LeafletMap";
 
@@ -83,6 +84,9 @@ const SimpleBarChart = ({ data, color }: { data: { label: string; value: number 
 };
 
 const AdminDashboardPage = () => {
+  const geoCtx = useAdminGeo();
+  const geoCountry = geoCtx?.selectedCountry || "all";
+  const geoCity = geoCtx?.selectedCity || "all";
   const [stats, setStats] = useState<DashboardStats>({
     requestsToday: 0,
     activeDrivers: 0,
@@ -103,13 +107,21 @@ const AdminDashboardPage = () => {
     const today = new Date().toISOString().slice(0, 10);
     const sixMonthsAgo = new Date(Date.now() - 180 * 86400000).toISOString().slice(0, 10);
 
+    let requestsQuery = supabase.from("ride_requests").select("id, created_at").gte("created_at", today);
+    if (geoCountry !== "all") requestsQuery = requestsQuery.eq("country", geoCountry);
+    if (geoCity !== "all") requestsQuery = requestsQuery.eq("city", geoCity);
+
+    let deliveryQuery = supabase.from("delivery_orders").select("id, status");
+    if (geoCountry !== "all") deliveryQuery = deliveryQuery.eq("country", geoCountry);
+    if (geoCity !== "all") deliveryQuery = deliveryQuery.eq("city", geoCity);
+
     const [requestsRes, driversRes, activeTripsRes, recentTripsRes, earningsRes, deliveryOrdersRes, alertsRes] = await Promise.all([
-      supabase.from("ride_requests").select("id, created_at").gte("created_at", today),
+      requestsQuery,
       supabase.from("drivers").select("id, user_id, status"),
       supabase.from("trips").select("id").eq("status", "in_progress"),
       supabase.from("trips").select("*").order("created_at", { ascending: false }).limit(8),
       supabase.from("earnings").select("amount, date, created_at, driver_id").gte("date", sixMonthsAgo),
-      supabase.from("delivery_orders").select("id, status"),
+      deliveryQuery,
       supabase.from("alerts").select("*").order("created_at", { ascending: false }).limit(5),
     ]);
 
@@ -166,7 +178,7 @@ const AdminDashboardPage = () => {
         };
       })
     );
-  }, []);
+  }, [geoCountry, geoCity]);
 
   useEffect(() => {
     void fetchDashboardData();
