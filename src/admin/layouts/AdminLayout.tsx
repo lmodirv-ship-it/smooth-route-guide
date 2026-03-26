@@ -19,6 +19,7 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import { AdminGeoProvider } from "@/admin/contexts/AdminGeoContext";
 import AdminGeoFilter from "@/admin/components/AdminGeoFilter";
+import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 
 type AiMsg = { role: "user" | "assistant"; content: string };
 

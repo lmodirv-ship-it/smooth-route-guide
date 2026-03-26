@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import logo from "@/assets/hn-driver-badge.png";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import { useI18n } from "@/i18n/context";
 
 const SupervisorLayout = () => {

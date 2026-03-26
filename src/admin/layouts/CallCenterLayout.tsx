@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
+import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import logo from "@/assets/hn-driver-badge.png";
 
 const CallCenterLayout = () => {
