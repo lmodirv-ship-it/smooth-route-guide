@@ -194,10 +194,55 @@ const AdminRestaurants = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Store className="w-6 h-6" /> إدارة المطاعم</h1>
-        <Button onClick={openAddStore} className="gap-1"><Plus className="w-4 h-4" /> إضافة مطعم</Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={generateRestaurants} disabled={generating} className="gap-1 bg-green-600 hover:bg-green-700 text-white">
+            {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} توليد
+          </Button>
+          <Button onClick={saveGeneratedStores} disabled={saving || generatedStores.length === 0} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} حفظ
+          </Button>
+          <Button onClick={openAddStore} className="gap-1"><Plus className="w-4 h-4" /> إضافة مطعم</Button>
+        </div>
       </div>
+
+      {/* Generated restaurants preview */}
+      {generatedStores.length > 0 && (
+        <Card className="border-green-500/30 bg-green-500/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-green-500" />
+              مطاعم مكتشفة ({generatedStores.length})
+              <Badge variant="secondary" className="bg-green-100 text-green-700">جديد</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-right">#</TableHead>
+                  <TableHead className="text-right">الاسم</TableHead>
+                  <TableHead className="text-right">العنوان</TableHead>
+                  <TableHead className="text-right">المنطقة</TableHead>
+                  <TableHead className="text-right">التقييم</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {generatedStores.map((r, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="font-bold text-muted-foreground">{idx + 1}</TableCell>
+                    <TableCell className="font-bold">{r.name}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{r.address}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{r.area}</TableCell>
+                    <TableCell>⭐ {r.rating || "—"}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="stores" dir="rtl">
         <TabsList><TabsTrigger value="stores">المطاعم</TabsTrigger><TabsTrigger value="menu">المنيو</TabsTrigger></TabsList>
