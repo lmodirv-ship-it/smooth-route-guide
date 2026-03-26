@@ -532,10 +532,16 @@ const ZonesManagement = () => {
           {selectedCountry && selectedCity && (
             <Card className="glass-strong border-border">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
+                <CardTitle className="text-lg flex items-center gap-2 flex-wrap">
                   <List className="w-5 h-5 text-primary" />
                   {selectedCity} — {tc(selectedCountry)}
                   <Badge variant="secondary" className="mr-2">{filteredZones.length} {tz.zoneCount}</Badge>
+                  {getGeoCode("country", selectedCountry) && (
+                    <Badge variant="outline" className="text-xs">🏳️ {getGeoCode("country", selectedCountry)?.code}</Badge>
+                  )}
+                  {getGeoCode("city", selectedCity, selectedCountry) && (
+                    <Badge variant="outline" className="text-xs">🏙️ {getGeoCode("city", selectedCity, selectedCountry)?.code}</Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
