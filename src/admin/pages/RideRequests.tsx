@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminGeo } from "@/admin/contexts/AdminGeoContext";
 
 interface RideRequest {
   id: string; pickup: string; destination: string; price: number | null;
@@ -13,6 +14,7 @@ interface RideRequest {
 }
 
 const AdminRideRequests = () => {
+  const { selectedCountry, selectedCity } = useAdminGeo();
   const [requests, setRequests] = useState<RideRequest[]>([]);
   const [filter, setFilter] = useState<"pending" | "accepted" | "rejected" | "all">("pending");
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -23,9 +25,11 @@ const AdminRideRequests = () => {
   const fetchRequests = useCallback(async () => {
     let q = supabase.from("ride_requests").select("*").order("created_at", { ascending: false }).limit(50);
     if (filter !== "all") q = q.eq("status", filter);
+    if (selectedCountry !== "all") q = q.eq("country", selectedCountry);
+    if (selectedCity !== "all") q = q.eq("city", selectedCity);
     const { data } = await q;
     if (data) setRequests(data);
-  }, [filter]);
+  }, [filter, selectedCountry, selectedCity]);
 
   useEffect(() => {
     fetchRequests();
