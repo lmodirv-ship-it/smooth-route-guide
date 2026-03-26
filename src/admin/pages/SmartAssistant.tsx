@@ -243,13 +243,14 @@ const SmartAssistantPage = () => {
                   <span className="w-2.5 h-2.5 rounded-full bg-warning/60" />
                   <span className="w-2.5 h-2.5 rounded-full bg-success/60" />
                 </div>
-                <span className="flex-1 text-muted-foreground truncate font-mono text-[11px]" dir="ltr">{previewUrl}</span>
-                <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-[11px] flex items-center gap-1">
+                <span className="flex-1 text-muted-foreground truncate font-mono text-[11px]" dir="ltr">{displayUrl || previewUrl}</span>
+                <a href={displayUrl || previewUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-[11px] flex items-center gap-1">
                   فتح <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
               <div className="w-full overflow-auto bg-white" style={{ height: "calc(100% - 60px)", minHeight: "300px" }}>
                 <iframe
+                  ref={iframeRef}
                   key={previewUrl}
                   src={previewUrl}
                   style={{ width: "1440px", height: "900px", transform: "scale(0.65)", transformOrigin: "top left" }}
@@ -258,6 +259,17 @@ const SmartAssistantPage = () => {
                   referrerPolicy="no-referrer"
                   title="معاينة الموقع"
                   onError={() => setIframeError(true)}
+                  onLoad={() => {
+                    try {
+                      const currentUrl = iframeRef.current?.contentWindow?.location?.href;
+                      if (currentUrl && currentUrl !== "about:blank") {
+                        setDisplayUrl(currentUrl);
+                        setSiteUrl(currentUrl);
+                      }
+                    } catch {
+                      // Cross-origin - can't read URL
+                    }
+                  }}
                 />
               </div>
               <div className="px-3 py-2 text-[11px] text-muted-foreground bg-secondary/20 border-t border-border flex items-center justify-between gap-2">
