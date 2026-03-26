@@ -448,6 +448,30 @@ export type Database = {
           },
         ]
       }
+      commission_rates: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          rate: number
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          rate?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          rate?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       complaints: {
         Row: {
           agent_id: string | null
