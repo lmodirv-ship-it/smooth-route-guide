@@ -351,6 +351,51 @@ const RestaurantsCC = () => {
           ))}
         </div>
 
+        {/* Generated stores preview */}
+        {generatedStores.length > 0 && (
+          <Card className="border-green-500/30 bg-green-500/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-green-500" />
+                مطاعم مكتشفة ({generatedStores.length})
+                <Badge variant="secondary" className="bg-green-100 text-green-700">جديد</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-right">#</TableHead>
+                    <TableHead className="text-right">الاسم</TableHead>
+                    <TableHead className="text-right">الهاتف</TableHead>
+                    <TableHead className="text-right">العنوان</TableHead>
+                    <TableHead className="text-right">التقييم</TableHead>
+                    <TableHead className="text-right">رسوم التوصيل</TableHead>
+                    <TableHead className="text-right">العمولة %</TableHead>
+                    <TableHead className="text-right">رقم</TableHead>
+                    <TableHead className="text-right">تأكيد</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {generatedStores.map((r, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell className="font-bold text-muted-foreground">{idx + 1}</TableCell>
+                      <TableCell className="font-bold">{r.name}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm" dir="ltr">{r.phone || "—"}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{r.address}</TableCell>
+                      <TableCell>⭐ {r.rating || "—"}</TableCell>
+                      <TableCell>{r.delivery_fee || 10} DH</TableCell>
+                      <TableCell>{r.commission_rate || 5}%</TableCell>
+                      <TableCell className="font-mono text-sm">{r.store_code || "—"}</TableCell>
+                      <TableCell><Badge variant="outline" className="text-orange-500 border-orange-500/30">غير مؤكد</Badge></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Search */}
         <div className="relative max-w-sm">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
