@@ -1117,6 +1117,76 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "db_create_table",
+      description: `إنشاء جدول جديد في قاعدة البيانات أو تعديل جدول موجود (إضافة/حذف أعمدة). يتم توليد كود SQL كمسودة ليراجعها المدير قبل التنفيذ.
+⚠️ الجداول الجديدة تُنشأ مع RLS مفعّل افتراضياً وسياسة وصول للمدير فقط.`,
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["create", "add_columns", "drop_columns", "rename_table", "list_sql_history"], description: "نوع العملية" },
+          table_name: { type: "string", description: "اسم الجدول (snake_case, أحرف إنجليزية فقط)" },
+          columns: {
+            type: "array",
+            description: "تعريف الأعمدة (لـ create و add_columns)",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string", description: "اسم العمود" },
+                type: { type: "string", enum: ["uuid", "text", "integer", "numeric", "boolean", "timestamp with time zone", "jsonb", "ARRAY"], description: "نوع البيانات" },
+                nullable: { type: "boolean", default: true },
+                default_value: { type: "string", description: "القيمة الافتراضية (مثل: now(), gen_random_uuid(), ''::text, true, 0)" },
+                is_primary: { type: "boolean", default: false },
+                references: { type: "string", description: "مرجع خارجي (مثل: profiles(id))" },
+              },
+              required: ["name", "type"],
+            },
+          },
+          column_names: { type: "array", items: { type: "string" }, description: "أسماء الأعمدة (لـ drop_columns)" },
+          new_table_name: { type: "string", description: "الاسم الجديد (لـ rename_table)" },
+          enable_rls: { type: "boolean", default: true, description: "تفعيل RLS تلقائياً" },
+          admin_policy: { type: "boolean", default: true, description: "إضافة سياسة وصول للمدير" },
+        },
+        required: ["action"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "db_migrate_data",
+      description: `نقل أو نسخ بيانات بين الجداول مع تحويلات اختيارية. مفيد لإعادة هيكلة البيانات أو دمج جداول.`,
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["copy", "move", "transform"], description: "copy=نسخ البيانات, move=نقل وحذف المصدر, transform=نسخ مع تحويل" },
+          source_table: { type: "string", enum: ALLOWED_TABLES, description: "الجدول المصدر" },
+          target_table: { type: "string", description: "الجدول الهدف" },
+          column_mapping: {
+            type: "object",
+            description: "تعيين الأعمدة: { عمود_المصدر: عمود_الهدف }. اتركه فارغاً لنسخ كل الأعمدة المتطابقة.",
+          },
+          filters: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                column: { type: "string" },
+                operator: { type: "string", enum: ["eq", "neq", "gt", "gte", "lt", "lte"] },
+                value: { type: "string" },
+              },
+              required: ["column", "operator", "value"],
+            },
+            description: "فلاتر اختيارية لتحديد السجلات المراد نقلها",
+          },
+          limit: { type: "number", default: 200, description: "الحد الأقصى للسجلات (أقصى 500)" },
+        },
+        required: ["action", "source_table", "target_table"],
+      },
+    },
+  },
 ];
 
         if (createdCategories.length) {
