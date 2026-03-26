@@ -22,6 +22,7 @@ import AdminCallCenter from "@/admin/pages/AdminCallCenter";
 import AdminRestaurants from "@/admin/pages/AdminRestaurants";
 import ZonesManagement from "@/admin/pages/ZonesManagement";
 import AdminSettings from "@/admin/pages/Settings";
+import CommissionRatesPage from "@/admin/pages/CommissionRates";
 import SetupAdmin from "@/admin/pages/SetupAdmin";
 
 // Call Center layout & pages
