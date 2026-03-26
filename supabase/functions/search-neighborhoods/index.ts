@@ -11,11 +11,11 @@ serve(async (req) => {
   }
 
   try {
-    const { city, country } = await req.json();
+    const { city, country, mode } = await req.json();
 
-    if (!city || !country) {
+    if (!country) {
       return new Response(
-        JSON.stringify({ success: false, error: "city and country are required" }),
+        JSON.stringify({ success: false, error: "country is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -28,71 +28,100 @@ serve(async (req) => {
       );
     }
 
-    // Step 1: Search for neighborhoods/quarters in the city
-    const query = `neighborhoods quarters areas in ${city}, ${country}`;
-    const textSearchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&type=neighborhood&key=${googleMapsApiKey}&language=ar`;
+    // MODE: cities — search for major cities in a country
+    if (mode === "cities") {
+      const queries = [
+        `major cities in ${country}`,
+        `مدن رئيسية في ${country}`,
+      ];
 
-    const response = await fetch(textSearchUrl);
-    const data = await response.json();
+      const allCities = new Map<string, any>();
 
-    // Step 2: Also search with "sublocality" type for more results
-    const query2 = `أحياء ${city}`;
-    const textSearchUrl2 = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query2)}&key=${googleMapsApiKey}&language=ar`;
-    
-    const response2 = await fetch(textSearchUrl2);
-    const data2 = await response2.json();
+      for (const query of queries) {
+        const lang = query.includes("مدن") ? "ar" : "en";
+        const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&type=locality&key=${googleMapsApiKey}&language=${lang === "ar" ? "ar" : "fr"}`;
+        const response = await fetch(url);
+        const data = await response.json();
 
-    // Step 3: Also search in French for bilingual names
-    const queryFr = `quartiers de ${city}`;
-    const textSearchUrlFr = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(queryFr)}&key=${googleMapsApiKey}&language=fr`;
-    
-    const responseFr = await fetch(textSearchUrlFr);
-    const dataFr = await responseFr.json();
-
-    // Combine results and deduplicate by place_id
-    const allResults = new Map<string, any>();
-    
-    const processResults = (results: any[], lang: string) => {
-      if (!results) return;
-      for (const place of results) {
-        const placeId = place.place_id;
-        if (!allResults.has(placeId)) {
-          allResults.set(placeId, {
-            name: place.name || "",
-            name_lang: lang,
-            lat: place.geometry?.location?.lat || 0,
-            lng: place.geometry?.location?.lng || 0,
-            place_id: placeId,
-            types: place.types || [],
-          });
-        } else if (lang === "fr") {
-          // Add French name
-          allResults.get(placeId).name_fr = place.name || "";
+        if (data.results) {
+          for (const place of data.results) {
+            const placeId = place.place_id;
+            if (!allCities.has(placeId)) {
+              allCities.set(placeId, {
+                name: place.name || "",
+                lat: place.geometry?.location?.lat || 0,
+                lng: place.geometry?.location?.lng || 0,
+                place_id: placeId,
+              });
+            }
+          }
         }
       }
-    };
 
-    processResults(data.results, "ar");
-    processResults(data2.results, "ar");
-    processResults(dataFr.results, "fr");
+      const cities = Array.from(allCities.values());
+      // Deduplicate by name
+      const seen = new Set<string>();
+      const unique = cities.filter(c => {
+        if (seen.has(c.name)) return false;
+        seen.add(c.name);
+        return true;
+      });
 
-    // Filter to keep only relevant types (neighborhoods, sublocalities, localities)
-    const relevantTypes = ["neighborhood", "sublocality", "sublocality_level_1", "locality", "political", "administrative_area_level_3", "administrative_area_level_4"];
-    
-    const neighborhoods = Array.from(allResults.values())
-      .filter(place => {
-        const types = place.types || [];
-        return types.some((t: string) => relevantTypes.includes(t)) || true; // Keep all for now
-      })
-      .map(place => ({
-        name_ar: place.name_lang === "ar" ? place.name : (place.name_fr ? place.name : place.name),
-        name_fr: place.name_lang === "fr" ? place.name : (place.name_fr || ""),
-        center_lat: place.lat,
-        center_lng: place.lng,
-        place_id: place.place_id,
-      }));
+      console.log(`Found ${unique.length} cities for ${country}`);
+      return new Response(
+        JSON.stringify({ success: true, cities: unique, total: unique.length }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-    // Remove duplicates by name
+    // MODE: neighborhoods (default) — search for neighborhoods in a city
+    if (!city) {
+      return new Response(
+        JSON.stringify({ success: false, error: "city is required for neighborhood search" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const queries = [
+      `neighborhoods quarters areas in ${city}, ${country}`,
+      `أحياء ${city}`,
+      `quartiers de ${city}`,
+    ];
+
+    const allResults = new Map<string, any>();
+
+    for (const query of queries) {
+      const lang = query.includes("أحياء") ? "ar" : query.includes("quartiers") ? "fr" : "ar";
+      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${googleMapsApiKey}&language=${lang}`;
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.results) {
+        for (const place of data.results) {
+          const placeId = place.place_id;
+          if (!allResults.has(placeId)) {
+            allResults.set(placeId, {
+              name: place.name || "",
+              name_lang: lang,
+              lat: place.geometry?.location?.lat || 0,
+              lng: place.geometry?.location?.lng || 0,
+              place_id: placeId,
+            });
+          } else if (lang === "fr") {
+            allResults.get(placeId).name_fr = place.name || "";
+          }
+        }
+      }
+    }
+
+    const neighborhoods = Array.from(allResults.values()).map(place => ({
+      name_ar: place.name,
+      name_fr: place.name_fr || "",
+      center_lat: place.lat,
+      center_lng: place.lng,
+      place_id: place.place_id,
+    }));
+
     const seen = new Set<string>();
     const unique = neighborhoods.filter(n => {
       const key = `${n.name_ar}-${n.center_lat.toFixed(3)}`;
@@ -102,7 +131,6 @@ serve(async (req) => {
     });
 
     console.log(`Found ${unique.length} neighborhoods for ${city}, ${country}`);
-
     return new Response(
       JSON.stringify({ success: true, neighborhoods: unique, total: unique.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

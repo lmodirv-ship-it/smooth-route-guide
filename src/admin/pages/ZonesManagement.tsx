@@ -178,58 +178,104 @@ const ZonesManagement = () => {
   };
 
   const handleAutoGenerate = async () => {
-    if (!selectedCountry || !selectedCity) {
-      toast.error("اختر البلد والمدينة أولاً");
+    if (!selectedCountry) {
+      toast.error("اختر البلد أولاً");
       return;
     }
     setAutoGenerating(true);
     try {
-      const { data, error } = await supabase.functions.invoke("search-neighborhoods", {
-        body: { city: selectedCity, country: selectedCountry },
-      });
-      if (error || !data?.success) {
-        toast.error(data?.error || "خطأ في البحث التلقائي");
-        setAutoGenerating(false);
-        return;
-      }
-      const neighborhoods = data.neighborhoods || [];
-      if (neighborhoods.length === 0) {
-        toast.info("لم يتم العثور على مناطق جديدة");
-        setAutoGenerating(false);
-        return;
-      }
-      // Filter out already existing zones (by name_ar in same city/country)
-      const existingNames = new Set(
-        zones
-          .filter(z => z.country === selectedCountry && z.city === selectedCity)
-          .map(z => z.name_ar.trim())
-      );
-      const newZones = neighborhoods.filter(
-        (n: any) => !existingNames.has(n.name_ar.trim())
-      );
-      if (newZones.length === 0) {
-        toast.info("جميع المناطق المكتشفة موجودة بالفعل");
-        setAutoGenerating(false);
-        return;
-      }
-      // Insert new zones
-      const toInsert = newZones.map((n: any) => ({
-        name_ar: n.name_ar,
-        name_fr: n.name_fr || "",
-        city: selectedCity,
-        country: selectedCountry,
-        center_lat: n.center_lat || 0,
-        center_lng: n.center_lng || 0,
-        radius_km: 3,
-        delivery_fee: 10,
-        is_active: true,
-      }));
-      const { error: insertError } = await supabase.from("zones").insert(toInsert);
-      if (insertError) {
-        toast.error("خطأ في إضافة المناطق");
+      if (!selectedCity) {
+        // MODE: Search for cities in this country
+        const { data, error } = await supabase.functions.invoke("search-neighborhoods", {
+          body: { country: selectedCountry, mode: "cities" },
+        });
+        if (error || !data?.success) {
+          toast.error(data?.error || "خطأ في البحث التلقائي");
+          setAutoGenerating(false);
+          return;
+        }
+        const cities = data.cities || [];
+        if (cities.length === 0) {
+          toast.info("لم يتم العثور على مدن جديدة");
+          setAutoGenerating(false);
+          return;
+        }
+        // Filter out cities that already exist
+        const existingCities = new Set(
+          zones.filter(z => z.country === selectedCountry).map(z => z.city.trim())
+        );
+        const newCities = cities.filter((c: any) => !existingCities.has(c.name.trim()));
+        if (newCities.length === 0) {
+          toast.info("جميع المدن المكتشفة موجودة بالفعل");
+          setAutoGenerating(false);
+          return;
+        }
+        // Insert one zone per city as a placeholder
+        const toInsert = newCities.map((c: any) => ({
+          name_ar: "وسط المدينة",
+          name_fr: "Centre Ville",
+          city: c.name,
+          country: selectedCountry,
+          center_lat: c.lat || 0,
+          center_lng: c.lng || 0,
+          radius_km: 3,
+          delivery_fee: 10,
+          is_active: true,
+        }));
+        const { error: insertError } = await supabase.from("zones").insert(toInsert);
+        if (insertError) {
+          toast.error("خطأ في إضافة المدن");
+        } else {
+          toast.success(`تمت إضافة ${toInsert.length} مدينة جديدة من Google`);
+          fetchZones();
+        }
       } else {
-        toast.success(`تمت إضافة ${toInsert.length} منطقة جديدة من Google`);
-        fetchZones();
+        // MODE: Search for neighborhoods in this city
+        const { data, error } = await supabase.functions.invoke("search-neighborhoods", {
+          body: { city: selectedCity, country: selectedCountry },
+        });
+        if (error || !data?.success) {
+          toast.error(data?.error || "خطأ في البحث التلقائي");
+          setAutoGenerating(false);
+          return;
+        }
+        const neighborhoods = data.neighborhoods || [];
+        if (neighborhoods.length === 0) {
+          toast.info("لم يتم العثور على مناطق جديدة");
+          setAutoGenerating(false);
+          return;
+        }
+        const existingNames = new Set(
+          zones
+            .filter(z => z.country === selectedCountry && z.city === selectedCity)
+            .map(z => z.name_ar.trim())
+        );
+        const newZones = neighborhoods.filter(
+          (n: any) => !existingNames.has(n.name_ar.trim())
+        );
+        if (newZones.length === 0) {
+          toast.info("جميع المناطق المكتشفة موجودة بالفعل");
+          setAutoGenerating(false);
+          return;
+        }
+        const toInsert = newZones.map((n: any) => ({
+          name_ar: n.name_ar,
+          name_fr: n.name_fr || "",
+          city: selectedCity,
+          country: selectedCountry,
+          center_lat: n.center_lat || 0,
+          center_lng: n.center_lng || 0,
+          radius_km: 3,
+          delivery_fee: 10,
+          is_active: true,
+        }));
+        const { error: insertError } = await supabase.from("zones").insert(toInsert);
+        if (insertError) {
+          toast.error("خطأ في إضافة المناطق");
+        } else {
+          toast.success(`تمت إضافة ${toInsert.length} منطقة جديدة من Google`);
+          fetchZones();
+        }
       }
     } catch (err) {
       console.error(err);
@@ -350,7 +396,7 @@ const ZonesManagement = () => {
           </div>
 
           {/* Auto Generate Button */}
-          {selectedCountry && selectedCity && (
+          {selectedCountry && (
             <div className="flex justify-center">
               <Button
                 onClick={handleAutoGenerate}
@@ -363,7 +409,12 @@ const ZonesManagement = () => {
                 ) : (
                   <Wand2 className="w-4 h-4" />
                 )}
-                {autoGenerating ? "جاري البحث في Google..." : "توليد تلقائي للمناطق من Google"}
+                {autoGenerating
+                  ? "جاري البحث في Google..."
+                  : selectedCity
+                    ? "توليد تلقائي للمناطق من Google"
+                    : "توليد تلقائي للمدن من Google"
+                }
               </Button>
             </div>
           )}
