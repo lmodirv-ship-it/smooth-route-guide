@@ -205,16 +205,24 @@ const SmartAssistantPage = () => {
           )}
 
           {/* Zoom Controls - always visible */}
-          <div className="bg-secondary/60 px-3 py-1.5 flex items-center justify-center gap-3 border-t border-border mt-auto">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setZoomLevel(z => Math.max(0.2, z - 0.1))}>
-              <ZoomOut className="w-3.5 h-3.5" />
+          <div className="bg-secondary/60 px-3 py-1.5 flex items-center justify-center gap-2 border-t border-border mt-auto">
+            <Button variant="outline" size="icon" className="h-7 w-7 text-lg font-bold" onClick={() => setZoomLevel(z => Math.max(0.1, z - 0.1))}>
+              −
             </Button>
-            <span className="text-xs text-muted-foreground font-mono w-12 text-center">{Math.round(zoomLevel * 100)}%</span>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setZoomLevel(z => Math.min(1, z + 0.1))}>
-              <ZoomIn className="w-3.5 h-3.5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setZoomLevel(0.48)}>
-              <RotateCcw className="w-3.5 h-3.5" />
+            <Input
+              type="number"
+              min={10}
+              max={100}
+              value={Math.round(zoomLevel * 100)}
+              onChange={e => {
+                const v = parseInt(e.target.value);
+                if (!isNaN(v) && v >= 10 && v <= 100) setZoomLevel(v / 100);
+              }}
+              className="w-16 h-7 text-center text-xs bg-background border-border [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              dir="ltr"
+            />
+            <Button variant="outline" size="icon" className="h-7 w-7 text-lg font-bold" onClick={() => setZoomLevel(z => Math.min(1, z + 0.1))}>
+              +
             </Button>
           </div>
 
