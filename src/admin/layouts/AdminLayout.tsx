@@ -5,7 +5,7 @@ import {
   BarChart3, FileText, Car, Users, TrendingUp, MapPin,
   AlertTriangle, FileCheck, Headphones, Settings, Shield,
   Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog, Percent,
-  ShieldCheck, ShieldOff, Globe, RefreshCw, BrainCircuit
+  ShieldCheck, ShieldOff, Globe, RefreshCw, BrainCircuit, Menu
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -57,6 +57,7 @@ const AdminLayout = () => {
   const [aiLoading, setAiLoading] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarNavVisible, setSidebarNavVisible] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const aiScrollRef = useRef<HTMLDivElement>(null);
   const [pendingCount, setPendingCount] = useState(0);
   const [smartAssistantActive, setSmartAssistantActive] = useState(true);
@@ -195,11 +196,48 @@ const AdminLayout = () => {
         </div>
       </aside>
 
+      {/* Mobile Sidebar */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-[100] lg:hidden">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
+          <aside className="absolute right-0 top-0 bottom-0 w-72 glass-strong border-l border-border flex flex-col z-10 overflow-auto">
+            <div className="p-4 flex items-center justify-between border-b border-border">
+              <button onClick={() => setMobileOpen(false)} className="p-1 hover:bg-secondary rounded-lg">
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+              <div className="flex items-center gap-2">
+                <img src={logo} alt="HN" className="w-8 h-8" />
+                <span className="font-bold text-gradient-primary font-display">{t.admin.panelTitle}</span>
+              </div>
+            </div>
+            <nav className="flex-1 p-3 space-y-1 overflow-auto">
+              {navItems.map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => { navigate(item.path); setMobileOpen(false); }}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all ${
+                    isActive(item.path) ? "gradient-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                    <span className="text-sm">{item.label}</span>
+                  </div>
+                </button>
+              ))}
+            </nav>
+          </aside>
+        </div>
+      )}
+
       {/* Main */}
       <div className="flex-1 overflow-auto flex flex-col">
         {/* Top Bar */}
-        <header className="glass-strong border-b border-border px-6 py-3 flex items-center justify-between sticky top-0 z-40">
+        <header className="glass-strong border-b border-border px-3 md:px-6 py-3 flex items-center justify-between sticky top-0 z-40">
           <div className="flex items-center gap-2">
+            <button onClick={() => setMobileOpen(true)} className="lg:hidden p-1.5 hover:bg-secondary rounded-lg">
+              <Menu className="w-5 h-5 text-muted-foreground" />
+            </button>
             {isSmartAssistantRoute ? (
               <>
                 <Button size="sm" className="gap-1.5 shrink-0 h-9" onClick={() => {
@@ -216,7 +254,7 @@ const AdminLayout = () => {
                   <Globe className="w-4 h-4" />
                   {t.admin.show}
                 </Button>
-                <div className="relative w-80">
+                <div className="relative w-48 md:w-80">
                   <Globe className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     value={smartSiteUrl}
@@ -241,19 +279,19 @@ const AdminLayout = () => {
                 </div>
               </>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3">
                 <AdminGeoFilter />
-                <div className="relative w-52">
+                <div className="relative w-32 md:w-52 hidden sm:block">
                   <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input placeholder={t.admin.searchPlaceholder} className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm" />
                 </div>
               </div>
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 md:gap-3">
             {isSmartAssistantRoute && (
               <>
-                <span className="text-sm font-bold text-foreground">{t.admin.smartAssistantPage}</span>
+                <span className="text-sm font-bold text-foreground hidden md:inline">{t.admin.smartAssistantPage}</span>
                 <Button
                   variant="default"
                   size="sm"
@@ -294,7 +332,7 @@ const AdminLayout = () => {
               <Bell className="w-5 h-5 text-muted-foreground" />
               {pendingCount > 0 && <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-destructive animate-pulse" />}
             </button>
-            <button className="p-2 hover:bg-secondary rounded-lg transition-colors"><Activity className="w-5 h-5 text-muted-foreground" /></button>
+            <button className="p-2 hover:bg-secondary rounded-lg transition-colors hidden md:block"><Activity className="w-5 h-5 text-muted-foreground" /></button>
             <button onClick={() => setAiOpen(true)} className="p-2 hover:bg-secondary rounded-lg transition-colors" title={t.admin.aiAgent}>
               <Bot className="w-5 h-5 text-primary" />
             </button>
@@ -304,7 +342,7 @@ const AdminLayout = () => {
           </div>
         </header>
 
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-3 md:p-6">
           <Outlet context={{ smartAssistantActive, setSmartAssistantActive, smartPreviewUrl, smartSiteUrl, setSmartSiteUrl, setSmartPreviewUrl, smartRefreshKey }} />
         </div>
       </div>
@@ -314,7 +352,7 @@ const AdminLayout = () => {
         {aiOpen && (
           <motion.div
             initial={{ opacity: 0, x: 300 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 300 }}
-            className="fixed left-4 bottom-4 top-16 w-96 z-50 glass-strong rounded-2xl border border-border flex flex-col overflow-hidden shadow-2xl"
+            className="fixed left-2 right-2 bottom-2 top-16 md:left-4 md:bottom-4 md:right-auto md:w-96 z-50 glass-strong rounded-2xl border border-border flex flex-col overflow-hidden shadow-2xl"
             dir={dir}
           >
             <div className="p-4 border-b border-border flex items-center justify-between">
