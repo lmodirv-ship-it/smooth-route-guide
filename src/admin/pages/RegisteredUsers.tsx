@@ -63,7 +63,7 @@ const RegisteredUsers = () => {
     setLoading(true);
     const { data: profiles, error: profilesError } = await supabase
       .from("profiles")
-      .select("id, name, email, phone, created_at")
+      .select("id, name, email, phone, created_at, user_code, is_confirmed")
       .order("created_at", { ascending: false });
 
     if (profilesError) {
@@ -87,6 +87,8 @@ const RegisteredUsers = () => {
       email: p.email || "—",
       roles: roleMap.get(p.id) || ["user"],
       createdAt: p.created_at,
+      userCode: (p as any).user_code || "—",
+      isConfirmed: (p as any).is_confirmed ?? false,
     }));
 
     setUsers(mapped);
