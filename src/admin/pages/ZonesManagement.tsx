@@ -72,6 +72,8 @@ const ZonesManagement = () => {
   const [autoGenerating, setAutoGenerating] = useState(false);
   const [savingAll, setSavingAll] = useState(false);
 
+  const [geoCodes, setGeoCodes] = useState<GeoCode[]>([]);
+
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<string>("");
 
