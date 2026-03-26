@@ -43,6 +43,7 @@ const SmartAssistantPage = () => {
   const [selectedTask, setSelectedTask] = useState<TaskLog | null>(null);
   const [siteUrl, setSiteUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
+  const [iframeError, setIframeError] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,7 +54,9 @@ const SmartAssistantPage = () => {
     let url = siteUrl.trim();
     if (!url) return;
     if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+    setIframeError(false);
     setPreviewUrl(url);
+    toast.info(`🌐 جاري تحميل: ${url}`);
   };
 
   const toggleActive = () => {
