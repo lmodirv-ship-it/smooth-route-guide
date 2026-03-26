@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 import { Bot, Send, Loader2, CheckCircle, Code, Power, XCircle, Globe, ExternalLink, ShieldCheck, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -35,10 +36,10 @@ async function callAdminAI({ messages, onResult, onError }: {
 
 const SmartAssistantPage = () => {
   const { t, dir } = useI18n();
+  const { smartAssistantActive: isActive } = useOutletContext<{ smartAssistantActive: boolean }>();
   const [messages, setMessages] = useState<AiMsg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isActive, setIsActive] = useState(true);
   const [taskLogs, setTaskLogs] = useState<TaskLog[]>([]);
   const [selectedTask, setSelectedTask] = useState<TaskLog | null>(null);
   const [siteUrl, setSiteUrl] = useState("");
