@@ -195,21 +195,28 @@ const SmartAssistantPage = () => {
                   }}
                 />
               </div>
-              {/* Zoom Controls */}
-              <div className="bg-secondary/60 px-3 py-1.5 flex items-center justify-center gap-3 border-t border-border">
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setZoomLevel(z => Math.max(0.2, z - 0.1))}>
-                  <ZoomOut className="w-3.5 h-3.5" />
-                </Button>
-                <span className="text-xs text-muted-foreground font-mono w-12 text-center">{Math.round(zoomLevel * 100)}%</span>
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setZoomLevel(z => Math.min(1, z + 0.1))}>
-                  <ZoomIn className="w-3.5 h-3.5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setZoomLevel(0.48)}>
-                  <RotateCcw className="w-3.5 h-3.5" />
-                </Button>
-              </div>
             </div>
           )}
+
+          {!previewUrl && (
+            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+              لا توجد صفحة محملة
+            </div>
+          )}
+
+          {/* Zoom Controls - always visible */}
+          <div className="bg-secondary/60 px-3 py-1.5 flex items-center justify-center gap-3 border-t border-border mt-auto">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setZoomLevel(z => Math.max(0.2, z - 0.1))}>
+              <ZoomOut className="w-3.5 h-3.5" />
+            </Button>
+            <span className="text-xs text-muted-foreground font-mono w-12 text-center">{Math.round(zoomLevel * 100)}%</span>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setZoomLevel(z => Math.min(1, z + 0.1))}>
+              <ZoomIn className="w-3.5 h-3.5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setZoomLevel(0.48)}>
+              <RotateCcw className="w-3.5 h-3.5" />
+            </Button>
+          </div>
 
           <ScrollArea className="flex-1 p-3">
             {selectedTask ? (
