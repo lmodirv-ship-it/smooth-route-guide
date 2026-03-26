@@ -43,7 +43,9 @@ const SmartAssistantPage = () => {
   const [selectedTask, setSelectedTask] = useState<TaskLog | null>(null);
   const [siteUrl, setSiteUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
+  const [displayUrl, setDisplayUrl] = useState("");
   const [iframeError, setIframeError] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
