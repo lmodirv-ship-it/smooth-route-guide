@@ -15,14 +15,6 @@ import { SocialMediaPreview } from "@/admin/components/SocialMediaPreview";
 type AiMsg = { role: "user" | "assistant"; content: string };
 type TaskLog = { id: string; title: string; status: "success" | "error" | "pending"; code?: string; timestamp: string; targetPage?: string };
 
-type WebsiteOption = {
-  name: string;
-  url: string;
-  note: string;
-  icon: string;
-  embeddable?: boolean;
-};
-
 const AI_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-ai-agent`;
 
 async function callAdminAI({ messages, onResult, onError }: {
