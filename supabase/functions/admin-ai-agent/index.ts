@@ -1117,6 +1117,76 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "db_create_table",
+      description: `إنشاء جدول جديد في قاعدة البيانات أو تعديل جدول موجود (إضافة/حذف أعمدة). يتم توليد كود SQL كمسودة ليراجعها المدير قبل التنفيذ.
+⚠️ الجداول الجديدة تُنشأ مع RLS مفعّل افتراضياً وسياسة وصول للمدير فقط.`,
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["create", "add_columns", "drop_columns", "rename_table", "list_sql_history"], description: "نوع العملية" },
+          table_name: { type: "string", description: "اسم الجدول (snake_case, أحرف إنجليزية فقط)" },
+          columns: {
+            type: "array",
+            description: "تعريف الأعمدة (لـ create و add_columns)",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string", description: "اسم العمود" },
+                type: { type: "string", enum: ["uuid", "text", "integer", "numeric", "boolean", "timestamp with time zone", "jsonb", "ARRAY"], description: "نوع البيانات" },
+                nullable: { type: "boolean", default: true },
+                default_value: { type: "string", description: "القيمة الافتراضية (مثل: now(), gen_random_uuid(), ''::text, true, 0)" },
+                is_primary: { type: "boolean", default: false },
+                references: { type: "string", description: "مرجع خارجي (مثل: profiles(id))" },
+              },
+              required: ["name", "type"],
+            },
+          },
+          column_names: { type: "array", items: { type: "string" }, description: "أسماء الأعمدة (لـ drop_columns)" },
+          new_table_name: { type: "string", description: "الاسم الجديد (لـ rename_table)" },
+          enable_rls: { type: "boolean", default: true, description: "تفعيل RLS تلقائياً" },
+          admin_policy: { type: "boolean", default: true, description: "إضافة سياسة وصول للمدير" },
+        },
+        required: ["action"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "db_migrate_data",
+      description: `نقل أو نسخ بيانات بين الجداول مع تحويلات اختيارية. مفيد لإعادة هيكلة البيانات أو دمج جداول.`,
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["copy", "move", "transform"], description: "copy=نسخ البيانات, move=نقل وحذف المصدر, transform=نسخ مع تحويل" },
+          source_table: { type: "string", enum: ALLOWED_TABLES, description: "الجدول المصدر" },
+          target_table: { type: "string", description: "الجدول الهدف" },
+          column_mapping: {
+            type: "object",
+            description: "تعيين الأعمدة: { عمود_المصدر: عمود_الهدف }. اتركه فارغاً لنسخ كل الأعمدة المتطابقة.",
+          },
+          filters: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                column: { type: "string" },
+                operator: { type: "string", enum: ["eq", "neq", "gt", "gte", "lt", "lte"] },
+                value: { type: "string" },
+              },
+              required: ["column", "operator", "value"],
+            },
+            description: "فلاتر اختيارية لتحديد السجلات المراد نقلها",
+          },
+          limit: { type: "number", default: 200, description: "الحد الأقصى للسجلات (أقصى 500)" },
+        },
+        required: ["action", "source_table", "target_table"],
+      },
+    },
+  },
 ];
 
         if (createdCategories.length) {
@@ -1594,6 +1664,182 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         }
         return JSON.stringify({ error: "Invalid action" });
       }
+      case "db_create_table": {
+        const FORBIDDEN_TABLES = ["user_roles", "auth", "storage", "realtime"];
+        const tableName = (args.table_name || "").trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
+        
+        if (args.action === "list_sql_history") {
+          const { data } = await supabase.from("smart_assistant_commands")
+            .select("*").eq("command_type", "sql_migration")
+            .order("created_at", { ascending: false }).limit(20);
+          return JSON.stringify({ history: data || [], total: data?.length || 0 });
+        }
+        
+        if (!tableName) return JSON.stringify({ error: "اسم الجدول مطلوب (أحرف إنجليزية وأرقام و_ فقط)" });
+        if (FORBIDDEN_TABLES.some(f => tableName.includes(f))) return JSON.stringify({ error: "لا يمكن تعديل هذا الجدول لأسباب أمنية" });
+        
+        let sql = "";
+        let description = "";
+        
+        if (args.action === "create") {
+          if (!args.columns?.length) return JSON.stringify({ error: "يجب تحديد عمود واحد على الأقل" });
+          const colDefs = args.columns.map((c: any) => {
+            let def = `  ${c.name} ${c.type}`;
+            if (c.is_primary) def += " PRIMARY KEY";
+            if (c.default_value) def += ` DEFAULT ${c.default_value}`;
+            if (!c.nullable && !c.is_primary) def += " NOT NULL";
+            if (c.references) def += ` REFERENCES ${c.references} ON DELETE CASCADE`;
+            return def;
+          });
+          sql = `CREATE TABLE IF NOT EXISTS public.${tableName} (\n${colDefs.join(",\n")}\n);`;
+          if (args.enable_rls !== false) sql += `\nALTER TABLE public.${tableName} ENABLE ROW LEVEL SECURITY;`;
+          if (args.admin_policy !== false) {
+            sql += `\nCREATE POLICY "Admins can manage ${tableName}" ON public.${tableName} FOR ALL TO authenticated USING (has_role(auth.uid(), 'admin'::app_role)) WITH CHECK (has_role(auth.uid(), 'admin'::app_role));`;
+          }
+          description = `إنشاء جدول ${tableName} بـ ${args.columns.length} عمود`;
+        } else if (args.action === "add_columns") {
+          if (!args.columns?.length) return JSON.stringify({ error: "يجب تحديد الأعمدة الجديدة" });
+          const alterStmts = args.columns.map((c: any) => {
+            let def = `ALTER TABLE public.${tableName} ADD COLUMN IF NOT EXISTS ${c.name} ${c.type}`;
+            if (c.default_value) def += ` DEFAULT ${c.default_value}`;
+            if (!c.nullable) def += " NOT NULL";
+            return def + ";";
+          });
+          sql = alterStmts.join("\n");
+          description = `إضافة ${args.columns.length} عمود إلى ${tableName}`;
+        } else if (args.action === "drop_columns") {
+          if (!args.column_names?.length) return JSON.stringify({ error: "يجب تحديد أسماء الأعمدة" });
+          const forbidden = ["id", "user_id", "created_at"];
+          const safe = args.column_names.filter((c: string) => !forbidden.includes(c));
+          if (!safe.length) return JSON.stringify({ error: "لا يمكن حذف الأعمدة الأساسية (id, user_id, created_at)" });
+          sql = safe.map((c: string) => `ALTER TABLE public.${tableName} DROP COLUMN IF EXISTS ${c};`).join("\n");
+          description = `حذف ${safe.length} عمود من ${tableName}`;
+        } else if (args.action === "rename_table") {
+          if (!args.new_table_name) return JSON.stringify({ error: "الاسم الجديد مطلوب" });
+          const newName = args.new_table_name.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
+          sql = `ALTER TABLE public.${tableName} RENAME TO ${newName};`;
+          description = `إعادة تسمية ${tableName} إلى ${newName}`;
+        } else {
+          return JSON.stringify({ error: "Invalid action" });
+        }
+        
+        // Save SQL as a migration draft
+        const { error: saveErr } = await supabase.from("smart_assistant_commands").insert({
+          admin_id: "system",
+          command_text: description,
+          command_type: "sql_migration",
+          ai_response: sql,
+          generated_files: [{ type: "sql", content: sql, description }],
+          status: "pending_review",
+        });
+        
+        // Also save to storage for download
+        const sqlContent = new TextEncoder().encode(`-- ${description}\n-- Generated: ${new Date().toISOString()}\n-- ⚠️ راجع هذا الكود قبل التنفيذ\n\n${sql}`);
+        const sqlPath = `migrations/${tableName}_${Date.now()}.sql`;
+        await supabase.storage.from("smart-assistant-files").upload(sqlPath, sqlContent, { contentType: "text/plain", upsert: true });
+        const { data: sqlUrl } = supabase.storage.from("smart-assistant-files").getPublicUrl(sqlPath);
+        
+        return JSON.stringify({
+          success: true,
+          action: args.action,
+          table: tableName,
+          sql,
+          download_url: sqlUrl.publicUrl,
+          message: `✅ تم توليد SQL: ${description}\n📥 الملف محفوظ ويمكن تحميله.\n⚠️ **لن يُنفذ تلقائياً** - المدير يراجع وينفذ يدوياً.\n\n\`\`\`sql\n${sql}\n\`\`\``,
+        });
+      }
+      case "db_migrate_data": {
+        const sourceTable = args.source_table;
+        const targetTable = (args.target_table || "").trim();
+        
+        if (!ALLOWED_TABLES.includes(sourceTable)) return JSON.stringify({ error: "الجدول المصدر غير مسموح" });
+        
+        const limit = Math.min(args.limit || 200, 500);
+        
+        // 1. Read source data
+        let q = supabase.from(sourceTable).select("*");
+        if (args.filters?.length) q = applyFilters(q, args.filters);
+        q = q.limit(limit);
+        const { data: sourceData, error: readErr } = await q;
+        if (readErr) return JSON.stringify({ error: `فشل قراءة المصدر: ${readErr.message}` });
+        if (!sourceData?.length) return JSON.stringify({ error: "لا توجد بيانات في المصدر تطابق الفلاتر" });
+        
+        // 2. Transform data if column mapping exists
+        let targetData = sourceData;
+        if (args.column_mapping && Object.keys(args.column_mapping).length > 0) {
+          targetData = sourceData.map((row: any) => {
+            const newRow: any = {};
+            for (const [srcCol, tgtCol] of Object.entries(args.column_mapping)) {
+              if (row[srcCol] !== undefined) newRow[tgtCol as string] = row[srcCol];
+            }
+            return newRow;
+          });
+        }
+        
+        // 3. Remove id from target data to let DB generate new ones
+        targetData = targetData.map((row: any) => {
+          const { id, ...rest } = row;
+          return rest;
+        });
+        
+        // 4. Check if target table is in ALLOWED_TABLES
+        if (!ALLOWED_TABLES.includes(targetTable)) {
+          // Target might be a new table - save as SQL draft instead
+          const jsonContent = new TextEncoder().encode(JSON.stringify(targetData, null, 2));
+          const path = `migrations/data_${sourceTable}_to_${targetTable}_${Date.now()}.json`;
+          await supabase.storage.from("smart-assistant-files").upload(path, jsonContent, { contentType: "application/json", upsert: true });
+          const { data: url } = supabase.storage.from("smart-assistant-files").getPublicUrl(path);
+          
+          return JSON.stringify({
+            success: true,
+            action: args.action,
+            source: sourceTable,
+            target: targetTable,
+            rows_prepared: targetData.length,
+            download_url: url.publicUrl,
+            message: `📋 تم تجهيز ${targetData.length} سجل للنقل إلى ${targetTable}.\n⚠️ الجدول الهدف غير موجود في القائمة المسموحة - البيانات محفوظة كملف JSON للاستيراد اليدوي.`,
+          });
+        }
+        
+        // 5. Insert into target
+        const batchSize = 50;
+        let inserted = 0;
+        const errors: string[] = [];
+        
+        for (let i = 0; i < targetData.length; i += batchSize) {
+          const batch = targetData.slice(i, i + batchSize);
+          const { data: result, error: insertErr } = await supabase.from(targetTable).insert(batch).select();
+          if (insertErr) errors.push(insertErr.message);
+          else inserted += result?.length || 0;
+        }
+        
+        // 6. If move action, delete from source
+        let deleted = 0;
+        if (args.action === "move" && inserted > 0 && errors.length === 0) {
+          const sourceIds = sourceData.map((r: any) => r.id).filter(Boolean);
+          if (sourceIds.length <= 10) {
+            for (const id of sourceIds) {
+              const { error: delErr } = await supabase.from(sourceTable).delete().eq("id", id);
+              if (!delErr) deleted++;
+            }
+          } else {
+            // Too many to delete safely
+            errors.push(`⚠️ تم نسخ البيانات لكن لم تُحذف من المصدر (${sourceIds.length} سجل - يتجاوز حد الأمان 10). احذفها يدوياً.`);
+          }
+        }
+        
+        return JSON.stringify({
+          success: true,
+          action: args.action,
+          source: sourceTable,
+          target: targetTable,
+          rows_read: sourceData.length,
+          rows_inserted: inserted,
+          rows_deleted: deleted,
+          errors: errors.slice(0, 5),
+          message: `✅ تم ${args.action === "move" ? "نقل" : args.action === "copy" ? "نسخ" : "تحويل"} ${inserted} سجل من ${sourceTable} إلى ${targetTable}${deleted > 0 ? `\n🗑️ تم حذف ${deleted} سجل من المصدر` : ""}${errors.length ? `\n⚠️ ${errors.length} خطأ` : ""}`,
+        });
+      }
       default:
         return JSON.stringify({ error: `Unknown tool: ${name}` });
     }
@@ -1735,6 +1981,8 @@ serve(async (req) => {
 - **delegate_to_assistant**: 🤖 تفويض مهمة لمساعد فرعي متخصص
 - **manage_sub_assistants**: إنشاء/حذف/تعديل المساعدين الفرعيين
 - **orchestrate_task**: 🚀 الأداة الأقوى! تحلل المهمة المعقدة وتقسمها تلقائياً لمهام فرعية، تُنشئ مساعدين متخصصين إذا لزم الأمر، وتنفذ كل شيء بالتوازي لتسريع العمل.
+- **db_create_table**: 🗄️ إنشاء جداول جديدة أو تعديل هيكل الجداول (إضافة/حذف أعمدة، إعادة تسمية). يولّد SQL كمسودة للمراجعة.
+- **db_migrate_data**: 🔄 نقل أو نسخ البيانات بين الجداول مع تحويلات اختيارية. مفيد لإعادة الهيكلة ودمج البيانات.
 
 ## 🤖 نظام المساعدين الفرعيين (التنسيق التلقائي):
 أنت المساعد الرئيسي (المنسق). لديك فريق من المساعدين الفرعيين المتخصصين:
