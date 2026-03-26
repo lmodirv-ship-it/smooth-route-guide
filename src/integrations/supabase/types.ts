@@ -742,6 +742,51 @@ export type Database = {
           },
         ]
       }
+      dynamic_pages: {
+        Row: {
+          content: Json
+          created_at: string
+          created_by: string | null
+          css_overrides: string | null
+          id: string
+          is_published: boolean
+          meta_description: string | null
+          page_type: string
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          css_overrides?: string | null
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          page_type?: string
+          slug: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          css_overrides?: string | null
+          id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          page_type?: string
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       earnings: {
         Row: {
           amount: number
