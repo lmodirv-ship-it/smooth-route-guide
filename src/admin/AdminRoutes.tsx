@@ -24,6 +24,7 @@ import ZonesManagement from "@/admin/pages/ZonesManagement";
 import AdminSettings from "@/admin/pages/Settings";
 import CommissionRatesPage from "@/admin/pages/CommissionRates";
 import SmartAssistantPage from "@/admin/pages/SmartAssistant";
+import SubAssistantsPage from "@/admin/pages/SubAssistants";
 import SetupAdmin from "@/admin/pages/SetupAdmin";
 
 // Call Center layout & pages
