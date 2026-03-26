@@ -233,6 +233,28 @@ const SmartAssistantPage = () => {
         </div>
       </div>
 
+      {/* Zoom Controls - below both panels */}
+      <div className="bg-secondary/60 px-3 py-1.5 flex items-center justify-center gap-2 rounded-lg border border-border">
+        <Button variant="outline" size="icon" className="h-7 w-7 text-lg font-bold" onClick={() => setZoomLevel(z => Math.max(0.1, z - 0.1))}>
+          −
+        </Button>
+        <Input
+          type="number"
+          min={10}
+          max={100}
+          value={Math.round(zoomLevel * 100)}
+          onChange={e => {
+            const v = parseInt(e.target.value);
+            if (!isNaN(v) && v >= 10 && v <= 100) setZoomLevel(v / 100);
+          }}
+          className="w-16 h-7 text-center text-xs bg-background border-border [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          dir="ltr"
+        />
+        <Button variant="outline" size="icon" className="h-7 w-7 text-lg font-bold" onClick={() => setZoomLevel(z => Math.min(1, z + 0.1))}>
+          +
+        </Button>
+      </div>
+
       {/* Chat Area */}
       <div className="gradient-card rounded-xl border border-border flex flex-col h-[200px] min-h-[160px]">
         <div ref={chatRef} className="flex-1 overflow-auto p-4 space-y-3">
