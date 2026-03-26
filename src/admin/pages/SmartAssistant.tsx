@@ -63,7 +63,7 @@ const SmartAssistantPage = () => {
     if (!previewUrl) return;
     const interval = setInterval(() => {
       setIframeKey(k => k + 1);
-    }, 5000);
+    }, 10000);
     return () => clearInterval(interval);
   }, [previewUrl]);
 
