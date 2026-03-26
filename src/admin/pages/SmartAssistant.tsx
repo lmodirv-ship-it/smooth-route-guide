@@ -259,7 +259,7 @@ const SmartAssistantPage = () => {
         <div className="rounded-xl border border-border flex flex-col bg-white overflow-hidden">
           <div className="px-3 py-1.5 border-b border-gray-200 flex items-center gap-2 shrink-0">
             <Send className="w-4 h-4 text-red-500" />
-            <span className="text-xs font-semibold text-black">تعليمات المدير</span>
+            <span className="text-xs font-semibold text-black">جدول المدير</span>
           </div>
           <div className="flex-1 p-3 flex flex-col">
             <textarea
