@@ -53,6 +53,7 @@ const ZonesManagement = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [autoGenerating, setAutoGenerating] = useState(false);
 
   // Filter state
   const [selectedCountry, setSelectedCountry] = useState<string>("");
