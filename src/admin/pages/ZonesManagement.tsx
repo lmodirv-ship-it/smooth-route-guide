@@ -561,6 +561,7 @@ const ZonesManagement = () => {
                           <TableHead>#</TableHead>
                           <TableHead>{tz.nameAr}</TableHead>
                           <TableHead>{tz.nameFr}</TableHead>
+                          <TableHead>الرمز</TableHead>
                           <TableHead>{tz.radiusKm}</TableHead>
                           <TableHead>{tz.deliveryFee}</TableHead>
                           <TableHead>{tz.status}</TableHead>
@@ -573,6 +574,7 @@ const ZonesManagement = () => {
                             <TableCell className="font-bold text-muted-foreground">{idx + 1}</TableCell>
                             <TableCell className="font-semibold">{z.name_ar}</TableCell>
                             <TableCell className="text-muted-foreground">{z.name_fr || "—"}</TableCell>
+                            <TableCell><Badge variant="outline" className="font-mono text-xs">{z.zone_code || "—"}</Badge></TableCell>
                             <TableCell>{z.radius_km} km</TableCell>
                             <TableCell className="font-bold text-primary">{z.delivery_fee} DH</TableCell>
                             <TableCell>
