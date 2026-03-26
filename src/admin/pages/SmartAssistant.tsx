@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 import { Bot, Send, Loader2, CheckCircle, Code, Power, XCircle, Globe, ExternalLink, ShieldCheck, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -35,10 +36,10 @@ async function callAdminAI({ messages, onResult, onError }: {
 
 const SmartAssistantPage = () => {
   const { t, dir } = useI18n();
+  const { smartAssistantActive: isActive } = useOutletContext<{ smartAssistantActive: boolean }>();
   const [messages, setMessages] = useState<AiMsg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isActive, setIsActive] = useState(true);
   const [taskLogs, setTaskLogs] = useState<TaskLog[]>([]);
   const [selectedTask, setSelectedTask] = useState<TaskLog | null>(null);
   const [siteUrl, setSiteUrl] = useState("");
@@ -74,15 +75,6 @@ const SmartAssistantPage = () => {
     }
   };
 
-  const toggleActive = () => {
-    const next = !isActive;
-    setIsActive(next);
-    if (next) {
-      toast.success("✅ تم تفعيل المساعد الذكي — سيتم تنفيذ الأوامر على الموقع", { duration: 3000 });
-    } else {
-      toast.info("⛔ تم إلغاء التفعيل — لن يتم تنفيذ أي تغيير على الموقع", { duration: 3000 });
-    }
-  };
 
   const sendMessage = async () => {
     const safeText = sanitizePlainText(input, 8000);
@@ -130,28 +122,6 @@ const SmartAssistantPage = () => {
 
   return (
     <div className="h-[calc(100vh-80px)] flex flex-col gap-3" dir={dir}>
-      {/* Header - single line */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <Button
-            variant={isActive ? "destructive" : "default"}
-            size="sm"
-            onClick={toggleActive}
-            className={`gap-1.5 ${!isActive ? "bg-success hover:bg-success/90 text-white" : ""}`}
-          >
-            {isActive ? <ShieldOff className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
-            {isActive ? "إلغاء" : "تفعيل"}
-          </Button>
-          <Badge variant="outline" className={`text-xs ${isActive ? "text-success border-success/30 bg-success/10" : "text-destructive border-destructive/30 bg-destructive/10"}`}>
-            <span className={`inline-block w-2 h-2 rounded-full mr-1 ${isActive ? "bg-success animate-pulse" : "bg-destructive"}`} />
-            {isActive ? "نشط" : "متوقف"}
-          </Badge>
-        </div>
-        <div className="flex items-center gap-2">
-          <h1 className="text-lg font-bold text-foreground">المساعد الذكي للمدير</h1>
-          <Bot className="w-5 h-5 text-primary" />
-        </div>
-      </div>
 
       {/* URL Input Bar */}
       <div className="gradient-card rounded-xl border border-border p-2.5 flex items-center gap-2">

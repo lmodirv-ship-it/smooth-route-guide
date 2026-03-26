@@ -4,10 +4,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   BarChart3, FileText, Car, Users, TrendingUp, MapPin,
   AlertTriangle, FileCheck, Headphones, Settings, Shield,
-  Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog, Percent
+  Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog, Percent,
+  ShieldCheck, ShieldOff
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
 import logo from "@/assets/hn-driver-badge.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,6 +55,9 @@ const AdminLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const aiScrollRef = useRef<HTMLDivElement>(null);
   const [pendingCount, setPendingCount] = useState(0);
+  const [smartAssistantActive, setSmartAssistantActive] = useState(true);
+
+  const isSmartAssistantRoute = location.pathname === "/admin/smart-assistant";
 
   const navItems = [
     { path: "/admin", icon: BarChart3, label: t.admin.dashboard },
@@ -176,6 +181,25 @@ const AdminLayout = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {isSmartAssistantRoute && (
+              <>
+                <span className="text-sm font-bold text-foreground">المساعد الذكي</span>
+                <Button
+                  variant={smartAssistantActive ? "destructive" : "default"}
+                  size="sm"
+                  onClick={() => setSmartAssistantActive(!smartAssistantActive)}
+                  className={`gap-1.5 h-8 ${!smartAssistantActive ? "bg-success hover:bg-success/90 text-white" : ""}`}
+                >
+                  {smartAssistantActive ? <ShieldOff className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                  {smartAssistantActive ? "إلغاء" : "تفعيل"}
+                </Button>
+                <Badge variant="outline" className={`text-xs ${smartAssistantActive ? "text-success border-success/30 bg-success/10" : "text-destructive border-destructive/30 bg-destructive/10"}`}>
+                  <span className={`inline-block w-2 h-2 rounded-full mr-1 ${smartAssistantActive ? "bg-success animate-pulse" : "bg-destructive"}`} />
+                  {smartAssistantActive ? "نشط" : "متوقف"}
+                </Badge>
+                <div className="w-px h-6 bg-border" />
+              </>
+            )}
             <GlobalLogoutButton />
             <LanguageSwitcher />
             <button className="p-2 relative hover:bg-secondary rounded-lg transition-colors">
@@ -193,7 +217,7 @@ const AdminLayout = () => {
         </header>
 
         <div className="flex-1 p-6">
-          <Outlet />
+          <Outlet context={{ smartAssistantActive, setSmartAssistantActive }} />
         </div>
       </div>
 
