@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Bot, Send, Loader2, CheckCircle, Code, Power, XCircle, Globe, ExternalLink, ShieldCheck, ShieldOff, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { Bot, Send, Loader2, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +14,14 @@ import { SocialMediaPreview } from "@/admin/components/SocialMediaPreview";
 
 type AiMsg = { role: "user" | "assistant"; content: string };
 type TaskLog = { id: string; title: string; status: "success" | "error" | "pending"; code?: string; timestamp: string; targetPage?: string };
+
+type WebsiteOption = {
+  name: string;
+  url: string;
+  note: string;
+  icon: string;
+  embeddable?: boolean;
+};
 
 const AI_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-ai-agent`;
 
@@ -37,8 +44,15 @@ async function callAdminAI({ messages, onResult, onError }: {
 }
 
 const SmartAssistantPage = () => {
-  const { t, dir } = useI18n();
-  const { smartAssistantActive: isActive, smartPreviewUrl: previewUrl, smartSiteUrl: siteUrl, setSmartSiteUrl: setSiteUrl, setSmartPreviewUrl: setPreviewUrl, smartRefreshKey } = useOutletContext<{
+  const { dir } = useI18n();
+  const {
+    smartAssistantActive: isActive,
+    smartPreviewUrl: previewUrl,
+    smartSiteUrl: siteUrl,
+    setSmartSiteUrl: setSiteUrl,
+    setSmartPreviewUrl: setPreviewUrl,
+    smartRefreshKey,
+  } = useOutletContext<{
     smartAssistantActive: boolean;
     smartPreviewUrl: string;
     smartSiteUrl: string;
@@ -46,15 +60,16 @@ const SmartAssistantPage = () => {
     setSmartPreviewUrl: (v: string) => void;
     smartRefreshKey: number;
   }>();
+
   const [messages, setMessages] = useState<AiMsg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [taskLogs, setTaskLogs] = useState<TaskLog[]>([]);
-  const [selectedTask, setSelectedTask] = useState<TaskLog | null>(null);
   const [displayUrl, setDisplayUrl] = useState("");
   const [iframeError, setIframeError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(0.48);
+  const [pageOneTab, setPageOneTab] = useState<string>(previewUrl ? "preview" : "sites");
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -62,14 +77,91 @@ const SmartAssistantPage = () => {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-  // Refresh preview when smartRefreshKey changes (manual refresh via Actualiser button)
   useEffect(() => {
     if (smartRefreshKey > 0) {
-      setIframeKey(k => k + 1);
+      setIframeKey((k) => k + 1);
     }
   }, [smartRefreshKey]);
 
+  useEffect(() => {
+    if (previewUrl) {
+      setPageOneTab("preview");
+    }
+  }, [previewUrl]);
 
+  const websiteOptions: WebsiteOption[] = [
+    ...(siteUrl || previewUrl
+      ? [{
+          name: "الموقع الحالي",
+          url: siteUrl || previewUrl,
+          note: "آخر موقع تعمل عليه الآن",
+          icon: "🌐",
+          embeddable: true,
+        }]
+      : []),
+    {
+      name: "Facebook",
+      url: "https://www.facebook.com",
+      note: "صفحات وإعلانات Meta",
+      icon: "📘",
+    },
+    {
+      name: "Instagram",
+      url: "https://www.instagram.com",
+      note: "منشورات، Reels وStories",
+      icon: "📸",
+    },
+    {
+      name: "TikTok",
+      url: "https://www.tiktok.com",
+      note: "فيديوهات قصيرة وإعلانات",
+      icon: "🎵",
+    },
+    {
+      name: "LinkedIn",
+      url: "https://www.linkedin.com",
+      note: "صفحات الشركات والإعلانات المهنية",
+      icon: "💼",
+    },
+    {
+      name: "YouTube",
+      url: "https://www.youtube.com",
+      note: "قنوات ومحتوى فيديو",
+      icon: "▶️",
+    },
+    {
+      name: "WhatsApp Web",
+      url: "https://web.whatsapp.com",
+      note: "التواصل والردود",
+      icon: "💬",
+    },
+    {
+      name: "X",
+      url: "https://x.com",
+      note: "منشورات سريعة وحملات",
+      icon: "𝕏",
+    },
+    {
+      name: "Google",
+      url: "https://www.google.com",
+      note: "بحث وخدمات Google",
+      icon: "🔎",
+      embeddable: true,
+    },
+  ];
+
+  const openWebsiteInPageOne = (website: WebsiteOption) => {
+    setPreviewUrl(website.url);
+    setSiteUrl(website.url);
+    setDisplayUrl(website.url);
+    setIframeError(false);
+    setIframeKey((k) => k + 1);
+    setPageOneTab("preview");
+
+    if (!website.embeddable) {
+      toast.info("بعض المواقع قد تمنع العرض داخل المربع، ويمكنك فتحها مباشرة بزر فتح.");
+    }
+  };
 
   const sendMessage = async () => {
     const safeText = sanitizePlainText(input, 8000);
@@ -80,13 +172,12 @@ const SmartAssistantPage = () => {
       return;
     }
 
-    // Include page context so AI knows which page to analyze
     const pageContext = previewUrl
       ? `\n\n[السياق: الصفحة المحملة حالياً هي: ${previewUrl}]\nقم بتحليل هذه الصفحة وتنفيذ التعليمات التالية عليها.`
       : "";
     const userMsg: AiMsg = { role: "user", content: safeText + pageContext };
     const displayMsg: AiMsg = { role: "user", content: safeText };
-    setMessages(prev => [...prev, displayMsg]);
+    setMessages((prev) => [...prev, displayMsg]);
     setInput("");
     setLoading(true);
 
@@ -97,23 +188,23 @@ const SmartAssistantPage = () => {
       timestamp: new Date().toLocaleTimeString("ar-SA"),
       targetPage: previewUrl || undefined,
     };
-    setTaskLogs(prev => [newTask, ...prev]);
+    setTaskLogs((prev) => [newTask, ...prev]);
 
     await callAdminAI({
       messages: [...messages, userMsg],
       onResult: (reply) => {
-        setMessages(prev => [...prev, { role: "assistant", content: reply }]);
-        setTaskLogs(prev => prev.map(t =>
-          t.id === newTask.id ? { ...t, status: "success" as const, code: reply } : t
+        setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+        setTaskLogs((prev) => prev.map((t) =>
+          t.id === newTask.id ? { ...t, status: "success" as const, code: reply } : t,
         ));
         setLoading(false);
-        setIframeKey(k => k + 1); // refresh preview after success
+        setIframeKey((k) => k + 1);
         toast.success("✅ تم تنفيذ الأمر بنجاح");
       },
       onError: (err) => {
-        setMessages(prev => [...prev, { role: "assistant", content: `❌ ${err}` }]);
-        setTaskLogs(prev => prev.map(t =>
-          t.id === newTask.id ? { ...t, status: "error" as const, code: err } : t
+        setMessages((prev) => [...prev, { role: "assistant", content: `❌ ${err}` }]);
+        setTaskLogs((prev) => prev.map((t) =>
+          t.id === newTask.id ? { ...t, status: "error" as const, code: err } : t,
         ));
         setLoading(false);
         toast.error("❌ فشل تنفيذ الأمر");
@@ -123,13 +214,8 @@ const SmartAssistantPage = () => {
 
   return (
     <div className="h-[calc(100vh-80px)] flex flex-col gap-3" dir={dir}>
-
-
-      {/* Main Content - Top Split */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
-        {/* Right: Executed Tasks - Full page preview */}
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-2 lg:order-1">
-
           {previewUrl ? (
             <div className="flex-1 flex flex-col overflow-hidden">
               <div className="bg-secondary/60 px-2 py-1 flex items-center gap-1.5 text-[10px]">
@@ -140,12 +226,12 @@ const SmartAssistantPage = () => {
                 </div>
                 <span className="flex-1 text-muted-foreground truncate font-mono" dir="ltr">{previewUrl}</span>
               </div>
-              <div className="flex-1 overflow-hidden bg-white relative" style={{ minHeight: "400px" }}>
+              <div className="flex-1 overflow-hidden bg-background relative" style={{ minHeight: "400px" }}>
                 <iframe
                   key={`mirror-${iframeKey}`}
                   src={previewUrl}
                   style={{ width: "1440px", height: "900px", transform: "scale(0.48)", transformOrigin: "top left" }}
-                  className="bg-white"
+                  className="bg-background"
                   sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                   referrerPolicy="no-referrer"
                   title="معاينة ما تم تنفيذه"
@@ -159,13 +245,55 @@ const SmartAssistantPage = () => {
           )}
         </div>
 
-        {/* Left: Code Used + Site Preview */}
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2">
-          <Tabs defaultValue="preview" className="flex-1 flex flex-col overflow-hidden">
-            <TabsList className="w-full rounded-none border-b border-border bg-secondary/40 shrink-0">
-              <TabsTrigger value="preview" className="flex-1 text-xs">معاينة الموقع</TabsTrigger>
-              <TabsTrigger value="social" className="flex-1 text-xs">📱 التواصل الاجتماعي</TabsTrigger>
+          <Tabs value={pageOneTab} onValueChange={setPageOneTab} className="flex-1 flex flex-col overflow-hidden">
+            <TabsList className="w-full rounded-none border-b border-border bg-secondary/40 shrink-0 grid grid-cols-3">
+              <TabsTrigger value="sites" className="text-xs">المواقع</TabsTrigger>
+              <TabsTrigger value="preview" className="text-xs">معاينة الموقع</TabsTrigger>
+              <TabsTrigger value="social" className="text-xs">التواصل الاجتماعي</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="sites" className="flex-1 overflow-auto m-0">
+              <div className="p-4 space-y-4">
+                <div className="gradient-card rounded-xl border border-border p-3 text-sm text-muted-foreground">
+                  اختر أي موقع من القائمة لعرضه في **صفحة 1**، ويمكنك أيضًا كتابة أي رابط من الأعلى.
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {websiteOptions.map((website) => (
+                    <div key={`${website.name}-${website.url}`} className="gradient-card rounded-xl border border-border p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">{website.icon}</span>
+                            <h3 className="font-semibold text-foreground">{website.name}</h3>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">{website.note}</p>
+                          <p className="text-[10px] text-muted-foreground mt-2 break-all font-mono" dir="ltr">{website.url}</p>
+                        </div>
+                        <Badge variant="outline" className="text-[10px] shrink-0">
+                          {website.embeddable ? "عرض داخلي" : "قد يتطلب فتح خارجي"}
+                        </Badge>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button size="sm" className="flex-1" onClick={() => openWebsiteInPageOne(website)}>
+                          عرض في صفحة 1
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => window.open(website.url, "_blank", "noopener,noreferrer")}
+                        >
+                          فتح
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
 
             <TabsContent value="preview" className="flex-1 flex flex-col overflow-hidden m-0">
               {previewUrl ? (
@@ -178,13 +306,13 @@ const SmartAssistantPage = () => {
                     </div>
                     <span className="flex-1 text-muted-foreground truncate font-mono text-[11px]" dir="ltr">{displayUrl || previewUrl}</span>
                   </div>
-                  <div className="flex-1 overflow-auto bg-white">
+                  <div className="flex-1 overflow-auto bg-background">
                     <iframe
                       ref={iframeRef}
                       key={`${previewUrl}-${iframeKey}`}
                       src={previewUrl}
                       style={{ width: "1440px", height: "900px", transform: `scale(${zoomLevel})`, transformOrigin: "top left" }}
-                      className="bg-white"
+                      className="bg-background"
                       sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                       referrerPolicy="no-referrer"
                       title="معاينة الموقع"
@@ -197,15 +325,16 @@ const SmartAssistantPage = () => {
                             setSiteUrl(currentUrl);
                           }
                         } catch {
-                          // Cross-origin
+                          // Cross-origin - can't read URL
                         }
                       }}
                     />
                   </div>
                 </div>
               ) : (
-                <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-                  لا توجد صفحة محملة
+                <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground text-sm gap-3 p-6">
+                  <Globe className="w-10 h-10 text-primary/50" />
+                  <p>اختر موقعاً من تبويب المواقع ليظهر هنا</p>
                 </div>
               )}
             </TabsContent>
@@ -215,9 +344,8 @@ const SmartAssistantPage = () => {
             </TabsContent>
           </Tabs>
 
-          {/* Zoom Controls */}
           <div className="bg-secondary/60 px-3 py-1.5 flex items-center justify-center gap-2 border-t border-border shrink-0">
-            <Button variant="outline" size="icon" className="h-7 w-7 text-lg font-bold" onClick={() => setZoomLevel(z => Math.max(0.1, z - 0.1))}>
+            <Button variant="outline" size="icon" className="h-7 w-7 text-lg font-bold" onClick={() => setZoomLevel((z) => Math.max(0.1, z - 0.1))}>
               −
             </Button>
             <Input
@@ -225,29 +353,27 @@ const SmartAssistantPage = () => {
               min={10}
               max={100}
               value={Math.round(zoomLevel * 100)}
-              onChange={e => {
+              onChange={(e) => {
                 const v = parseInt(e.target.value);
                 if (!isNaN(v) && v >= 10 && v <= 100) setZoomLevel(v / 100);
               }}
               className="w-16 h-7 text-center text-xs bg-background border-border [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               dir="ltr"
             />
-            <Button variant="outline" size="icon" className="h-7 w-7 text-lg font-bold" onClick={() => setZoomLevel(z => Math.min(1, z + 0.1))}>
+            <Button variant="outline" size="icon" className="h-7 w-7 text-lg font-bold" onClick={() => setZoomLevel((z) => Math.min(1, z + 0.1))}>
               +
             </Button>
           </div>
         </div>
       </div>
 
-
-      {/* Chat Area */}
       <div className="gradient-card rounded-xl border border-border flex flex-col h-[200px] min-h-[160px]">
         <div ref={chatRef} className="flex-1 overflow-auto p-4 space-y-3">
           {messages.length === 0 && (
             <div className="text-center py-6">
               <Bot className="w-10 h-10 mx-auto text-primary/40 mb-2" />
               <p className="text-muted-foreground text-sm">مرحبًا! أنا المساعد الذكي للمدير. كيف يمكنني مساعدتك؟</p>
-              <p className="text-muted-foreground/60 text-xs mt-1">يمكنني إدارة العمولات، تحليل البيانات، وإرسال الإشعارات</p>
+              <p className="text-muted-foreground/60 text-xs mt-1">يمكنني تعديل الصفحات، إنشاء المحتوى، وإعداد الحملات</p>
             </div>
           )}
           {messages.map((msg, i) => (
@@ -282,7 +408,7 @@ const SmartAssistantPage = () => {
             </Button>
             <Input
               value={input}
-              onChange={e => setInput(e.target.value)}
+              onChange={(e) => setInput(e.target.value)}
               placeholder={isActive ? "اكتب طلبك هنا..." : "المساعد متوقف حالياً"}
               disabled={!isActive}
               className="flex-1 text-right bg-secondary/40 border-border"
