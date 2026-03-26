@@ -595,7 +595,7 @@ const ZonesManagement = () => {
               >
                 <SelectTrigger className="mt-1"><SelectValue placeholder={tz.selectCountry} /></SelectTrigger>
                 <SelectContent>
-                  {COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  {COUNTRIES.map(c => <SelectItem key={c} value={c}>{tc(c)}</SelectItem>)}
                   <SelectItem value="__other__">{tz.otherCountry}</SelectItem>
                 </SelectContent>
               </Select>
