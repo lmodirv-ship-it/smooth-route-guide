@@ -291,6 +291,10 @@ const SmartAssistantPage = () => {
         setIframeKey((k) => k + 1);
         toast.success("✅ تم تنفيذ الأمر بنجاح");
 
+        // Log locally
+        addToLocalLog({ type: "command", content: safeText, context: siteUrl || previewUrl || undefined, file: uploadedFile?.name });
+        addToLocalLog({ type: "response", content: reply, context: siteUrl || previewUrl || undefined });
+
         // Save to database
         await saveCommand({
           adminId,
