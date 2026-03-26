@@ -190,6 +190,46 @@ const SmartAssistantPage = () => {
     setUploadedFileType("");
   };
 
+  // Local logging functions
+  const addToLocalLog = (entry: { type: string; content: string; context?: string; file?: string }) => {
+    const logEntry = { ...entry, timestamp: new Date().toISOString(), id: crypto.randomUUID() };
+    setLocalLog(prev => {
+      const updated = [...prev, logEntry];
+      localStorage.setItem("smart_assistant_local_log", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const saveLogPath = (path: string) => {
+    setLocalLogPath(path);
+    localStorage.setItem("smart_assistant_log_path", path);
+    toast.success(`✅ تم تحديد مسار التسجيل: ${path}`);
+  };
+
+  const downloadLocalLog = () => {
+    if (!localLog.length) { toast.error("لا توجد سجلات للتحميل"); return; }
+    const logData = {
+      export_path: localLogPath,
+      exported_at: new Date().toISOString(),
+      total_entries: localLog.length,
+      entries: localLog,
+    };
+    const blob = new Blob([JSON.stringify(logData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `smart-assistant-log-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`📥 تم تحميل السجل (${localLog.length} إدخال)\nاحفظه في: ${localLogPath}`);
+  };
+
+  const clearLocalLog = () => {
+    setLocalLog([]);
+    localStorage.removeItem("smart_assistant_local_log");
+    toast.success("🗑️ تم مسح السجل المحلي");
+  };
+
   const sendMessage = async () => {
     const safeText = sanitizePlainText(input, 8000);
     if (!safeText || loading) return;
