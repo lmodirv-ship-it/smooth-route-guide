@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Bot, Send, Loader2, Paperclip, X, Image, Film, Download, History } from "lucide-react";
+import { Bot, Send, Loader2, Paperclip, X, Image, Film, Download, History, FolderOpen, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
