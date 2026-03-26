@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Users, Search, Filter, Loader2, Copy, Check, UserCog, Save } from "lucide-react";
+import { Users, Search, Filter, Loader2, Copy, Check, UserCog, Save, KeyRound, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,11 @@ const RegisteredUsers = () => {
   const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [passwordUser, setPasswordUser] = useState<UserRecord | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -100,6 +105,41 @@ const RegisteredUsers = () => {
     navigator.clipboard.writeText(id);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const openPasswordDialog = (user: UserRecord) => {
+    setPasswordUser(user);
+    setNewPassword("");
+    setShowPassword(false);
+    setPasswordDialogOpen(true);
+  };
+
+  const handleChangePassword = async () => {
+    if (!passwordUser || savingPassword || newPassword.length < 6) return;
+    setSavingPassword(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-reset-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ user_id: passwordUser.id, new_password: newPassword }),
+        }
+      );
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "خطأ");
+      toast({ title: `✅ تم تغيير كلمة مرور "${passwordUser.name}" بنجاح` });
+      setPasswordDialogOpen(false);
+    } catch (e: any) {
+      toast({ title: "خطأ في تغيير كلمة المرور", description: e.message, variant: "destructive" });
+    } finally {
+      setSavingPassword(false);
+    }
   };
 
   const openRoleDialog = (user: UserRecord) => {
@@ -299,6 +339,10 @@ const RegisteredUsers = () => {
                         🚚 تعيين توصيل
                       </Button>
                     )}
+                    <Button variant="outline" size="sm" onClick={() => openPasswordDialog(u)} className="gap-1.5 text-xs border-orange-500/30 text-orange-600 hover:bg-orange-500/10">
+                      <KeyRound className="w-3.5 h-3.5" />
+                      كلمة السر
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => handleCopyId(u.id)} title="نسخ ID">
                       {copiedId === u.id ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                     </Button>
@@ -353,6 +397,58 @@ const RegisteredUsers = () => {
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 حفظ الأدوار
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Change Dialog */}
+      <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+        <DialogContent className="max-w-sm" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-right flex items-center gap-2">
+              <KeyRound className="w-5 h-5 text-orange-500" />
+              تغيير كلمة المرور
+            </DialogTitle>
+          </DialogHeader>
+          {passwordUser && (
+            <div className="space-y-4">
+              <div className="p-3 rounded-lg bg-secondary/50 border border-border">
+                <p className="font-semibold text-foreground">{passwordUser.name}</p>
+                <p className="text-xs text-muted-foreground">{passwordUser.email}</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">أدخل كلمة المرور الجديدة:</p>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    placeholder="كلمة المرور الجديدة (6 أحرف على الأقل)"
+                    className="pl-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </Button>
+                </div>
+                {newPassword.length > 0 && newPassword.length < 6 && (
+                  <p className="text-xs text-destructive">يجب أن تكون 6 أحرف على الأقل</p>
+                )}
+              </div>
+              <Button
+                onClick={handleChangePassword}
+                disabled={savingPassword || newPassword.length < 6}
+                className="w-full gap-2"
+              >
+                {savingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
+                تغيير كلمة المرور
               </Button>
             </div>
           )}
