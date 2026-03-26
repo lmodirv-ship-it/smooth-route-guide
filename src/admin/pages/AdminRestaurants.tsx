@@ -223,6 +223,7 @@ const AdminRestaurants = () => {
                 <TableRow>
                   <TableHead className="text-right">#</TableHead>
                   <TableHead className="text-right">الاسم</TableHead>
+                  <TableHead className="text-right">الهاتف</TableHead>
                   <TableHead className="text-right">العنوان</TableHead>
                   <TableHead className="text-right">المنطقة</TableHead>
                   <TableHead className="text-right">التقييم</TableHead>
@@ -233,6 +234,7 @@ const AdminRestaurants = () => {
                   <TableRow key={idx}>
                     <TableCell className="font-bold text-muted-foreground">{idx + 1}</TableCell>
                     <TableCell className="font-bold">{r.name}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm" dir="ltr">{r.phone || "—"}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{r.address}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{r.area}</TableCell>
                     <TableCell>⭐ {r.rating || "—"}</TableCell>
