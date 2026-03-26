@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { MapPin, Plus, Pencil, Trash2, DollarSign, Navigation, Loader2, Globe, Building2, List, Wand2 } from "lucide-react";
+import { MapPin, Plus, Pencil, Trash2, DollarSign, Navigation, Loader2, Globe, Building2, List, Wand2, Save } from "lucide-react";
 
 type Zone = {
   id: string;
