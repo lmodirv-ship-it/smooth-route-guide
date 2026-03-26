@@ -4,6 +4,10 @@ import { FileText, Car, DollarSign, Zap, MapPin, Clock, BatteryLow, Package } fr
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGeo } from "@/admin/contexts/AdminGeoContext";
+
+const useOptionalGeo = () => {
+  try { return useAdminGeo(); } catch { return null; }
+};
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import LeafletMap from "@/components/LeafletMap";
 
@@ -84,8 +88,7 @@ const SimpleBarChart = ({ data, color }: { data: { label: string; value: number 
 };
 
 const AdminDashboardPage = () => {
-  let geoCtx: any = null;
-  try { geoCtx = useAdminGeo(); } catch { /* fallback */ }
+  const geoCtx = useOptionalGeo();
   const geoCountry = geoCtx?.selectedCountry || "all";
   const geoCity = geoCtx?.selectedCity || "all";
   const [stats, setStats] = useState<DashboardStats>({

@@ -6,6 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGeo } from "@/admin/contexts/AdminGeoContext";
+
+// Safe hook that won't crash outside provider
+const useOptionalGeo = () => {
+  try { return useAdminGeo(); } catch { return null; }
+};
 import { toast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -72,8 +77,7 @@ const STATUS_FILTERS: Array<{ key: string; label: string }> = [
 const statusClass = (status: string) => STATUS_META[status]?.badge || "bg-secondary text-muted-foreground";
 
 const DeliveryOrdersBoard = ({ title }: { title: string }) => {
-  let geoCtx: any = null;
-  try { geoCtx = useAdminGeo(); } catch { /* used outside provider */ }
+  const geoCtx = useOptionalGeo();
   const [orders, setOrders] = useState<DeliveryOrder[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [search, setSearch] = useState("");
