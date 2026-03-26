@@ -154,8 +154,23 @@ const SmartAssistantPage = () => {
     <div className="h-[calc(100vh-80px)] flex flex-col gap-3" dir={dir}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-2 lg:order-1">
-          <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-          </div>
+          {previewUrl ? (
+            <div className="flex-1 overflow-auto bg-background">
+              <iframe
+                key={`preview-${previewUrl}-${iframeKey}`}
+                src={previewUrl}
+                style={{ width: "1440px", height: "900px", transform: `scale(${zoomLevel})`, transformOrigin: "top left" }}
+                className="bg-background"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                referrerPolicy="no-referrer"
+                title="معاينة التغييرات"
+              />
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+              ستظهر هنا معاينة التغييرات المقترحة من المساعد الذكي
+            </div>
+          )}
         </div>
 
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2">
