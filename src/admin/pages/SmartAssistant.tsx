@@ -90,6 +90,17 @@ const SmartAssistantPage = () => {
     }
   }, [previewUrl]);
 
+  const websiteList = [
+    { name: "Facebook", url: "https://www.facebook.com", icon: "📘" },
+    { name: "Instagram", url: "https://www.instagram.com", icon: "📸" },
+    { name: "TikTok", url: "https://www.tiktok.com", icon: "🎵" },
+    { name: "YouTube", url: "https://www.youtube.com", icon: "▶️" },
+    { name: "X", url: "https://x.com", icon: "𝕏" },
+    { name: "LinkedIn", url: "https://www.linkedin.com", icon: "💼" },
+    { name: "WhatsApp", url: "https://web.whatsapp.com", icon: "💬" },
+    { name: "Google", url: "https://www.google.com", icon: "🔎" },
+  ];
+
   const websiteOptions: WebsiteOption[] = [
     ...(siteUrl || previewUrl
       ? [{
