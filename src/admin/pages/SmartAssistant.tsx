@@ -209,15 +209,14 @@ const SmartAssistantPage = () => {
                 </button>
               </div>
               {/* Site iframe */}
-              <div className="flex-1 overflow-hidden bg-background relative">
+              <div className="flex-1 bg-background relative" style={{ overflow: "hidden" }}>
                 <iframe
                   key={`site-${activeSiteIndex}-${iframeKey}`}
                   src={websiteList[activeSiteIndex].url}
-                  className="w-full h-full border-0"
+                  className="border-0 absolute inset-0 w-full h-full"
                   sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
                   referrerPolicy="no-referrer"
                   title={websiteList[activeSiteIndex].name}
-                  style={{ minHeight: "400px" }}
                 />
               </div>
             </TabsContent>
