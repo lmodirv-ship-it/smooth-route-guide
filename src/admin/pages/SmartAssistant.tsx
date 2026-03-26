@@ -272,6 +272,7 @@ const SmartAssistantPage = () => {
                   }}
                 />
               </div>
+            </div>
           )}
 
           <ScrollArea className="flex-1 p-3">
