@@ -701,6 +701,7 @@ export type Database = {
           created_at: string
           current_lat: number | null
           current_lng: number | null
+          driver_code: string | null
           driver_type: string
           id: string
           license_no: string
@@ -714,6 +715,7 @@ export type Database = {
           created_at?: string
           current_lat?: number | null
           current_lng?: number | null
+          driver_code?: string | null
           driver_type?: string
           id?: string
           license_no?: string
@@ -727,6 +729,7 @@ export type Database = {
           created_at?: string
           current_lat?: number | null
           current_lng?: number | null
+          driver_code?: string | null
           driver_type?: string
           id?: string
           license_no?: string
@@ -1207,24 +1210,30 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          is_confirmed: boolean
           name: string
           phone: string | null
+          user_code: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
           email?: string | null
           id: string
+          is_confirmed?: boolean
           name?: string
           phone?: string | null
+          user_code?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
           email?: string | null
           id?: string
+          is_confirmed?: boolean
           name?: string
           phone?: string | null
+          user_code?: string | null
         }
         Relationships: []
       }
@@ -1674,6 +1683,7 @@ export type Database = {
           id: string
           priority: string
           status: string
+          ticket_code: string | null
           title: string
           trip_id: string | null
           updated_at: string
@@ -1688,6 +1698,7 @@ export type Database = {
           id?: string
           priority?: string
           status?: string
+          ticket_code?: string | null
           title?: string
           trip_id?: string | null
           updated_at?: string
@@ -1702,6 +1713,7 @@ export type Database = {
           id?: string
           priority?: string
           status?: string
+          ticket_code?: string | null
           title?: string
           trip_id?: string | null
           updated_at?: string
