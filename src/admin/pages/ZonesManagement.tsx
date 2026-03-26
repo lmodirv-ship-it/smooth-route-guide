@@ -363,8 +363,13 @@ const ZonesManagement = () => {
     }
     setSavingAll(true);
     try {
+      // Ensure geo_codes for country and city
+      await ensureGeoCode("country", selectedCountry);
+      await ensureGeoCode("city", selectedCity, selectedCountry);
+
       let savedCount = 0;
       for (const z of currentZones) {
+        if (!z.zone_code) z.zone_code = generateCode();
         const { error } = await supabase.from("zones").update({
           name_ar: z.name_ar,
           name_fr: z.name_fr,
@@ -375,10 +380,12 @@ const ZonesManagement = () => {
           radius_km: z.radius_km,
           delivery_fee: z.delivery_fee,
           is_active: z.is_active,
+          zone_code: z.zone_code,
         }).eq("id", z.id);
         if (!error) savedCount++;
       }
       toast.success(tz.zonesSaved.replace("{count}", String(savedCount)));
+      await fetchGeoCodes();
       fetchZones();
     } catch {
       toast.error(tz.saveError);
