@@ -9,6 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import logo from "@/assets/hn-driver-badge.png";
 
 const CallCenterLayout = () => {
@@ -155,6 +156,7 @@ const CallCenterLayout = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <GlobalLogoutButton />
             <LanguageSwitcher />
             <div className="hidden md:flex items-center gap-1.5 bg-success/10 text-success px-3 py-1 rounded-full text-xs">
               <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />

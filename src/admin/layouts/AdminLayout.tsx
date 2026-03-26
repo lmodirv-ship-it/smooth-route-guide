@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { sanitizePlainText } from "@/lib/inputSecurity";
 import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 
 type AiMsg = { role: "user" | "assistant"; content: string };
 
@@ -174,6 +175,7 @@ const AdminLayout = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <GlobalLogoutButton />
             <LanguageSwitcher />
             <button className="p-2 relative hover:bg-secondary rounded-lg transition-colors">
               <Bell className="w-5 h-5 text-muted-foreground" />
