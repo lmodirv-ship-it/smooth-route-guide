@@ -1,21 +1,28 @@
 import { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Bot, Send, Loader2, Globe } from "lucide-react";
+import { Bot, Send, Loader2, Globe, Paperclip, X, Image, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizePlainText } from "@/lib/inputSecurity";
 import { useI18n } from "@/i18n/context";
-import { SocialMediaPreview } from "@/admin/components/SocialMediaPreview";
 
-type AiMsg = { role: "user" | "assistant"; content: string };
+type AiMsg = { role: "user" | "assistant"; content: string | any[] };
 type TaskLog = { id: string; title: string; status: "success" | "error" | "pending"; code?: string; timestamp: string; targetPage?: string };
 
 const AI_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-ai-agent`;
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 async function callAdminAI({ messages, onResult, onError }: {
   messages: AiMsg[]; onResult: (text: string) => void; onError: (e: string) => void;
@@ -57,13 +64,15 @@ const SmartAssistantPage = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [taskLogs, setTaskLogs] = useState<TaskLog[]>([]);
-  const [displayUrl, setDisplayUrl] = useState("");
-  const [iframeError, setIframeError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [pageOneTab, setPageOneTab] = useState<string>("sites");
-  const [activeSiteIndex, setActiveSiteIndex] = useState(0);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // File upload state
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string>("");
+  const [uploadedFileType, setUploadedFileType] = useState<"image" | "video" | "">("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -71,32 +80,61 @@ const SmartAssistantPage = () => {
   }, [messages]);
 
   useEffect(() => {
-    if (smartRefreshKey > 0) {
-      setIframeKey((k) => k + 1);
-    }
+    if (smartRefreshKey > 0) setIframeKey((k) => k + 1);
   }, [smartRefreshKey]);
 
   useEffect(() => {
     if (previewUrl) {
-      setPageOneTab("preview");
+      // preview available
     }
   }, [previewUrl]);
 
-  const websiteList = [
-    { name: "Facebook", url: "https://www.facebook.com", icon: "📘", color: "bg-blue-600" },
-    { name: "Instagram", url: "https://www.instagram.com", icon: "📸", color: "bg-pink-500" },
-    { name: "TikTok", url: "https://www.tiktok.com", icon: "🎵", color: "bg-foreground" },
-    { name: "YouTube", url: "https://www.youtube.com", icon: "▶️", color: "bg-red-600" },
-    { name: "X", url: "https://x.com", icon: "𝕏", color: "bg-foreground" },
-    { name: "LinkedIn", url: "https://www.linkedin.com", icon: "💼", color: "bg-blue-700" },
-    { name: "WhatsApp", url: "https://web.whatsapp.com", icon: "💬", color: "bg-green-600" },
-    { name: "Google", url: "https://www.google.com", icon: "🔎", color: "bg-yellow-500" },
-    { name: "Snapchat", url: "https://www.snapchat.com", icon: "👻", color: "bg-yellow-400" },
-    { name: "Pinterest", url: "https://www.pinterest.com", icon: "📌", color: "bg-red-700" },
-    { name: "Telegram", url: "https://web.telegram.org", icon: "✈️", color: "bg-blue-500" },
-    { name: "Reddit", url: "https://www.reddit.com", icon: "🟠", color: "bg-orange-600" },
-  ];
+  // When a file is uploaded, show it in Page 1
+  useEffect(() => {
+    return () => {
+      if (uploadedFileUrl && uploadedFileUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(uploadedFileUrl);
+      }
+    };
+  }, [uploadedFileUrl]);
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+
+    if (!isImage && !isVideo) {
+      toast.error("يرجى رفع صورة أو فيديو فقط");
+      return;
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("حجم الملف كبير جداً (الحد الأقصى 20MB)");
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    setUploadedFile(file);
+    setUploadedFileUrl(objectUrl);
+    setUploadedFileType(isImage ? "image" : "video");
+    // Clear site URL so Page 1 shows the uploaded file
+    setSiteUrl("");
+    toast.success(`تم رفع ${isImage ? "الصورة" : "الفيديو"} بنجاح`);
+
+    // Reset file input
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const clearUploadedFile = () => {
+    if (uploadedFileUrl && uploadedFileUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(uploadedFileUrl);
+    }
+    setUploadedFile(null);
+    setUploadedFileUrl("");
+    setUploadedFileType("");
+  };
 
   const sendMessage = async () => {
     const safeText = sanitizePlainText(input, 8000);
@@ -107,14 +145,39 @@ const SmartAssistantPage = () => {
       return;
     }
 
-    const currentSiteContext = siteUrl
-      ? `\n\n[السياق: الموقع المعروض حالياً في جدول صفحة 1 هو: ${siteUrl}]\nاستخدم أداة fetch_webpage لقراءة وتحليل محتوى هذا الموقع إذا طُلب منك ذلك.`
-      : "";
-    const pageContext = previewUrl
-      ? `\n[معاينة الصفحة: ${previewUrl}]`
-      : "";
-    const userMsg: AiMsg = { role: "user", content: safeText + currentSiteContext + pageContext };
-    const displayMsg: AiMsg = { role: "user", content: safeText };
+    let userContent: string | any[];
+    let displayContent = safeText;
+
+    // If there's an uploaded image, include it as multimodal content
+    if (uploadedFile && uploadedFileType === "image") {
+      try {
+        const base64 = await fileToBase64(uploadedFile);
+        const siteContext = siteUrl ? `\n[السياق: الموقع المعروض: ${siteUrl}]` : "";
+        const fileContext = `\n[ملف مرفق: ${uploadedFile.name} (${uploadedFileType})]`;
+
+        userContent = [
+          { type: "text", text: safeText + fileContext + siteContext },
+          { type: "image_url", image_url: { url: base64, detail: "high" } },
+        ];
+        displayContent = `📎 ${uploadedFile.name}\n${safeText}`;
+      } catch {
+        toast.error("فشل في قراءة الملف");
+        return;
+      }
+    } else {
+      const currentSiteContext = siteUrl
+        ? `\n\n[السياق: الموقع المعروض حالياً: ${siteUrl}]\nاستخدم أداة fetch_webpage لقراءة وتحليل محتوى هذا الموقع إذا طُلب منك ذلك.`
+        : "";
+      const fileContext = uploadedFile
+        ? `\n[ملف مرفق: ${uploadedFile.name} (${uploadedFileType}) - فيديو لا يمكن تحليله مباشرة]`
+        : "";
+      const pageContext = previewUrl ? `\n[معاينة الصفحة: ${previewUrl}]` : "";
+      userContent = safeText + fileContext + currentSiteContext + pageContext;
+      if (uploadedFile) displayContent = `📎 ${uploadedFile.name}\n${safeText}`;
+    }
+
+    const userMsg: AiMsg = { role: "user", content: userContent };
+    const displayMsg: AiMsg = { role: "user", content: displayContent };
     setMessages((prev) => [...prev, displayMsg]);
     setInput("");
     setLoading(true);
@@ -150,9 +213,13 @@ const SmartAssistantPage = () => {
     });
   };
 
+  // Determine what to show in Page 1
+  const showUploadedFileInPage1 = uploadedFileUrl && !siteUrl;
+
   return (
     <div className="h-[calc(100vh-80px)] flex flex-col gap-3" dir={dir}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+        {/* صفحة 2 - معاينة التغييرات */}
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-2 lg:order-1">
           {previewUrl ? (
             <div className="flex-1 overflow-hidden bg-background relative">
@@ -173,8 +240,35 @@ const SmartAssistantPage = () => {
           )}
         </div>
 
+        {/* صفحة 1 - عرض الموقع أو الملف المرفوع */}
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2">
-          {siteUrl ? (
+          {showUploadedFileInPage1 ? (
+            <div className="flex-1 overflow-hidden bg-black relative flex items-center justify-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 z-10 bg-black/50 hover:bg-black/70 text-white h-7 w-7"
+                onClick={clearUploadedFile}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+              {uploadedFileType === "image" ? (
+                <img
+                  src={uploadedFileUrl}
+                  alt="ملف مرفوع"
+                  className="max-w-full max-h-full object-contain"
+                  style={{ transform: `scale(${zoomLevel})`, transformOrigin: "center" }}
+                />
+              ) : (
+                <video
+                  src={uploadedFileUrl}
+                  controls
+                  className="max-w-full max-h-full"
+                  style={{ transform: `scale(${zoomLevel})`, transformOrigin: "center" }}
+                />
+              )}
+            </div>
+          ) : siteUrl ? (
             <div className="flex-1 overflow-hidden bg-background relative">
               <iframe
                 key={`site-${siteUrl}-${iframeKey}`}
@@ -188,7 +282,7 @@ const SmartAssistantPage = () => {
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm bg-gray-800">
-              <span className="text-gray-400">اكتب رابط الموقع في شريط العرض واضغط "عرض"</span>
+              <span className="text-gray-400">اكتب رابط الموقع أو ارفع ملفاً من جدول المدير</span>
             </div>
           )}
 
@@ -238,9 +332,11 @@ const SmartAssistantPage = () => {
                 }`}>
                   {msg.role === "assistant" ? (
                     <div className="prose prose-sm max-w-none text-black [&_*]:text-black">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      <ReactMarkdown>{typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)}</ReactMarkdown>
                     </div>
-                  ) : msg.content}
+                  ) : (
+                    <span className="whitespace-pre-wrap">{typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)}</span>
+                  )}
                 </div>
               </div>
             ))}
@@ -255,11 +351,18 @@ const SmartAssistantPage = () => {
           </div>
         </div>
 
-        {/* جدول تعليمات المدير */}
+        {/* جدول المدير */}
         <div className="rounded-xl border border-green-900 flex flex-col bg-green-950 overflow-hidden">
           <div className="px-3 py-1.5 border-b border-green-800 flex items-center gap-2 shrink-0">
             <Send className="w-4 h-4 text-green-400" />
             <span className="text-xs font-semibold text-green-200">جدول المدير</span>
+            {uploadedFile && (
+              <Badge variant="outline" className="text-[10px] border-green-700 text-green-300 gap-1 mr-auto">
+                {uploadedFileType === "image" ? <Image className="w-3 h-3" /> : <Film className="w-3 h-3" />}
+                {uploadedFile.name.slice(0, 20)}
+                <X className="w-3 h-3 cursor-pointer hover:text-red-400" onClick={clearUploadedFile} />
+              </Badge>
+            )}
           </div>
           <div className="flex-1 p-3 flex flex-col">
             <textarea
@@ -277,16 +380,37 @@ const SmartAssistantPage = () => {
               }}
             />
             <div className="flex items-center justify-between mt-2">
-              <span className="text-[10px] text-green-400/50">Shift+Enter لسطر جديد</span>
-              <Button
-                onClick={sendMessage}
-                disabled={!input.trim() || loading || !isActive}
-                size="sm"
-                className="gap-2 bg-green-700 hover:bg-green-600 text-green-100"
-              >
-                <Send className="w-3.5 h-3.5" />
-                إرسال
-              </Button>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-green-400/50">Shift+Enter لسطر جديد</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,video/*"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 border-green-700 bg-green-900/50 text-green-300 hover:bg-green-800 hover:text-green-100"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={!isActive}
+                >
+                  <Paperclip className="w-3.5 h-3.5" />
+                  رفع ملف
+                </Button>
+                <Button
+                  onClick={sendMessage}
+                  disabled={!input.trim() || loading || !isActive}
+                  size="sm"
+                  className="gap-2 bg-green-700 hover:bg-green-600 text-green-100"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  إرسال
+                </Button>
+              </div>
             </div>
           </div>
         </div>
