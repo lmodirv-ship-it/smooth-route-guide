@@ -491,11 +491,14 @@ const ZonesManagement = () => {
                 <Select value={selectedCity} onValueChange={setSelectedCity} disabled={!selectedCountry}>
                   <SelectTrigger><SelectValue placeholder={selectedCountry ? `— ${tz.selectCity} —` : tz.selectCountryFirst} /></SelectTrigger>
                   <SelectContent>
-                    {availableCities.map(c => (
-                      <SelectItem key={c} value={c}>
-                        {c} ({zones.filter(z => z.country === selectedCountry && z.city === c).length} {tz.zoneCount})
-                      </SelectItem>
-                    ))}
+                    {availableCities.map(c => {
+                      const gc = getGeoCode("city", c, selectedCountry);
+                      return (
+                        <SelectItem key={c} value={c}>
+                          {c} {gc ? `[${gc.code}]` : ""} ({zones.filter(z => z.country === selectedCountry && z.city === c).length} {tz.zoneCount})
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </CardContent>
