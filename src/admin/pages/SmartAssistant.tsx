@@ -95,6 +95,11 @@ const SmartAssistantPage = () => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [showHistory, setShowHistory] = useState(false);
   const [commandHistory, setCommandHistory] = useState<any[]>([]);
+  const [localLogPath, setLocalLogPath] = useState(() => localStorage.getItem("smart_assistant_log_path") || "C:\\HNDriver\\logs");
+  const [showLogSettings, setShowLogSettings] = useState(false);
+  const [localLog, setLocalLog] = useState<any[]>(() => {
+    try { return JSON.parse(localStorage.getItem("smart_assistant_local_log") || "[]"); } catch { return []; }
+  });
 
   // File upload state
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
