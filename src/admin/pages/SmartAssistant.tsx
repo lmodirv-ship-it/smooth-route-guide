@@ -146,28 +146,6 @@ const SmartAssistantPage = () => {
             </h3>
           </div>
 
-          {/* Browser Preview Frame */}
-          {previewUrl && (
-            <div className="border-b border-border">
-              <div className="bg-secondary/60 px-3 py-1.5 flex items-center gap-2 text-xs">
-                <div className="flex gap-1">
-                  <span className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-warning/60" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-success/60" />
-                </div>
-                <span className="flex-1 text-muted-foreground truncate font-mono text-[11px]" dir="ltr">{previewUrl}</span>
-                <a href={previewUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
-                </a>
-              </div>
-              <iframe
-                src={previewUrl}
-                className="w-full h-[180px] bg-white"
-                sandbox="allow-scripts allow-same-origin"
-                title="معاينة الموقع"
-              />
-            </div>
-          )}
 
           <ScrollArea className="flex-1 p-2.5">
             {taskLogs.length === 0 && (
