@@ -7,6 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import LeafletMap from "@/components/LeafletMap";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/i18n/context";
 
 interface RideDraft {
   pickup: string;
@@ -21,35 +22,34 @@ interface RideDraft {
 }
 
 const DEFAULT_RIDE: RideDraft = {
-  pickup: "حي السواني، طنجة",
-  destination: "محطة القطار طنجة المدينة",
-  distance: "8.5 كم",
-  duration: "18 دقيقة",
-  price: 35,
+  pickup: "",
+  destination: "",
+  distance: "0",
+  duration: "0",
+  price: 0,
 };
 
 const ClientBooking = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t, dir } = useI18n();
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "wallet">("cash");
   const { drivers: nearbyDrivers } = useNearbyDrivers();
 
   const ride = ((location.state as { ride?: RideDraft } | null)?.ride) ?? DEFAULT_RIDE;
-  const priceLabel = ride.price > 0 ? `${ride.price} DH` : "يُحدد لاحقاً";
+  const priceLabel = ride.price > 0 ? `${ride.price} DH` : t.common.price;
 
   const handleConfirmBooking = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast({ title: "يجب تسجيل الدخول أولاً", variant: "destructive" });
+      toast({ title: t.customer.loginRequired, variant: "destructive" });
       navigate("/login?role=client");
       return;
     }
-
     setLoading(true);
     try {
       const distanceNum = parseFloat(ride.distance) || 0;
-
       const { data, error } = await supabase.from("ride_requests").insert({
         user_id: user.id,
         pickup: ride.pickup,
@@ -62,23 +62,21 @@ const ClientBooking = () => {
         price: ride.price || 0,
         status: "pending",
       }).select("id").single();
-
       if (error) throw error;
-
-      toast({ title: "تم إنشاء الطلب بنجاح ✅" });
+      toast({ title: t.customer.orderCreated });
       navigate(`/customer/tracking?id=${data.id}`);
     } catch (error: any) {
-      toast({ title: "تعذر إتمام الطلب", description: error.message || "حاول مرة أخرى", variant: "destructive" });
+      toast({ title: t.customer.orderFailed, description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen gradient-dark" dir="rtl">
+    <div className="min-h-screen gradient-dark" dir={dir}>
       <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate("/customer")}><ArrowRight className="w-5 h-5 text-muted-foreground" /></button>
-        <span className="font-bold text-foreground">تأكيد الطلب</span>
+        <span className="font-bold text-foreground">{t.customer.confirmOrderTitle}</span>
         <div className="w-5" />
       </div>
 
@@ -92,12 +90,12 @@ const ClientBooking = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-success" />
-                <div className="flex-1"><p className="text-xs text-muted-foreground">نقطة الاستلام</p><p className="text-sm text-foreground">{ride.pickup}</p></div>
+                <div className="flex-1"><p className="text-xs text-muted-foreground">{t.customer.pickupPoint}</p><p className="text-sm text-foreground">{ride.pickup}</p></div>
               </div>
               <div className="mr-1.5 border-r border-dashed border-border h-4" />
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-destructive" />
-                <div className="flex-1"><p className="text-xs text-muted-foreground">الوجهة</p><p className="text-sm text-foreground">{ride.destination}</p></div>
+                <div className="flex-1"><p className="text-xs text-muted-foreground">{t.customer.destinationLabel}</p><p className="text-sm text-foreground">{ride.destination}</p></div>
               </div>
             </div>
           </div>
@@ -105,18 +103,18 @@ const ClientBooking = () => {
           <div className="gradient-card rounded-xl p-4 border border-border mb-3">
             <div className="flex justify-between items-center gap-4">
               <div className="flex items-center gap-4">
-                <div className="text-center"><p className="text-xs text-muted-foreground">المسافة</p><p className="text-sm font-bold text-foreground">{ride.distance}</p></div>
-                <div className="text-center"><p className="text-xs text-muted-foreground">المدة</p><p className="text-sm font-bold text-foreground">{ride.duration}</p></div>
+                <div className="text-center"><p className="text-xs text-muted-foreground">{t.customer.distanceLabel}</p><p className="text-sm font-bold text-foreground">{ride.distance}</p></div>
+                <div className="text-center"><p className="text-xs text-muted-foreground">{t.customer.durationLabel}</p><p className="text-sm font-bold text-foreground">{ride.duration}</p></div>
               </div>
-              <div className="text-left"><p className="text-xs text-muted-foreground">السعر</p><p className="text-2xl font-bold text-primary">{priceLabel}</p></div>
+              <div className="text-left"><p className="text-xs text-muted-foreground">{t.customer.priceLabel}</p><p className="text-2xl font-bold text-primary">{priceLabel}</p></div>
             </div>
           </div>
 
           <div className="gradient-card rounded-xl p-4 border border-border mb-4">
-            <p className="text-sm text-foreground font-bold mb-3">طريقة الدفع</p>
+            <p className="text-sm text-foreground font-bold mb-3">{t.customer.paymentMethodTitle}</p>
             <div className="flex gap-3">
-              {([ ["cash", "نقداً", CreditCard], ["wallet", "المحفظة", Wallet]] as const).map(([key, label, Icon]) => (
-                <button key={key} onClick={() => setPaymentMethod(key)}
+              {([ ["cash", t.customer.cashLabel, CreditCard], ["wallet", t.customer.walletLabel, Wallet]] as const).map(([key, label, Icon]) => (
+                <button key={key} onClick={() => setPaymentMethod(key as any)}
                   className={`flex-1 p-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${paymentMethod === key ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>
                   <Icon className="w-4 h-4" /><span className="text-sm">{label}</span>
                 </button>
@@ -126,7 +124,7 @@ const ClientBooking = () => {
 
           <Button onClick={handleConfirmBooking} disabled={loading}
             className="w-full h-14 rounded-2xl gradient-primary text-primary-foreground font-bold text-lg glow-primary">
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Navigation className="w-5 h-5 ml-2" />تأكيد الطلب</>}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Navigation className="w-5 h-5 ml-2" />{t.customer.confirmBtn}</>}
           </Button>
         </motion.div>
       </div>

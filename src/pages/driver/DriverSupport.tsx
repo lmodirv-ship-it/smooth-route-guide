@@ -5,32 +5,34 @@ import { ArrowRight, MessageCircle, Phone, Mail, HelpCircle, ChevronDown, Chevro
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useI18n } from "@/i18n/context";
 
 const DriverSupport = () => {
   const navigate = useNavigate();
+  const { t, dir } = useI18n();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"faq" | "contact">("faq");
 
   const faqs = [
-    { q: "كيف أسحب أرباحي؟", a: "يمكنك سحب أرباحك من صفحة المحفظة → سحب إلى البنك. يتم التحويل خلال 24-48 ساعة عمل." },
-    { q: "كيف أحدّث وثائقي؟", a: "اذهب إلى الوثائق من القائمة الرئيسية وارفع الوثائق المطلوبة. سيتم مراجعتها خلال 24 ساعة." },
-    { q: "ماذا أفعل إذا واجهت مشكلة مع عميل؟", a: "يمكنك الإبلاغ عن المشكلة من خلال تفاصيل الرحلة أو التواصل مع مركز الاتصال مباشرة." },
-    { q: "كيف يتم حساب العمولة؟", a: "عمولة المنصة هي 15% من قيمة كل رحلة. يمكنك الاطلاع على التفاصيل في صفحة الأرباح." },
-    { q: "كيف أغير معلومات سيارتي؟", a: "اذهب إلى معلومات السيارة من ملفك الشخصي واضغط على زر التعديل." },
+    { q: t.driver.faq1q, a: t.driver.faq1a },
+    { q: t.driver.faq2q, a: t.driver.faq2a },
+    { q: t.driver.faq3q, a: t.driver.faq3a },
+    { q: t.driver.faq4q, a: t.driver.faq4a },
+    { q: t.driver.faq5q, a: t.driver.faq5a },
   ];
 
   return (
-    <div className="min-h-screen gradient-dark pb-6" dir="rtl">
+    <div className="min-h-screen gradient-dark pb-6" dir={dir}>
       <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate(-1)}><ArrowRight className="w-5 h-5 text-muted-foreground" /></button>
-        <span className="font-bold text-foreground">الدعم والمساعدة</span>
+        <span className="font-bold text-foreground">{t.driver.supportHelpTitle}</span>
         <HelpCircle className="w-5 h-5 text-primary" />
       </div>
 
       <div className="px-4 mt-4">
         <div className="flex gap-2 mb-4">
-          {([["faq", "الأسئلة الشائعة"], ["contact", "تواصل معنا"]] as const).map(([key, label]) => (
-            <button key={key} onClick={() => setActiveTab(key)}
+          {([["faq", t.driver.faqTab], ["contact", t.driver.contactUsTab]] as const).map(([key, label]) => (
+            <button key={key} onClick={() => setActiveTab(key as any)}
               className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === key ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
               {label}
             </button>
@@ -60,9 +62,9 @@ const DriverSupport = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-3">
               {[
-                { icon: Phone, label: "اتصال", color: "text-success", bg: "bg-success/10" },
-                { icon: MessageCircle, label: "محادثة", color: "text-info", bg: "bg-info/10" },
-                { icon: Bot, label: "المساعد الذكي", color: "text-primary", bg: "bg-primary/10", path: "/assistant" },
+                { icon: Phone, label: t.driver.callLabel, color: "text-success", bg: "bg-success/10" },
+                { icon: MessageCircle, label: t.driver.chatLabel, color: "text-info", bg: "bg-info/10" },
+                { icon: Bot, label: t.customer.aiAssistant, color: "text-primary", bg: "bg-primary/10", path: "/assistant" },
               ].map((c, i) => (
                 <button key={i} onClick={() => c.path && navigate(c.path)}
                   className="gradient-card rounded-xl p-4 border border-border flex flex-col items-center gap-2 hover:border-primary/20 transition-colors">
@@ -75,11 +77,11 @@ const DriverSupport = () => {
             </div>
 
             <div className="gradient-card rounded-xl p-4 border border-border space-y-3">
-              <h3 className="text-foreground font-bold text-sm">أرسل رسالة</h3>
-              <Input placeholder="الموضوع" className="bg-secondary border-border rounded-xl text-right" />
-              <Textarea placeholder="اكتب رسالتك هنا..." className="bg-secondary border-border rounded-xl text-right min-h-[120px]" />
+              <h3 className="text-foreground font-bold text-sm">{t.driver.sendMessageTitle}</h3>
+              <Input placeholder={t.driver.subjectField} className="bg-secondary border-border rounded-xl" />
+              <Textarea placeholder={t.driver.writeMessageHere} className="bg-secondary border-border rounded-xl min-h-[120px]" />
               <Button className="w-full gradient-primary text-primary-foreground rounded-xl">
-                <Send className="w-4 h-4 ml-2" /> إرسال
+                <Send className="w-4 h-4 ml-2" /> {t.driver.sendBtn}
               </Button>
             </div>
           </div>
