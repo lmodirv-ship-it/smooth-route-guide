@@ -67,6 +67,7 @@ const AdminLayout = () => {
     { path: "/admin/call-center", icon: Headphones, label: t.admin.callCenterMenu },
     { path: "/admin/restaurants", icon: UtensilsCrossed, label: t.admin.restaurantsMenu },
     { path: "/admin/zones", icon: MapPin, label: t.admin.zonesPricing },
+    { path: "/admin/commission-rates", icon: Percent, label: "نسب الأرباح" },
     { path: "/admin/settings", icon: Settings, label: t.admin.settingsMenu },
   ];
 
