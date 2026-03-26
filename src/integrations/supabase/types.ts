@@ -1357,6 +1357,57 @@ export type Database = {
         }
         Relationships: []
       }
+      smart_assistant_commands: {
+        Row: {
+          accepted_at: string | null
+          admin_id: string
+          ai_response: string | null
+          attached_file_type: string | null
+          attached_file_url: string | null
+          command_text: string
+          command_type: string
+          created_at: string
+          generated_files: Json | null
+          id: string
+          rejected_at: string | null
+          status: string
+          target_page: string | null
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          admin_id: string
+          ai_response?: string | null
+          attached_file_type?: string | null
+          attached_file_url?: string | null
+          command_text?: string
+          command_type?: string
+          created_at?: string
+          generated_files?: Json | null
+          id?: string
+          rejected_at?: string | null
+          status?: string
+          target_page?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          admin_id?: string
+          ai_response?: string | null
+          attached_file_type?: string | null
+          attached_file_url?: string | null
+          command_text?: string
+          command_type?: string
+          created_at?: string
+          generated_files?: Json | null
+          id?: string
+          rejected_at?: string | null
+          status?: string
+          target_page?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       social_media_posts: {
         Row: {
           admin_approved: boolean
