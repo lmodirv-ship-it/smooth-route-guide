@@ -43,6 +43,7 @@ const SmartAssistantPage = () => {
   const [selectedTask, setSelectedTask] = useState<TaskLog | null>(null);
   const [siteUrl, setSiteUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
+  const [iframeError, setIframeError] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,7 +54,9 @@ const SmartAssistantPage = () => {
     let url = siteUrl.trim();
     if (!url) return;
     if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+    setIframeError(false);
     setPreviewUrl(url);
+    toast.info(`🌐 جاري تحميل: ${url}`);
   };
 
   const toggleActive = () => {
@@ -226,13 +229,44 @@ const SmartAssistantPage = () => {
                   <span className="w-2.5 h-2.5 rounded-full bg-success/60" />
                 </div>
                 <span className="flex-1 text-muted-foreground truncate font-mono text-[11px]" dir="ltr">{previewUrl}</span>
+                <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-[11px] flex items-center gap-1">
+                  فتح <ExternalLink className="w-3 h-3" />
+                </a>
               </div>
-              <iframe
-                src={previewUrl}
-                className="w-full h-[200px] bg-white"
-                sandbox="allow-scripts allow-same-origin"
-                title="معاينة الموقع"
-              />
+              {iframeError ? (
+                <div className="w-full h-[200px] bg-secondary/30 flex flex-col items-center justify-center gap-3 p-4">
+                  <Globe className="w-10 h-10 text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground text-center">هذا الموقع يمنع العرض المضمّن</p>
+                  <a
+                    href={previewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm flex items-center gap-2 hover:opacity-90 transition"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    فتح في نافذة جديدة
+                  </a>
+                </div>
+              ) : (
+                <iframe
+                  src={previewUrl}
+                  className="w-full h-[200px] bg-white"
+                  sandbox="allow-scripts allow-same-origin"
+                  title="معاينة الموقع"
+                  onError={() => setIframeError(true)}
+                  onLoad={(e) => {
+                    try {
+                      const frame = e.currentTarget;
+                      // If we can't access contentDocument, the site blocked iframe
+                      if (!frame.contentDocument?.title && !frame.contentWindow?.location?.href) {
+                        setIframeError(true);
+                      }
+                    } catch {
+                      setIframeError(true);
+                    }
+                  }}
+                />
+              )}
             </div>
           )}
 
