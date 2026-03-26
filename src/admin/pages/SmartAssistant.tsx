@@ -244,15 +244,18 @@ const SmartAssistantPage = () => {
                   فتح <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
-              <iframe
-                key={previewUrl}
-                src={previewUrl}
-                className="w-full h-[200px] bg-white"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                referrerPolicy="no-referrer"
-                title="معاينة الموقع"
-                onError={() => setIframeError(true)}
-              />
+              <div className="w-full overflow-auto bg-white" style={{ height: "calc(100% - 60px)", minHeight: "300px" }}>
+                <iframe
+                  key={previewUrl}
+                  src={previewUrl}
+                  style={{ width: "1440px", height: "900px", transform: "scale(0.65)", transformOrigin: "top left" }}
+                  className="bg-white"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                  referrerPolicy="no-referrer"
+                  title="معاينة الموقع"
+                  onError={() => setIframeError(true)}
+                />
+              </div>
               <div className="px-3 py-2 text-[11px] text-muted-foreground bg-secondary/20 border-t border-border flex items-center justify-between gap-2">
                 <span>{iframeError ? "تعذر عرض الموقع هنا، استخدم فتح" : "إذا لم يظهر الموقع داخل المربع، افتحه من زر فتح"}</span>
                 {iframeError && (
