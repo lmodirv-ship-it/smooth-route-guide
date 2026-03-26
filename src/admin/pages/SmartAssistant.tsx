@@ -215,54 +215,80 @@ const SmartAssistantPage = () => {
         </div>
       </div>
 
-      <div className="rounded-xl border border-border flex flex-col h-[200px] min-h-[160px] bg-white">
-        <div ref={chatRef} className="flex-1 overflow-auto p-4 space-y-3">
-          {messages.length === 0 && (
-            <div className="text-center py-6">
-              <Bot className="w-10 h-10 mx-auto text-primary/40 mb-2" />
-              <p className="text-black/60 text-sm">مرحبًا! أنا المساعد الذكي للمدير. كيف يمكنني مساعدتك؟</p>
-              <p className="text-black/40 text-xs mt-1">يمكنني تعديل الصفحات، إنشاء المحتوى، وإعداد الحملات</p>
-            </div>
-          )}
-          {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[80%] rounded-xl px-4 py-2.5 text-sm ${
-                msg.role === "user"
-                  ? "bg-black text-red-500"
-                  : "bg-gray-100 text-black"
-              }`}>
-                {msg.role === "assistant" ? (
-                  <div className="prose prose-sm max-w-none text-black [&_*]:text-black">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                  </div>
-                ) : msg.content}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-[220px] min-h-[180px]">
+        {/* جدول المساعد الذكي */}
+        <div className="rounded-xl border border-border flex flex-col bg-white overflow-hidden">
+          <div className="px-3 py-1.5 border-b border-gray-200 flex items-center gap-2 shrink-0">
+            <Bot className="w-4 h-4 text-primary" />
+            <span className="text-xs font-semibold text-black">المساعد الذكي</span>
+          </div>
+          <div ref={chatRef} className="flex-1 overflow-auto p-3 space-y-2">
+            {messages.length === 0 && (
+              <div className="text-center py-4">
+                <Bot className="w-8 h-8 mx-auto text-primary/40 mb-1" />
+                <p className="text-black/60 text-xs">مرحبًا! أنا المساعد الذكي للمدير</p>
               </div>
-            </div>
-          ))}
-          {loading && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 rounded-xl px-4 py-3 flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                <span className="text-xs text-black/60">جاري المعالجة...</span>
+            )}
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs ${
+                  msg.role === "user"
+                    ? "bg-black text-red-500"
+                    : "bg-gray-100 text-black"
+                }`}>
+                  {msg.role === "assistant" ? (
+                    <div className="prose prose-sm max-w-none text-black [&_*]:text-black">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
+                  ) : msg.content}
+                </div>
               </div>
-            </div>
-          )}
+            ))}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 rounded-lg px-3 py-2 flex items-center gap-2">
+                  <Loader2 className="w-3 h-3 animate-spin text-primary" />
+                  <span className="text-xs text-black/60">جاري المعالجة...</span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="p-3 border-t border-gray-200">
-          <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="flex gap-2">
-            <Button type="submit" disabled={!input.trim() || loading || !isActive} size="sm" className="gap-2">
-              <Send className="w-4 h-4" />
-              إرسال
-            </Button>
-            <Input
+
+        {/* جدول تعليمات المدير */}
+        <div className="rounded-xl border border-border flex flex-col bg-white overflow-hidden">
+          <div className="px-3 py-1.5 border-b border-gray-200 flex items-center gap-2 shrink-0">
+            <Send className="w-4 h-4 text-red-500" />
+            <span className="text-xs font-semibold text-black">تعليمات المدير</span>
+          </div>
+          <div className="flex-1 p-3 flex flex-col">
+            <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={isActive ? "اكتب طلبك هنا..." : "المساعد متوقف حالياً"}
+              placeholder={isActive ? "اكتب تعليماتك هنا للمساعد الذكي..." : "المساعد متوقف حالياً"}
               disabled={!isActive}
-              className="flex-1 text-right bg-gray-50 border-gray-200 text-black placeholder:text-black/40"
+              className="flex-1 w-full resize-none rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-black placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-primary/30"
               dir="rtl"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage();
+                }
+              }}
             />
-          </form>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-[10px] text-black/40">Shift+Enter لسطر جديد</span>
+              <Button
+                onClick={sendMessage}
+                disabled={!input.trim() || loading || !isActive}
+                size="sm"
+                className="gap-2 bg-black hover:bg-black/80 text-red-500"
+              >
+                <Send className="w-3.5 h-3.5" />
+                إرسال
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
