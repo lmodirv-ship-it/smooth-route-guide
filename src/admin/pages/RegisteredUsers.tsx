@@ -280,9 +280,11 @@ const RegisteredUsers = () => {
           <TableHeader>
             <TableRow>
               <TableHead className="text-right">الاسم</TableHead>
+              <TableHead className="text-center">الرمز</TableHead>
               <TableHead className="text-right">البريد</TableHead>
               <TableHead className="text-right">الهاتف</TableHead>
               <TableHead className="text-center">الأدوار</TableHead>
+              <TableHead className="text-center">التأكيد</TableHead>
               <TableHead className="text-center">التسجيل</TableHead>
               <TableHead className="text-center">إجراءات</TableHead>
             </TableRow>
