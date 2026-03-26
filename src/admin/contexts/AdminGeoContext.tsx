@@ -16,9 +16,23 @@ interface GeoState {
 
 const AdminGeoContext = createContext<GeoState | null>(null);
 
-export const useAdminGeo = () => {
+export const useAdminGeo = (): GeoState => {
   const ctx = useContext(AdminGeoContext);
-  if (!ctx) throw new Error("useAdminGeo must be used within AdminGeoProvider");
+  if (!ctx) {
+    // Return safe defaults when used outside provider
+    return {
+      selectedCountry: "all",
+      selectedCity: "all",
+      setSelectedCountry: () => {},
+      setSelectedCity: () => {},
+      countries: [],
+      cities: [],
+      activeCountries: [],
+      defaultCountry: "all",
+      defaultCity: "all",
+      loading: false,
+    };
+  }
   return ctx;
 };
 
