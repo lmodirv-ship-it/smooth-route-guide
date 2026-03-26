@@ -254,7 +254,7 @@ const AdminLayout = () => {
                   <Globe className="w-4 h-4" />
                   {t.admin.show}
                 </Button>
-                <div className="relative w-80">
+                <div className="relative w-48 md:w-80">
                   <Globe className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     value={smartSiteUrl}
@@ -279,16 +279,16 @@ const AdminLayout = () => {
                 </div>
               </>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3">
                 <AdminGeoFilter />
-                <div className="relative w-52">
+                <div className="relative w-32 md:w-52 hidden sm:block">
                   <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input placeholder={t.admin.searchPlaceholder} className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm" />
                 </div>
               </div>
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 md:gap-3">
             {isSmartAssistantRoute && (
               <>
                 <span className="text-sm font-bold text-foreground">{t.admin.smartAssistantPage}</span>
