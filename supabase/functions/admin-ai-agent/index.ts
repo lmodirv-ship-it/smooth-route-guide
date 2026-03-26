@@ -474,6 +474,87 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         }
         return JSON.stringify({ error: "Invalid action" });
       }
+      case "manage_page": {
+        if (args.action === "list") {
+          const { data, error } = await supabase.from("dynamic_pages").select("id, slug, title, page_type, is_published, sort_order, updated_at").order("updated_at", { ascending: false });
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ pages: data });
+        }
+        if (args.action === "get") {
+          if (!args.slug) return JSON.stringify({ error: "slug required" });
+          const { data, error } = await supabase.from("dynamic_pages").select("*").eq("slug", args.slug).maybeSingle();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify(data || { error: "Page not found" });
+        }
+        if (args.action === "create") {
+          if (!args.slug || !args.title) return JSON.stringify({ error: "slug and title required" });
+          const { data, error } = await supabase.from("dynamic_pages").insert({
+            slug: args.slug,
+            title: args.title,
+            page_type: args.page_type || "content",
+            content: args.content || [],
+            meta_description: args.meta_description || "",
+            css_overrides: args.css_overrides || "",
+            is_published: args.is_published ?? false,
+          }).select().single();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "created", page: data });
+        }
+        if (args.action === "update") {
+          if (!args.slug) return JSON.stringify({ error: "slug required" });
+          const updates: any = { updated_at: new Date().toISOString() };
+          if (args.title !== undefined) updates.title = args.title;
+          if (args.content !== undefined) updates.content = args.content;
+          if (args.page_type !== undefined) updates.page_type = args.page_type;
+          if (args.meta_description !== undefined) updates.meta_description = args.meta_description;
+          if (args.css_overrides !== undefined) updates.css_overrides = args.css_overrides;
+          if (args.is_published !== undefined) updates.is_published = args.is_published;
+          const { data, error } = await supabase.from("dynamic_pages").update(updates).eq("slug", args.slug).select().single();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "updated", page: data });
+        }
+        if (args.action === "delete") {
+          if (!args.slug) return JSON.stringify({ error: "slug required" });
+          const { error } = await supabase.from("dynamic_pages").delete().eq("slug", args.slug);
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "deleted", slug: args.slug });
+        }
+        if (args.action === "publish") {
+          if (!args.slug) return JSON.stringify({ error: "slug required" });
+          const { error } = await supabase.from("dynamic_pages").update({ is_published: true, updated_at: new Date().toISOString() }).eq("slug", args.slug);
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "published", slug: args.slug });
+        }
+        if (args.action === "unpublish") {
+          if (!args.slug) return JSON.stringify({ error: "slug required" });
+          const { error } = await supabase.from("dynamic_pages").update({ is_published: false, updated_at: new Date().toISOString() }).eq("slug", args.slug);
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "unpublished", slug: args.slug });
+        }
+        return JSON.stringify({ error: "Invalid action" });
+      }
+      case "manage_theme": {
+        const THEME_KEY = "site_theme";
+        if (args.action === "get") {
+          const { data, error } = await supabase.from("app_settings").select("*").eq("key", THEME_KEY).maybeSingle();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify(data?.value || { message: "No theme configured, using defaults" });
+        }
+        if (args.action === "update") {
+          if (!args.theme) return JSON.stringify({ error: "theme object required" });
+          const { data: existing } = await supabase.from("app_settings").select("id, value").eq("key", THEME_KEY).maybeSingle();
+          const merged = { ...(existing?.value || {}), ...args.theme };
+          if (existing) {
+            const { error } = await supabase.from("app_settings").update({ value: merged, updated_at: new Date().toISOString() }).eq("key", THEME_KEY);
+            if (error) return JSON.stringify({ error: error.message });
+          } else {
+            const { error } = await supabase.from("app_settings").insert({ key: THEME_KEY, value: merged });
+            if (error) return JSON.stringify({ error: error.message });
+          }
+          return JSON.stringify({ success: true, theme: merged });
+        }
+        return JSON.stringify({ error: "Invalid action" });
+      }
       default:
         return JSON.stringify({ error: `Unknown tool: ${name}` });
     }
