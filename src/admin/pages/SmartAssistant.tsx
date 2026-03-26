@@ -192,45 +192,41 @@ const SmartAssistantPage = () => {
               <TabsTrigger value="social" className="text-xs">التواصل الاجتماعي</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="sites" className="flex-1 overflow-auto m-0">
-              <div className="p-4 space-y-4">
-                <div className="gradient-card rounded-xl border border-border p-3 text-sm text-muted-foreground">
-                  اختر أي موقع من القائمة لعرضه في **صفحة 1**، ويمكنك أيضًا كتابة أي رابط من الأعلى.
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {websiteOptions.map((website) => (
-                    <div key={`${website.name}-${website.url}`} className="gradient-card rounded-xl border border-border p-4 space-y-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xl">{website.icon}</span>
-                            <h3 className="font-semibold text-foreground">{website.name}</h3>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">{website.note}</p>
-                          <p className="text-[10px] text-muted-foreground mt-2 break-all font-mono" dir="ltr">{website.url}</p>
-                        </div>
-                        <Badge variant="outline" className="text-[10px] shrink-0">
-                          {website.embeddable ? "عرض داخلي" : "قد يتطلب فتح خارجي"}
-                        </Badge>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button size="sm" className="flex-1" onClick={() => openWebsiteInPageOne(website)}>
-                          عرض في صفحة 1
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1"
-                          onClick={() => window.open(website.url, "_blank", "noopener,noreferrer")}
-                        >
-                          فتح
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            <TabsContent value="sites" className="flex-1 flex flex-col overflow-hidden m-0">
+              {/* Site selector bar */}
+              <div className="bg-secondary/60 px-2 py-1.5 flex items-center gap-1 border-b border-border overflow-x-auto shrink-0">
+                {websiteList.map((site, i) => (
+                  <button
+                    key={site.name}
+                    onClick={() => setActiveSiteIndex(i)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap shrink-0 ${
+                      activeSiteIndex === i
+                        ? "gradient-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    }`}
+                  >
+                    <span className="text-base">{site.icon}</span>
+                    {site.name}
+                  </button>
+                ))}
+                <button
+                  onClick={() => window.open(websiteList[activeSiteIndex].url, "_blank", "noopener,noreferrer")}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-muted-foreground hover:bg-secondary hover:text-foreground transition-all whitespace-nowrap shrink-0 mr-auto"
+                >
+                  🔗 فتح خارجياً
+                </button>
+              </div>
+              {/* Site iframe */}
+              <div className="flex-1 overflow-hidden bg-background relative">
+                <iframe
+                  key={`site-${activeSiteIndex}-${iframeKey}`}
+                  src={websiteList[activeSiteIndex].url}
+                  className="w-full h-full border-0"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                  referrerPolicy="no-referrer"
+                  title={websiteList[activeSiteIndex].name}
+                  style={{ minHeight: "400px" }}
+                />
               </div>
             </TabsContent>
 
