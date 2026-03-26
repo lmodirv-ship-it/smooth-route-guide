@@ -378,6 +378,50 @@ Supported block types:
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "create_store_with_page",
+      description: `Create a new store/restaurant with its menu categories and automatically generate a dynamic page for it. This is a one-step wizard: provide the store details and the system will:
+1. Create the store record in the 'stores' table
+2. Create menu categories if provided
+3. Create a beautiful dynamic page with hero, info, menu sections, map, and CTA
+4. Link the page to the store
+Use this when the admin wants to add a new restaurant or store quickly.`,
+      parameters: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Store/restaurant name" },
+          description: { type: "string", description: "Short description" },
+          address: { type: "string", description: "Physical address" },
+          phone: { type: "string", description: "Contact phone" },
+          category: { type: "string", enum: ["restaurant", "grocery", "pharmacy", "bakery", "cafe", "store"], default: "restaurant" },
+          image_url: { type: "string", description: "Main image URL" },
+          delivery_fee: { type: "number", default: 10, description: "Delivery fee in DH" },
+          delivery_time_min: { type: "number", default: 20, description: "Min delivery time in minutes" },
+          delivery_time_max: { type: "number", default: 40, description: "Max delivery time in minutes" },
+          rating: { type: "number", default: 4.5, description: "Initial rating" },
+          lat: { type: "number", description: "Latitude" },
+          lng: { type: "number", description: "Longitude" },
+          menu_categories: {
+            type: "array",
+            description: "Menu categories to create",
+            items: {
+              type: "object",
+              properties: {
+                name_ar: { type: "string" },
+                name_fr: { type: "string" },
+              },
+              required: ["name_ar"],
+            },
+          },
+          page_style: { type: "string", enum: ["modern", "classic", "minimal"], default: "modern", description: "Style of the generated page" },
+          publish_page: { type: "boolean", default: true, description: "Auto-publish the page" },
+        },
+        required: ["name"],
+      },
+    },
+  },
 ];
 function applyFilters(query: any, filters: any[]) {
   for (const f of filters) {
@@ -848,6 +892,130 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
           message: `📦 تم إنشاء حزمة النشر "${args.package_name}" بـ ${deployPackage.total_files} ملفات.\n📥 يمكنك تحميلها من الرابط أدناه.`,
         });
       }
+      case "create_store_with_page": {
+        // 1. Create the store
+        const storeData: any = {
+          name: args.name,
+          description: args.description || "",
+          address: args.address || "",
+          phone: args.phone || "",
+          category: args.category || "restaurant",
+          image_url: args.image_url || "",
+          delivery_fee: args.delivery_fee ?? 10,
+          delivery_time_min: args.delivery_time_min ?? 20,
+          delivery_time_max: args.delivery_time_max ?? 40,
+          rating: args.rating ?? 4.5,
+          is_open: true,
+          lat: args.lat || null,
+          lng: args.lng || null,
+        };
+        
+        const { data: store, error: storeErr } = await supabase
+          .from("stores").insert(storeData).select().single();
+        if (storeErr) return JSON.stringify({ error: `فشل إنشاء المتجر: ${storeErr.message}` });
+        
+        // 2. Create menu categories if provided
+        const createdCategories: any[] = [];
+        if (args.menu_categories?.length) {
+          const catRows = args.menu_categories.map((c: any, i: number) => ({
+            store_id: store.id,
+            name_ar: c.name_ar,
+            name_fr: c.name_fr || "",
+            sort_order: i,
+            is_active: true,
+          }));
+          const { data: cats, error: catErr } = await supabase
+            .from("menu_categories").insert(catRows).select();
+          if (!catErr && cats) createdCategories.push(...cats);
+        }
+        
+        // 3. Generate dynamic page
+        const slug = args.name.toLowerCase()
+          .replace(/[^\w\s\u0600-\u06FF-]/g, "")
+          .replace(/\s+/g, "-")
+          .slice(0, 50) || `store-${store.id.slice(0, 8)}`;
+        
+        const categoryLabel = {
+          restaurant: "مطعم",
+          grocery: "بقالة",
+          pharmacy: "صيدلية",
+          bakery: "مخبزة",
+          cafe: "مقهى",
+          store: "متجر",
+        }[args.category || "restaurant"] || "متجر";
+        
+        const pageContent: any[] = [
+          {
+            type: "hero",
+            title: args.name,
+            subtitle: args.description || `مرحباً بكم في ${args.name}`,
+            background_color: "#1a1a2e",
+            text_color: "#ffffff",
+            background_image: args.image_url || "",
+            cta_text: "اطلب الآن",
+            cta_link: `/delivery/store/${store.id}`,
+          },
+          {
+            type: "cards",
+            columns: 3,
+            items: [
+              { title: "⏱️ وقت التوصيل", description: `${args.delivery_time_min || 20}-${args.delivery_time_max || 40} دقيقة`, icon: "clock" },
+              { title: "🚚 رسوم التوصيل", description: `${args.delivery_fee || 10} DH`, icon: "truck" },
+              { title: "⭐ التقييم", description: `${args.rating || 4.5} / 5`, icon: "star" },
+            ],
+          },
+          {
+            type: "text",
+            content: `## من نحن\n\n${args.description || `${args.name} - ${categoryLabel} متميز يقدم أفضل الخدمات والمنتجات.`}\n\n📍 **العنوان**: ${args.address || "سيتم التحديث"}\n📞 **الهاتف**: ${args.phone || "سيتم التحديث"}`,
+            alignment: "right",
+          },
+        ];
+        
+        if (createdCategories.length) {
+          pageContent.push({
+            type: "text",
+            content: `## 📋 أقسام المنيو\n\n${createdCategories.map((c: any) => `- **${c.name_ar}** ${c.name_fr ? `(${c.name_fr})` : ""}`).join("\n")}`,
+            alignment: "right",
+          });
+        }
+        
+        if (args.lat && args.lng) {
+          pageContent.push({
+            type: "map",
+            lat: args.lat,
+            lng: args.lng,
+            zoom: 15,
+            marker_title: args.name,
+          });
+        }
+        
+        pageContent.push({
+          type: "cta",
+          title: `اطلب من ${args.name} الآن!`,
+          subtitle: "توصيل سريع لباب منزلك",
+          button_text: "تصفح المنيو واطلب",
+          button_link: `/delivery/store/${store.id}`,
+          background_color: "#16a34a",
+        });
+        
+        const { data: page, error: pageErr } = await supabase.from("dynamic_pages").insert({
+          slug,
+          title: `${args.name} - ${categoryLabel}`,
+          page_type: "landing",
+          content: pageContent,
+          meta_description: `${args.name} - ${args.description || categoryLabel}. اطلب الآن مع خدمة التوصيل السريع.`,
+          is_published: args.publish_page !== false,
+        }).select().single();
+        
+        return JSON.stringify({
+          success: true,
+          store: { id: store.id, name: store.name },
+          categories_created: createdCategories.length,
+          page: page ? { slug: page.slug, url: `/p/${page.slug}`, published: page.is_published } : null,
+          store_url: `/delivery/store/${store.id}`,
+          message: `✅ تم إنشاء ${categoryLabel} "${args.name}" بنجاح!\n📄 صفحة المتجر: /p/${slug}\n🛒 رابط المتجر: /delivery/store/${store.id}\n📂 الأقسام: ${createdCategories.length} قسم\n${page?.is_published ? "🌐 الصفحة منشورة ومتاحة للزوار" : "⚠️ الصفحة غير منشورة بعد"}`,
+        });
+      }
       default:
         return JSON.stringify({ error: `Unknown tool: ${name}` });
     }
@@ -981,6 +1149,7 @@ serve(async (req) => {
 - **manage_page**: لإنشاء صفحات ديناميكية (محتوى مرن عبر JSON blocks)
 - **manage_theme**: لتعديل الهوية البصرية
 - **fetch_webpage**: لقراءة وتحليل المواقع
+- **create_store_with_page**: ✨ أداة سحرية لإنشاء مطعم/متجر كامل بخطوة واحدة! تنشئ المتجر + أقسام المنيو + صفحة ديناميكية جاهزة تلقائياً. مثال: "أنشئ مطعم اسمه بيتزا الحي بأقسام: بيتزا، مشروبات، حلويات"
 
 ## 📝 قواعد كتابة الكود:
 - استخدم TypeScript strict mode
