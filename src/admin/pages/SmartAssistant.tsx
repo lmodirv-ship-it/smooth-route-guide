@@ -69,7 +69,8 @@ const SmartAssistantPage = () => {
   const [iframeError, setIframeError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(0.48);
-  const [pageOneTab, setPageOneTab] = useState<string>(previewUrl ? "preview" : "sites");
+  const [pageOneTab, setPageOneTab] = useState<string>("sites");
+  const [activeSiteIndex, setActiveSiteIndex] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
 
