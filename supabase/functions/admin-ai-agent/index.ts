@@ -344,6 +344,40 @@ Supported block types:
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "generate_code",
+      description: `Generate code files for the website. Supports React/TypeScript components, CSS/Tailwind styles, SQL queries, HTML pages, and configuration files. The generated code is saved locally for the admin to review and deploy manually. Use this when the admin asks to create or modify components, pages, styles, or any code.`,
+      parameters: {
+        type: "object",
+        properties: {
+          file_path: { type: "string", description: "Target file path relative to project root (e.g. 'src/pages/NewPage.tsx', 'src/components/Banner.tsx', 'src/index.css')" },
+          language: { type: "string", enum: ["typescript", "tsx", "css", "html", "sql", "json", "javascript"], description: "Programming language" },
+          code: { type: "string", description: "The complete code content for the file" },
+          description: { type: "string", description: "Brief description of what this code does" },
+          action: { type: "string", enum: ["create", "modify", "delete"], default: "create", description: "Whether to create a new file, modify existing, or mark for deletion" },
+        },
+        required: ["file_path", "language", "code", "description"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "generate_deployment_package",
+      description: "Generate a complete deployment package with all pending code changes, SQL migrations, and file modifications. This creates a downloadable JSON file containing everything the admin needs to deploy.",
+      parameters: {
+        type: "object",
+        properties: {
+          package_name: { type: "string", description: "Name for the deployment package" },
+          include_sql: { type: "boolean", default: true, description: "Include SQL migration scripts" },
+          include_files: { type: "boolean", default: true, description: "Include generated code files" },
+        },
+        required: ["package_name"],
+      },
+    },
+  },
 ];
 function applyFilters(query: any, filters: any[]) {
   for (const f of filters) {
