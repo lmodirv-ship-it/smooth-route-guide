@@ -421,6 +421,46 @@ Use this when the admin wants to add a new restaurant or store quickly.`,
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "delegate_to_assistant",
+      description: `Delegate a task to a specialized sub-assistant. You act as an orchestrator: read the admin's request, pick the best sub-assistant, and delegate. The sub-assistant executes within its allowed scope. List sub-assistants first with db_select on sub_assistants table if needed.`,
+      parameters: {
+        type: "object",
+        properties: {
+          assistant_id: { type: "string", description: "UUID of the sub-assistant" },
+          task: { type: "string", description: "Clear task description" },
+          context: { type: "string", description: "Additional context or data" },
+        },
+        required: ["assistant_id", "task"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "manage_sub_assistants",
+      description: "Create, update, list, or delete sub-assistants.",
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["list", "create", "update", "delete", "activate", "deactivate"] },
+          id: { type: "string" },
+          name: { type: "string" },
+          name_ar: { type: "string" },
+          description: { type: "string" },
+          assistant_type: { type: "string" },
+          system_prompt: { type: "string" },
+          allowed_tables: { type: "array", items: { type: "string" } },
+          allowed_tools: { type: "array", items: { type: "string" } },
+          icon: { type: "string" },
+          color: { type: "string" },
+        },
+        required: ["action"],
+      },
+    },
+  },
 ];
 function applyFilters(query: any, filters: any[]) {
   for (const f of filters) {
