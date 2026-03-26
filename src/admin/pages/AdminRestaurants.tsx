@@ -31,6 +31,10 @@ const AdminRestaurants = () => {
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const generateStoreCode = () => {
+    return String(Math.floor(100000 + Math.random() * 900000));
+  };
+
   const generateRestaurants = async () => {
     if (selectedCountry === "all") {
       toast({ title: "⚠️ اختر البلد أولاً", variant: "destructive" });
