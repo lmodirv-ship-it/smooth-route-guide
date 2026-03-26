@@ -169,7 +169,7 @@ const SmartAssistantPage = () => {
       </div>
 
       {/* Main Content - Top Split */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 flex-1 min-h-0">
         {/* Right: Executed Tasks with Browser Preview */}
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-2 lg:order-1">
           <div className="p-2.5 border-b border-border flex items-center justify-between">
