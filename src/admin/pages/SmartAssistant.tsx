@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, Loader2, CheckCircle, Code, Power, XCircle, Globe, ExternalLink } from "lucide-react";
+import { Bot, Send, Loader2, CheckCircle, Code, Power, XCircle, Globe, ExternalLink, ShieldCheck, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
