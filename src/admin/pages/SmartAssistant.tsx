@@ -211,11 +211,12 @@ const SmartAssistantPage = () => {
                   🔗 فتح خارجياً
                 </button>
               </div>
-              <div className="flex-1 bg-background relative overflow-hidden">
+              <div className="flex-1 overflow-auto bg-background">
                 <iframe
                   key={`site-${siteUrl || activeSiteIndex}-${iframeKey}`}
                   src={siteUrl || websiteList[activeSiteIndex].url}
-                  className="border-0 absolute inset-0 w-full h-full"
+                  style={{ width: "1440px", height: "900px", transform: `scale(${zoomLevel})`, transformOrigin: "top left" }}
+                  className="bg-background"
                   sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
                   referrerPolicy="no-referrer"
                   title={siteUrl || websiteList[activeSiteIndex].name}
