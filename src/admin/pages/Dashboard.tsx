@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAdminGeo } from "@/admin/contexts/AdminGeoContext";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import LeafletMap from "@/components/LeafletMap";
+import { useI18n } from "@/i18n/context";
 
 interface DashboardStats {
   requestsToday: number;
@@ -84,6 +85,8 @@ const SimpleBarChart = ({ data, color }: { data: { label: string; value: number 
 };
 
 const AdminDashboardPage = () => {
+  const { t, locale } = useI18n();
+  const td = t.dashboardPage;
   const geoCtx = useAdminGeo();
   const geoCountry = geoCtx?.selectedCountry || "all";
   const geoCity = geoCtx?.selectedCity || "all";
@@ -159,26 +162,26 @@ const AdminDashboardPage = () => {
       const { data: profiles } = driverUserIds.length > 0 ? await supabase.from("profiles").select("id, name").in("id", driverUserIds) : { data: [] as any[] };
 
       const profileMap = new Map((profiles || []).map((profile: any) => [profile.id, profile.name]));
-      driverNameMap = new Map((driverRows || []).map((driver: any) => [driver.id, profileMap.get(driver.user_id) || "سائق"]));
+      driverNameMap = new Map((driverRows || []).map((driver: any) => [driver.id, profileMap.get(driver.user_id) || td.systemDriver]));
     }
 
     setAlerts(
       rawAlerts.map((alert: any) => {
-        const text = String(alert.message || alert.type || "تنبيه جديد");
+        const text = String(alert.message || alert.type || td.newAlert);
         const lower = text.toLowerCase();
         const isDanger = lower.includes("battery") || lower.includes("بطارية") || lower.includes("خطر") || lower.includes("emergency");
         const icon = lower.includes("battery") || lower.includes("بطارية") ? BatteryLow : lower.includes("delay") || lower.includes("تأخر") ? Clock : MapPin;
 
         return {
           id: alert.id,
-          driver: driverNameMap.get(alert.driver_id) || "سائق النظام",
+          driver: driverNameMap.get(alert.driver_id) || td.systemDriver,
           alert: text,
           status: isDanger ? "danger" : "warning",
           icon,
         };
       })
     );
-  }, [geoCountry, geoCity]);
+  }, [geoCountry, geoCity, td]);
 
   useEffect(() => {
     void fetchDashboardData();
@@ -200,6 +203,8 @@ const AdminDashboardPage = () => {
       supabase.removeChannel(channel);
     };
   }, [fetchDashboardData]);
+
+  const dateLocale = locale === "ar" ? "ar-MA" : locale === "fr" ? "fr-FR" : locale === "es" ? "es-ES" : "en-US";
 
   const incomeChartData = useMemo(() => {
     if (incomeRange === "daily") {
@@ -229,7 +234,7 @@ const AdminDashboardPage = () => {
           .reduce((sum: number, entry: any) => sum + Number(entry.amount || 0), 0);
 
         return {
-          label: date.toLocaleDateString("ar-MA", { weekday: "short" }),
+          label: date.toLocaleDateString(dateLocale, { weekday: "short" }),
           value: total,
         };
       });
@@ -248,11 +253,11 @@ const AdminDashboardPage = () => {
         .reduce((sum: number, entry: any) => sum + Number(entry.amount || 0), 0);
 
       return {
-        label: date.toLocaleDateString("ar-MA", { month: "short" }),
+        label: date.toLocaleDateString(dateLocale, { month: "short" }),
         value: total,
       };
     });
-  }, [earningsEntries, incomeRange]);
+  }, [earningsEntries, incomeRange, dateLocale]);
 
   const onlinePercent = stats.totalDrivers > 0 ? Math.round((stats.activeDrivers / stats.totalDrivers) * 100) : 0;
 
@@ -260,12 +265,12 @@ const AdminDashboardPage = () => {
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {[
-          { icon: FileText, label: "إجمالي الطلبات", value: stats.requestsToday, color: "text-info", glow: "glow-ring-blue" },
-          { icon: Car, label: "السائقون النشطون", value: stats.activeDrivers, color: "text-primary", glow: "glow-ring-orange" },
-          { icon: Zap, label: "رحلات جارية", value: stats.ongoingRides, color: "text-success", glow: "" },
-          { icon: Package, label: "توصيل معلّق", value: stats.deliveryPending, color: "text-accent", glow: "" },
-          { icon: Package, label: "توصيل نشط", value: stats.deliveryActive, color: "text-info", glow: "glow-ring-blue" },
-          { icon: DollarSign, label: "أرباح اليوم", value: stats.incomeToday, color: "text-warning", glow: "glow-ring-orange" },
+          { icon: FileText, label: td.totalRequests, value: stats.requestsToday, color: "text-info", glow: "glow-ring-blue", isCurrency: false },
+          { icon: Car, label: td.activeDrivers, value: stats.activeDrivers, color: "text-primary", glow: "glow-ring-orange", isCurrency: false },
+          { icon: Zap, label: td.ongoingTrips, value: stats.ongoingRides, color: "text-success", glow: "", isCurrency: false },
+          { icon: Package, label: td.pendingDelivery, value: stats.deliveryPending, color: "text-accent", glow: "", isCurrency: false },
+          { icon: Package, label: td.activeDelivery, value: stats.deliveryActive, color: "text-info", glow: "glow-ring-blue", isCurrency: false },
+          { icon: DollarSign, label: td.todayEarnings, value: stats.incomeToday, color: "text-warning", glow: "glow-ring-orange", isCurrency: true },
         ].map((stat, i) => (
           <motion.div
             key={i}
@@ -281,7 +286,7 @@ const AdminDashboardPage = () => {
               </div>
             </div>
             <p className="text-3xl font-bold text-foreground">
-              {stat.value.toLocaleString()} {stat.label === "أرباح اليوم" ? "ر.س" : ""}
+              {stat.value.toLocaleString()} {stat.isCurrency ? td.currency : ""}
             </p>
           </motion.div>
         ))}
@@ -293,7 +298,7 @@ const AdminDashboardPage = () => {
             <Badge variant="outline" className="text-success border-success/30">
               {nearbyDrivers.length} online
             </Badge>
-            <h3 className="font-bold text-foreground">الخريطة المباشرة</h3>
+            <h3 className="font-bold text-foreground">{td.liveMap}</h3>
           </div>
           <div className="h-72">
             <LeafletMap zoom={11} showMarker={false} nearbyDrivers={nearbyDrivers.map((driver) => ({ id: driver.id, lat: driver.lat, lng: driver.lng }))} />
@@ -301,17 +306,17 @@ const AdminDashboardPage = () => {
         </div>
 
         <div className="gradient-card rounded-xl border border-border p-5">
-          <h3 className="font-bold text-foreground text-right mb-4">حالة السائقين</h3>
+          <h3 className="font-bold text-foreground text-right mb-4">{td.driverStatus}</h3>
           <div className="flex items-center justify-center gap-6">
             <DonutChart online={stats.activeDrivers} offline={stats.offlineDrivers} />
             <div className="space-y-3 text-right">
               <div>
                 <p className="text-2xl font-bold text-foreground">{onlinePercent}%</p>
-                <p className="text-xs text-success">متصل · {stats.activeDrivers}</p>
+                <p className="text-xs text-success">{td.connected} · {stats.activeDrivers}</p>
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">{100 - onlinePercent}%</p>
-                <p className="text-xs text-muted-foreground">غير متصل · {stats.offlineDrivers}</p>
+                <p className="text-xs text-muted-foreground">{td.disconnected} · {stats.offlineDrivers}</p>
               </div>
             </div>
           </div>
@@ -328,25 +333,25 @@ const AdminDashboardPage = () => {
                   onClick={() => setIncomeRange(range)}
                   className={`text-xs px-3 py-1 rounded-lg transition-colors ${incomeRange === range ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}
                 >
-                  {range === "daily" ? "يومي" : range === "weekly" ? "أسبوعي" : "شهري"}
+                  {range === "daily" ? td.daily : range === "weekly" ? td.weekly : td.monthly}
                 </button>
               ))}
             </div>
-            <h3 className="font-bold text-foreground">تحليل الأرباح</h3>
+            <h3 className="font-bold text-foreground">{td.earningsAnalysis}</h3>
           </div>
           <SimpleBarChart data={incomeChartData} color="hsl(var(--primary))" />
         </div>
 
         <div className="gradient-card rounded-xl border border-border overflow-hidden">
           <div className="p-4 border-b border-border">
-            <h3 className="font-bold text-foreground text-right">التنبيهات</h3>
+            <h3 className="font-bold text-foreground text-right">{td.alerts}</h3>
           </div>
           <div className="divide-y divide-border/50">
-            {alerts.length === 0 && <div className="p-8 text-center text-muted-foreground text-sm">لا توجد تنبيهات نشطة</div>}
+            {alerts.length === 0 && <div className="p-8 text-center text-muted-foreground text-sm">{td.noActiveAlerts}</div>}
             {alerts.map((alert) => (
               <div key={alert.id} className="p-3 flex items-center justify-between hover:bg-secondary/30 transition-colors">
                 <Badge variant="outline" className={alert.status === "danger" ? "text-destructive border-destructive/30" : "text-warning border-warning/30"}>
-                  {alert.status === "danger" ? "⚠ خطر" : "⚠ تحذير"}
+                  {alert.status === "danger" ? `⚠ ${td.danger}` : `⚠ ${td.warning}`}
                 </Badge>
                 <div className="flex items-center gap-3 text-right">
                   <div>
@@ -365,17 +370,17 @@ const AdminDashboardPage = () => {
 
       <div className="gradient-card rounded-xl border border-border overflow-hidden">
         <div className="p-4 border-b border-border">
-          <h3 className="font-bold text-foreground text-right">آخر الرحلات</h3>
+          <h3 className="font-bold text-foreground text-right">{td.recentTrips}</h3>
         </div>
         <div className="divide-y divide-border/50 max-h-72 overflow-auto">
-          {recentTrips.length === 0 && <div className="p-8 text-center text-muted-foreground text-sm">لا توجد رحلات</div>}
+          {recentTrips.length === 0 && <div className="p-8 text-center text-muted-foreground text-sm">{td.noTrips}</div>}
           {recentTrips.map((trip) => (
             <div key={trip.id} className="p-3 flex items-center justify-between text-right hover:bg-secondary/30 transition-colors">
               <div className="flex items-center gap-2">
                 <span className={`text-xs px-2 py-0.5 rounded-full ${trip.status === "completed" ? "bg-success/10 text-success" : trip.status === "in_progress" ? "bg-info/10 text-info" : "bg-destructive/10 text-destructive"}`}>
-                  {trip.status === "completed" ? "مكتملة" : trip.status === "in_progress" ? "جارية" : "ملغاة"}
+                  {trip.status === "completed" ? td.completed : trip.status === "in_progress" ? td.inProgress : td.cancelled}
                 </span>
-                <span className="text-primary font-semibold text-sm">{trip.fare || 0} ر.س</span>
+                <span className="text-primary font-semibold text-sm">{trip.fare || 0} {td.currency}</span>
               </div>
               <div>
                 <p className="text-sm text-foreground font-medium truncate max-w-[250px]">{trip.start_location || "—"}</p>

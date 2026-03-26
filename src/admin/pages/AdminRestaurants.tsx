@@ -13,8 +13,11 @@ import { Plus, Pencil, Store, UtensilsCrossed, Loader2, Sparkles, Save } from "l
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CsvMenuImport from "@/admin/components/CsvMenuImport";
 import { Badge } from "@/components/ui/badge";
+import { useI18n } from "@/i18n/context";
 
 const AdminRestaurants = () => {
+  const { t, dir } = useI18n();
+  const tr = t.restaurantAdmin;
   const { selectedCountry, selectedCity } = useAdminGeo();
   const [stores, setStores] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -37,7 +40,7 @@ const AdminRestaurants = () => {
 
   const generateRestaurants = async () => {
     if (selectedCountry === "all") {
-      toast({ title: "⚠️ اختر البلد أولاً", variant: "destructive" });
+      toast({ title: `⚠️ ${tr.selectCountryFirst}`, variant: "destructive" });
       return;
     }
     setGenerating(true);
@@ -49,11 +52,10 @@ const AdminRestaurants = () => {
       if (error) throw error;
       const results = data?.restaurants || [];
       if (results.length === 0) {
-        toast({ title: "لم يتم العثور على مطاعم جديدة" });
+        toast({ title: tr.noNewRestaurants });
         setGenerating(false);
         return;
       }
-      // Filter out already existing stores by name
       const existingNames = new Set(stores.map((s: any) => s.name?.toLowerCase()));
       const newOnes = results.filter((r: any) => !existingNames.has(r.name?.toLowerCase())).map((r: any) => ({
         ...r,
@@ -61,17 +63,17 @@ const AdminRestaurants = () => {
         commission_rate: 5,
       }));
       setGeneratedStores(newOnes);
-      toast({ title: `✅ تم توليد ${newOnes.length} مطعم جديد` });
+      toast({ title: `✅ ${tr.generated.replace("{count}", String(newOnes.length))}` });
     } catch (err: any) {
       console.error("generate restaurants error:", err);
-      toast({ title: "خطأ في التوليد", description: err.message, variant: "destructive" });
+      toast({ title: tr.generateError, description: err.message, variant: "destructive" });
     }
     setGenerating(false);
   };
 
   const saveGeneratedStores = async () => {
     if (generatedStores.length === 0) {
-      toast({ title: "لا توجد مطاعم جديدة للحفظ" });
+      toast({ title: tr.noRestaurantsToSave });
       return;
     }
     setSaving(true);
@@ -97,12 +99,12 @@ const AdminRestaurants = () => {
       }));
       const { error } = await supabase.from("stores").insert(toInsert);
       if (error) throw error;
-      toast({ title: `✅ تم حفظ ${toInsert.length} مطعم في قاعدة البيانات` });
+      toast({ title: `✅ ${tr.saved.replace("{count}", String(toInsert.length))}` });
       setGeneratedStores([]);
       fetchAll();
     } catch (err: any) {
       console.error("save generated stores error:", err);
-      toast({ title: "خطأ في الحفظ", description: err.message, variant: "destructive" });
+      toast({ title: tr.saveError, description: err.message, variant: "destructive" });
     }
     setSaving(false);
   };
@@ -130,16 +132,16 @@ const AdminRestaurants = () => {
     try {
       if (editingStore) {
         await supabase.from("stores").update({ ...storeForm }).eq("id", editingStore.id);
-        toast({ title: "تم تحديث المطعم ✅" });
+        toast({ title: `${tr.storeUpdated} ✅` });
       } else {
         await supabase.from("stores").insert({ ...storeForm, category: "restaurant", is_open: true, isActive: true });
-        toast({ title: "تم إضافة المطعم ✅" });
+        toast({ title: `${tr.storeAdded} ✅` });
       }
       setShowStoreDialog(false);
       setEditingStore(null);
       fetchAll();
     } catch (err: any) {
-      toast({ title: "خطأ", description: err.message, variant: "destructive" });
+      toast({ title: t.common.error, description: err.message, variant: "destructive" });
     }
   };
 
@@ -147,16 +149,16 @@ const AdminRestaurants = () => {
     try {
       if (editingItem) {
         await supabase.from("menu_items").update({ ...itemForm }).eq("id", editingItem.id);
-        toast({ title: "تم تحديث المنتج ✅" });
+        toast({ title: `${tr.productUpdated} ✅` });
       } else {
         await supabase.from("menu_items").insert({ ...itemForm, store_id: selectedStore });
-        toast({ title: "تم إضافة المنتج ✅" });
+        toast({ title: `${tr.productAdded} ✅` });
       }
       setShowItemDialog(false);
       setEditingItem(null);
       fetchAll();
     } catch (err: any) {
-      toast({ title: "خطأ", description: err.message, variant: "destructive" });
+      toast({ title: t.common.error, description: err.message, variant: "destructive" });
     }
   };
 
@@ -181,7 +183,7 @@ const AdminRestaurants = () => {
     const { error } = await supabase.from("stores").update({ commission_rate: value } as any).eq("id", storeId);
     if (!error) {
       setStores(prev => prev.map(s => s.id === storeId ? { ...s, commission_rate: value } : s));
-      toast({ title: "✅ تم تحديث نسبة العمولة" });
+      toast({ title: `✅ ${tr.commissionUpdated}` });
     }
   };
 
@@ -204,43 +206,42 @@ const AdminRestaurants = () => {
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir={dir}>
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Store className="w-6 h-6" /> إدارة المطاعم</h1>
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Store className="w-6 h-6" /> {tr.title}</h1>
         <div className="flex items-center gap-2">
           <Button onClick={generateRestaurants} disabled={generating} className="gap-1 bg-green-600 hover:bg-green-700 text-white">
-            {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} توليد
+            {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} {tr.generate}
           </Button>
           <Button onClick={saveGeneratedStores} disabled={saving || generatedStores.length === 0} className="gap-1 bg-blue-600 hover:bg-blue-700 text-white">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} حفظ
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {tr.save}
           </Button>
-          <Button onClick={openAddStore} className="gap-1"><Plus className="w-4 h-4" /> إضافة مطعم</Button>
+          <Button onClick={openAddStore} className="gap-1"><Plus className="w-4 h-4" /> {tr.addRestaurant}</Button>
         </div>
       </div>
 
-      {/* Generated restaurants preview */}
       {generatedStores.length > 0 && (
         <Card className="border-green-500/30 bg-green-500/5">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-green-500" />
-              مطاعم مكتشفة ({generatedStores.length})
-              <Badge variant="secondary" className="bg-green-100 text-green-700">جديد</Badge>
+              {tr.discovered} ({generatedStores.length})
+              <Badge variant="secondary" className="bg-green-100 text-green-700">{tr.newBadge}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-right">#</TableHead>
-                  <TableHead className="text-right">الاسم</TableHead>
-                  <TableHead className="text-right">الهاتف</TableHead>
-                  <TableHead className="text-right">العنوان</TableHead>
-                  <TableHead className="text-right">التقييم</TableHead>
-                  <TableHead className="text-right">رسوم التوصيل</TableHead>
-                  <TableHead className="text-right">العمولة %</TableHead>
-                  <TableHead className="text-right">رقم</TableHead>
-                  <TableHead className="text-right">تأكيد</TableHead>
+                  <TableHead>#</TableHead>
+                  <TableHead>{tr.name}</TableHead>
+                  <TableHead>{tr.phone}</TableHead>
+                  <TableHead>{tr.address}</TableHead>
+                  <TableHead>{tr.rating}</TableHead>
+                  <TableHead>{tr.deliveryFee}</TableHead>
+                  <TableHead>{tr.commission}</TableHead>
+                  <TableHead>{tr.code}</TableHead>
+                  <TableHead>{tr.confirmation}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -255,7 +256,7 @@ const AdminRestaurants = () => {
                     <TableCell>{r.commission_rate || 5}%</TableCell>
                     <TableCell className="font-mono text-sm">{r.store_code || "—"}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-orange-500 border-orange-500/30">غير مؤكد</Badge>
+                      <Badge variant="outline" className="text-orange-500 border-orange-500/30">{tr.unconfirmed}</Badge>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -265,8 +266,8 @@ const AdminRestaurants = () => {
         </Card>
       )}
 
-      <Tabs defaultValue="stores" dir="rtl">
-        <TabsList><TabsTrigger value="stores">المطاعم</TabsTrigger><TabsTrigger value="menu">المنيو</TabsTrigger></TabsList>
+      <Tabs defaultValue="stores" dir={dir}>
+        <TabsList><TabsTrigger value="stores">{tr.restaurants}</TabsTrigger><TabsTrigger value="menu">{tr.menu}</TabsTrigger></TabsList>
 
         <TabsContent value="stores">
           <Card>
@@ -274,16 +275,16 @@ const AdminRestaurants = () => {
               <Table>
                 <TableHeader>
                  <TableRow>
-                     <TableHead className="text-right w-12">#</TableHead>
-                     <TableHead className="text-right">الاسم</TableHead>
-                     <TableHead className="text-right">الهاتف</TableHead>
-                     <TableHead className="text-right">العنوان</TableHead>
-                     <TableHead className="text-right">التقييم</TableHead>
-                     <TableHead className="text-right">رسوم التوصيل</TableHead>
-                     <TableHead className="text-right">العمولة %</TableHead>
-                     <TableHead className="text-right">رقم</TableHead>
-                     <TableHead className="text-right">تأكيد</TableHead>
-                     <TableHead className="text-right">إجراءات</TableHead>
+                     <TableHead className="w-12">#</TableHead>
+                     <TableHead>{tr.name}</TableHead>
+                     <TableHead>{tr.phone}</TableHead>
+                     <TableHead>{tr.address}</TableHead>
+                     <TableHead>{tr.rating}</TableHead>
+                     <TableHead>{tr.deliveryFee}</TableHead>
+                     <TableHead>{tr.commission}</TableHead>
+                     <TableHead>{tr.code}</TableHead>
+                     <TableHead>{tr.confirmation}</TableHead>
+                     <TableHead>{tr.actions}</TableHead>
                    </TableRow>
                  </TableHeader>
                  <TableBody>
@@ -320,17 +321,17 @@ const AdminRestaurants = () => {
                              const newVal = !s.is_confirmed;
                              await supabase.from("stores").update({ is_confirmed: newVal } as any).eq("id", s.id);
                              setStores(prev => prev.map(x => x.id === s.id ? { ...x, is_confirmed: newVal } : x));
-                             toast({ title: newVal ? "✅ تم التأكيد" : "⚠️ تم إلغاء التأكيد" });
+                             toast({ title: newVal ? `✅ ${tr.confirmDone}` : `⚠️ ${tr.confirmUndone}` });
                            }}
                          >
-                           {s.is_confirmed ? "مؤكد" : "غير مؤكد"}
+                           {s.is_confirmed ? tr.confirmed : tr.unconfirmed}
                          </Button>
                        </TableCell>
                        <TableCell>
                          <div className="flex gap-2">
                            <Button size="sm" variant="outline" onClick={() => openEditStore(s)}><Pencil className="w-3 h-3" /></Button>
                            <Button size="sm" variant="outline" onClick={() => setSelectedStore(s.id)}>
-                             <UtensilsCrossed className="w-3 h-3 mr-1" />المنيو
+                             <UtensilsCrossed className="w-3 h-3 mr-1" />{tr.menu}
                            </Button>
                          </div>
                        </TableCell>
@@ -347,9 +348,9 @@ const AdminRestaurants = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">
-                  {selectedStore ? `منيو: ${stores.find((s) => s.id === selectedStore)?.name}` : "اختر مطعم أولاً"}
+                  {selectedStore ? `${tr.menuOf} ${stores.find((s) => s.id === selectedStore)?.name}` : tr.selectRestaurantFirst}
                 </CardTitle>
-                {selectedStore && <Button size="sm" onClick={openAddItem} className="gap-1"><Plus className="w-3 h-3" /> إضافة منتج</Button>}
+                {selectedStore && <Button size="sm" onClick={openAddItem} className="gap-1"><Plus className="w-3 h-3" /> {tr.addProduct}</Button>}
               </div>
               {!selectedStore && (
                 <div className="flex gap-2 flex-wrap mt-2">
@@ -364,11 +365,11 @@ const AdminRestaurants = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-right">المنتج</TableHead>
-                      <TableHead className="text-right">الفئة</TableHead>
-                      <TableHead className="text-right">السعر</TableHead>
-                      <TableHead className="text-right">متوفر</TableHead>
-                      <TableHead className="text-right">إجراءات</TableHead>
+                      <TableHead>{tr.product}</TableHead>
+                      <TableHead>{tr.category}</TableHead>
+                      <TableHead>{tr.price}</TableHead>
+                      <TableHead>{tr.available}</TableHead>
+                      <TableHead>{tr.actions}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -405,43 +406,43 @@ const AdminRestaurants = () => {
 
       {/* Store Dialog */}
       <Dialog open={showStoreDialog} onOpenChange={setShowStoreDialog}>
-        <DialogContent dir="rtl">
-          <DialogHeader><DialogTitle>{editingStore ? "تعديل المطعم" : "إضافة مطعم"}</DialogTitle></DialogHeader>
+        <DialogContent dir={dir}>
+          <DialogHeader><DialogTitle>{editingStore ? tr.editRestaurant : tr.addRestaurant}</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label>الاسم</Label><Input value={storeForm.name} onChange={(e) => setStoreForm({ ...storeForm, name: e.target.value })} /></div>
-            <div><Label>الوصف</Label><Input value={storeForm.description} onChange={(e) => setStoreForm({ ...storeForm, description: e.target.value })} /></div>
-            <div><Label>العنوان</Label><Input value={storeForm.address} onChange={(e) => setStoreForm({ ...storeForm, address: e.target.value })} /></div>
-            <div><Label>الهاتف</Label><Input value={storeForm.phone} onChange={(e) => setStoreForm({ ...storeForm, phone: e.target.value })} /></div>
+            <div><Label>{tr.name}</Label><Input value={storeForm.name} onChange={(e) => setStoreForm({ ...storeForm, name: e.target.value })} /></div>
+            <div><Label>{tr.description}</Label><Input value={storeForm.description} onChange={(e) => setStoreForm({ ...storeForm, description: e.target.value })} /></div>
+            <div><Label>{tr.address}</Label><Input value={storeForm.address} onChange={(e) => setStoreForm({ ...storeForm, address: e.target.value })} /></div>
+            <div><Label>{tr.phone}</Label><Input value={storeForm.phone} onChange={(e) => setStoreForm({ ...storeForm, phone: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>رسوم التوصيل (DH)</Label><Input type="number" value={storeForm.delivery_fee} onChange={(e) => setStoreForm({ ...storeForm, delivery_fee: +e.target.value })} /></div>
-              <div><Label>التقييم</Label><Input type="number" step="0.1" value={storeForm.rating} onChange={(e) => setStoreForm({ ...storeForm, rating: +e.target.value })} /></div>
+              <div><Label>{tr.deliveryFee} (DH)</Label><Input type="number" value={storeForm.delivery_fee} onChange={(e) => setStoreForm({ ...storeForm, delivery_fee: +e.target.value })} /></div>
+              <div><Label>{tr.rating}</Label><Input type="number" step="0.1" value={storeForm.rating} onChange={(e) => setStoreForm({ ...storeForm, rating: +e.target.value })} /></div>
             </div>
-            <div><Label>نسبة العمولة (%)</Label><Input type="number" min="0" max="100" step="0.5" value={storeForm.commission_rate} onChange={(e) => setStoreForm({ ...storeForm, commission_rate: +e.target.value })} /></div>
-            <Button onClick={saveStore} className="w-full">{editingStore ? "تحديث" : "إضافة"}</Button>
+            <div><Label>{tr.commission}</Label><Input type="number" min="0" max="100" step="0.5" value={storeForm.commission_rate} onChange={(e) => setStoreForm({ ...storeForm, commission_rate: +e.target.value })} /></div>
+            <Button onClick={saveStore} className="w-full">{editingStore ? t.zones.update : t.zones.add}</Button>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Item Dialog */}
       <Dialog open={showItemDialog} onOpenChange={setShowItemDialog}>
-        <DialogContent dir="rtl">
-          <DialogHeader><DialogTitle>{editingItem ? "تعديل المنتج" : "إضافة منتج"}</DialogTitle></DialogHeader>
+        <DialogContent dir={dir}>
+          <DialogHeader><DialogTitle>{editingItem ? tr.editProduct : tr.addProduct}</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label>الاسم (عربي)</Label><Input value={itemForm.name_ar} onChange={(e) => setItemForm({ ...itemForm, name_ar: e.target.value })} /></div>
-            <div><Label>الاسم (فرنسي)</Label><Input value={itemForm.name_fr} onChange={(e) => setItemForm({ ...itemForm, name_fr: e.target.value })} /></div>
-            <div><Label>الوصف</Label><Input value={itemForm.description_ar} onChange={(e) => setItemForm({ ...itemForm, description_ar: e.target.value })} /></div>
-            <div><Label>السعر (DH)</Label><Input type="number" value={itemForm.price} onChange={(e) => setItemForm({ ...itemForm, price: +e.target.value })} /></div>
+            <div><Label>{tr.nameAr}</Label><Input value={itemForm.name_ar} onChange={(e) => setItemForm({ ...itemForm, name_ar: e.target.value })} /></div>
+            <div><Label>{tr.nameFr}</Label><Input value={itemForm.name_fr} onChange={(e) => setItemForm({ ...itemForm, name_fr: e.target.value })} /></div>
+            <div><Label>{tr.descriptionLabel}</Label><Input value={itemForm.description_ar} onChange={(e) => setItemForm({ ...itemForm, description_ar: e.target.value })} /></div>
+            <div><Label>{tr.price} (DH)</Label><Input type="number" value={itemForm.price} onChange={(e) => setItemForm({ ...itemForm, price: +e.target.value })} /></div>
             <div>
-              <Label>الفئة</Label>
+              <Label>{tr.category}</Label>
               <select value={itemForm.category_id} onChange={(e) => setItemForm({ ...itemForm, category_id: e.target.value })} className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm">
                 {storeCats.map((c) => <option key={c.id} value={c.id}>{c.name_ar}</option>)}
               </select>
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={itemForm.is_available} onCheckedChange={(v) => setItemForm({ ...itemForm, is_available: v })} />
-              <Label>متوفر</Label>
+              <Label>{tr.available}</Label>
             </div>
-            <Button onClick={saveItem} className="w-full">{editingItem ? "تحديث" : "إضافة"}</Button>
+            <Button onClick={saveItem} className="w-full">{editingItem ? t.zones.update : t.zones.add}</Button>
           </div>
         </DialogContent>
       </Dialog>
