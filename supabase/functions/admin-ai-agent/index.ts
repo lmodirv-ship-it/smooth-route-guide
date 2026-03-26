@@ -204,24 +204,6 @@ const tools = [
   {
     type: "function",
     function: {
-      name: "manage_user_role",
-      description: "Add, remove, or change a user's role. Supports: admin, moderator, user, driver, agent.",
-      parameters: {
-        type: "object",
-        properties: {
-          user_id: { type: "string", description: "The user's ID" },
-          action: { type: "string", enum: ["add", "remove", "change"] },
-          role: { type: "string", enum: ["admin", "moderator", "user", "driver", "agent"] },
-          find_by_email: { type: "string", description: "Find user by email instead of ID" },
-          find_by_phone: { type: "string", description: "Find user by phone instead of ID" },
-        },
-        required: ["action", "role"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
       name: "analyze_image",
       description: "Analyze an uploaded image and provide detailed feedback about its content, UI issues, design suggestions, data visible, etc. Call this when the user sends an image.",
       parameters: {
@@ -393,42 +375,6 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         const { error } = await supabase.from("notifications").insert(rows);
         if (error) return JSON.stringify({ error: error.message });
         return JSON.stringify({ success: true, notified: userIds.length });
-      }
-      case "manage_user_role": {
-        let userId = args.user_id;
-        if (!userId && args.find_by_email) {
-          const { data } = await supabase.from("profiles").select("id").eq("email", args.find_by_email).maybeSingle();
-          userId = data?.id;
-        }
-        if (!userId && args.find_by_phone) {
-          const { data } = await supabase.from("profiles").select("id").eq("phone", args.find_by_phone).maybeSingle();
-          userId = data?.id;
-        }
-        if (!userId) return JSON.stringify({ error: "User not found" });
-
-        if (args.action === "add") {
-          const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: args.role });
-          if (error) return JSON.stringify({ error: error.message });
-          if (args.role === "driver") {
-            await supabase.from("drivers").upsert({ user_id: userId, status: "inactive" }, { onConflict: "user_id" });
-          }
-          return JSON.stringify({ success: true, action: "role_added", user_id: userId, role: args.role });
-        }
-        if (args.action === "remove") {
-          const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", args.role);
-          if (error) return JSON.stringify({ error: error.message });
-          return JSON.stringify({ success: true, action: "role_removed", user_id: userId, role: args.role });
-        }
-        if (args.action === "change") {
-          await supabase.from("user_roles").delete().eq("user_id", userId);
-          const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: args.role });
-          if (error) return JSON.stringify({ error: error.message });
-          if (args.role === "driver") {
-            await supabase.from("drivers").upsert({ user_id: userId, status: "inactive" }, { onConflict: "user_id" });
-          }
-          return JSON.stringify({ success: true, action: "role_changed", user_id: userId, new_role: args.role });
-        }
-        return JSON.stringify({ error: "Invalid action" });
       }
       case "analyze_image": {
         return JSON.stringify({
