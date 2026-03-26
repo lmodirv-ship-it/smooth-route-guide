@@ -386,7 +386,7 @@ serve(async (req) => {
   }
 
   try {
-    const { city, country, mode } = await req.json();
+    const { city, country, mode, extended } = await req.json();
 
     if (!country) {
       return new Response(
