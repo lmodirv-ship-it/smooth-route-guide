@@ -8,8 +8,9 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { MapPin, Plus, Pencil, Trash2, DollarSign, Navigation, Loader2, ChevronDown, ChevronLeft, Globe, Building2 } from "lucide-react";
+import { MapPin, Plus, Pencil, Trash2, DollarSign, Navigation, Loader2, Globe, Building2, List } from "lucide-react";
 
 type Zone = {
   id: string;
@@ -36,7 +37,7 @@ const COUNTRIES = [
 const emptyForm = {
   name_ar: "",
   name_fr: "",
-  city: "Tanger",
+  city: "",
   country: "المغرب",
   center_lat: 35.7595,
   center_lng: -5.834,
@@ -52,8 +53,10 @@ const ZonesManagement = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
-  const [openCountries, setOpenCountries] = useState<Set<string>>(new Set());
-  const [openCities, setOpenCities] = useState<Set<string>>(new Set());
+
+  // Filter state
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
+  const [selectedCity, setSelectedCity] = useState<string>("");
 
   const fetchZones = async () => {
     setLoading(true);
@@ -67,50 +70,49 @@ const ZonesManagement = () => {
     else {
       const zonesData = (data || []) as Zone[];
       setZones(zonesData);
-      // Auto-open all countries and cities
-      setOpenCountries(new Set(zonesData.map(z => z.country)));
-      setOpenCities(new Set(zonesData.map(z => `${z.country}|${z.city}`)));
     }
     setLoading(false);
   };
 
   useEffect(() => { fetchZones(); }, []);
 
-  // Group zones: Country → City → Zones
-  const grouped = useMemo(() => {
-    const map = new Map<string, Map<string, Zone[]>>();
-    zones.forEach(z => {
-      const country = z.country || "المغرب";
-      if (!map.has(country)) map.set(country, new Map());
-      const cityMap = map.get(country)!;
-      if (!cityMap.has(z.city)) cityMap.set(z.city, []);
-      cityMap.get(z.city)!.push(z);
-    });
-    return map;
+  // Derived data
+  const availableCountries = useMemo(() => {
+    const set = new Set(zones.map(z => z.country || "المغرب"));
+    return Array.from(set).sort();
   }, [zones]);
 
-  const toggleCountry = (c: string) => {
-    setOpenCountries(prev => {
-      const next = new Set(prev);
-      next.has(c) ? next.delete(c) : next.add(c);
-      return next;
-    });
+  const availableCities = useMemo(() => {
+    if (!selectedCountry) return [];
+    const set = new Set(zones.filter(z => z.country === selectedCountry).map(z => z.city));
+    return Array.from(set).sort();
+  }, [zones, selectedCountry]);
+
+  const filteredZones = useMemo(() => {
+    if (!selectedCountry) return [];
+    if (!selectedCity) return [];
+    return zones.filter(z => z.country === selectedCountry && z.city === selectedCity);
+  }, [zones, selectedCountry, selectedCity]);
+
+  // Stats
+  const countryCount = availableCountries.length;
+  const cityCount = useMemo(() => {
+    const set = new Set(zones.map(z => `${z.country}|${z.city}`));
+    return set.size;
+  }, [zones]);
+
+  // Reset city when country changes
+  const handleCountryChange = (country: string) => {
+    setSelectedCountry(country);
+    setSelectedCity("");
   };
 
-  const toggleCity = (key: string) => {
-    setOpenCities(prev => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
-  };
-
-  const openCreate = (presetCountry?: string, presetCity?: string) => {
+  const openCreate = () => {
     setEditingId(null);
     setForm({
       ...emptyForm,
-      country: presetCountry || emptyForm.country,
-      city: presetCity || emptyForm.city,
+      country: selectedCountry || emptyForm.country,
+      city: selectedCity || emptyForm.city,
     });
     setDialogOpen(true);
   };
@@ -163,20 +165,18 @@ const ZonesManagement = () => {
     else fetchZones();
   };
 
-  const countryCount = grouped.size;
-  const cityCount = Array.from(grouped.values()).reduce((s, m) => s + m.size, 0);
-
   return (
     <div className="space-y-6" dir="rtl">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <MapPin className="w-6 h-6 text-primary" />
             إدارة المناطق والأسعار
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">تنظيم حسب البلد → المدينة → الأحياء</p>
+          <p className="text-sm text-muted-foreground mt-1">اختر البلد ← المدينة ← تظهر المناطق</p>
         </div>
-        <Button onClick={() => openCreate()} className="gradient-primary text-primary-foreground gap-2">
+        <Button onClick={openCreate} className="gradient-primary text-primary-foreground gap-2">
           <Plus className="w-4 h-4" /> إضافة منطقة
         </Button>
       </div>
@@ -196,8 +196,8 @@ const ZonesManagement = () => {
         </Card>
         <Card className="glass-strong border-border">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-blue-500" />
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Building2 className="w-5 h-5 text-primary" />
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">{cityCount}</p>
@@ -207,8 +207,8 @@ const ZonesManagement = () => {
         </Card>
         <Card className="glass-strong border-border">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-              <Navigation className="w-5 h-5 text-green-500" />
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Navigation className="w-5 h-5 text-primary" />
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">{zones.filter(z => z.is_active).length}</p>
@@ -218,8 +218,8 @@ const ZonesManagement = () => {
         </Card>
         <Card className="glass-strong border-border">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-              <DollarSign className="w-5 h-5 text-amber-500" />
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <DollarSign className="w-5 h-5 text-primary" />
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">
@@ -231,143 +231,166 @@ const ZonesManagement = () => {
         </Card>
       </div>
 
-      {/* Hierarchical View */}
+      {/* Filter: Country → City */}
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-      ) : zones.length === 0 ? (
-        <Card className="glass-strong border-border">
-          <CardContent className="py-12 text-center">
-            <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">لا توجد مناطق بعد</p>
-          </CardContent>
-        </Card>
       ) : (
-        <div className="space-y-4">
-          {Array.from(grouped.entries()).map(([country, cityMap]) => {
-            const isCountryOpen = openCountries.has(country);
-            const totalInCountry = Array.from(cityMap.values()).reduce((s, arr) => s + arr.length, 0);
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Country Select */}
+            <Card className="glass-strong border-border">
+              <CardContent className="p-4">
+                <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
+                  <Globe className="w-4 h-4 text-primary" /> اختر البلد
+                </Label>
+                <Select value={selectedCountry} onValueChange={handleCountryChange}>
+                  <SelectTrigger><SelectValue placeholder="— اختر البلد —" /></SelectTrigger>
+                  <SelectContent>
+                    {availableCountries.map(c => (
+                      <SelectItem key={c} value={c}>
+                        {c} ({zones.filter(z => z.country === c).length} منطقة)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
 
-            return (
-              <Card key={country} className="glass-strong border-border overflow-hidden">
-                {/* Country Header */}
-                <button
-                  onClick={() => toggleCountry(country)}
-                  className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    {isCountryOpen ? <ChevronDown className="w-5 h-5 text-muted-foreground" /> : <ChevronLeft className="w-5 h-5 text-muted-foreground" />}
-                    <Globe className="w-5 h-5 text-primary" />
-                    <span className="text-lg font-bold text-foreground">{country}</span>
-                    <Badge variant="secondary">{totalInCountry} حي</Badge>
-                    <Badge variant="outline" className="text-muted-foreground">{cityMap.size} مدينة</Badge>
+            {/* City Select */}
+            <Card className="glass-strong border-border">
+              <CardContent className="p-4">
+                <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
+                  <Building2 className="w-4 h-4 text-primary" /> اختر المدينة
+                </Label>
+                <Select value={selectedCity} onValueChange={setSelectedCity} disabled={!selectedCountry}>
+                  <SelectTrigger><SelectValue placeholder={selectedCountry ? "— اختر المدينة —" : "اختر البلد أولاً"} /></SelectTrigger>
+                  <SelectContent>
+                    {availableCities.map(c => (
+                      <SelectItem key={c} value={c}>
+                        {c} ({zones.filter(z => z.country === selectedCountry && z.city === c).length} منطقة)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Zones Table */}
+          {selectedCountry && selectedCity && (
+            <Card className="glass-strong border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <List className="w-5 h-5 text-primary" />
+                  مناطق {selectedCity} — {selectedCountry}
+                  <Badge variant="secondary" className="mr-2">{filteredZones.length} منطقة</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {filteredZones.length === 0 ? (
+                  <div className="text-center py-8">
+                    <MapPin className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground">لا توجد مناطق في هذه المدينة</p>
+                    <Button onClick={openCreate} variant="outline" className="mt-3 gap-2">
+                      <Plus className="w-4 h-4" /> إضافة منطقة
+                    </Button>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="gap-1 text-xs"
-                    onClick={(e) => { e.stopPropagation(); openCreate(country); }}
-                  >
-                    <Plus className="w-3 h-3" /> مدينة جديدة
-                  </Button>
-                </button>
-
-                {isCountryOpen && (
-                  <div className="border-t border-border">
-                    {Array.from(cityMap.entries()).map(([city, cityZones]) => {
-                      const cityKey = `${country}|${city}`;
-                      const isCityOpen = openCities.has(cityKey);
-
-                      return (
-                        <div key={cityKey} className="border-b border-border last:border-b-0">
-                          {/* City Header */}
-                          <button
-                            onClick={() => toggleCity(cityKey)}
-                            className="w-full flex items-center justify-between px-6 py-3 hover:bg-muted/20 transition-colors bg-muted/10"
-                          >
-                            <div className="flex items-center gap-3">
-                              {isCityOpen ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronLeft className="w-4 h-4 text-muted-foreground" />}
-                              <Building2 className="w-4 h-4 text-blue-500" />
-                              <span className="font-semibold text-foreground">{city}</span>
-                              <Badge variant="secondary" className="text-xs">{cityZones.length} حي</Badge>
-                              <Badge variant="outline" className="text-xs">
-                                {cityZones.filter(z => z.is_active).length} نشط
-                              </Badge>
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="gap-1 text-xs"
-                              onClick={(e) => { e.stopPropagation(); openCreate(country, city); }}
-                            >
-                              <Plus className="w-3 h-3" /> حي جديد
-                            </Button>
-                          </button>
-
-                          {/* Neighborhoods */}
-                          {isCityOpen && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 p-4 bg-background/50">
-                              {cityZones.map(z => (
-                                <Card key={z.id} className="border-border hover:border-primary/30 transition-colors">
-                                  <CardHeader className="pb-2 flex flex-row items-start justify-between">
-                                    <div>
-                                      <CardTitle className="text-sm">{z.name_ar}</CardTitle>
-                                      <p className="text-xs text-muted-foreground">{z.name_fr}</p>
-                                    </div>
-                                    <Badge variant={z.is_active ? "default" : "secondary"} className={z.is_active ? "bg-green-500/20 text-green-400 border-green-500/30 text-xs" : "text-xs"}>
-                                      {z.is_active ? "نشط" : "معطل"}
-                                    </Badge>
-                                  </CardHeader>
-                                  <CardContent className="space-y-2">
-                                    <div className="grid grid-cols-2 gap-2 text-xs">
-                                      <div className="bg-secondary/50 rounded-lg p-2 text-center">
-                                        <p className="text-muted-foreground">النطاق</p>
-                                        <p className="font-semibold text-foreground">{z.radius_km} كم</p>
-                                      </div>
-                                      <div className="bg-secondary/50 rounded-lg p-2 text-center">
-                                        <p className="text-muted-foreground">رسوم التوصيل</p>
-                                        <p className="font-bold text-primary">{z.delivery_fee} DH</p>
-                                      </div>
-                                    </div>
-                                    <div className="flex items-center justify-between pt-2 border-t border-border">
-                                      <div className="flex items-center gap-2">
-                                        <Switch checked={z.is_active} onCheckedChange={() => toggleActive(z)} />
-                                        <span className="text-xs text-muted-foreground">{z.is_active ? "نشط" : "معطل"}</span>
-                                      </div>
-                                      <div className="flex gap-1">
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openEdit(z)}>
-                                          <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                                        </Button>
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleDelete(z.id)}>
-                                          <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                ) : (
+                  <div className="rounded-lg border border-border overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-muted/30">
+                          <TableHead className="text-right">#</TableHead>
+                          <TableHead className="text-right">الاسم بالعربية</TableHead>
+                          <TableHead className="text-right">الاسم بالفرنسية</TableHead>
+                          <TableHead className="text-right">النطاق (كم)</TableHead>
+                          <TableHead className="text-right">رسوم التوصيل</TableHead>
+                          <TableHead className="text-right">الحالة</TableHead>
+                          <TableHead className="text-right">إجراءات</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredZones.map((z, idx) => (
+                          <TableRow key={z.id} className="hover:bg-muted/10">
+                            <TableCell className="font-bold text-muted-foreground">{idx + 1}</TableCell>
+                            <TableCell className="font-semibold">{z.name_ar}</TableCell>
+                            <TableCell className="text-muted-foreground">{z.name_fr || "—"}</TableCell>
+                            <TableCell>{z.radius_km} كم</TableCell>
+                            <TableCell className="font-bold text-primary">{z.delivery_fee} DH</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Switch checked={z.is_active} onCheckedChange={() => toggleActive(z)} />
+                                <Badge variant={z.is_active ? "default" : "secondary"} className="text-xs">
+                                  {z.is_active ? "نشط" : "معطل"}
+                                </Badge>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1">
+                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(z)}>
+                                  <Pencil className="w-4 h-4 text-muted-foreground" />
+                                </Button>
+                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => handleDelete(z.id)}>
+                                  <Trash2 className="w-4 h-4 text-destructive" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
-              </Card>
-            );
-          })}
-        </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Prompt to select */}
+          {!selectedCountry && zones.length > 0 && (
+            <Card className="glass-strong border-border">
+              <CardContent className="py-12 text-center">
+                <Globe className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">اختر بلداً لعرض مدنه ومناطقه</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {selectedCountry && !selectedCity && (
+            <Card className="glass-strong border-border">
+              <CardContent className="py-12 text-center">
+                <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">اختر مدينة لعرض مناطقها</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {zones.length === 0 && (
+            <Card className="glass-strong border-border">
+              <CardContent className="py-12 text-center">
+                <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">لا توجد مناطق بعد</p>
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
 
       {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="glass-strong border-border max-w-md" dir="rtl">
           <DialogHeader>
-            <DialogTitle>{editingId ? "تعديل المنطقة" : "إضافة حي جديد"}</DialogTitle>
+            <DialogTitle>{editingId ? "تعديل المنطقة" : "إضافة منطقة جديدة"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <Label className="text-xs">البلد *</Label>
-              <Select value={COUNTRIES.includes(form.country) ? form.country : "__other__"} onValueChange={v => { if (v !== "__other__") setForm(f => ({ ...f, country: v })); else setForm(f => ({ ...f, country: "" })); }}>
+              <Select
+                value={COUNTRIES.includes(form.country) ? form.country : "__other__"}
+                onValueChange={v => {
+                  if (v !== "__other__") setForm(f => ({ ...f, country: v }));
+                  else setForm(f => ({ ...f, country: "" }));
+                }}
+              >
                 <SelectTrigger className="mt-1"><SelectValue placeholder="اختر البلد" /></SelectTrigger>
                 <SelectContent>
                   {COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
