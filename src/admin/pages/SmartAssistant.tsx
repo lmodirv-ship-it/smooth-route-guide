@@ -126,6 +126,30 @@ const SmartAssistantPage = () => {
             </h3>
           </div>
 
+          {/* Mini preview of selected task's page */}
+          {selectedTask?.targetPage && (
+            <div className="border-b border-border">
+              <div className="bg-secondary/60 px-2 py-1 flex items-center gap-1.5 text-[10px]">
+                <div className="flex gap-0.5">
+                  <span className="w-2 h-2 rounded-full bg-destructive/60" />
+                  <span className="w-2 h-2 rounded-full bg-warning/60" />
+                  <span className="w-2 h-2 rounded-full bg-success/60" />
+                </div>
+                <span className="flex-1 text-muted-foreground truncate font-mono" dir="ltr">{selectedTask.targetPage}</span>
+              </div>
+              <div className="w-full overflow-hidden bg-white" style={{ height: "180px" }}>
+                <iframe
+                  key={`mini-${selectedTask.id}-${iframeKey}`}
+                  src={selectedTask.targetPage}
+                  style={{ width: "1440px", height: "900px", transform: "scale(0.22)", transformOrigin: "top left" }}
+                  className="bg-white pointer-events-none"
+                  sandbox="allow-scripts allow-same-origin"
+                  referrerPolicy="no-referrer"
+                  title="معاينة مصغرة"
+                />
+              </div>
+            </div>
+          )}
 
           <ScrollArea className="flex-1 p-2.5">
             {taskLogs.length === 0 && (
