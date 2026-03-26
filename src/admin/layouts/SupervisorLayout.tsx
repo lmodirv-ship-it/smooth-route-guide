@@ -108,6 +108,7 @@ const SupervisorLayout = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
