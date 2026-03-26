@@ -378,6 +378,50 @@ Supported block types:
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "create_store_with_page",
+      description: `Create a new store/restaurant with its menu categories and automatically generate a dynamic page for it. This is a one-step wizard: provide the store details and the system will:
+1. Create the store record in the 'stores' table
+2. Create menu categories if provided
+3. Create a beautiful dynamic page with hero, info, menu sections, map, and CTA
+4. Link the page to the store
+Use this when the admin wants to add a new restaurant or store quickly.`,
+      parameters: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Store/restaurant name" },
+          description: { type: "string", description: "Short description" },
+          address: { type: "string", description: "Physical address" },
+          phone: { type: "string", description: "Contact phone" },
+          category: { type: "string", enum: ["restaurant", "grocery", "pharmacy", "bakery", "cafe", "store"], default: "restaurant" },
+          image_url: { type: "string", description: "Main image URL" },
+          delivery_fee: { type: "number", default: 10, description: "Delivery fee in DH" },
+          delivery_time_min: { type: "number", default: 20, description: "Min delivery time in minutes" },
+          delivery_time_max: { type: "number", default: 40, description: "Max delivery time in minutes" },
+          rating: { type: "number", default: 4.5, description: "Initial rating" },
+          lat: { type: "number", description: "Latitude" },
+          lng: { type: "number", description: "Longitude" },
+          menu_categories: {
+            type: "array",
+            description: "Menu categories to create",
+            items: {
+              type: "object",
+              properties: {
+                name_ar: { type: "string" },
+                name_fr: { type: "string" },
+              },
+              required: ["name_ar"],
+            },
+          },
+          page_style: { type: "string", enum: ["modern", "classic", "minimal"], default: "modern", description: "Style of the generated page" },
+          publish_page: { type: "boolean", default: true, description: "Auto-publish the page" },
+        },
+        required: ["name"],
+      },
+    },
+  },
 ];
 function applyFilters(query: any, filters: any[]) {
   for (const f of filters) {
