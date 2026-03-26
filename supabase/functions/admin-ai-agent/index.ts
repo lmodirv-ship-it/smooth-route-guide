@@ -29,7 +29,7 @@ const ALLOWED_TABLES = [
   "earnings", "payments", "wallet", "notifications", "alerts", "complaints",
   "tickets", "call_center", "call_logs", "promotions", "documents",
   "zones", "app_settings", "import_logs", "chat_conversations", "chat_messages",
-  "trip_status_history", "ride_messages",
+  "trip_status_history", "ride_messages", "commission_rates",
 ];
 
 const tools = [
@@ -231,8 +231,23 @@ const tools = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "manage_commission_rates",
+      description: "View or update platform commission rates per category (restaurants, drivers, delivery, stores, pharmacy_beauty, courier, express_market, supermarket, shops_gifts). Default is 5%.",
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["list", "update"], description: "'list' to view all rates, 'update' to change a rate" },
+          category: { type: "string", description: "Category to update (only for 'update' action)" },
+          rate: { type: "number", description: "New commission rate percentage (only for 'update' action)" },
+        },
+        required: ["action"],
+      },
+    },
+  },
 ];
-
 function applyFilters(query: any, filters: any[]) {
   for (const f of filters) {
     switch (f.operator) {
@@ -420,6 +435,24 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
           focus_areas: args.focus_areas || "general",
         });
       }
+      case "manage_commission_rates": {
+        if (args.action === "list") {
+          const { data, error } = await supabase.from("commission_rates").select("*").order("category");
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ rates: data });
+        }
+        if (args.action === "update") {
+          if (!args.category || args.rate === undefined) return JSON.stringify({ error: "category and rate required" });
+          const { data, error } = await supabase.from("commission_rates")
+            .update({ rate: args.rate, updated_at: new Date().toISOString() })
+            .eq("category", args.category)
+            .select();
+          if (error) return JSON.stringify({ error: error.message });
+          if (!data?.length) return JSON.stringify({ error: "Category not found" });
+          return JSON.stringify({ success: true, category: args.category, new_rate: args.rate });
+        }
+        return JSON.stringify({ error: "Invalid action" });
+      }
       default:
         return JSON.stringify({ error: `Unknown tool: ${name}` });
     }
@@ -524,6 +557,12 @@ serve(async (req) => {
 - إدارة أدوار المستخدمين (بحذر)
 - إرسال إشعارات
 - عرض إحصائيات المنصة
+- عرض وتعديل نسب أرباح المنصة (commission_rates)
+
+## نسب الأرباح:
+- استخدم أداة manage_commission_rates لعرض أو تعديل نسب الأرباح
+- الفئات: restaurants (المطاعم), drivers (السائقين), delivery (التوصيل), stores (المتاجر), pharmacy_beauty (صيدليات وتجميل), courier (خدمة كوريي), express_market (ماركت سريع), supermarket (سوبر ماركت), shops_gifts (متاجر وهدايا)
+- النسبة الافتراضية 5%
 
 ## القواعد الأمنية المهمة:
 - لا تحذف بيانات بدون تأكيد صريح من المسؤول
@@ -535,7 +574,7 @@ serve(async (req) => {
 - قدّم نتائج بتنسيق Markdown
 
 ## الجداول المتاحة:
-profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages`;
+profiles, user_roles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates`;
 
     let aiMessages: any[] = [
       { role: "system", content: systemPrompt },
