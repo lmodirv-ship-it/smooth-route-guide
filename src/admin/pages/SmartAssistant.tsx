@@ -118,14 +118,15 @@ const SmartAssistantPage = () => {
           <Button
             variant={isActive ? "destructive" : "default"}
             size="sm"
-            onClick={() => setIsActive(!isActive)}
-            className="gap-2"
+            onClick={toggleActive}
+            className={`gap-2 ${!isActive ? "bg-success hover:bg-success/90 text-white" : ""}`}
           >
-            {isActive ? <XCircle className="w-4 h-4" /> : <Power className="w-4 h-4" />}
+            {isActive ? <ShieldOff className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
             {isActive ? "إلغاء التفعيل" : "تفعيل"}
           </Button>
-          <Badge variant="outline" className={isActive ? "text-success border-success/30" : "text-destructive border-destructive/30"}>
-            {isActive ? "نشط" : "متوقف"}
+          <Badge variant="outline" className={`px-3 py-1 ${isActive ? "text-success border-success/30 bg-success/10" : "text-destructive border-destructive/30 bg-destructive/10"}`}>
+            <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${isActive ? "bg-success animate-pulse" : "bg-destructive"}`} />
+            {isActive ? "نشط — التغييرات ستُنفَّذ" : "متوقف — لن يُنفَّذ أي أمر"}
           </Badge>
         </div>
         <div className="flex items-center gap-3">
