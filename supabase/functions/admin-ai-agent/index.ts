@@ -1038,9 +1038,87 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
             type: "text",
             content: `## من نحن\n\n${args.description || `${args.name} - ${categoryLabel} متميز يقدم أفضل الخدمات والمنتجات.`}\n\n📍 **العنوان**: ${args.address || "سيتم التحديث"}\n📞 **الهاتف**: ${args.phone || "سيتم التحديث"}`,
             alignment: "right",
+  },
+  {
+    type: "function",
+    function: {
+      name: "db_schema_info",
+      description: "عرض معلومات هيكلية عن جداول قاعدة البيانات: أسماء الجداول، الأعمدة وأنواعها، العلاقات، عدد السجلات. يساعد المدير على فهم بنية البيانات.",
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["list_tables", "describe_table", "table_sizes"], description: "'list_tables' لعرض كل الجداول, 'describe_table' لوصف جدول محدد, 'table_sizes' لعرض أحجام الجداول" },
+          table_name: { type: "string", description: "اسم الجدول (مطلوب فقط لـ describe_table)" },
+        },
+        required: ["action"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "export_data",
+      description: "تصدير بيانات من جدول بصيغة JSON مع فلاتر اختيارية. يحفظ الملف في التخزين السحابي ويعطي رابط تحميل.",
+      parameters: {
+        type: "object",
+        properties: {
+          table: { type: "string", enum: ALLOWED_TABLES },
+          filters: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                column: { type: "string" },
+                operator: { type: "string", enum: ["eq", "neq", "gt", "gte", "lt", "lte", "like", "ilike"] },
+                value: { type: "string" },
+              },
+              required: ["column", "operator", "value"],
+            },
           },
-        ];
-        
+          columns: { type: "string", default: "*", description: "الأعمدة المطلوبة" },
+          limit: { type: "number", default: 500 },
+          file_name: { type: "string", description: "اسم الملف (اختياري)" },
+        },
+        required: ["table"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "import_data",
+      description: "استيراد بيانات إلى جدول من مصفوفة JSON. يتحقق من صحة البيانات قبل الإدراج ويعطي تقريراً بالنتائج.",
+      parameters: {
+        type: "object",
+        properties: {
+          table: { type: "string", enum: ALLOWED_TABLES },
+          rows: { type: "array", items: { type: "object" }, description: "مصفوفة السجلات للاستيراد" },
+          on_conflict: { type: "string", enum: ["skip", "update"], default: "skip", description: "عند التعارض: skip=تجاهل, update=تحديث" },
+          conflict_column: { type: "string", description: "العمود المستخدم لكشف التعارض (مثل id أو email)" },
+        },
+        required: ["table", "rows"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "manage_app_settings",
+      description: "إدارة شاملة لإعدادات المنصة. عرض، إضافة، تعديل أو حذف أي إعداد. يشمل: التسعير، الدفع، الهوية البصرية، الميزات، الإشعارات، وغيرها.",
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["list_all", "get", "set", "delete", "bulk_set"], description: "العملية المطلوبة" },
+          key: { type: "string", description: "مفتاح الإعداد" },
+          value: { type: "object", description: "قيمة الإعداد (JSON)" },
+          settings: { type: "array", items: { type: "object", properties: { key: { type: "string" }, value: { type: "object" } }, required: ["key", "value"] }, description: "مجموعة إعدادات (لـ bulk_set)" },
+        },
+        required: ["action"],
+      },
+    },
+  },
+];
+
         if (createdCategories.length) {
           pageContent.push({
             type: "text",
