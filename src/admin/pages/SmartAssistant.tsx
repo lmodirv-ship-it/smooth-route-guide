@@ -438,24 +438,24 @@ const SmartAssistantPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-[220px] min-h-[180px]">
         {/* جدول المساعد الذكي */}
         <div className="rounded-xl border border-blue-400/30 flex flex-col bg-[#0a1628] overflow-hidden">
-          <div className="px-3 py-1.5 border-b border-blue-200 flex items-center gap-2 shrink-0">
-            <Bot className="w-4 h-4 text-blue-600" />
-            <span className="text-xs font-semibold text-blue-800">المساعد الذكي</span>
-            <Badge variant="outline" className="text-[9px] border-blue-300 text-blue-600 gap-1">
+          <div className="px-3 py-1.5 border-b border-blue-500/30 flex items-center gap-2 shrink-0">
+            <Bot className="w-4 h-4 text-blue-400" />
+            <span className="text-xs font-semibold text-blue-200">المساعد الذكي</span>
+            <Badge variant="outline" className="text-[9px] border-blue-500/40 text-blue-300 gap-1">
               <Save className="w-2.5 h-2.5" />
               {localLog.length} سجل
             </Badge>
             <div className="mr-auto flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600 hover:bg-blue-200" onClick={() => setShowLogSettings(!showLogSettings)} title="إعدادات التسجيل المحلي">
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-400 hover:bg-blue-900/50" onClick={() => setShowLogSettings(!showLogSettings)} title="إعدادات التسجيل المحلي">
                 <FolderOpen className="w-3.5 h-3.5" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600 hover:bg-blue-200" onClick={downloadLocalLog} title="تحميل السجل المحلي">
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-400 hover:bg-blue-900/50" onClick={downloadLocalLog} title="تحميل السجل المحلي">
                 <Save className="w-3.5 h-3.5" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600 hover:bg-blue-200" onClick={loadHistory} title="سجل الأوامر">
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-400 hover:bg-blue-900/50" onClick={loadHistory} title="سجل الأوامر">
                 <History className="w-3.5 h-3.5" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600 hover:bg-blue-200" onClick={exportHistory} title="تصدير السجل">
+              <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-400 hover:bg-blue-900/50" onClick={exportHistory} title="تصدير السجل">
                 <Download className="w-3.5 h-3.5" />
               </Button>
             </div>
