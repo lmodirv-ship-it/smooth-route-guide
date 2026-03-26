@@ -50,6 +50,7 @@ const SmartAssistantPage = () => {
   const [selectedTask, setSelectedTask] = useState<TaskLog | null>(null);
   const [displayUrl, setDisplayUrl] = useState("");
   const [iframeError, setIframeError] = useState(false);
+  const [iframeKey, setIframeKey] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -90,6 +91,7 @@ const SmartAssistantPage = () => {
           t.id === newTask.id ? { ...t, status: "success" as const, code: reply } : t
         ));
         setLoading(false);
+        setIframeKey(k => k + 1); // refresh preview after success
         toast.success("✅ تم تنفيذ الأمر بنجاح");
       },
       onError: (err) => {
@@ -127,7 +129,14 @@ const SmartAssistantPage = () => {
             {taskLogs.map(task => (
               <button
                 key={task.id}
-                onClick={() => setSelectedTask(task)}
+                onClick={() => {
+                  setSelectedTask(task);
+                  if (task.targetPage) {
+                    setPreviewUrl(task.targetPage);
+                    setSiteUrl(task.targetPage);
+                    setIframeKey(k => k + 1);
+                  }
+                }}
                 className={`w-full text-right p-3 rounded-lg mb-2 transition-colors border ${
                   selectedTask?.id === task.id
                     ? "bg-primary/10 border-primary/30"
@@ -179,7 +188,7 @@ const SmartAssistantPage = () => {
               <div className="w-full overflow-auto bg-white" style={{ height: "calc(100% - 60px)", minHeight: "300px" }}>
                 <iframe
                   ref={iframeRef}
-                  key={previewUrl}
+                  key={`${previewUrl}-${iframeKey}`}
                   src={previewUrl}
                   style={{ width: "1440px", height: "900px", transform: "scale(0.65)", transformOrigin: "top left" }}
                   className="bg-white"
