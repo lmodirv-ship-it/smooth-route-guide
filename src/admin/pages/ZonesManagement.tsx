@@ -334,6 +334,7 @@ const ZonesManagement = () => {
           radius_km: 3,
           delivery_fee: 10,
           is_active: true,
+          zone_code: generateCode(),
         }));
         const { error: insertError } = await supabase.from("zones").insert(toInsert);
         if (insertError) {
