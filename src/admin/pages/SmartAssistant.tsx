@@ -160,52 +160,53 @@ const SmartAssistantPage = () => {
         {/* Left: Code Used + Site Preview */}
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2">
 
-          {/* Browser Preview inside Code panel */}
-          {previewUrl && (
-            <div className="border-b border-border">
-              <div className="bg-secondary/60 px-3 py-1.5 flex items-center gap-2 text-xs">
-                <div className="flex gap-1">
-                  <span className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-warning/60" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-success/60" />
+          {/* Content area */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Browser Preview inside Code panel */}
+            {previewUrl ? (
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="bg-secondary/60 px-3 py-1.5 flex items-center gap-2 text-xs">
+                  <div className="flex gap-1">
+                    <span className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-warning/60" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-success/60" />
+                  </div>
+                  <span className="flex-1 text-muted-foreground truncate font-mono text-[11px]" dir="ltr">{displayUrl || previewUrl}</span>
                 </div>
-                <span className="flex-1 text-muted-foreground truncate font-mono text-[11px]" dir="ltr">{displayUrl || previewUrl}</span>
-              </div>
-              <div className="w-full overflow-auto bg-white" style={{ height: "calc(100% - 60px)", minHeight: "400px" }}>
-                <iframe
-                  ref={iframeRef}
-                  key={`${previewUrl}-${iframeKey}`}
-                  src={previewUrl}
-                  style={{ width: "1440px", height: "900px", transform: `scale(${zoomLevel})`, transformOrigin: "top left" }}
-                  className="bg-white"
-                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                  referrerPolicy="no-referrer"
-                  title="معاينة الموقع"
-                  onError={() => setIframeError(true)}
-                  onLoad={() => {
-                    try {
-                      const currentUrl = iframeRef.current?.contentWindow?.location?.href;
-                      if (currentUrl && currentUrl !== "about:blank") {
-                        setDisplayUrl(currentUrl);
-                        setSiteUrl(currentUrl);
+                <div className="flex-1 overflow-auto bg-white">
+                  <iframe
+                    ref={iframeRef}
+                    key={`${previewUrl}-${iframeKey}`}
+                    src={previewUrl}
+                    style={{ width: "1440px", height: "900px", transform: `scale(${zoomLevel})`, transformOrigin: "top left" }}
+                    className="bg-white"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                    referrerPolicy="no-referrer"
+                    title="معاينة الموقع"
+                    onError={() => setIframeError(true)}
+                    onLoad={() => {
+                      try {
+                        const currentUrl = iframeRef.current?.contentWindow?.location?.href;
+                        if (currentUrl && currentUrl !== "about:blank") {
+                          setDisplayUrl(currentUrl);
+                          setSiteUrl(currentUrl);
+                        }
+                      } catch {
+                        // Cross-origin - can't read URL
                       }
-                    } catch {
-                      // Cross-origin - can't read URL
-                    }
-                  }}
-                />
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+                لا توجد صفحة محملة
+              </div>
+            )}
+          </div>
 
-          {!previewUrl && (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-              لا توجد صفحة محملة
-            </div>
-          )}
-
-          {/* Zoom Controls - bottom of صفحة 1 */}
-          <div className="bg-secondary/60 px-3 py-1.5 flex items-center justify-center gap-2 border-t border-border mt-auto">
+          {/* Zoom Controls - always at bottom */}
+          <div className="bg-secondary/60 px-3 py-1.5 flex items-center justify-center gap-2 border-t border-border shrink-0">
             <Button variant="outline" size="icon" className="h-7 w-7 text-lg font-bold" onClick={() => setZoomLevel(z => Math.max(0.1, z - 0.1))}>
               −
             </Button>
@@ -225,31 +226,6 @@ const SmartAssistantPage = () => {
               +
             </Button>
           </div>
-          <ScrollArea className="flex-1 p-3">
-            {selectedTask ? (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Badge variant="outline" className={
-                    selectedTask.status === "success" ? "text-success border-success/30" :
-                    selectedTask.status === "error" ? "text-destructive border-destructive/30" :
-                    "text-warning border-warning/30"
-                  }>
-                    {selectedTask.status === "success" ? "تم بنجاح" : selectedTask.status === "error" ? "فشل" : "جاري..."}
-                  </Badge>
-                  <p className="text-xs font-medium text-foreground">{selectedTask.title}</p>
-                </div>
-                {selectedTask.targetPage && (
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground bg-secondary/40 rounded-md px-2 py-1">
-                    <Globe className="w-3 h-3" />
-                    <span className="font-mono" dir="ltr">{selectedTask.targetPage}</span>
-                  </div>
-                )}
-                <div className="bg-secondary/50 rounded-lg p-3 text-xs font-mono text-foreground/80 whitespace-pre-wrap leading-relaxed" dir="ltr">
-                  <ReactMarkdown>{selectedTask.code || "لا يوجد كود"}</ReactMarkdown>
-                </div>
-              </div>
-            ) : null}
-          </ScrollArea>
         </div>
       </div>
 
