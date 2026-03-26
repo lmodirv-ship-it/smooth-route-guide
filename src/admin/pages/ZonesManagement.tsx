@@ -285,7 +285,43 @@ const ZonesManagement = () => {
     setAutoGenerating(false);
   };
 
-  return (
+  const handleSaveAll = async () => {
+    if (!selectedCountry || !selectedCity) {
+      toast.error("اختر البلد والمدينة أولاً");
+      return;
+    }
+    const currentZones = zones.filter(z => z.country === selectedCountry && z.city === selectedCity);
+    if (currentZones.length === 0) {
+      toast.info("لا توجد مناطق لحفظها");
+      return;
+    }
+    setSavingAll(true);
+    try {
+      // Re-insert (upsert) all current zones to ensure they're saved
+      let savedCount = 0;
+      for (const z of currentZones) {
+        const { error } = await supabase.from("zones").update({
+          name_ar: z.name_ar,
+          name_fr: z.name_fr,
+          city: z.city,
+          country: z.country,
+          center_lat: z.center_lat,
+          center_lng: z.center_lng,
+          radius_km: z.radius_km,
+          delivery_fee: z.delivery_fee,
+          is_active: z.is_active,
+        }).eq("id", z.id);
+        if (!error) savedCount++;
+      }
+      toast.success(`تم حفظ ${savedCount} منطقة بنجاح`);
+      fetchZones();
+    } catch {
+      toast.error("خطأ في الحفظ");
+    }
+    setSavingAll(false);
+  };
+
+
     <div className="space-y-6" dir="rtl">
       {/* Header */}
       <div className="flex items-center justify-between">
