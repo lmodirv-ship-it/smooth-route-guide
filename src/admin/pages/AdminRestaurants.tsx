@@ -55,7 +55,11 @@ const AdminRestaurants = () => {
       }
       // Filter out already existing stores by name
       const existingNames = new Set(stores.map((s: any) => s.name?.toLowerCase()));
-      const newOnes = results.filter((r: any) => !existingNames.has(r.name?.toLowerCase()));
+      const newOnes = results.filter((r: any) => !existingNames.has(r.name?.toLowerCase())).map((r: any) => ({
+        ...r,
+        store_code: generateStoreCode(),
+        commission_rate: 5,
+      }));
       setGeneratedStores(newOnes);
       toast({ title: `✅ تم توليد ${newOnes.length} مطعم جديد` });
     } catch (err: any) {
