@@ -17,6 +17,7 @@ const SupervisorLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const navItems = [
     { path: "/supervisor", icon: BarChart3, label: t.admin.dashboard },
