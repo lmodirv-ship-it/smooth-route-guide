@@ -269,7 +269,7 @@ const AdminRestaurants = () => {
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
-                   <TableRow>
+                 <TableRow>
                      <TableHead className="text-right w-12">#</TableHead>
                      <TableHead className="text-right">الاسم</TableHead>
                      <TableHead className="text-right">الهاتف</TableHead>
@@ -277,6 +277,8 @@ const AdminRestaurants = () => {
                      <TableHead className="text-right">التقييم</TableHead>
                      <TableHead className="text-right">رسوم التوصيل</TableHead>
                      <TableHead className="text-right">العمولة %</TableHead>
+                     <TableHead className="text-right">رقم</TableHead>
+                     <TableHead className="text-right">تأكيد</TableHead>
                      <TableHead className="text-right">إجراءات</TableHead>
                    </TableRow>
                  </TableHeader>
@@ -303,6 +305,22 @@ const AdminRestaurants = () => {
                            onBlur={(e) => updateCommission(s.id, Number(e.target.value) || 5)}
                            className="w-20 h-8 text-center text-sm"
                          />
+                       </TableCell>
+                       <TableCell className="font-mono text-sm">{s.store_code || "—"}</TableCell>
+                       <TableCell>
+                         <Button
+                           size="sm"
+                           variant="outline"
+                           className={s.is_confirmed ? "text-emerald-500 border-emerald-500/30" : "text-orange-500 border-orange-500/30"}
+                           onClick={async () => {
+                             const newVal = !s.is_confirmed;
+                             await supabase.from("stores").update({ is_confirmed: newVal } as any).eq("id", s.id);
+                             setStores(prev => prev.map(x => x.id === s.id ? { ...x, is_confirmed: newVal } : x));
+                             toast({ title: newVal ? "✅ تم التأكيد" : "⚠️ تم إلغاء التأكيد" });
+                           }}
+                         >
+                           {s.is_confirmed ? "مؤكد" : "غير مؤكد"}
+                         </Button>
                        </TableCell>
                        <TableCell>
                          <div className="flex gap-2">
