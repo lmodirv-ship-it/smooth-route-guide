@@ -57,6 +57,7 @@ const AdminLayout = () => {
   const [aiLoading, setAiLoading] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarNavVisible, setSidebarNavVisible] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const aiScrollRef = useRef<HTMLDivElement>(null);
   const [pendingCount, setPendingCount] = useState(0);
   const [smartAssistantActive, setSmartAssistantActive] = useState(true);
