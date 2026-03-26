@@ -156,8 +156,23 @@ const SmartAssistantPage = () => {
         </div>
 
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2">
-          <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-          </div>
+          {siteUrl ? (
+            <div className="flex-1 overflow-auto bg-background">
+              <iframe
+                key={`site-${siteUrl}-${iframeKey}`}
+                src={siteUrl}
+                style={{ width: "1440px", height: "900px", transform: `scale(${zoomLevel})`, transformOrigin: "top left" }}
+                className="bg-background"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                referrerPolicy="no-referrer"
+                title="عرض الموقع"
+              />
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+              اكتب رابط الموقع في شريط العرض واضغط "عرض"
+            </div>
+          )}
 
           <div className="bg-secondary/60 px-3 py-1.5 flex items-center justify-center gap-2 border-t border-border shrink-0">
             <Button variant="outline" size="icon" className="h-7 w-7 text-lg font-bold" onClick={() => setZoomLevel((z) => Math.max(0.01, z - 0.1))}>
