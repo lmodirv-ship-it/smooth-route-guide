@@ -21,6 +21,7 @@ export const ROLE_DASHBOARD: Record<string, string> = {
   user: "/customer",
   admin: "/admin",
   agent: "/call-center",
+  moderator: "/supervisor",
   delivery: "/driver/delivery",
   store_owner: "/delivery/my-store",
   smart_admin_assistant: "/call-center",

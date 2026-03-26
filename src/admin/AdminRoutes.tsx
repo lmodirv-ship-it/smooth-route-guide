@@ -28,6 +28,14 @@ import SubAssistantsPage from "@/admin/pages/SubAssistants";
 import SupervisorsPage from "@/admin/pages/Supervisors";
 import SetupAdmin from "@/admin/pages/SetupAdmin";
 
+// Supervisor layout & pages
+import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
+import SupervisorDashboard from "@/admin/pages/supervisor/SupervisorDashboard";
+import SupervisorDrivers from "@/admin/pages/supervisor/SupervisorDrivers";
+import SupervisorDelivery from "@/admin/pages/supervisor/SupervisorDelivery";
+import SupervisorCallCenter from "@/admin/pages/supervisor/SupervisorCallCenter";
+import SupervisorRestaurants from "@/admin/pages/supervisor/SupervisorRestaurants";
+
 // Call Center layout & pages
 import CallCenterLayout from "@/admin/layouts/CallCenterLayout";
 import CCDashboard from "@/admin/pages/callcenter/CCDashboard";
@@ -95,6 +103,15 @@ export const adminRouteElements = (
       <Route path="map" element={<AdminLiveMap />} />
       <Route path="alerts" element={<AdminAlerts />} />
       <Route path="knowledge" element={<AssistantKnowledge />} />
+    </Route>
+
+    {/* ═══ Supervisor Panel ═══ */}
+    <Route path="/supervisor" element={<RequireRole allowed={["moderator"]}><SupervisorLayout /></RequireRole>}>
+      <Route index element={<SupervisorDashboard />} />
+      <Route path="drivers" element={<SupervisorDrivers />} />
+      <Route path="delivery" element={<SupervisorDelivery />} />
+      <Route path="call-center" element={<SupervisorCallCenter />} />
+      <Route path="restaurants" element={<SupervisorRestaurants />} />
     </Route>
   </>
 );
