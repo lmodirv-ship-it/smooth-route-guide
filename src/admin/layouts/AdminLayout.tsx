@@ -181,6 +181,25 @@ const AdminLayout = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {isSmartAssistantRoute && (
+              <>
+                <span className="text-sm font-bold text-foreground">المساعد الذكي</span>
+                <Button
+                  variant={smartAssistantActive ? "destructive" : "default"}
+                  size="sm"
+                  onClick={() => setSmartAssistantActive(!smartAssistantActive)}
+                  className={`gap-1.5 h-8 ${!smartAssistantActive ? "bg-success hover:bg-success/90 text-white" : ""}`}
+                >
+                  {smartAssistantActive ? <ShieldOff className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                  {smartAssistantActive ? "إلغاء" : "تفعيل"}
+                </Button>
+                <Badge variant="outline" className={`text-xs ${smartAssistantActive ? "text-success border-success/30 bg-success/10" : "text-destructive border-destructive/30 bg-destructive/10"}`}>
+                  <span className={`inline-block w-2 h-2 rounded-full mr-1 ${smartAssistantActive ? "bg-success animate-pulse" : "bg-destructive"}`} />
+                  {smartAssistantActive ? "نشط" : "متوقف"}
+                </Badge>
+                <div className="w-px h-6 bg-border" />
+              </>
+            )}
             <GlobalLogoutButton />
             <LanguageSwitcher />
             <button className="p-2 relative hover:bg-secondary rounded-lg transition-colors">
@@ -198,7 +217,7 @@ const AdminLayout = () => {
         </header>
 
         <div className="flex-1 p-6">
-          <Outlet />
+          <Outlet context={{ smartAssistantActive, setSmartAssistantActive }} />
         </div>
       </div>
 
