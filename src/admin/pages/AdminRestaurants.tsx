@@ -87,6 +87,9 @@ const AdminRestaurants = () => {
         lng: r.lng || null,
         country: selectedCountry !== "all" ? selectedCountry : "المغرب",
         city: selectedCity !== "all" ? selectedCity : "",
+        commission_rate: r.commission_rate || 5,
+        store_code: r.store_code || generateStoreCode(),
+        is_confirmed: false,
       }));
       const { error } = await supabase.from("stores").insert(toInsert);
       if (error) throw error;
