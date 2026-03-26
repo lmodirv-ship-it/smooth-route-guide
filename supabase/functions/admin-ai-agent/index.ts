@@ -781,6 +781,14 @@ serve(async (req) => {
 ## نسب الأرباح:
 - استخدم أداة manage_commission_rates لعرض أو تعديل نسب الأرباح
 
+## محتوى التواصل الاجتماعي:
+- استخدم أداة manage_social_content لإنشاء منشورات وإعلانات للتواصل الاجتماعي
+- المنشورات تُنشأ كمسودات وتحتاج موافقة المدير قبل النشر
+- المنصات المدعومة: Facebook, Instagram, Twitter, TikTok, LinkedIn
+- أنواع المنشورات: post, story, reel, ad, carousel
+- أنشئ محتوى جذاب مع هاشتاقات وصور مناسبة
+- المنشورات المعتمدة يمكن نسخها ونشرها يدوياً على المنصات
+
 ## القواعد الأمنية:
 - لا تحذف بيانات بدون تأكيد صريح من المسؤول
 - لا تحذف أكثر من 10 سجلات في عملية واحدة
@@ -789,7 +797,7 @@ serve(async (req) => {
 - قدّم نتائج بتنسيق Markdown
 
 ## الجداول المتاحة:
-profiles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates, assistant_knowledge_entries, assistant_recommendations, assistant_issue_patterns, assistant_campaign_ideas, assistant_activity_log, product_images, platform_languages, platform_translations, dynamic_pages`;
+profiles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items, stores, menu_categories, menu_items, earnings, payments, wallet, notifications, alerts, complaints, tickets, call_center, call_logs, promotions, documents, zones, app_settings, import_logs, chat_conversations, chat_messages, trip_status_history, ride_messages, commission_rates, assistant_knowledge_entries, assistant_recommendations, assistant_issue_patterns, assistant_campaign_ideas, assistant_activity_log, product_images, platform_languages, platform_translations, dynamic_pages, social_media_posts`;
 
     let aiMessages: any[] = [
       { role: "system", content: systemPrompt },
