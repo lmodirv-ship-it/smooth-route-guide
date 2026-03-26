@@ -190,12 +190,55 @@ const SmartAssistantPage = () => {
     setUploadedFileType("");
   };
 
-  // Local logging functions
+  // Auto-save handle ref for File System Access API
+  const dirHandleRef = useRef<any>(null);
+  const autoSaveEnabled = useRef(false);
+
+  // Try to get persistent directory access
+  const requestDirectoryAccess = async () => {
+    try {
+      if ('showDirectoryPicker' in window) {
+        const handle = await (window as any).showDirectoryPicker({ mode: 'readwrite' });
+        dirHandleRef.current = handle;
+        autoSaveEnabled.current = true;
+        localStorage.setItem("smart_assistant_auto_save", "true");
+        toast.success(`✅ تم ربط المجلد — الحفظ التلقائي مفعّل`);
+        return true;
+      }
+    } catch (e: any) {
+      if (e.name !== 'AbortError') toast.error("فشل في ربط المجلد");
+    }
+    return false;
+  };
+
+  // Auto-save log file to the linked directory
+  const autoSaveToDirectory = async (logEntries: any[]) => {
+    if (!dirHandleRef.current) return;
+    try {
+      const fileName = `smart-assistant-log.json`;
+      const fileHandle = await dirHandleRef.current.getFileHandle(fileName, { create: true });
+      const writable = await fileHandle.createWritable();
+      const logData = {
+        log_path: localLogPath,
+        last_updated: new Date().toISOString(),
+        total_entries: logEntries.length,
+        entries: logEntries,
+      };
+      await writable.write(JSON.stringify(logData, null, 2));
+      await writable.close();
+    } catch (e) {
+      console.warn("Auto-save failed:", e);
+    }
+  };
+
+  // Local logging functions — with auto-save
   const addToLocalLog = (entry: { type: string; content: string; context?: string; file?: string }) => {
     const logEntry = { ...entry, timestamp: new Date().toISOString(), id: crypto.randomUUID() };
     setLocalLog(prev => {
       const updated = [...prev, logEntry];
       localStorage.setItem("smart_assistant_local_log", JSON.stringify(updated));
+      // Auto-save to linked directory
+      if (dirHandleRef.current) autoSaveToDirectory(updated);
       return updated;
     });
   };
