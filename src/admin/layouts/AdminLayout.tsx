@@ -262,7 +262,6 @@ const AdminLayout = () => {
                   <ShieldOff className="w-3.5 h-3.5" />
                   رفض
                 </Button>
-                </Button>
                 <Button
                   variant="outline"
                   size="sm"
