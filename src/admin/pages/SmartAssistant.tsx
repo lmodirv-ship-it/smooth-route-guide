@@ -51,12 +51,23 @@ const SmartAssistantPage = () => {
   }, [messages]);
 
   const handleLoadSite = () => {
-    let url = siteUrl.trim();
-    if (!url) return;
-    if (!/^https?:\/\//i.test(url)) url = "https://" + url;
-    setIframeError(false);
-    setPreviewUrl(url);
-    toast.info(`🌐 جاري تحميل: ${url}`);
+    const rawUrl = siteUrl.trim();
+    if (!rawUrl) {
+      toast.warning("أدخل رابط الموقع أولاً");
+      return;
+    }
+
+    let url = rawUrl.replace(/^wwww\./i, "www.");
+    if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
+
+    try {
+      const normalizedUrl = new URL(url).toString();
+      setIframeError(false);
+      setPreviewUrl(normalizedUrl);
+      toast.success(`🌐 تم تحميل الرابط: ${normalizedUrl}`);
+    } catch {
+      toast.error("الرابط غير صحيح");
+    }
   };
 
   const toggleActive = () => {
@@ -233,40 +244,23 @@ const SmartAssistantPage = () => {
                   فتح <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
-              {iframeError ? (
-                <div className="w-full h-[200px] bg-secondary/30 flex flex-col items-center justify-center gap-3 p-4">
-                  <Globe className="w-10 h-10 text-muted-foreground/40" />
-                  <p className="text-sm text-muted-foreground text-center">هذا الموقع يمنع العرض المضمّن</p>
-                  <a
-                    href={previewUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm flex items-center gap-2 hover:opacity-90 transition"
-                  >
-                    <ExternalLink className="w-4 h-4" />
+              <iframe
+                key={previewUrl}
+                src={previewUrl}
+                className="w-full h-[200px] bg-white"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                referrerPolicy="no-referrer"
+                title="معاينة الموقع"
+                onError={() => setIframeError(true)}
+              />
+              <div className="px-3 py-2 text-[11px] text-muted-foreground bg-secondary/20 border-t border-border flex items-center justify-between gap-2">
+                <span>{iframeError ? "تعذر عرض الموقع هنا، استخدم فتح" : "إذا لم يظهر الموقع داخل المربع، افتحه من زر فتح"}</span>
+                {iframeError && (
+                  <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline shrink-0">
                     فتح في نافذة جديدة
                   </a>
-                </div>
-              ) : (
-                <iframe
-                  src={previewUrl}
-                  className="w-full h-[200px] bg-white"
-                  sandbox="allow-scripts allow-same-origin"
-                  title="معاينة الموقع"
-                  onError={() => setIframeError(true)}
-                  onLoad={(e) => {
-                    try {
-                      const frame = e.currentTarget;
-                      // If we can't access contentDocument, the site blocked iframe
-                      if (!frame.contentDocument?.title && !frame.contentWindow?.location?.href) {
-                        setIframeError(true);
-                      }
-                    } catch {
-                      setIframeError(true);
-                    }
-                  }}
-                />
-              )}
+                )}
+              </div>
             </div>
           )}
 
