@@ -49,6 +49,8 @@ function dbRoleSatisfies(dbRole: string, requiredLabel: string): boolean {
       return dbRole === "driver";
     case "admin":
       return dbRole === "admin";
+    case "moderator":
+      return dbRole === "moderator";
     case "call_center":
     case "agent":
       return dbRole === "agent" || dbRole === "smart_admin_assistant";
@@ -65,6 +67,7 @@ function dbRoleSatisfies(dbRole: string, requiredLabel: string): boolean {
 function bestDashboard(roles: AppRole[]): string {
   if (roles.includes("admin")) return ROLE_DASHBOARD.admin;
   if (roles.includes("smart_admin_assistant")) return ROLE_DASHBOARD.smart_admin_assistant;
+  if (roles.includes("moderator")) return ROLE_DASHBOARD.moderator;
   if (roles.includes("agent")) return ROLE_DASHBOARD.agent;
   if (roles.includes("store_owner")) return ROLE_DASHBOARD.store_owner;
   if (roles.includes("driver")) return ROLE_DASHBOARD.driver;
