@@ -125,7 +125,7 @@ const SmartAssistantPage = () => {
 
       {/* Main Content - Top Split */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 flex-1 min-h-0">
-        {/* Right: Executed Tasks with Browser Preview */}
+        {/* Right: Executed Tasks - Full page preview */}
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-2 lg:order-1">
           <div className="p-2.5 border-b border-border flex items-center justify-between">
             <Badge variant="outline" className="text-xs">{taskLogs.length}</Badge>
@@ -135,9 +135,8 @@ const SmartAssistantPage = () => {
             </h3>
           </div>
 
-          {/* Preview of the page - same as صفحة panel */}
-          {previewUrl && (
-            <div className="border-b border-border">
+          {previewUrl ? (
+            <div className="flex-1 flex flex-col overflow-hidden">
               <div className="bg-secondary/60 px-2 py-1 flex items-center gap-1.5 text-[10px]">
                 <div className="flex gap-0.5">
                   <span className="w-2 h-2 rounded-full bg-destructive/60" />
@@ -146,11 +145,11 @@ const SmartAssistantPage = () => {
                 </div>
                 <span className="flex-1 text-muted-foreground truncate font-mono" dir="ltr">{previewUrl}</span>
               </div>
-              <div className="w-full overflow-hidden bg-white" style={{ height: "200px" }}>
+              <div className="flex-1 overflow-hidden bg-white">
                 <iframe
                   key={`mirror-${iframeKey}`}
                   src={previewUrl}
-                  style={{ width: "1440px", height: "900px", transform: "scale(0.25)", transformOrigin: "top left" }}
+                  style={{ width: "1440px", height: "900px", transform: "scale(0.28)", transformOrigin: "top left" }}
                   className="bg-white pointer-events-none"
                   sandbox="allow-scripts allow-same-origin"
                   referrerPolicy="no-referrer"
@@ -158,46 +157,11 @@ const SmartAssistantPage = () => {
                 />
               </div>
             </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+              لا توجد صفحة محملة
+            </div>
           )}
-
-          <ScrollArea className="flex-1 p-2.5">
-            {taskLogs.length === 0 && (
-              <div className="text-center text-muted-foreground text-sm py-8">لا توجد مهام بعد</div>
-            )}
-            {taskLogs.map(task => (
-              <button
-                key={task.id}
-                onClick={() => {
-                  setSelectedTask(task);
-                  if (task.targetPage) {
-                    setPreviewUrl(task.targetPage);
-                    setSiteUrl(task.targetPage);
-                    setIframeKey(k => k + 1);
-                  }
-                }}
-                className={`w-full text-right p-3 rounded-lg mb-2 transition-colors border ${
-                  selectedTask?.id === task.id
-                    ? "bg-primary/10 border-primary/30"
-                    : "bg-secondary/30 border-border/50 hover:bg-secondary/50"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] text-muted-foreground">{task.timestamp}</span>
-                  <div className="flex items-center gap-2">
-                    {task.status === "success" && <CheckCircle className="w-3.5 h-3.5 text-success" />}
-                    {task.status === "error" && <XCircle className="w-3.5 h-3.5 text-destructive" />}
-                    {task.status === "pending" && <Loader2 className="w-3.5 h-3.5 text-warning animate-spin" />}
-                  </div>
-                </div>
-                <p className="text-xs text-foreground truncate">{task.title}</p>
-                {task.targetPage && (
-                  <p className="text-[10px] text-muted-foreground truncate mt-1 font-mono" dir="ltr">
-                    🌐 {task.targetPage}
-                  </p>
-                )}
-              </button>
-            ))}
-          </ScrollArea>
         </div>
 
         {/* Left: Code Used + Site Preview */}
