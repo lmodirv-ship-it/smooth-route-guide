@@ -287,8 +287,8 @@ const DriverPage = () => {
       </div>
 
       {/* Stats bar */}
-      <div className="shrink-0 px-4 py-3 border-b border-white/5 bg-[#0d1320]">
-        <div className="grid grid-cols-4 gap-2">
+      <div className="shrink-0 px-3 md:px-4 py-2 md:py-3 border-b border-white/5 bg-[#0d1320]">
+        <div className="grid grid-cols-4 gap-1.5 md:gap-2">
           <StatsCard icon={TrendingUp} label={t.driver.todayTrips} value={`${todayStats.trips}`} accent="text-emerald-400" bg="bg-emerald-500/10" />
           <StatsCard icon={Wallet} label={t.driver.netEarnings} value={`${todayStats.earnings} DH`} accent="text-orange-400" bg="bg-orange-500/10" />
           <StatsCard icon={Percent} label={t.driver.platformFee} value={`${Math.round(COMMISSION_RATE * 100)}%`} accent="text-red-400" bg="bg-red-500/10" />
@@ -371,7 +371,71 @@ const DriverPage = () => {
               <p className="text-white/30 text-sm mt-1">{t.driver.ridesWillAppear}</p>
             </div>
           ) : (
-            <table className="w-full text-sm">
+            <>
+              {/* Mobile Cards */}
+              <div className="md:hidden space-y-2 p-3">
+                {nearbyOrders.map((order) => {
+                  const isSelected = selectedOrderId === order.id;
+                  return (
+                    <motion.div
+                      key={order.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      onClick={() => setSelectedOrderId(isSelected ? null : order.id)}
+                      className={`rounded-xl p-3 border transition-all cursor-pointer ${
+                        isSelected ? "bg-emerald-500/10 border-emerald-500/30" : "bg-white/[0.03] border-white/[0.06] hover:border-white/10"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <Button
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); handleAccept(order.id); }}
+                          disabled={accepting === order.id || !!activeRideId}
+                          className="h-8 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold shrink-0"
+                        >
+                          {accepting === order.id ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <>
+                              <CheckCircle className="w-3 h-3 ml-1" />
+                              {t.driver.accept}
+                            </>
+                          )}
+                        </Button>
+                        <div className="text-right flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 justify-end">
+                            <span className="text-white/80 text-sm truncate">{order.pickup || "\u2014"}</span>
+                            <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                          </div>
+                          <div className="flex items-center gap-1.5 justify-end mt-1">
+                            <span className="text-white/80 text-sm truncate">{order.destination || "\u2014"}</span>
+                            <div className="w-2 h-2 rounded-full bg-orange-400 shrink-0" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between pt-2 border-t border-white/[0.06]">
+                        <span className="text-emerald-400 font-black text-base">{order.totalPrice || "\u2014"} DH</span>
+                        <div className="flex items-center gap-3 text-xs">
+                          <span className="text-emerald-400">{order.totalDistance} {t.driver.km}</span>
+                          {order.distToPickup != null && (
+                            <span className="text-yellow-400 flex items-center gap-0.5">
+                              <MapPin className="w-3 h-3" />{order.distToPickup}
+                            </span>
+                          )}
+                          {order.eta && (
+                            <span className="text-blue-400 flex items-center gap-0.5">
+                              <Clock className="w-3 h-3" />{order.eta} \u062f
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table */}
+              <table className="w-full text-sm hidden md:table">
               <thead className="sticky top-0 z-10 bg-[#0d1320] border-b border-white/5">
                 <tr className="text-white/50 text-xs">
                   <th className="py-2 px-3 text-right font-medium">{t.driver.pickup}</th>
@@ -450,6 +514,7 @@ const DriverPage = () => {
                 })}
               </tbody>
             </table>
+            </>
           )}
         </div>
       </div>
@@ -463,10 +528,10 @@ const DriverPage = () => {
 const StatsCard = ({ icon: Icon, label, value, accent, bg }: {
   icon: typeof TrendingUp; label: string; value: string; accent: string; bg: string;
 }) => (
-  <div className={`${bg} rounded-xl p-3 border border-white/[0.04] text-center`}>
-    <Icon className={`w-4 h-4 ${accent} mx-auto mb-1`} />
-    <p className={`text-base font-black ${accent}`}>{value}</p>
-    <p className="text-[10px] text-white/40 mt-0.5">{label}</p>
+  <div className={`${bg} rounded-xl p-2 md:p-3 border border-white/[0.04] text-center`}>
+    <Icon className={`w-3.5 h-3.5 md:w-4 md:h-4 ${accent} mx-auto mb-0.5 md:mb-1`} />
+    <p className={`text-sm md:text-base font-black ${accent} truncate`}>{value}</p>
+    <p className="text-[9px] md:text-[10px] text-white/40 mt-0.5 truncate">{label}</p>
   </div>
 );
 
