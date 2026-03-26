@@ -13,17 +13,17 @@ import GlobalNotificationListener from "@/components/GlobalNotificationListener"
 import { useI18n } from "@/i18n/context";
 
 const SupervisorLayout = () => {
-  const { dir } = useI18n();
+  const { t, dir } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const navItems = [
-    { path: "/supervisor", icon: BarChart3, label: "لوحة المراقبة" },
-    { path: "/supervisor/drivers", icon: Car, label: "السائقون" },
-    { path: "/supervisor/delivery", icon: Send, label: "سائقو التوصيل" },
-    { path: "/supervisor/call-center", icon: Headphones, label: "مركز الاتصال" },
-    { path: "/supervisor/restaurants", icon: UtensilsCrossed, label: "المطاعم" },
+    { path: "/supervisor", icon: BarChart3, label: t.admin.dashboard },
+    { path: "/supervisor/drivers", icon: Car, label: t.admin.drivers },
+    { path: "/supervisor/delivery", icon: Send, label: t.admin.deliveryDrivers },
+    { path: "/supervisor/call-center", icon: Headphones, label: t.admin.callCenterMenu },
+    { path: "/supervisor/restaurants", icon: UtensilsCrossed, label: t.admin.restaurantsMenu },
   ];
 
   const isActive = (path: string) => {
@@ -40,7 +40,7 @@ const SupervisorLayout = () => {
         <div className="p-4 flex items-center gap-3 border-b border-border">
           <img src={logo} alt="HN" className="w-9 h-9 flex-shrink-0" />
           {!sidebarCollapsed && (
-            <span className="font-bold text-lg text-gradient-primary font-display">لوحة المشرف</span>
+            <span className="font-bold text-lg text-gradient-primary font-display">{t.admin.supervisorPanel}</span>
           )}
         </div>
 
@@ -50,8 +50,8 @@ const SupervisorLayout = () => {
               <ShieldCheck className="w-5 h-5 text-orange-500" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-foreground">المشرف</p>
-              <p className="text-xs text-muted-foreground">مراقبة العمليات</p>
+              <p className="text-sm font-semibold text-foreground">{t.admin.supervisorRole}</p>
+              <p className="text-xs text-muted-foreground">{t.admin.operationsMonitoring}</p>
             </div>
           </div>
         )}
@@ -79,7 +79,7 @@ const SupervisorLayout = () => {
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             className="w-full flex items-center justify-center px-3 py-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors text-xs"
           >
-            {sidebarCollapsed ? "»" : "طي القائمة «"}
+            {sidebarCollapsed ? "»" : `${t.admin.collapseMenu} «`}
           </button>
         </div>
       </aside>
@@ -89,7 +89,7 @@ const SupervisorLayout = () => {
         <header className="glass-strong border-b border-border px-6 py-3 flex items-center justify-between sticky top-0 z-40">
           <div className="relative w-64">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="بحث..." className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm" />
+            <Input placeholder={t.admin.searchPlaceholder} className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm" />
           </div>
           <div className="flex items-center gap-3">
             <GlobalLogoutButton />
