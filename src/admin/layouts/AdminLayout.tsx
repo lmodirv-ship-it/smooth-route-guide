@@ -5,7 +5,7 @@ import {
   BarChart3, FileText, Car, Users, TrendingUp, MapPin,
   AlertTriangle, FileCheck, Headphones, Settings, Shield,
   Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog, Percent,
-  ShieldCheck, ShieldOff, Globe
+  ShieldCheck, ShieldOff, Globe, RefreshCw
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -59,6 +59,7 @@ const AdminLayout = () => {
   const [smartAssistantActive, setSmartAssistantActive] = useState(true);
   const [smartSiteUrl, setSmartSiteUrl] = useState("");
   const [smartPreviewUrl, setSmartPreviewUrl] = useState("");
+  const [smartRefreshKey, setSmartRefreshKey] = useState(0);
 
   const isSmartAssistantRoute = location.pathname === "/admin/smart-assistant";
 
@@ -252,6 +253,15 @@ const AdminLayout = () => {
                   {smartAssistantActive ? <ShieldOff className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
                   {smartAssistantActive ? "إلغاء" : "تفعيل"}
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSmartRefreshKey(k => k + 1)}
+                  className="gap-1.5 h-8"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  Actualiser
+                </Button>
                 <Badge variant="outline" className={`text-xs ${smartAssistantActive ? "text-success border-success/30 bg-success/10" : "text-destructive border-destructive/30 bg-destructive/10"}`}>
                   <span className={`inline-block w-2 h-2 rounded-full mr-1 ${smartAssistantActive ? "bg-success animate-pulse" : "bg-destructive"}`} />
                   {smartAssistantActive ? "نشط" : "متوقف"}
@@ -276,7 +286,7 @@ const AdminLayout = () => {
         </header>
 
         <div className="flex-1 p-6">
-          <Outlet context={{ smartAssistantActive, setSmartAssistantActive, smartPreviewUrl, smartSiteUrl, setSmartSiteUrl, setSmartPreviewUrl }} />
+          <Outlet context={{ smartAssistantActive, setSmartAssistantActive, smartPreviewUrl, smartSiteUrl, setSmartSiteUrl, setSmartPreviewUrl, smartRefreshKey }} />
         </div>
       </div>
 
