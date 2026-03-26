@@ -15,14 +15,6 @@ import { SocialMediaPreview } from "@/admin/components/SocialMediaPreview";
 type AiMsg = { role: "user" | "assistant"; content: string };
 type TaskLog = { id: string; title: string; status: "success" | "error" | "pending"; code?: string; timestamp: string; targetPage?: string };
 
-type WebsiteOption = {
-  name: string;
-  url: string;
-  note: string;
-  icon: string;
-  embeddable?: boolean;
-};
-
 const AI_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-ai-agent`;
 
 async function callAdminAI({ messages, onResult, onError }: {
@@ -69,7 +61,8 @@ const SmartAssistantPage = () => {
   const [iframeError, setIframeError] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(0.48);
-  const [pageOneTab, setPageOneTab] = useState<string>(previewUrl ? "preview" : "sites");
+  const [pageOneTab, setPageOneTab] = useState<string>("sites");
+  const [activeSiteIndex, setActiveSiteIndex] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
 
@@ -89,79 +82,17 @@ const SmartAssistantPage = () => {
     }
   }, [previewUrl]);
 
-  const websiteOptions: WebsiteOption[] = [
-    ...(siteUrl || previewUrl
-      ? [{
-          name: "الموقع الحالي",
-          url: siteUrl || previewUrl,
-          note: "آخر موقع تعمل عليه الآن",
-          icon: "🌐",
-          embeddable: true,
-        }]
-      : []),
-    {
-      name: "Facebook",
-      url: "https://www.facebook.com",
-      note: "صفحات وإعلانات Meta",
-      icon: "📘",
-    },
-    {
-      name: "Instagram",
-      url: "https://www.instagram.com",
-      note: "منشورات، Reels وStories",
-      icon: "📸",
-    },
-    {
-      name: "TikTok",
-      url: "https://www.tiktok.com",
-      note: "فيديوهات قصيرة وإعلانات",
-      icon: "🎵",
-    },
-    {
-      name: "LinkedIn",
-      url: "https://www.linkedin.com",
-      note: "صفحات الشركات والإعلانات المهنية",
-      icon: "💼",
-    },
-    {
-      name: "YouTube",
-      url: "https://www.youtube.com",
-      note: "قنوات ومحتوى فيديو",
-      icon: "▶️",
-    },
-    {
-      name: "WhatsApp Web",
-      url: "https://web.whatsapp.com",
-      note: "التواصل والردود",
-      icon: "💬",
-    },
-    {
-      name: "X",
-      url: "https://x.com",
-      note: "منشورات سريعة وحملات",
-      icon: "𝕏",
-    },
-    {
-      name: "Google",
-      url: "https://www.google.com",
-      note: "بحث وخدمات Google",
-      icon: "🔎",
-      embeddable: true,
-    },
+  const websiteList = [
+    { name: "Facebook", url: "https://www.facebook.com", icon: "📘" },
+    { name: "Instagram", url: "https://www.instagram.com", icon: "📸" },
+    { name: "TikTok", url: "https://www.tiktok.com", icon: "🎵" },
+    { name: "YouTube", url: "https://www.youtube.com", icon: "▶️" },
+    { name: "X", url: "https://x.com", icon: "𝕏" },
+    { name: "LinkedIn", url: "https://www.linkedin.com", icon: "💼" },
+    { name: "WhatsApp", url: "https://web.whatsapp.com", icon: "💬" },
+    { name: "Google", url: "https://www.google.com", icon: "🔎" },
   ];
 
-  const openWebsiteInPageOne = (website: WebsiteOption) => {
-    setPreviewUrl(website.url);
-    setSiteUrl(website.url);
-    setDisplayUrl(website.url);
-    setIframeError(false);
-    setIframeKey((k) => k + 1);
-    setPageOneTab("preview");
-
-    if (!website.embeddable) {
-      toast.info("بعض المواقع قد تمنع العرض داخل المربع، ويمكنك فتحها مباشرة بزر فتح.");
-    }
-  };
 
   const sendMessage = async () => {
     const safeText = sanitizePlainText(input, 8000);
@@ -253,45 +184,41 @@ const SmartAssistantPage = () => {
               <TabsTrigger value="social" className="text-xs">التواصل الاجتماعي</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="sites" className="flex-1 overflow-auto m-0">
-              <div className="p-4 space-y-4">
-                <div className="gradient-card rounded-xl border border-border p-3 text-sm text-muted-foreground">
-                  اختر أي موقع من القائمة لعرضه في **صفحة 1**، ويمكنك أيضًا كتابة أي رابط من الأعلى.
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {websiteOptions.map((website) => (
-                    <div key={`${website.name}-${website.url}`} className="gradient-card rounded-xl border border-border p-4 space-y-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xl">{website.icon}</span>
-                            <h3 className="font-semibold text-foreground">{website.name}</h3>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">{website.note}</p>
-                          <p className="text-[10px] text-muted-foreground mt-2 break-all font-mono" dir="ltr">{website.url}</p>
-                        </div>
-                        <Badge variant="outline" className="text-[10px] shrink-0">
-                          {website.embeddable ? "عرض داخلي" : "قد يتطلب فتح خارجي"}
-                        </Badge>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button size="sm" className="flex-1" onClick={() => openWebsiteInPageOne(website)}>
-                          عرض في صفحة 1
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1"
-                          onClick={() => window.open(website.url, "_blank", "noopener,noreferrer")}
-                        >
-                          فتح
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            <TabsContent value="sites" className="flex-1 flex flex-col overflow-hidden m-0">
+              {/* Site selector bar */}
+              <div className="bg-secondary/60 px-2 py-1.5 flex items-center gap-1 border-b border-border overflow-x-auto shrink-0">
+                {websiteList.map((site, i) => (
+                  <button
+                    key={site.name}
+                    onClick={() => setActiveSiteIndex(i)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap shrink-0 ${
+                      activeSiteIndex === i
+                        ? "gradient-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    }`}
+                  >
+                    <span className="text-base">{site.icon}</span>
+                    {site.name}
+                  </button>
+                ))}
+                <button
+                  onClick={() => window.open(websiteList[activeSiteIndex].url, "_blank", "noopener,noreferrer")}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-muted-foreground hover:bg-secondary hover:text-foreground transition-all whitespace-nowrap shrink-0 mr-auto"
+                >
+                  🔗 فتح خارجياً
+                </button>
+              </div>
+              {/* Site iframe */}
+              <div className="flex-1 overflow-hidden bg-background relative">
+                <iframe
+                  key={`site-${activeSiteIndex}-${iframeKey}`}
+                  src={websiteList[activeSiteIndex].url}
+                  className="w-full h-full border-0"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                  referrerPolicy="no-referrer"
+                  title={websiteList[activeSiteIndex].name}
+                  style={{ minHeight: "400px" }}
+                />
               </div>
             </TabsContent>
 
