@@ -297,7 +297,7 @@ const SmartAssistantPage = () => {
       </div>
 
       {/* Chat Area */}
-      <div className="gradient-card rounded-xl border border-border flex flex-col h-[280px] min-h-[220px]">
+      <div className="gradient-card rounded-xl border border-border flex flex-col h-[200px] min-h-[160px]">
         <div ref={chatRef} className="flex-1 overflow-auto p-4 space-y-3">
           {messages.length === 0 && (
             <div className="text-center py-6">
