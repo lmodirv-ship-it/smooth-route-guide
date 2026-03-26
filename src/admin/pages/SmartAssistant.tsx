@@ -465,8 +465,17 @@ const SmartAssistantPage = () => {
               <div className="flex items-center gap-2">
                 <FolderOpen className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                 <span className="text-[10px] font-semibold text-blue-700">مسار التسجيل المحلي:</span>
+                {dirHandleRef.current ? (
+                  <Badge variant="outline" className="text-[9px] border-green-400 text-green-700 bg-green-50">✅ مربوط — حفظ تلقائي</Badge>
+                ) : (
+                  <Badge variant="outline" className="text-[9px] border-orange-400 text-orange-700 bg-orange-50">⚠️ غير مربوط</Badge>
+                )}
               </div>
               <div className="flex items-center gap-1.5">
+                <Button size="sm" className="h-6 text-[10px] bg-green-600 hover:bg-green-700 text-white px-3 gap-1" onClick={requestDirectoryAccess}>
+                  <FolderOpen className="w-3 h-3" />
+                  ربط مجلد الحفظ التلقائي
+                </Button>
                 <Input
                   value={localLogPath}
                   onChange={(e) => setLocalLogPath(e.target.value)}
@@ -479,7 +488,7 @@ const SmartAssistantPage = () => {
                 </Button>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[9px] text-blue-500">📁 الملف: smart-assistant-log-{new Date().toISOString().slice(0, 10)}.json</span>
+                <span className="text-[9px] text-blue-500">📁 الملف: smart-assistant-log.json (يُحدَّث تلقائياً)</span>
                 <Button variant="ghost" size="sm" className="h-5 text-[9px] text-red-500 hover:text-red-700 hover:bg-red-50" onClick={clearLocalLog}>
                   🗑️ مسح السجل
                 </Button>
