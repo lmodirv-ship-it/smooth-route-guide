@@ -32,7 +32,7 @@ const ALLOWED_TABLES = [
   "trip_status_history", "ride_messages", "commission_rates",
   "assistant_knowledge_entries", "assistant_recommendations", "assistant_issue_patterns",
   "assistant_campaign_ideas", "assistant_activity_log", "product_images",
-  "platform_languages", "platform_translations",
+  "platform_languages", "platform_translations", "dynamic_pages",
 ];
 
 const tools = [
@@ -227,6 +227,78 @@ const tools = [
           action: { type: "string", enum: ["list", "update"], description: "'list' to view all rates, 'update' to change a rate" },
           category: { type: "string", description: "Category to update (only for 'update' action)" },
           rate: { type: "number", description: "New commission rate percentage (only for 'update' action)" },
+        },
+        required: ["action"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "manage_page",
+      description: `Create, update, list or delete dynamic pages. Pages are stored in the database and rendered dynamically on the site.
+Content is a JSON array of sections/blocks. Each block has a 'type' and properties.
+Supported block types:
+- hero: { type:"hero", title, subtitle, background_color, text_color, background_image, cta_text, cta_link }
+- text: { type:"text", content (markdown), alignment }
+- image: { type:"image", url, alt, width, caption }
+- cards: { type:"cards", columns(1-4), items:[{title, description, icon, image, link}] }
+- stats: { type:"stats", items:[{label, value, icon, color}] }
+- cta: { type:"cta", title, subtitle, button_text, button_link, background_color }
+- faq: { type:"faq", items:[{question, answer}] }
+- gallery: { type:"gallery", columns(2-4), images:[{url, alt, caption}] }
+- divider: { type:"divider", style:"line"|"space"|"dots" }
+- html: { type:"html", code (raw HTML) }
+- table: { type:"table", headers:[], rows:[[]] }
+- video: { type:"video", url, title }
+- form: { type:"form", title, fields:[{name,type,label,required}], submit_text }
+- map: { type:"map", lat, lng, zoom, marker_title }
+- pricing: { type:"pricing", plans:[{name,price,period,features:[],cta_text,highlighted}] }
+- testimonials: { type:"testimonials", items:[{name,role,text,avatar}] }
+- timeline: { type:"timeline", items:[{date,title,description}] }
+- features: { type:"features", columns(2-4), items:[{title,description,icon}] }`,
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["create", "update", "list", "get", "delete", "publish", "unpublish"] },
+          slug: { type: "string", description: "URL slug for the page (e.g. 'about-us', 'promo-summer')" },
+          title: { type: "string", description: "Page title" },
+          page_type: { type: "string", enum: ["content", "landing", "dashboard", "marketing"], description: "Type of page" },
+          content: { type: "array", description: "Array of content blocks/sections" },
+          meta_description: { type: "string", description: "SEO meta description" },
+          css_overrides: { type: "string", description: "Custom CSS for this page" },
+          is_published: { type: "boolean", description: "Whether page is live" },
+        },
+        required: ["action"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "manage_theme",
+      description: "View or update the site theme/branding. Controls colors, fonts, logo, and visual identity stored in app_settings.",
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["get", "update"] },
+          theme: {
+            type: "object",
+            description: "Theme settings to update",
+            properties: {
+              primary_color: { type: "string", description: "Primary brand color (hex)" },
+              secondary_color: { type: "string", description: "Secondary color (hex)" },
+              accent_color: { type: "string", description: "Accent/highlight color (hex)" },
+              background_color: { type: "string", description: "Main background color (hex)" },
+              text_color: { type: "string", description: "Main text color (hex)" },
+              font_family: { type: "string", description: "Main font family" },
+              font_heading: { type: "string", description: "Heading font family" },
+              logo_url: { type: "string", description: "Logo image URL" },
+              favicon_url: { type: "string", description: "Favicon URL" },
+              border_radius: { type: "string", description: "Global border radius (e.g. '8px', '12px')" },
+              custom_css: { type: "string", description: "Additional custom CSS" },
+            },
+          },
         },
         required: ["action"],
       },
