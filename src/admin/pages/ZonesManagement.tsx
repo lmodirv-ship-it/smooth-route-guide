@@ -26,7 +26,18 @@ type Zone = {
   delivery_fee: number;
   is_active: boolean;
   created_at: string;
+  zone_code?: string | null;
 };
+
+type GeoCode = {
+  id: string;
+  type: string;
+  name: string;
+  code: string;
+  parent_name: string | null;
+};
+
+const generateCode = () => String(Math.floor(100000 + Math.random() * 900000));
 
 const COUNTRIES = [
   "المغرب", "الجزائر", "تونس", "ليبيا", "مصر", "موريتانيا",
