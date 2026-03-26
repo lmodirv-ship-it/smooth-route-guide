@@ -22,7 +22,7 @@ const AdminRestaurants = () => {
   const [showItemDialog, setShowItemDialog] = useState(false);
   const [editingStore, setEditingStore] = useState<any>(null);
   const [editingItem, setEditingItem] = useState<any>(null);
-  const [storeForm, setStoreForm] = useState({ name: "", description: "", address: "", phone: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5 });
+  const [storeForm, setStoreForm] = useState({ name: "", description: "", address: "", phone: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5, commission_rate: 5 });
   const [itemForm, setItemForm] = useState({ name_ar: "", name_fr: "", description_ar: "", price: 0, category_id: "", is_available: true });
 
   const fetchAll = async () => {
