@@ -26,7 +26,18 @@ type Zone = {
   delivery_fee: number;
   is_active: boolean;
   created_at: string;
+  zone_code?: string | null;
 };
+
+type GeoCode = {
+  id: string;
+  type: string;
+  name: string;
+  code: string;
+  parent_name: string | null;
+};
+
+const generateCode = () => String(Math.floor(100000 + Math.random() * 900000));
 
 const COUNTRIES = [
   "المغرب", "الجزائر", "تونس", "ليبيا", "مصر", "موريتانيا",
@@ -61,8 +72,27 @@ const ZonesManagement = () => {
   const [autoGenerating, setAutoGenerating] = useState(false);
   const [savingAll, setSavingAll] = useState(false);
 
+  const [geoCodes, setGeoCodes] = useState<GeoCode[]>([]);
+
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<string>("");
+
+  const fetchGeoCodes = async () => {
+    const { data } = await supabase.from("geo_codes").select("*");
+    setGeoCodes((data || []) as GeoCode[]);
+  };
+
+  const getGeoCode = (type: string, name: string, parentName?: string | null) => {
+    return geoCodes.find(g => g.type === type && g.name === name && (parentName ? g.parent_name === parentName : !g.parent_name));
+  };
+
+  const ensureGeoCode = async (type: string, name: string, parentName?: string | null) => {
+    const existing = getGeoCode(type, name, parentName);
+    if (existing) return existing.code;
+    const code = generateCode();
+    await supabase.from("geo_codes").insert({ type, name, code, parent_name: parentName || null });
+    return code;
+  };
 
   const fetchZones = async () => {
     setLoading(true);
@@ -76,11 +106,19 @@ const ZonesManagement = () => {
     else {
       const zonesData = (data || []) as Zone[];
       setZones(zonesData);
+      // Auto-generate zone_code for zones that don't have one
+      for (const z of zonesData) {
+        if (!z.zone_code) {
+          const code = generateCode();
+          await supabase.from("zones").update({ zone_code: code }).eq("id", z.id);
+          z.zone_code = code;
+        }
+      }
     }
     setLoading(false);
   };
 
-  useEffect(() => { fetchZones(); }, []);
+  useEffect(() => { fetchZones(); fetchGeoCodes(); }, []);
 
   useEffect(() => {
     if (zones.length > 0 && !selectedCountry) {
@@ -227,6 +265,7 @@ const ZonesManagement = () => {
             radius_km: 3,
             delivery_fee: 10,
             is_active: true,
+            zone_code: generateCode(),
           }));
           const { error: insertErr } = await supabase.from("zones").insert(toInsertExtra);
           if (insertErr) {
@@ -248,6 +287,7 @@ const ZonesManagement = () => {
           radius_km: 3,
           delivery_fee: 10,
           is_active: true,
+          zone_code: generateCode(),
         }));
         const { error: insertError } = await supabase.from("zones").insert(toInsert);
         if (insertError) {
@@ -294,6 +334,7 @@ const ZonesManagement = () => {
           radius_km: 3,
           delivery_fee: 10,
           is_active: true,
+          zone_code: generateCode(),
         }));
         const { error: insertError } = await supabase.from("zones").insert(toInsert);
         if (insertError) {
@@ -322,8 +363,13 @@ const ZonesManagement = () => {
     }
     setSavingAll(true);
     try {
+      // Ensure geo_codes for country and city
+      await ensureGeoCode("country", selectedCountry);
+      await ensureGeoCode("city", selectedCity, selectedCountry);
+
       let savedCount = 0;
       for (const z of currentZones) {
+        if (!z.zone_code) z.zone_code = generateCode();
         const { error } = await supabase.from("zones").update({
           name_ar: z.name_ar,
           name_fr: z.name_fr,
@@ -334,10 +380,12 @@ const ZonesManagement = () => {
           radius_km: z.radius_km,
           delivery_fee: z.delivery_fee,
           is_active: z.is_active,
+          zone_code: z.zone_code,
         }).eq("id", z.id);
         if (!error) savedCount++;
       }
       toast.success(tz.zonesSaved.replace("{count}", String(savedCount)));
+      await fetchGeoCodes();
       fetchZones();
     } catch {
       toast.error(tz.saveError);
@@ -422,11 +470,14 @@ const ZonesManagement = () => {
                 <Select value={selectedCountry} onValueChange={handleCountryChange}>
                   <SelectTrigger><SelectValue placeholder={`— ${tz.selectCountry} —`} /></SelectTrigger>
                   <SelectContent>
-                    {availableCountries.map(c => (
-                      <SelectItem key={c} value={c}>
-                        {tc(c)} ({zones.filter(z => z.country === c).length} {tz.zoneCount})
-                      </SelectItem>
-                    ))}
+                    {availableCountries.map(c => {
+                      const gc = getGeoCode("country", c);
+                      return (
+                        <SelectItem key={c} value={c}>
+                          {tc(c)} {gc ? `[${gc.code}]` : ""} ({zones.filter(z => z.country === c).length} {tz.zoneCount})
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </CardContent>
@@ -440,11 +491,14 @@ const ZonesManagement = () => {
                 <Select value={selectedCity} onValueChange={setSelectedCity} disabled={!selectedCountry}>
                   <SelectTrigger><SelectValue placeholder={selectedCountry ? `— ${tz.selectCity} —` : tz.selectCountryFirst} /></SelectTrigger>
                   <SelectContent>
-                    {availableCities.map(c => (
-                      <SelectItem key={c} value={c}>
-                        {c} ({zones.filter(z => z.country === selectedCountry && z.city === c).length} {tz.zoneCount})
-                      </SelectItem>
-                    ))}
+                    {availableCities.map(c => {
+                      const gc = getGeoCode("city", c, selectedCountry);
+                      return (
+                        <SelectItem key={c} value={c}>
+                          {c} {gc ? `[${gc.code}]` : ""} ({zones.filter(z => z.country === selectedCountry && z.city === c).length} {tz.zoneCount})
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </CardContent>
@@ -484,10 +538,16 @@ const ZonesManagement = () => {
           {selectedCountry && selectedCity && (
             <Card className="glass-strong border-border">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
+                <CardTitle className="text-lg flex items-center gap-2 flex-wrap">
                   <List className="w-5 h-5 text-primary" />
                   {selectedCity} — {tc(selectedCountry)}
                   <Badge variant="secondary" className="mr-2">{filteredZones.length} {tz.zoneCount}</Badge>
+                  {getGeoCode("country", selectedCountry) && (
+                    <Badge variant="outline" className="text-xs">🏳️ {getGeoCode("country", selectedCountry)?.code}</Badge>
+                  )}
+                  {getGeoCode("city", selectedCity, selectedCountry) && (
+                    <Badge variant="outline" className="text-xs">🏙️ {getGeoCode("city", selectedCity, selectedCountry)?.code}</Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -507,6 +567,7 @@ const ZonesManagement = () => {
                           <TableHead>#</TableHead>
                           <TableHead>{tz.nameAr}</TableHead>
                           <TableHead>{tz.nameFr}</TableHead>
+                          <TableHead>الرمز</TableHead>
                           <TableHead>{tz.radiusKm}</TableHead>
                           <TableHead>{tz.deliveryFee}</TableHead>
                           <TableHead>{tz.status}</TableHead>
@@ -519,6 +580,7 @@ const ZonesManagement = () => {
                             <TableCell className="font-bold text-muted-foreground">{idx + 1}</TableCell>
                             <TableCell className="font-semibold">{z.name_ar}</TableCell>
                             <TableCell className="text-muted-foreground">{z.name_fr || "—"}</TableCell>
+                            <TableCell><Badge variant="outline" className="font-mono text-xs">{z.zone_code || "—"}</Badge></TableCell>
                             <TableCell>{z.radius_km} km</TableCell>
                             <TableCell className="font-bold text-primary">{z.delivery_fee} DH</TableCell>
                             <TableCell>

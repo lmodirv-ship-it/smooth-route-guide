@@ -829,6 +829,33 @@ export type Database = {
           },
         ]
       }
+      geo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+          parent_name: string | null
+          type: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          parent_name?: string | null
+          type?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          parent_name?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
       import_logs: {
         Row: {
           categories_count: number
@@ -1893,6 +1920,7 @@ export type Database = {
           name_ar: string
           name_fr: string
           radius_km: number
+          zone_code: string | null
         }
         Insert: {
           center_lat?: number
@@ -1906,6 +1934,7 @@ export type Database = {
           name_ar?: string
           name_fr?: string
           radius_km?: number
+          zone_code?: string | null
         }
         Update: {
           center_lat?: number
@@ -1919,6 +1948,7 @@ export type Database = {
           name_ar?: string
           name_fr?: string
           radius_km?: number
+          zone_code?: string | null
         }
         Relationships: []
       }
