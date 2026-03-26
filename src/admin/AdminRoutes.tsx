@@ -25,6 +25,7 @@ import AdminSettings from "@/admin/pages/Settings";
 import CommissionRatesPage from "@/admin/pages/CommissionRates";
 import SmartAssistantPage from "@/admin/pages/SmartAssistant";
 import SubAssistantsPage from "@/admin/pages/SubAssistants";
+import SupervisorsPage from "@/admin/pages/Supervisors";
 import SetupAdmin from "@/admin/pages/SetupAdmin";
 
 // Call Center layout & pages
@@ -56,6 +57,7 @@ export const adminRouteElements = (
 
     <Route path="/admin" element={<RequireRole allowed={["admin"]}><AdminLayout /></RequireRole>}>
       <Route index element={<AdminDashboardPage />} />
+      <Route path="supervisors" element={<SupervisorsPage />} />
       <Route path="users" element={<RegisteredUsers />} />
       <Route path="requests" element={<AdminRideRequests />} />
       <Route path="drivers" element={<AdminDrivers />} />
