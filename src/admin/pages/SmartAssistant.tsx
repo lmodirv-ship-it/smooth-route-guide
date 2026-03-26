@@ -169,7 +169,7 @@ const SmartAssistantPage = () => {
       </div>
 
       {/* Main Content - Top Split */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 flex-1 min-h-0">
         {/* Right: Executed Tasks with Browser Preview */}
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-2 lg:order-1">
           <div className="p-2.5 border-b border-border flex items-center justify-between">
@@ -215,7 +215,7 @@ const SmartAssistantPage = () => {
         </div>
 
         {/* Left: Code Used + Site Preview */}
-        <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2">
+        <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2 lg:col-span-2">
           <div className="p-2.5 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               {previewUrl && (
@@ -297,7 +297,7 @@ const SmartAssistantPage = () => {
       </div>
 
       {/* Chat Area */}
-      <div className="gradient-card rounded-xl border border-border flex flex-col h-[280px] min-h-[220px]">
+      <div className="gradient-card rounded-xl border border-border flex flex-col h-[200px] min-h-[160px]">
         <div ref={chatRef} className="flex-1 overflow-auto p-4 space-y-3">
           {messages.length === 0 && (
             <div className="text-center py-6">
