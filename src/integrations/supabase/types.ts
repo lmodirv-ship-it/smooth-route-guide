@@ -1850,6 +1850,7 @@ export type Database = {
           center_lat: number
           center_lng: number
           city: string
+          country: string
           created_at: string
           delivery_fee: number
           id: string
@@ -1862,6 +1863,7 @@ export type Database = {
           center_lat?: number
           center_lng?: number
           city?: string
+          country?: string
           created_at?: string
           delivery_fee?: number
           id?: string
@@ -1874,6 +1876,7 @@ export type Database = {
           center_lat?: number
           center_lng?: number
           city?: string
+          country?: string
           created_at?: string
           delivery_fee?: number
           id?: string

@@ -1,0 +1,1 @@
+ALTER TABLE public.zones ADD COLUMN country text NOT NULL DEFAULT 'المغرب';
