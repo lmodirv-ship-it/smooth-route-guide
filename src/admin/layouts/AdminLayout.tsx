@@ -55,6 +55,9 @@ const AdminLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const aiScrollRef = useRef<HTMLDivElement>(null);
   const [pendingCount, setPendingCount] = useState(0);
+  const [smartAssistantActive, setSmartAssistantActive] = useState(true);
+
+  const isSmartAssistantRoute = location.pathname === "/admin/smart-assistant";
 
   const navItems = [
     { path: "/admin", icon: BarChart3, label: t.admin.dashboard },
