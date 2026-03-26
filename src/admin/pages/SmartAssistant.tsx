@@ -83,14 +83,18 @@ const SmartAssistantPage = () => {
   }, [previewUrl]);
 
   const websiteList = [
-    { name: "Wikipedia", url: "https://ar.wikipedia.org", icon: "📚" },
-    { name: "Google", url: "https://www.google.com/webhp?igu=1", icon: "🔎" },
-    { name: "Bing", url: "https://www.bing.com", icon: "🔍" },
-    { name: "Reddit", url: "https://www.reddit.com", icon: "🟠" },
-    { name: "DuckDuckGo", url: "https://duckduckgo.com", icon: "🦆" },
-    { name: "Archive", url: "https://archive.org", icon: "📦" },
-    { name: "W3Schools", url: "https://www.w3schools.com", icon: "🌐" },
-    { name: "CodePen", url: "https://codepen.io", icon: "✏️" },
+    { name: "Facebook", url: "https://www.facebook.com", icon: "📘", color: "bg-blue-600" },
+    { name: "Instagram", url: "https://www.instagram.com", icon: "📸", color: "bg-pink-500" },
+    { name: "TikTok", url: "https://www.tiktok.com", icon: "🎵", color: "bg-foreground" },
+    { name: "YouTube", url: "https://www.youtube.com", icon: "▶️", color: "bg-red-600" },
+    { name: "X", url: "https://x.com", icon: "𝕏", color: "bg-foreground" },
+    { name: "LinkedIn", url: "https://www.linkedin.com", icon: "💼", color: "bg-blue-700" },
+    { name: "WhatsApp", url: "https://web.whatsapp.com", icon: "💬", color: "bg-green-600" },
+    { name: "Google", url: "https://www.google.com", icon: "🔎", color: "bg-yellow-500" },
+    { name: "Snapchat", url: "https://www.snapchat.com", icon: "👻", color: "bg-yellow-400" },
+    { name: "Pinterest", url: "https://www.pinterest.com", icon: "📌", color: "bg-red-700" },
+    { name: "Telegram", url: "https://web.telegram.org", icon: "✈️", color: "bg-blue-500" },
+    { name: "Reddit", url: "https://www.reddit.com", icon: "🟠", color: "bg-orange-600" },
   ];
 
 
@@ -184,41 +188,22 @@ const SmartAssistantPage = () => {
               <TabsTrigger value="social" className="text-xs">التواصل الاجتماعي</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="sites" className="flex-1 flex flex-col overflow-hidden m-0">
-              {/* Site selector bar */}
-              <div className="bg-secondary/60 px-2 py-1.5 flex items-center gap-1 border-b border-border overflow-x-auto shrink-0">
-                {websiteList.map((site, i) => (
+             <TabsContent value="sites" className="flex-1 flex flex-col overflow-auto m-0 p-4">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                {websiteList.map((site) => (
                   <button
                     key={site.name}
-                    onClick={() => setActiveSiteIndex(i)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap shrink-0 ${
-                      activeSiteIndex === i
-                        ? "gradient-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                    }`}
+                    onClick={() => window.open(site.url, "_blank", "noopener,noreferrer")}
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-secondary/30 hover:bg-secondary/60 hover:shadow-md transition-all group"
                   >
-                    <span className="text-base">{site.icon}</span>
-                    {site.name}
+                    <div className={`w-12 h-12 rounded-xl ${site.color} flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform`}>
+                      {site.icon}
+                    </div>
+                    <span className="text-xs font-medium text-foreground">{site.name}</span>
                   </button>
                 ))}
-                <button
-                  onClick={() => window.open(websiteList[activeSiteIndex].url, "_blank", "noopener,noreferrer")}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs text-muted-foreground hover:bg-secondary hover:text-foreground transition-all whitespace-nowrap shrink-0 mr-auto"
-                >
-                  🔗 فتح خارجياً
-                </button>
               </div>
-              {/* Site iframe */}
-              <div className="flex-1 bg-background relative" style={{ overflow: "hidden" }}>
-                <iframe
-                  key={`site-${activeSiteIndex}-${iframeKey}`}
-                  src={websiteList[activeSiteIndex].url}
-                  className="border-0 absolute inset-0 w-full h-full"
-                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-                  referrerPolicy="no-referrer"
-                  title={websiteList[activeSiteIndex].name}
-                />
-              </div>
+              <p className="text-center text-muted-foreground/60 text-[10px] mt-4">اضغط على أي موقع لفتحه في نافذة جديدة</p>
             </TabsContent>
 
             <TabsContent value="preview" className="flex-1 flex flex-col overflow-hidden m-0">
