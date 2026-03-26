@@ -215,7 +215,7 @@ const SmartAssistantPage = () => {
         </div>
 
         {/* Left: Code Used + Site Preview */}
-        <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2">
+        <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2 lg:col-span-2">
           <div className="p-2.5 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               {previewUrl && (
