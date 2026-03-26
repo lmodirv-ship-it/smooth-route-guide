@@ -157,11 +157,6 @@ const SmartAssistantPage = () => {
 
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2">
           <Tabs value={pageOneTab} onValueChange={setPageOneTab} className="flex-1 flex flex-col overflow-hidden">
-            <TabsList className="w-full rounded-none border-b border-border bg-secondary/40 shrink-0 grid grid-cols-3">
-              <TabsTrigger value="sites" className="text-xs">المواقع</TabsTrigger>
-              <TabsTrigger value="preview" className="text-xs">معاينة الموقع</TabsTrigger>
-              <TabsTrigger value="social" className="text-xs">التواصل الاجتماعي</TabsTrigger>
-            </TabsList>
 
             <TabsContent value="sites" className="flex-1 flex flex-col overflow-hidden m-0">
               <div className="bg-secondary/60 px-2 py-1.5 flex items-center gap-1 border-b border-border overflow-x-auto shrink-0">
