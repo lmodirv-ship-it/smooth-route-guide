@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { MapPin, Plus, Pencil, Trash2, DollarSign, Navigation, Loader2, ChevronDown, ChevronLeft, Globe, Building2 } from "lucide-react";
 
@@ -24,6 +24,14 @@ type Zone = {
   is_active: boolean;
   created_at: string;
 };
+
+const COUNTRIES = [
+  "المغرب", "الجزائر", "تونس", "ليبيا", "مصر", "موريتانيا",
+  "السعودية", "الإمارات", "الكويت", "قطر", "البحرين", "عُمان",
+  "الأردن", "لبنان", "العراق", "سوريا", "فلسطين", "اليمن", "السودان",
+  "تركيا", "فرنسا", "إسبانيا", "بلجيكا", "هولندا", "ألمانيا", "إيطاليا",
+  "كندا", "الولايات المتحدة", "بريطانيا",
+];
 
 const emptyForm = {
   name_ar: "",
