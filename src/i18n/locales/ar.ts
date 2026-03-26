@@ -349,6 +349,7 @@ const ar: TranslationSet = {
     faq5q: "كيف أغير معلومات سيارتي؟",
     faq5a: "اذهب إلى معلومات السيارة من ملفك الشخصي واضغط على زر التعديل.",
   },
+  delivery: {
     home: "الرئيسية",
     whatDoYouWant: "ماذا تريد اليوم؟",
     fastDelivery: "توصيل سريع في",
