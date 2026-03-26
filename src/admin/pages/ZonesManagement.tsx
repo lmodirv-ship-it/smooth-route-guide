@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { MapPin, Plus, Pencil, Trash2, DollarSign, Navigation, Loader2, Globe, Building2, List, Wand2, Save } from "lucide-react";
 import { useI18n } from "@/i18n/context";
+import { translateCountry } from "@/lib/countryTranslations";
 
 type Zone = {
   id: string;
@@ -48,8 +49,9 @@ const emptyForm = {
 };
 
 const ZonesManagement = () => {
-  const { t, dir } = useI18n();
+  const { t, dir, locale } = useI18n();
   const tz = t.zones;
+  const tc = (name: string) => translateCountry(name, locale);
   const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -422,7 +424,7 @@ const ZonesManagement = () => {
                   <SelectContent>
                     {availableCountries.map(c => (
                       <SelectItem key={c} value={c}>
-                        {c} ({zones.filter(z => z.country === c).length} {tz.zoneCount})
+                        {tc(c)} ({zones.filter(z => z.country === c).length} {tz.zoneCount})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -484,7 +486,7 @@ const ZonesManagement = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <List className="w-5 h-5 text-primary" />
-                  {selectedCity} — {selectedCountry}
+                  {selectedCity} — {tc(selectedCountry)}
                   <Badge variant="secondary" className="mr-2">{filteredZones.length} {tz.zoneCount}</Badge>
                 </CardTitle>
               </CardHeader>
@@ -593,7 +595,7 @@ const ZonesManagement = () => {
               >
                 <SelectTrigger className="mt-1"><SelectValue placeholder={tz.selectCountry} /></SelectTrigger>
                 <SelectContent>
-                  {COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  {COUNTRIES.map(c => <SelectItem key={c} value={c}>{tc(c)}</SelectItem>)}
                   <SelectItem value="__other__">{tz.otherCountry}</SelectItem>
                 </SelectContent>
               </Select>

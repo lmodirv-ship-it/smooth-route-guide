@@ -1,9 +1,13 @@
 import { Globe, MapPin } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAdminGeo } from "@/admin/contexts/AdminGeoContext";
+import { useI18n } from "@/i18n/context";
+import { translateCountry } from "@/lib/countryTranslations";
 
 const AdminGeoFilter = () => {
   const { selectedCountry, selectedCity, setSelectedCountry, setSelectedCity, countries, cities } = useAdminGeo();
+  const { locale } = useI18n();
+  const tc = (name: string) => translateCountry(name, locale);
 
   return (
     <div className="flex items-center gap-2">
@@ -15,7 +19,7 @@ const AdminGeoFilter = () => {
         <SelectContent>
           <SelectItem value="all">🌍 كل البلدان</SelectItem>
           {countries.map(c => (
-            <SelectItem key={c} value={c}>{c}</SelectItem>
+            <SelectItem key={c} value={c}>{tc(c)}</SelectItem>
           ))}
         </SelectContent>
       </Select>
