@@ -215,13 +215,13 @@ const SmartAssistantPage = () => {
         </div>
       </div>
 
-      <div className="gradient-card rounded-xl border border-border flex flex-col h-[200px] min-h-[160px]">
+      <div className="rounded-xl border border-border flex flex-col h-[200px] min-h-[160px] bg-white">
         <div ref={chatRef} className="flex-1 overflow-auto p-4 space-y-3">
           {messages.length === 0 && (
             <div className="text-center py-6">
               <Bot className="w-10 h-10 mx-auto text-primary/40 mb-2" />
-              <p className="text-muted-foreground text-sm">مرحبًا! أنا المساعد الذكي للمدير. كيف يمكنني مساعدتك؟</p>
-              <p className="text-muted-foreground/60 text-xs mt-1">يمكنني تعديل الصفحات، إنشاء المحتوى، وإعداد الحملات</p>
+              <p className="text-black/60 text-sm">مرحبًا! أنا المساعد الذكي للمدير. كيف يمكنني مساعدتك؟</p>
+              <p className="text-black/40 text-xs mt-1">يمكنني تعديل الصفحات، إنشاء المحتوى، وإعداد الحملات</p>
             </div>
           )}
           {messages.map((msg, i) => (
@@ -229,10 +229,10 @@ const SmartAssistantPage = () => {
               <div className={`max-w-[80%] rounded-xl px-4 py-2.5 text-sm ${
                 msg.role === "user"
                   ? "gradient-primary text-primary-foreground"
-                  : "bg-secondary/60 text-foreground"
+                  : "bg-gray-100 text-black"
               }`}>
                 {msg.role === "assistant" ? (
-                  <div className="prose prose-sm prose-invert max-w-none">
+                  <div className="prose prose-sm max-w-none text-black [&_*]:text-black">
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
                 ) : msg.content}
@@ -241,14 +241,14 @@ const SmartAssistantPage = () => {
           ))}
           {loading && (
             <div className="flex justify-start">
-              <div className="bg-secondary/60 rounded-xl px-4 py-3 flex items-center gap-2">
+              <div className="bg-gray-100 rounded-xl px-4 py-3 flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                <span className="text-xs text-muted-foreground">جاري المعالجة...</span>
+                <span className="text-xs text-black/60">جاري المعالجة...</span>
               </div>
             </div>
           )}
         </div>
-        <div className="p-3 border-t border-border">
+        <div className="p-3 border-t border-gray-200">
           <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="flex gap-2">
             <Button type="submit" disabled={!input.trim() || loading || !isActive} size="sm" className="gap-2">
               <Send className="w-4 h-4" />
@@ -259,7 +259,7 @@ const SmartAssistantPage = () => {
               onChange={(e) => setInput(e.target.value)}
               placeholder={isActive ? "اكتب طلبك هنا..." : "المساعد متوقف حالياً"}
               disabled={!isActive}
-              className="flex-1 text-right bg-secondary/40 border-border"
+              className="flex-1 text-right bg-gray-50 border-gray-200 text-black placeholder:text-black/40"
               dir="rtl"
             />
           </form>
