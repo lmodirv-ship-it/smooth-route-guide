@@ -58,6 +58,15 @@ const SmartAssistantPage = () => {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
+  // Auto-refresh preview every 5 seconds for live updates
+  useEffect(() => {
+    if (!previewUrl) return;
+    const interval = setInterval(() => {
+      setIframeKey(k => k + 1);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [previewUrl]);
+
 
 
   const sendMessage = async () => {
