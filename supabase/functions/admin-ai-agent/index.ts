@@ -757,6 +757,97 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         }
         return JSON.stringify({ error: "Invalid action" });
       }
+      case "generate_code": {
+        // Save generated code to smart_assistant_commands as a code artifact
+        const fileEntry = {
+          file_path: args.file_path,
+          language: args.language,
+          code: args.code,
+          description: args.description,
+          action: args.action || "create",
+          generated_at: new Date().toISOString(),
+        };
+        
+        // Store in smart_assistant_commands table
+        const { error: saveErr } = await supabase.from("smart_assistant_commands").insert({
+          admin_id: "system",
+          command_text: `generate_code: ${args.description}`,
+          command_type: "code_generation",
+          ai_response: args.code,
+          generated_files: [fileEntry],
+          status: "pending_review",
+        });
+        
+        if (saveErr) return JSON.stringify({ error: saveErr.message });
+        
+        // Also upload the code file to storage
+        const encoder = new TextEncoder();
+        const fileContent = encoder.encode(args.code);
+        const storagePath = `generated-code/${Date.now()}_${args.file_path.replace(/\//g, "_")}`;
+        
+        await supabase.storage.from("smart-assistant-files").upload(storagePath, fileContent, {
+          contentType: "text/plain",
+          upsert: true,
+        });
+        
+        const { data: urlData } = supabase.storage.from("smart-assistant-files").getPublicUrl(storagePath);
+        
+        return JSON.stringify({
+          success: true,
+          file_path: args.file_path,
+          language: args.language,
+          description: args.description,
+          action: args.action || "create",
+          download_url: urlData.publicUrl,
+          message: `✅ تم توليد الكود بنجاح: ${args.file_path}\n📥 الملف محفوظ محلياً ويمكن تحميله من سجل الأوامر.\n⚠️ لن يُطبق على السيرفر حتى ترفعه يدوياً.`,
+        });
+      }
+      case "generate_deployment_package": {
+        // Collect all pending code generations
+        const { data: pendingCmds, error: fetchErr } = await supabase
+          .from("smart_assistant_commands")
+          .select("*")
+          .eq("command_type", "code_generation")
+          .eq("status", "pending_review")
+          .order("created_at", { ascending: true });
+          
+        if (fetchErr) return JSON.stringify({ error: fetchErr.message });
+        
+        const deployPackage = {
+          package_name: args.package_name,
+          generated_at: new Date().toISOString(),
+          total_files: pendingCmds?.length || 0,
+          files: (pendingCmds || []).map((cmd: any) => ({
+            ...((cmd.generated_files as any[])?.[0] || {}),
+            command_id: cmd.id,
+          })),
+          instructions: [
+            "1. راجع كل الملفات في القائمة أدناه",
+            "2. انسخ كل ملف إلى المسار المحدد في مشروعك المحلي",
+            "3. شغّل npm run build للتأكد من عدم وجود أخطاء",
+            "4. ارفع التغييرات إلى السيرفر",
+          ],
+        };
+        
+        // Save package to storage
+        const packageContent = new TextEncoder().encode(JSON.stringify(deployPackage, null, 2));
+        const packagePath = `packages/${args.package_name}_${Date.now()}.json`;
+        
+        await supabase.storage.from("smart-assistant-files").upload(packagePath, packageContent, {
+          contentType: "application/json",
+          upsert: true,
+        });
+        
+        const { data: pkgUrl } = supabase.storage.from("smart-assistant-files").getPublicUrl(packagePath);
+        
+        return JSON.stringify({
+          success: true,
+          package_name: args.package_name,
+          total_files: deployPackage.total_files,
+          download_url: pkgUrl.publicUrl,
+          message: `📦 تم إنشاء حزمة النشر "${args.package_name}" بـ ${deployPackage.total_files} ملفات.\n📥 يمكنك تحميلها من الرابط أدناه.`,
+        });
+      }
       default:
         return JSON.stringify({ error: `Unknown tool: ${name}` });
     }
