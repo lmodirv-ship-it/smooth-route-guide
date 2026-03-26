@@ -580,6 +580,75 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         }
         return JSON.stringify({ error: "Invalid action" });
       }
+      case "manage_social_content": {
+        if (args.action === "list") {
+          const { data, error } = await supabase.from("social_media_posts").select("*").order("created_at", { ascending: false }).limit(50);
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ posts: data });
+        }
+        if (args.action === "create") {
+          if (!args.content) return JSON.stringify({ error: "content required" });
+          const { data, error } = await supabase.from("social_media_posts").insert({
+            platform: args.platform || "facebook",
+            post_type: args.post_type || "post",
+            title: args.title || "",
+            content: args.content,
+            image_url: args.image_url || null,
+            hashtags: args.hashtags || [],
+            target_audience: args.target_audience || "general",
+            scheduled_at: args.scheduled_at || null,
+            metadata: args.metadata || {},
+            status: "draft",
+            admin_approved: false,
+          }).select().single();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "created", post: data, message: "تم إنشاء المنشور كمسودة. يحتاج موافقة المدير قبل النشر." });
+        }
+        if (args.action === "update") {
+          if (!args.id) return JSON.stringify({ error: "id required" });
+          const updates: any = { updated_at: new Date().toISOString() };
+          if (args.title !== undefined) updates.title = args.title;
+          if (args.content !== undefined) updates.content = args.content;
+          if (args.platform !== undefined) updates.platform = args.platform;
+          if (args.post_type !== undefined) updates.post_type = args.post_type;
+          if (args.image_url !== undefined) updates.image_url = args.image_url;
+          if (args.hashtags !== undefined) updates.hashtags = args.hashtags;
+          if (args.target_audience !== undefined) updates.target_audience = args.target_audience;
+          if (args.scheduled_at !== undefined) updates.scheduled_at = args.scheduled_at;
+          if (args.metadata !== undefined) updates.metadata = args.metadata;
+          const { data, error } = await supabase.from("social_media_posts").update(updates).eq("id", args.id).select().single();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "updated", post: data });
+        }
+        if (args.action === "delete") {
+          if (!args.id) return JSON.stringify({ error: "id required" });
+          const { error } = await supabase.from("social_media_posts").delete().eq("id", args.id);
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "deleted" });
+        }
+        if (args.action === "approve") {
+          if (!args.id) return JSON.stringify({ error: "id required" });
+          const { data, error } = await supabase.from("social_media_posts").update({
+            admin_approved: true,
+            approved_at: new Date().toISOString(),
+            status: "approved",
+            updated_at: new Date().toISOString(),
+          }).eq("id", args.id).select().single();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "approved", post: data, message: "تمت الموافقة على المنشور. يمكن نشره الآن." });
+        }
+        if (args.action === "reject") {
+          if (!args.id) return JSON.stringify({ error: "id required" });
+          const { data, error } = await supabase.from("social_media_posts").update({
+            admin_approved: false,
+            status: "rejected",
+            updated_at: new Date().toISOString(),
+          }).eq("id", args.id).select().single();
+          if (error) return JSON.stringify({ error: error.message });
+          return JSON.stringify({ success: true, action: "rejected", post: data });
+        }
+        return JSON.stringify({ error: "Invalid action" });
+      }
       default:
         return JSON.stringify({ error: `Unknown tool: ${name}` });
     }
