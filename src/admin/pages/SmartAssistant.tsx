@@ -154,7 +154,6 @@ const SmartAssistantPage = () => {
           <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
           </div>
         </div>
-        </div>
 
         <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2">
           <Tabs value={pageOneTab} onValueChange={setPageOneTab} className="flex-1 flex flex-col overflow-hidden">
