@@ -69,8 +69,13 @@ const SmartAssistantPage = () => {
       return;
     }
 
-    const userMsg: AiMsg = { role: "user", content: safeText };
-    setMessages(prev => [...prev, userMsg]);
+    // Include page context so AI knows which page to analyze
+    const pageContext = previewUrl
+      ? `\n\n[السياق: الصفحة المحملة حالياً هي: ${previewUrl}]\nقم بتحليل هذه الصفحة وتنفيذ التعليمات التالية عليها.`
+      : "";
+    const userMsg: AiMsg = { role: "user", content: safeText + pageContext };
+    const displayMsg: AiMsg = { role: "user", content: safeText };
+    setMessages(prev => [...prev, displayMsg]);
     setInput("");
     setLoading(true);
 
