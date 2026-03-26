@@ -367,7 +367,16 @@ const ZonesManagement = () => {
           <div className="space-y-4">
             <div>
               <Label className="text-xs">البلد *</Label>
-              <Input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} placeholder="مثال: المغرب" className="mt-1" />
+              <Select value={COUNTRIES.includes(form.country) ? form.country : "__other__"} onValueChange={v => { if (v !== "__other__") setForm(f => ({ ...f, country: v })); else setForm(f => ({ ...f, country: "" })); }}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="اختر البلد" /></SelectTrigger>
+                <SelectContent>
+                  {COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  <SelectItem value="__other__">أخرى...</SelectItem>
+                </SelectContent>
+              </Select>
+              {!COUNTRIES.includes(form.country) && (
+                <Input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} placeholder="أدخل اسم البلد" className="mt-2" />
+              )}
             </div>
             <div>
               <Label className="text-xs">المدينة *</Label>
