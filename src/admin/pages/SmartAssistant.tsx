@@ -155,7 +155,7 @@ const SmartAssistantPage = () => {
       <div className="gradient-card rounded-xl border border-border p-2.5 flex items-center gap-2">
         <Button size="sm" onClick={handleLoadSite} className="gap-1.5 shrink-0">
           <Globe className="w-4 h-4" />
-          تحميل
+          عرض
         </Button>
         <Input
           value={siteUrl}
