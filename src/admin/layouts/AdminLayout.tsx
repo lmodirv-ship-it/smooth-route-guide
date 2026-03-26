@@ -253,7 +253,7 @@ const AdminLayout = () => {
           <div className="flex items-center gap-3">
             {isSmartAssistantRoute && (
               <>
-                <span className="text-sm font-bold text-foreground">المساعد الذكي</span>
+                <span className="text-sm font-bold text-foreground">{t.admin.smartAssistantPage}</span>
                 <Button
                   variant="default"
                   size="sm"
@@ -261,7 +261,7 @@ const AdminLayout = () => {
                   className="gap-1.5 h-8 bg-success hover:bg-success/90 text-white"
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  قبول
+                  {t.admin.accept}
                 </Button>
                 <Button
                   variant="destructive"
@@ -270,7 +270,7 @@ const AdminLayout = () => {
                   className="gap-1.5 h-8"
                 >
                   <ShieldOff className="w-3.5 h-3.5" />
-                  رفض
+                  {t.admin.reject}
                 </Button>
                 <Button
                   variant="outline"
@@ -279,11 +279,11 @@ const AdminLayout = () => {
                   className="gap-1.5 h-8"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  Actualiser
+                  {t.common.refresh}
                 </Button>
                 <Badge variant="outline" className={`text-xs ${smartAssistantActive ? "text-success border-success/30 bg-success/10" : "text-destructive border-destructive/30 bg-destructive/10"}`}>
                   <span className={`inline-block w-2 h-2 rounded-full mr-1 ${smartAssistantActive ? "bg-success animate-pulse" : "bg-destructive"}`} />
-                  {smartAssistantActive ? "نشط" : "متوقف"}
+                  {smartAssistantActive ? t.admin.activeStatus : t.admin.stoppedStatus}
                 </Badge>
                 <div className="w-px h-6 bg-border" />
               </>
