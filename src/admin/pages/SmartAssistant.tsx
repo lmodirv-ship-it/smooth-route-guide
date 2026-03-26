@@ -287,11 +287,7 @@ const SmartAssistantPage = () => {
                   <ReactMarkdown>{selectedTask.code || "لا يوجد كود"}</ReactMarkdown>
                 </div>
               </div>
-            ) : (
-              <div className="text-center text-muted-foreground text-sm py-8">
-                اختر مهمة من القائمة لعرض الكود
-              </div>
-            )}
+            ) : null}
           </ScrollArea>
         </div>
       </div>
