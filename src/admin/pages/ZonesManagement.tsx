@@ -194,6 +194,7 @@ const ZonesManagement = () => {
         }
         const cities = data.cities || [];
         if (cities.length === 0) {
+          toast.info(`لم يتم العثور على مدن لـ ${selectedCountry}`);
           setAutoGenerating(false);
           return;
         }
@@ -202,6 +203,36 @@ const ZonesManagement = () => {
         );
         const newCities = cities.filter((c: any) => !existingCities.has(c.name.trim()));
         if (newCities.length === 0) {
+          toast.info(`جميع المدن المكتشفة (${cities.length}) موجودة بالفعل. جاري البحث عن المزيد...`);
+          // Try Google Places for more cities
+          const { data: moreData } = await supabase.functions.invoke("search-neighborhoods", {
+            body: { country: selectedCountry, mode: "cities", extended: true },
+          });
+          const moreCities = moreData?.cities || [];
+          const extraCities = moreCities.filter((c: any) => !existingCities.has(c.name.trim()));
+          if (extraCities.length === 0) {
+            toast.info(`لا توجد مدن جديدة لإضافتها لـ ${selectedCountry}`);
+            setAutoGenerating(false);
+            return;
+          }
+          const toInsertExtra = extraCities.map((c: any) => ({
+            name_ar: "وسط المدينة",
+            name_fr: "Centre Ville",
+            city: c.name,
+            country: selectedCountry,
+            center_lat: c.lat || 0,
+            center_lng: c.lng || 0,
+            radius_km: 3,
+            delivery_fee: 10,
+            is_active: true,
+          }));
+          const { error: insertErr } = await supabase.from("zones").insert(toInsertExtra);
+          if (insertErr) {
+            toast.error(tz.addCitiesError);
+          } else {
+            toast.success(`✅ تمت إضافة ${toInsertExtra.length} مدينة جديدة`);
+            fetchZones();
+          }
           setAutoGenerating(false);
           return;
         }
@@ -234,6 +265,7 @@ const ZonesManagement = () => {
         }
         const neighborhoods = data.neighborhoods || [];
         if (neighborhoods.length === 0) {
+          toast.info(`لم يتم العثور على أحياء لمدينة ${selectedCity}`);
           setAutoGenerating(false);
           return;
         }
@@ -246,6 +278,7 @@ const ZonesManagement = () => {
           (n: any) => !existingNames.has(n.name_ar.trim())
         );
         if (newZones.length === 0) {
+          toast.info(`جميع الأحياء المكتشفة (${neighborhoods.length}) موجودة بالفعل في ${selectedCity}`);
           setAutoGenerating(false);
           return;
         }
