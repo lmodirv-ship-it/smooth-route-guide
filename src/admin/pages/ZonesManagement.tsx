@@ -77,6 +77,23 @@ const ZonesManagement = () => {
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<string>("");
 
+  const fetchGeoCodes = async () => {
+    const { data } = await supabase.from("geo_codes").select("*");
+    setGeoCodes((data || []) as GeoCode[]);
+  };
+
+  const getGeoCode = (type: string, name: string, parentName?: string | null) => {
+    return geoCodes.find(g => g.type === type && g.name === name && (parentName ? g.parent_name === parentName : !g.parent_name));
+  };
+
+  const ensureGeoCode = async (type: string, name: string, parentName?: string | null) => {
+    const existing = getGeoCode(type, name, parentName);
+    if (existing) return existing.code;
+    const code = generateCode();
+    await supabase.from("geo_codes").insert({ type, name, code, parent_name: parentName || null });
+    return code;
+  };
+
   const fetchZones = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -89,11 +106,19 @@ const ZonesManagement = () => {
     else {
       const zonesData = (data || []) as Zone[];
       setZones(zonesData);
+      // Auto-generate zone_code for zones that don't have one
+      for (const z of zonesData) {
+        if (!z.zone_code) {
+          const code = generateCode();
+          await supabase.from("zones").update({ zone_code: code }).eq("id", z.id);
+          z.zone_code = code;
+        }
+      }
     }
     setLoading(false);
   };
 
-  useEffect(() => { fetchZones(); }, []);
+  useEffect(() => { fetchZones(); fetchGeoCodes(); }, []);
 
   useEffect(() => {
     if (zones.length > 0 && !selectedCountry) {
