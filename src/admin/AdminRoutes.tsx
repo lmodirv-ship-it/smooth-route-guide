@@ -70,6 +70,7 @@ export const adminRouteElements = (
       <Route path="zones" element={<ZonesManagement />} />
       <Route path="commission-rates" element={<CommissionRatesPage />} />
       <Route path="smart-assistant" element={<SmartAssistantPage />} />
+      <Route path="sub-assistants" element={<SubAssistantsPage />} />
       <Route path="settings" element={<AdminSettings />} />
     </Route>
 
