@@ -128,6 +128,7 @@ const AdminLayout = () => {
   };
 
   return (
+    <AdminGeoProvider>
     <div className="min-h-screen gradient-dark flex" dir={dir}>
       {/* Sidebar */}
       <aside className={`${sidebarCollapsed ? "w-16" : "w-64"} glass-strong border-l border-border hidden lg:flex flex-col transition-all duration-300`}>
@@ -238,9 +239,12 @@ const AdminLayout = () => {
                 </div>
               </>
             ) : (
-              <div className="relative w-64">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder={t.admin.searchPlaceholder} className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm" />
+              <div className="flex items-center gap-3">
+                <AdminGeoFilter />
+                <div className="relative w-52">
+                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input placeholder={t.admin.searchPlaceholder} className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm" />
+                </div>
               </div>
             )}
           </div>
@@ -360,6 +364,7 @@ const AdminLayout = () => {
           <Bot className="w-6 h-6 text-primary-foreground" />
         </motion.button>
       )}
+    </AdminGeoProvider>
     </div>
   );
 };
