@@ -111,7 +111,7 @@ const DeliveryOrdersBoard = ({ title }: { title: string }) => {
       .on("postgres_changes", { event: "*", schema: "public", table: "delivery_orders" }, () => fetchOrders())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, []);
+  }, [geoCtx?.selectedCountry, geoCtx?.selectedCity]);
 
   // Keep selected order synced
   useEffect(() => {
