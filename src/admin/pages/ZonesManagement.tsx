@@ -396,7 +396,7 @@ const ZonesManagement = () => {
           </div>
 
           {/* Auto Generate Button */}
-          {selectedCountry && selectedCity && (
+          {selectedCountry && (
             <div className="flex justify-center">
               <Button
                 onClick={handleAutoGenerate}
@@ -409,7 +409,12 @@ const ZonesManagement = () => {
                 ) : (
                   <Wand2 className="w-4 h-4" />
                 )}
-                {autoGenerating ? "جاري البحث في Google..." : "توليد تلقائي للمناطق من Google"}
+                {autoGenerating
+                  ? "جاري البحث في Google..."
+                  : selectedCity
+                    ? "توليد تلقائي للمناطق من Google"
+                    : "توليد تلقائي للمدن من Google"
+                }
               </Button>
             </div>
           )}
