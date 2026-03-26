@@ -76,6 +76,16 @@ const ZonesManagement = () => {
 
   useEffect(() => { fetchZones(); }, []);
 
+  // Auto-select first country and city on load
+  useEffect(() => {
+    if (zones.length > 0 && !selectedCountry) {
+      const firstCountry = zones[0]?.country || "المغرب";
+      setSelectedCountry(firstCountry);
+      const firstCity = zones.find(z => z.country === firstCountry)?.city || "";
+      if (firstCity) setSelectedCity(firstCity);
+    }
+  }, [zones]);
+
   // Derived data
   const availableCountries = useMemo(() => {
     const set = new Set(zones.map(z => z.country || "المغرب"));
