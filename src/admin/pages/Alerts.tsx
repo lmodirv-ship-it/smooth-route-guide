@@ -5,8 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/i18n/context";
 
 const AdminAlerts = () => {
+  const { t } = useI18n();
   const [filter, setFilter] = useState<"all" | "active" | "resolved">("all");
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +54,7 @@ const AdminAlerts = () => {
 
   const resolveAlert = async (id: string) => {
     await supabase.from("alerts").update({ status: "resolved", resolved_at: new Date().toISOString() }).eq("id", id);
-    toast({ title: "تم حل التنبيه" });
+    toast({ title: `✅ ${t.admin.resolved}` });
     fetchAlerts();
   };
 
@@ -71,12 +73,12 @@ const AdminAlerts = () => {
           {(["all", "active", "resolved"] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className={`text-xs px-4 py-2 rounded-lg transition-colors ${filter === f ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
-              {f === "all" ? "الكل" : f === "active" ? "🔴 نشطة" : "✅ محلولة"}
+              {f === "all" ? t.admin.allAlerts : f === "active" ? `🔴 ${t.admin.activeAlerts}` : `✅ ${t.admin.resolvedAlerts}`}
             </button>
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold text-foreground">التنبيهات</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t.admin.alerts}</h1>
           <AlertTriangle className="w-6 h-6 text-warning" />
         </div>
       </div>
@@ -84,7 +86,7 @@ const AdminAlerts = () => {
       {loading && <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}
 
       {!loading && alerts.length === 0 && (
-        <div className="gradient-card rounded-xl p-12 border border-border text-center text-muted-foreground">لا توجد تنبيهات</div>
+        <div className="gradient-card rounded-xl p-12 border border-border text-center text-muted-foreground">{t.admin.noAlerts}</div>
       )}
 
       <div className="space-y-3">
@@ -98,12 +100,12 @@ const AdminAlerts = () => {
               }`}>
               <div className="flex items-center gap-3">
                 <Badge variant="outline" className={isDanger ? "text-destructive border-destructive/30" : alert.status === "resolved" ? "text-success border-success/30" : "text-warning border-warning/30"}>
-                  {alert.status === "resolved" ? "محلول" : isDanger ? "خطر" : "تحذير"}
+                  {alert.status === "resolved" ? t.admin.resolved : isDanger ? t.admin.danger : t.admin.warning}
                 </Badge>
                 <span className="text-xs text-muted-foreground">{new Date(alert.created_at).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" })}</span>
                 {alert.status === "active" && (
                   <Button size="sm" variant="outline" onClick={() => resolveAlert(alert.id)} className="text-xs h-7 text-success border-success/30">
-                    <CheckCircle className="w-3 h-3 ml-1" />حل
+                    <CheckCircle className="w-3 h-3 ml-1" />{t.admin.resolve}
                   </Button>
                 )}
               </div>

@@ -351,6 +351,29 @@ export interface TranslationSet {
     errorFetchingUsers: string;
     errorUpdatingRoles: string;
     errorAddingDelivery: string;
+    supervisors: string;
+    commissionRates: string;
+    smartAssistantPage: string;
+    subAssistants: string;
+    supervisorPanel: string;
+    supervisorRole: string;
+    operationsMonitoring: string;
+    deliveryDrivers: string;
+    show: string;
+    enterSiteUrl: string;
+    accept: string;
+    reject: string;
+    activeStatus: string;
+    stoppedStatus: string;
+    platformSettings: string;
+    generate: string;
+    saveBtn: string;
+    noAlerts: string;
+    resolve: string;
+    resolved: string;
+    allAlerts: string;
+    activeAlerts: string;
+    resolvedAlerts: string;
   };
   // Call Center
   callCenter: {

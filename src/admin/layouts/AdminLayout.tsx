@@ -68,7 +68,7 @@ const AdminLayout = () => {
 
   const navItems = [
     { path: "/admin", icon: BarChart3, label: t.admin.dashboard },
-    { path: "/admin/supervisors", icon: ShieldCheck, label: "المشرفون" },
+    { path: "/admin/supervisors", icon: ShieldCheck, label: t.admin.supervisors },
     { path: "/admin/users", icon: UserCog, label: t.admin.registeredUsers },
     { path: "/admin/requests", icon: FileText, label: t.admin.rideRequests },
     { path: "/admin/drivers", icon: Car, label: t.admin.drivers },
@@ -81,9 +81,9 @@ const AdminLayout = () => {
     { path: "/admin/call-center", icon: Headphones, label: t.admin.callCenterMenu },
     { path: "/admin/restaurants", icon: UtensilsCrossed, label: t.admin.restaurantsMenu },
     { path: "/admin/zones", icon: MapPin, label: t.admin.zonesPricing },
-    { path: "/admin/commission-rates", icon: Percent, label: "نسب الأرباح" },
-    { path: "/admin/smart-assistant", icon: Bot, label: "المساعد الذكي" },
-    { path: "/admin/sub-assistants", icon: BrainCircuit, label: "المساعدون الفرعيون" },
+    { path: "/admin/commission-rates", icon: Percent, label: t.admin.commissionRates },
+    { path: "/admin/smart-assistant", icon: Bot, label: t.admin.smartAssistantPage },
+    { path: "/admin/sub-assistants", icon: BrainCircuit, label: t.admin.subAssistants },
     { path: "/admin/settings", icon: Settings, label: t.admin.settingsMenu },
   ];
 
@@ -214,7 +214,7 @@ const AdminLayout = () => {
                   } catch {}
                 }}>
                   <Globe className="w-4 h-4" />
-                  عرض
+                  {t.admin.show}
                 </Button>
                 <div className="relative w-80">
                   <Globe className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -234,7 +234,7 @@ const AdminLayout = () => {
                         } catch {}
                       }
                     }}
-                    placeholder="أدخل رابط الموقع..."
+                    placeholder={t.admin.enterSiteUrl}
                     className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm font-mono"
                     dir="ltr"
                   />
@@ -253,7 +253,7 @@ const AdminLayout = () => {
           <div className="flex items-center gap-3">
             {isSmartAssistantRoute && (
               <>
-                <span className="text-sm font-bold text-foreground">المساعد الذكي</span>
+                <span className="text-sm font-bold text-foreground">{t.admin.smartAssistantPage}</span>
                 <Button
                   variant="default"
                   size="sm"
@@ -261,7 +261,7 @@ const AdminLayout = () => {
                   className="gap-1.5 h-8 bg-success hover:bg-success/90 text-white"
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  قبول
+                  {t.admin.accept}
                 </Button>
                 <Button
                   variant="destructive"
@@ -270,7 +270,7 @@ const AdminLayout = () => {
                   className="gap-1.5 h-8"
                 >
                   <ShieldOff className="w-3.5 h-3.5" />
-                  رفض
+                  {t.admin.reject}
                 </Button>
                 <Button
                   variant="outline"
@@ -279,11 +279,11 @@ const AdminLayout = () => {
                   className="gap-1.5 h-8"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  Actualiser
+                  {t.common.refresh}
                 </Button>
                 <Badge variant="outline" className={`text-xs ${smartAssistantActive ? "text-success border-success/30 bg-success/10" : "text-destructive border-destructive/30 bg-destructive/10"}`}>
                   <span className={`inline-block w-2 h-2 rounded-full mr-1 ${smartAssistantActive ? "bg-success animate-pulse" : "bg-destructive"}`} />
-                  {smartAssistantActive ? "نشط" : "متوقف"}
+                  {smartAssistantActive ? t.admin.activeStatus : t.admin.stoppedStatus}
                 </Badge>
                 <div className="w-px h-6 bg-border" />
               </>
