@@ -53,6 +53,7 @@ const AdminLayout = () => {
   const [aiInput, setAiInput] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarNavVisible, setSidebarNavVisible] = useState(true);
   const aiScrollRef = useRef<HTMLDivElement>(null);
   const [pendingCount, setPendingCount] = useState(0);
   const [smartAssistantActive, setSmartAssistantActive] = useState(true);
@@ -125,10 +126,21 @@ const AdminLayout = () => {
     <div className="min-h-screen gradient-dark flex" dir={dir}>
       {/* Sidebar */}
       <aside className={`${sidebarCollapsed ? "w-16" : "w-64"} glass-strong border-l border-border hidden lg:flex flex-col transition-all duration-300`}>
-        <div className="p-4 flex items-center gap-3 border-b border-border">
+        <button
+          onClick={() => setSidebarNavVisible(v => !v)}
+          className="p-4 flex items-center gap-3 border-b border-border w-full hover:bg-secondary/50 transition-colors cursor-pointer"
+        >
           <img src={logo} alt="HN" className="w-9 h-9 flex-shrink-0" />
-          {!sidebarCollapsed && <span className="font-bold text-lg text-gradient-primary font-display">{t.admin.panelTitle}</span>}
-        </div>
+          {!sidebarCollapsed && (
+            <>
+              <span className="font-bold text-lg text-gradient-primary font-display">{t.admin.panelTitle}</span>
+              <span className={`text-muted-foreground text-xs transition-transform ${sidebarNavVisible ? "rotate-180" : ""}`}>▼</span>
+            </>
+          )}
+        </button>
+        <AnimatePresence initial={false}>
+        {sidebarNavVisible && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
         {!sidebarCollapsed && (
           <div className="p-4 border-b border-border flex items-center gap-3">
             <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center">
@@ -162,6 +174,9 @@ const AdminLayout = () => {
             </button>
           ))}
         </nav>
+          </motion.div>
+        )}
+        </AnimatePresence>
         <div className="p-3 border-t border-border">
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
