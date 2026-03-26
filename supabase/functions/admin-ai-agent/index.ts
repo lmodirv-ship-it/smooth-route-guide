@@ -34,48 +34,7 @@ const ALLOWED_TABLES = [
   "assistant_campaign_ideas", "assistant_activity_log", "product_images",
   "platform_languages", "platform_translations", "dynamic_pages",
   "social_media_posts", "smart_assistant_commands", "sub_assistants",
-  {
-    type: "function",
-    function: {
-      name: "delegate_to_assistant",
-      description: `Delegate a task to a specialized sub-assistant. The main assistant (you) acts as an orchestrator. You read the admin's request, determine which sub-assistant is best suited, and delegate the task. The sub-assistant will execute within its allowed scope (tables + tools only). Use this when the task matches a sub-assistant's specialty. List available sub-assistants first with db_select on sub_assistants table.`,
-      parameters: {
-        type: "object",
-        properties: {
-          assistant_id: { type: "string", description: "UUID of the sub-assistant to delegate to" },
-          task: { type: "string", description: "Clear task description for the sub-assistant" },
-          context: { type: "string", description: "Additional context or data the sub-assistant needs" },
-        },
-        required: ["assistant_id", "task"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "manage_sub_assistants",
-      description: "Create, update, list, or delete sub-assistants. Sub-assistants are specialized AI agents that handle specific tasks under your supervision.",
-      parameters: {
-        type: "object",
-        properties: {
-          action: { type: "string", enum: ["list", "create", "update", "delete", "activate", "deactivate"] },
-          id: { type: "string", description: "Sub-assistant ID (for update/delete/activate/deactivate)" },
-          name: { type: "string" },
-          name_ar: { type: "string" },
-          description: { type: "string" },
-          assistant_type: { type: "string" },
-          system_prompt: { type: "string" },
-          allowed_tables: { type: "array", items: { type: "string" } },
-          allowed_tools: { type: "array", items: { type: "string" } },
-          icon: { type: "string" },
-          color: { type: "string" },
-        },
-        required: ["action"],
-      },
-    },
-  },
 ];
-
 const tools = [
   {
     type: "function",
