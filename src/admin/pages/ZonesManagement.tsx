@@ -349,6 +349,25 @@ const ZonesManagement = () => {
             </Card>
           </div>
 
+          {/* Auto Generate Button */}
+          {selectedCountry && selectedCity && (
+            <div className="flex justify-center">
+              <Button
+                onClick={handleAutoGenerate}
+                disabled={autoGenerating}
+                variant="outline"
+                className="gap-2 border-primary/30 hover:bg-primary/10 text-primary"
+              >
+                {autoGenerating ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Wand2 className="w-4 h-4" />
+                )}
+                {autoGenerating ? "جاري البحث في Google..." : "توليد تلقائي للمناطق من Google"}
+              </Button>
+            </div>
+          )}
+
           {/* Zones Table */}
           {selectedCountry && selectedCity && (
             <Card className="glass-strong border-border">
