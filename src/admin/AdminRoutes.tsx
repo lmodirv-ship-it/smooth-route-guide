@@ -104,5 +104,14 @@ export const adminRouteElements = (
       <Route path="alerts" element={<AdminAlerts />} />
       <Route path="knowledge" element={<AssistantKnowledge />} />
     </Route>
+
+    {/* ═══ Supervisor Panel ═══ */}
+    <Route path="/supervisor" element={<RequireRole allowed={["moderator"]}><SupervisorLayout /></RequireRole>}>
+      <Route index element={<SupervisorDashboard />} />
+      <Route path="drivers" element={<SupervisorDrivers />} />
+      <Route path="delivery" element={<SupervisorDelivery />} />
+      <Route path="call-center" element={<SupervisorCallCenter />} />
+      <Route path="restaurants" element={<SupervisorRestaurants />} />
+    </Route>
   </>
 );
