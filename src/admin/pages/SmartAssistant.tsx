@@ -66,6 +66,8 @@ const SmartAssistantPage = () => {
       const normalizedUrl = new URL(url).toString();
       setIframeError(false);
       setPreviewUrl(normalizedUrl);
+      setDisplayUrl(normalizedUrl);
+      setSiteUrl(normalizedUrl);
       toast.success(`🌐 تم تحميل الرابط: ${normalizedUrl}`);
     } catch {
       toast.error("الرابط غير صحيح");
