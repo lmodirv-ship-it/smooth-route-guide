@@ -88,8 +88,9 @@ const ZonesManagement = () => {
 
   // Derived data
   const availableCountries = useMemo(() => {
-    const set = new Set(zones.map(z => z.country || "المغرب"));
-    return Array.from(set).sort();
+    const dbCountries = new Set(zones.map(z => z.country || "المغرب"));
+    const all = new Set([...COUNTRIES, ...dbCountries]);
+    return Array.from(all).sort();
   }, [zones]);
 
   const availableCities = useMemo(() => {
