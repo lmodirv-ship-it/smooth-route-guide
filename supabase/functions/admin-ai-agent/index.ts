@@ -461,6 +461,37 @@ Use this when the admin wants to add a new restaurant or store quickly.`,
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "orchestrate_task",
+      description: `تنسيق مهمة معقدة تلقائياً. يقوم بتحليل المهمة وتقسيمها لمهام فرعية، ثم يُنشئ مساعدين فرعيين مؤقتين إذا لزم الأمر أو يستخدم الموجودين، ويُفوّض لهم العمل بالتوازي لإنجاز المهمة بأسرع وقت.
+مثال: "أنشئ صفحة هوم بيج" → ينشئ مساعد تصميم + مساعد محتوى + مساعد بيانات ويعملون معاً.`,
+      parameters: {
+        type: "object",
+        properties: {
+          task_description: { type: "string", description: "وصف المهمة الكاملة" },
+          sub_tasks: {
+            type: "array",
+            description: "المهام الفرعية المطلوبة (اختياري - يمكن تركها للنظام ليحددها تلقائياً)",
+            items: {
+              type: "object",
+              properties: {
+                title: { type: "string", description: "عنوان المهمة الفرعية" },
+                description: { type: "string", description: "تفاصيل المهمة" },
+                type: { type: "string", enum: ["design", "content", "data", "code", "analysis", "communication"], description: "نوع المهمة" },
+                priority: { type: "string", enum: ["high", "medium", "low"], default: "medium" },
+              },
+              required: ["title", "description", "type"],
+            },
+          },
+          auto_create_assistants: { type: "boolean", default: true, description: "إنشاء مساعدين مؤقتين تلقائياً إذا لم يوجد مناسب" },
+          parallel: { type: "boolean", default: true, description: "تنفيذ المهام بالتوازي" },
+        },
+        required: ["task_description"],
+      },
+    },
+  },
 ];
 function applyFilters(query: any, filters: any[]) {
   for (const f of filters) {
