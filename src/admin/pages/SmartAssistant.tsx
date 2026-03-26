@@ -230,7 +230,7 @@ const SmartAssistantPage = () => {
             </div>
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
               <Code className="w-4 h-4 text-info" />
-              الكود المستعمل
+              صفحة
             </h3>
           </div>
 
