@@ -33,6 +33,7 @@ const ALLOWED_TABLES = [
   "assistant_knowledge_entries", "assistant_recommendations", "assistant_issue_patterns",
   "assistant_campaign_ideas", "assistant_activity_log", "product_images",
   "platform_languages", "platform_translations", "dynamic_pages",
+  "social_media_posts",
 ];
 
 const tools = [
@@ -268,6 +269,30 @@ Supported block types:
           meta_description: { type: "string", description: "SEO meta description" },
           css_overrides: { type: "string", description: "Custom CSS for this page" },
           is_published: { type: "boolean", description: "Whether page is live" },
+        },
+        required: ["action"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "manage_social_content",
+      description: `Create, manage and schedule social media posts/ads for platforms like Facebook, Instagram, Twitter, TikTok, LinkedIn. Posts are saved as drafts and must be approved by the admin before they can be published. Use this to prepare marketing content, promotions, and ads.`,
+      parameters: {
+        type: "object",
+        properties: {
+          action: { type: "string", enum: ["create", "list", "update", "delete", "approve", "reject"], description: "Action to perform" },
+          id: { type: "string", description: "Post ID (for update/delete/approve/reject)" },
+          platform: { type: "string", enum: ["facebook", "instagram", "twitter", "tiktok", "linkedin", "all"], description: "Target platform" },
+          post_type: { type: "string", enum: ["post", "story", "reel", "ad", "carousel"], description: "Type of post" },
+          title: { type: "string", description: "Post title/headline" },
+          content: { type: "string", description: "Post text content / caption" },
+          image_url: { type: "string", description: "Image URL for the post" },
+          hashtags: { type: "array", items: { type: "string" }, description: "Hashtags array" },
+          target_audience: { type: "string", description: "Target audience description" },
+          scheduled_at: { type: "string", description: "ISO date for scheduled publishing" },
+          metadata: { type: "object", description: "Additional platform-specific data" },
         },
         required: ["action"],
       },
