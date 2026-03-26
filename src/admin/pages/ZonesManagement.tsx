@@ -49,8 +49,9 @@ const emptyForm = {
 };
 
 const ZonesManagement = () => {
-  const { t, dir } = useI18n();
+  const { t, dir, locale } = useI18n();
   const tz = t.zones;
+  const tc = (name: string) => translateCountry(name, locale);
   const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
