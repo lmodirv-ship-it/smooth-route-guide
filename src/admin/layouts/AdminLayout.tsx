@@ -5,7 +5,7 @@ import {
   BarChart3, FileText, Car, Users, TrendingUp, MapPin,
   AlertTriangle, FileCheck, Headphones, Settings, Shield,
   Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog, Percent,
-  ShieldCheck, ShieldOff
+  ShieldCheck, ShieldOff, Globe
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -56,6 +56,8 @@ const AdminLayout = () => {
   const aiScrollRef = useRef<HTMLDivElement>(null);
   const [pendingCount, setPendingCount] = useState(0);
   const [smartAssistantActive, setSmartAssistantActive] = useState(true);
+  const [smartSiteUrl, setSmartSiteUrl] = useState("");
+  const [smartPreviewUrl, setSmartPreviewUrl] = useState("");
 
   const isSmartAssistantRoute = location.pathname === "/admin/smart-assistant";
 
