@@ -167,8 +167,8 @@ const SmartAssistantPage = () => {
               />
             </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-              ستظهر هنا معاينة التغييرات المقترحة من المساعد الذكي
+            <div className="flex-1 flex items-center justify-center text-sm bg-amber-800/40">
+              <span className="text-amber-200/70">ستظهر هنا معاينة التغييرات المقترحة من المساعد الذكي</span>
             </div>
           )}
         </div>
