@@ -107,7 +107,41 @@ const RegisteredUsers = () => {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const openRoleDialog = (user: UserRecord) => {
+  const openPasswordDialog = (user: UserRecord) => {
+    setPasswordUser(user);
+    setNewPassword("");
+    setShowPassword(false);
+    setPasswordDialogOpen(true);
+  };
+
+  const handleChangePassword = async () => {
+    if (!passwordUser || savingPassword || newPassword.length < 6) return;
+    setSavingPassword(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-reset-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ user_id: passwordUser.id, new_password: newPassword }),
+        }
+      );
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "خطأ");
+      toast({ title: `✅ تم تغيير كلمة مرور "${passwordUser.name}" بنجاح` });
+      setPasswordDialogOpen(false);
+    } catch (e: any) {
+      toast({ title: "خطأ في تغيير كلمة المرور", description: e.message, variant: "destructive" });
+    } finally {
+      setSavingPassword(false);
+    }
+  };
+
     setSelectedUser(user);
     setSelectedRoles([...user.roles]);
     setRoleDialogOpen(true);
