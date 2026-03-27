@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CreditCard, Loader2, Save } from "lucide-react";
+import { CreditCard, Loader2, Save, Gift, Star } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,13 @@ const PaymentSettings = () => {
     cashEnabled: true,
     walletEnabled: true,
     cardEnabled: false,
+    stripeEnabled: false,
     minWalletTopup: "10",
     maxWalletBalance: "5000",
+    pointsPerHighRating: "5",
+    pointsPerLowRating: "-2",
+    ratingThresholdHigh: "4",
+    ratingThresholdLow: "2",
   });
 
   useEffect(() => {
@@ -30,8 +35,13 @@ const PaymentSettings = () => {
           cashEnabled: v.cashEnabled !== false,
           walletEnabled: v.walletEnabled !== false,
           cardEnabled: v.cardEnabled === true,
+          stripeEnabled: v.stripeEnabled === true,
           minWalletTopup: String(v.minWalletTopup ?? "10"),
           maxWalletBalance: String(v.maxWalletBalance ?? "5000"),
+          pointsPerHighRating: String(v.pointsPerHighRating ?? "5"),
+          pointsPerLowRating: String(v.pointsPerLowRating ?? "-2"),
+          ratingThresholdHigh: String(v.ratingThresholdHigh ?? "4"),
+          ratingThresholdLow: String(v.ratingThresholdLow ?? "2"),
         });
       }
       setLoading(false);
@@ -47,8 +57,13 @@ const PaymentSettings = () => {
         cashEnabled: settings.cashEnabled,
         walletEnabled: settings.walletEnabled,
         cardEnabled: settings.cardEnabled,
+        stripeEnabled: settings.stripeEnabled,
         minWalletTopup: Number(settings.minWalletTopup),
         maxWalletBalance: Number(settings.maxWalletBalance),
+        pointsPerHighRating: Number(settings.pointsPerHighRating),
+        pointsPerLowRating: Number(settings.pointsPerLowRating),
+        ratingThresholdHigh: Number(settings.ratingThresholdHigh),
+        ratingThresholdLow: Number(settings.ratingThresholdLow),
       };
 
       const { data: existing } = await supabase
@@ -79,6 +94,7 @@ const PaymentSettings = () => {
 
   return (
     <div className="space-y-6">
+      {/* Payment Methods */}
       <div className="gradient-card rounded-xl border border-border p-6">
         <div className="flex items-center justify-between mb-4">
           <Button onClick={handleSave} disabled={saving} size="sm" className="gradient-primary text-primary-foreground gap-1">
@@ -103,9 +119,17 @@ const PaymentSettings = () => {
             <Switch checked={settings.cardEnabled} onCheckedChange={v => setSettings(s => ({ ...s, cardEnabled: v }))} />
             <label className="text-sm text-foreground">💳 الدفع بالبطاقة</label>
           </div>
+          <div className="flex items-center justify-between border-t border-border pt-4">
+            <Switch checked={settings.stripeEnabled} onCheckedChange={v => setSettings(s => ({ ...s, stripeEnabled: v }))} />
+            <label className="text-sm text-foreground font-medium">
+              💎 الدفع الإلكتروني (Stripe)
+              <span className="block text-xs text-muted-foreground">تفعيل/إيقاف بوابة الدفع الإلكتروني</span>
+            </label>
+          </div>
         </div>
       </div>
 
+      {/* Wallet Settings */}
       <div className="gradient-card rounded-xl border border-border p-6">
         <h3 className="font-bold text-foreground text-right mb-4">إعدادات المحفظة</h3>
         <div className="space-y-4">
@@ -126,6 +150,59 @@ const PaymentSettings = () => {
               type="number"
             />
             <label className="text-sm text-foreground">الحد الأقصى للرصيد (DH)</label>
+          </div>
+        </div>
+      </div>
+
+      {/* Rating Rewards System */}
+      <div className="gradient-card rounded-xl border border-border p-6">
+        <div className="flex items-center gap-2 mb-4 justify-end">
+          <Star className="w-5 h-5 text-yellow-500" />
+          <h3 className="font-bold text-foreground">نظام مكافآت التقييم</h3>
+        </div>
+        <p className="text-xs text-muted-foreground text-right mb-4">
+          عندما يحصل السائق على تقييم مرتفع يكسب نقاط إضافية، والعكس عند التقييم المنخفض
+        </p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <Input
+              value={settings.pointsPerHighRating}
+              onChange={e => setSettings(s => ({ ...s, pointsPerHighRating: e.target.value }))}
+              className="bg-secondary/60 border-border h-9 w-32 text-sm text-center"
+              type="number"
+            />
+            <label className="text-sm text-foreground">نقاط المكافأة (تقييم مرتفع)</label>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <Input
+              value={settings.ratingThresholdHigh}
+              onChange={e => setSettings(s => ({ ...s, ratingThresholdHigh: e.target.value }))}
+              className="bg-secondary/60 border-border h-9 w-32 text-sm text-center"
+              type="number"
+              min="1"
+              max="5"
+            />
+            <label className="text-sm text-foreground">حد التقييم المرتفع (من 5)</label>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <Input
+              value={settings.pointsPerLowRating}
+              onChange={e => setSettings(s => ({ ...s, pointsPerLowRating: e.target.value }))}
+              className="bg-secondary/60 border-border h-9 w-32 text-sm text-center"
+              type="number"
+            />
+            <label className="text-sm text-foreground">خصم النقاط (تقييم منخفض)</label>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <Input
+              value={settings.ratingThresholdLow}
+              onChange={e => setSettings(s => ({ ...s, ratingThresholdLow: e.target.value }))}
+              className="bg-secondary/60 border-border h-9 w-32 text-sm text-center"
+              type="number"
+              min="1"
+              max="5"
+            />
+            <label className="text-sm text-foreground">حد التقييم المنخفض (من 5)</label>
           </div>
         </div>
       </div>

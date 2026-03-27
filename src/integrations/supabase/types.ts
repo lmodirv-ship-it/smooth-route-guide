@@ -511,6 +511,51 @@ export type Database = {
         }
         Relationships: []
       }
+      community_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      community_mutes: {
+        Row: {
+          created_at: string
+          id: string
+          muted_by: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          muted_by: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          muted_by?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       complaints: {
         Row: {
           agent_id: string | null
@@ -793,6 +838,48 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      driver_reward_points: {
+        Row: {
+          created_at: string
+          driver_id: string
+          id: string
+          points: number
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          driver_id: string
+          id?: string
+          points?: number
+          reason?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          driver_id?: string
+          id?: string
+          points?: number
+          reason?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_reward_points_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "active_drivers_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_reward_points_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       driver_subscriptions: {
         Row: {

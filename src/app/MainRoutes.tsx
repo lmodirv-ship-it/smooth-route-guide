@@ -67,6 +67,9 @@ import AgentHub from "@/pages/ai/AgentHub";
 import AIAssistant from "@/pages/AIAssistant";
 import DynamicPage from "@/pages/DynamicPage";
 
+// ─── Community ───
+import CommunityChat from "@/pages/CommunityChat";
+
 export const mainRouteElements = (
   <>
     {/* ─── Public pages (no layout wrapper needed) ─── */}
@@ -78,6 +81,7 @@ export const mainRouteElements = (
     <Route path="/complete-profile" element={<RequireRole><CompleteProfile /></RequireRole>} />
     <Route path="/forgot-password" element={<ForgotPassword />} />
     <Route path="/reset-password" element={<ResetPassword />} />
+    <Route path="/community" element={<RequireRole><CommunityChat /></RequireRole>} />
 
     {/* ═══════════════════════════════════════════
         MAIN APP — wrapped in MainLayout
