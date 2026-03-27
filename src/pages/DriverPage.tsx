@@ -1,7 +1,11 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star, Navigation, Volume2, Percent, Package, Crown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp,
+  Wallet, Star, Navigation, Volume2, Percent, Package, Crown,
+  ChevronUp, ChevronDown, Phone,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,9 +24,7 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
   const toRad = (v: number) => (v * Math.PI) / 180;
   const dLat = toRad(b.lat - a.lat);
   const dLng = toRad(b.lng - a.lng);
-  const x =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
   return 6371 * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
 
@@ -63,109 +65,75 @@ const DriverPage = () => {
   const [activeRideId, setActiveRideId] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [driverType, setDriverType] = useState<string>("ride");
+  const [mapExpanded, setMapExpanded] = useState(false);
   const prevOrderCountRef = useRef(0);
   const initialLoadRef = useRef(true);
+  const { isExpired: subscriptionExpired, daysLeft: subDaysLeft } = useDriverSubscription();
 
-  // Check for active ride & fetch stats
+  // Fetch stats & check active ride
   useEffect(() => {
     const fetchStats = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
-      // Get profile name
       const { data: profile } = await supabase.from("profiles").select("name").eq("id", user.id).single();
       if (profile?.name) setDriverName(profile.name);
 
-      // Check if driver has an active (non-completed/cancelled) ride
-      const { data: activeRides } = await supabase
-        .from("ride_requests")
-        .select("id, status")
-        .eq("driver_id", user.id)
-        .in("status", ["accepted", "in_progress", "arriving"])
-        .limit(1);
+      const { data: activeRides } = await supabase.from("ride_requests").select("id, status")
+        .eq("driver_id", user.id).in("status", ["accepted", "in_progress", "arriving"]).limit(1);
+      setActiveRideId(activeRides?.[0]?.id || null);
 
-      if (activeRides && activeRides.length > 0) {
-        setActiveRideId(activeRides[0].id);
-      } else {
-        setActiveRideId(null);
-      }
-
-      // Today's completed rides
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
-
-      const { data: completedRides } = await supabase
-        .from("ride_requests")
-        .select("id, price")
-        .eq("driver_id", user.id)
-        .eq("status", "completed")
-        .gte("created_at", todayStart.toISOString());
+      const { data: completedRides } = await supabase.from("ride_requests").select("id, price")
+        .eq("driver_id", user.id).eq("status", "completed").gte("created_at", todayStart.toISOString());
 
       const trips = completedRides?.length || 0;
       const grossEarnings = completedRides?.reduce((sum, r) => sum + (Number(r.price) || 0), 0) || 0;
-      const earnings = driverNetEarnings(grossEarnings);
 
-      // Rating + driver_type
-      const { data: driverData } = await supabase
-        .from("drivers")
-        .select("rating, driver_type")
-        .eq("user_id", user.id)
-        .single();
-
+      const { data: driverData } = await supabase.from("drivers").select("rating, driver_type").eq("user_id", user.id).single();
       if (driverData?.driver_type) setDriverType(driverData.driver_type);
 
-      setTodayStats({
-        trips,
-        earnings,
-        rating: Number(driverData?.rating) || 0,
-      });
+      setTodayStats({ trips, earnings: driverNetEarnings(grossEarnings), rating: Number(driverData?.rating) || 0 });
     };
     fetchStats();
   }, []);
 
-  // Continuous GPS
+  // GPS
   useEffect(() => {
     if (!navigator.geolocation) { setDriverLocation(DEFAULT_LOCATION); return; }
     navigator.geolocation.getCurrentPosition(
       (pos) => setDriverLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => setDriverLocation(DEFAULT_LOCATION),
-      { enableHighAccuracy: true, timeout: 10000 }
+      () => setDriverLocation(DEFAULT_LOCATION), { enableHighAccuracy: true, timeout: 10000 }
     );
     const watcher = navigator.geolocation.watchPosition(
       (pos) => setDriverLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => {},
-      { enableHighAccuracy: true, maximumAge: 5000 }
+      () => {}, { enableHighAccuracy: true, maximumAge: 5000 }
     );
     return () => navigator.geolocation.clearWatch(watcher);
   }, []);
 
-  // Sync location to DB
+  // Sync location
   useEffect(() => {
     if (!driverLocation) return;
     const updateLoc = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       await supabase.from("drivers").update({
-        current_lat: driverLocation.lat,
-        current_lng: driverLocation.lng,
+        current_lat: driverLocation.lat, current_lng: driverLocation.lng,
         location_updated_at: new Date().toISOString(),
       }).eq("user_id", user.id);
     };
-    const t = setTimeout(updateLoc, 1000);
-    return () => clearTimeout(t);
+    const timer = setTimeout(updateLoc, 1000);
+    return () => clearTimeout(timer);
   }, [driverLocation]);
 
-  // Fetch pending orders + realtime
+  // Fetch orders + realtime
   const fetchOrders = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("ride_requests").select("*").eq("status", "pending")
+    const { data, error } = await supabase.from("ride_requests").select("*").eq("status", "pending")
       .order("created_at", { ascending: false });
     if (!error && data) {
       const newCount = data.length;
-      // Play sound only if new orders appeared (not on initial load)
-      if (!initialLoadRef.current && newCount > prevOrderCountRef.current && soundEnabled) {
-        notifyNewOrder();
-      }
+      if (!initialLoadRef.current && newCount > prevOrderCountRef.current && soundEnabled) notifyNewOrder();
       initialLoadRef.current = false;
       prevOrderCountRef.current = newCount;
       setOrders(data as RideRow[]);
@@ -174,14 +142,12 @@ const DriverPage = () => {
 
   useEffect(() => {
     fetchOrders();
-    const channel = supabase
-      .channel("driver-ride-requests")
+    const channel = supabase.channel("driver-ride-requests")
       .on("postgres_changes", { event: "*", schema: "public", table: "ride_requests" }, () => fetchOrders())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [fetchOrders]);
 
-  // Enrich orders
   const nearbyOrders = useMemo(() => {
     return orders.map((order) => {
       let distToPickup: number | null = null;
@@ -192,10 +158,7 @@ const DriverPage = () => {
       }
       let rideDistance: number | null = order.distance;
       if (!rideDistance && order.pickup_lat && order.pickup_lng && order.destination_lat && order.destination_lng) {
-        rideDistance = parseFloat(haversineKm(
-          { lat: order.pickup_lat, lng: order.pickup_lng },
-          { lat: order.destination_lat, lng: order.destination_lng }
-        ).toFixed(2));
+        rideDistance = parseFloat(haversineKm({ lat: order.pickup_lat, lng: order.pickup_lng }, { lat: order.destination_lat, lng: order.destination_lng }).toFixed(2));
       }
       const totalDistance = (distToPickup || 0) + (rideDistance || 0);
       const totalPrice = totalDistance > 0 ? Math.max(pricing.minFare, Math.round(pricing.baseFare + totalDistance * pricing.perKmRate)) : (order.price || 0);
@@ -206,42 +169,28 @@ const DriverPage = () => {
   }, [orders, driverLocation, pricing.minFare, pricing.baseFare, pricing.perKmRate]);
 
   const selectedOrder = useMemo(() => nearbyOrders.find(o => o.id === selectedOrderId) || null, [nearbyOrders, selectedOrderId]);
-
   const route = useMemo(() => {
-    if (!selectedOrder || !selectedOrder.pickup_lat || !selectedOrder.pickup_lng || !selectedOrder.destination_lat || !selectedOrder.destination_lng) return null;
-    return {
-      pickup: { lat: selectedOrder.pickup_lat, lng: selectedOrder.pickup_lng },
-      destination: { lat: selectedOrder.destination_lat, lng: selectedOrder.destination_lng },
-    };
+    if (!selectedOrder?.pickup_lat || !selectedOrder?.pickup_lng || !selectedOrder?.destination_lat || !selectedOrder?.destination_lng) return null;
+    return { pickup: { lat: selectedOrder.pickup_lat, lng: selectedOrder.pickup_lng }, destination: { lat: selectedOrder.destination_lat, lng: selectedOrder.destination_lng } };
   }, [selectedOrder]);
-  const { isExpired: subscriptionExpired, daysLeft: subDaysLeft, loading: subLoading } = useDriverSubscription();
 
   const handleAccept = async (orderId: string) => {
     if (subscriptionExpired) {
       toast({ title: "اشتراك مطلوب", description: "يجب الاشتراك في باقة لقبول الطلبات", variant: "destructive" });
-      navigate("/driver/subscription");
-      return;
+      navigate("/driver/subscription"); return;
     }
     if (activeRideId) {
       toast({ title: t.driver.activeRide, description: t.driver.completeCurrentFirst, variant: "destructive" });
-      navigate(`/driver/tracking?id=${activeRideId}`);
-      return;
+      navigate(`/driver/tracking?id=${activeRideId}`); return;
     }
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { toast({ title: t.driver.mustLogin, variant: "destructive" }); return; }
     setAccepting(orderId);
     try {
-      // Calculate total price including driver→pickup distance
       const order = nearbyOrders.find(o => o.id === orderId);
       const totalPrice = order ? order.totalPrice : 0;
-
       const { error } = await supabase.from("ride_requests")
-        .update({
-          status: "accepted",
-          driver_id: user.id,
-          accepted_at: new Date().toISOString(),
-          price: totalPrice,
-        })
+        .update({ status: "accepted", driver_id: user.id, accepted_at: new Date().toISOString(), price: totalPrice })
         .eq("id", orderId).eq("status", "pending");
       if (error) throw error;
       setActiveRideId(orderId);
@@ -255,23 +204,17 @@ const DriverPage = () => {
   const cityName = driverLocation ? detectCity(driverLocation) : "جارٍ التحديد...";
 
   return (
-    <div className="h-screen flex flex-col bg-[#0a0f1a]" dir={dir} onClick={() => unlockAudio()}>
+    <div className="h-screen flex flex-col bg-background" dir={dir} onClick={() => unlockAudio()}>
       {/* Map */}
-      <div className="relative h-[30vh] min-h-[200px] shrink-0">
-        <LeafletMap
-          center={driverLocation || DEFAULT_LOCATION}
-          zoom={14}
-          showMarker
-          driverLocation={driverLocation}
-          route={route}
-          className="w-full h-full"
-        />
+      <div className={`relative shrink-0 transition-all duration-500 ${mapExpanded ? "h-[50vh]" : "h-[30vh] min-h-[200px]"}`}>
+        <LeafletMap center={driverLocation || DEFAULT_LOCATION} zoom={14} showMarker driverLocation={driverLocation} route={route} className="w-full h-full" />
+
         {/* Top overlay */}
-        <div className="absolute top-0 inset-x-0 z-[1000] bg-gradient-to-b from-black/70 to-transparent px-4 pt-3 pb-8">
+        <div className="absolute top-0 inset-x-0 z-[1000] bg-gradient-to-b from-black/80 via-black/40 to-transparent px-4 pt-3 pb-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
-                <Car className="w-5 h-5 text-emerald-400" />
+              <div className="w-10 h-10 rounded-full bg-primary/20 border-2 border-primary/40 flex items-center justify-center">
+                <Car className="w-5 h-5 text-primary" />
               </div>
               <div>
                 <p className="text-white font-bold text-sm">{driverName}</p>
@@ -281,280 +224,144 @@ const DriverPage = () => {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
-              <Radar className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-              <span className="text-xs text-white/90">{cityName}</span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setSoundEnabled(!soundEnabled)}
+                className={`p-2 rounded-full backdrop-blur-sm border transition-all ${soundEnabled ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400" : "bg-white/10 border-white/20 text-white/40"}`}>
+                <Volume2 className="w-3.5 h-3.5" />
+              </button>
+              <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
+                <Radar className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                <span className="text-xs text-white/90">{cityName}</span>
+              </div>
             </div>
           </div>
         </div>
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[1000] bg-black/60 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-xs flex items-center gap-2 border border-white/10">
+
+        {/* Radius indicator */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1000] bg-card/90 backdrop-blur-md text-foreground px-4 py-1.5 rounded-full text-xs flex items-center gap-2 border border-border">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           {t.driver.searchRadius}: {MAX_RADIUS_KM} {t.driver.km}
         </div>
+
+        {/* Map toggle */}
+        <button onClick={() => setMapExpanded(!mapExpanded)}
+          className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[1000] bg-card/90 backdrop-blur-md px-4 py-1.5 rounded-full border border-border flex items-center gap-1.5 text-xs text-muted-foreground">
+          {mapExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          {mapExpanded ? "تصغير" : "تكبير"}
+        </button>
       </div>
 
-      {/* Stats bar */}
-      <div className="shrink-0 px-3 md:px-4 py-2 md:py-3 border-b border-white/5 bg-[#0d1320]">
-        <div className="grid grid-cols-4 gap-1.5 md:gap-2">
-          <StatsCard icon={TrendingUp} label={t.driver.todayTrips} value={`${todayStats.trips}`} accent="text-emerald-400" bg="bg-emerald-500/10" />
-          <StatsCard icon={Wallet} label={t.driver.netEarnings} value={`${todayStats.earnings} DH`} accent="text-orange-400" bg="bg-orange-500/10" />
-          <StatsCard icon={Percent} label={t.driver.platformFee} value={`${Math.round(COMMISSION_RATE * 100)}%`} accent="text-red-400" bg="bg-red-500/10" />
-          <StatsCard icon={Star} label={t.driver.rating} value={todayStats.rating > 0 ? todayStats.rating.toFixed(1) : "—"} accent="text-yellow-400" bg="bg-yellow-500/10" />
+      {/* Stats */}
+      <div className="shrink-0 px-3 py-2 border-b border-border bg-card/50">
+        <div className="grid grid-cols-4 gap-1.5">
+          <StatCard icon={TrendingUp} label={t.driver.todayTrips} value={`${todayStats.trips}`} color="text-emerald-400" />
+          <StatCard icon={Wallet} label={t.driver.netEarnings} value={`${todayStats.earnings} DH`} color="text-primary" />
+          <StatCard icon={Percent} label={t.driver.platformFee} value={`${Math.round(COMMISSION_RATE * 100)}%`} color="text-destructive" />
+          <StatCard icon={Star} label={t.driver.rating} value={todayStats.rating > 0 ? todayStats.rating.toFixed(1) : "—"} color="text-amber-400" />
         </div>
       </div>
 
-      {/* Orders Table */}
+      {/* Orders */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="px-5 py-2.5 flex items-center justify-between border-b border-white/5 shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="bg-emerald-500/15 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">
-              {nearbyOrders.length}
-            </div>
-            <button
-              onClick={() => setSoundEnabled(!soundEnabled)}
-              className={`p-1.5 rounded-full transition-colors ${
-                soundEnabled ? "bg-emerald-500/15 text-emerald-400" : "bg-white/5 text-white/30"
-              }`}
-              title={soundEnabled ? t.driver.soundOn : t.driver.soundOff}
-            >
-              <Volume2 className="w-3.5 h-3.5" />
-            </button>
+        <div className="px-4 py-2.5 flex items-center justify-between border-b border-border shrink-0">
+          <div className="bg-emerald-500/15 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">
+            {nearbyOrders.length}
           </div>
-          <h2 className="text-white font-bold text-sm flex items-center gap-2">
-            <Route className="w-4 h-4 text-emerald-400" />
+          <h2 className="text-foreground font-bold text-sm flex items-center gap-2">
+            <Route className="w-4 h-4 text-primary" />
             {t.driver.availableRides}
           </h2>
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {/* Delivery driver banner */}
+          {/* Banners */}
           {(driverType === "delivery" || driverType === "both") && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mx-4 mt-3 p-3 rounded-xl bg-info/10 border border-info/30 flex items-center justify-between"
-            >
-              <Button
-                size="sm"
-                onClick={() => navigate("/driver/delivery")}
-                className="h-8 px-4 rounded-lg bg-info hover:bg-info/80 text-white text-xs font-bold"
-              >
-                <Package className="w-3.5 h-3.5 ml-1" />
-                {t.driver.deliveryOrders}
-              </Button>
-              <div className="text-right">
-                <p className="text-info font-bold text-sm">{t.driver.deliveryService}</p>
-                <p className="text-white/40 text-[11px]">{t.driver.viewDeliveryOrders}</p>
-              </div>
-            </motion.div>
+            <BannerCard color="blue" icon={Package} title={t.driver.deliveryService} subtitle={t.driver.viewDeliveryOrders}
+              btnLabel={t.driver.deliveryOrders} onClick={() => navigate("/driver/delivery")} />
           )}
-          {/* Active ride banner */}
           {activeRideId && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mx-4 mt-3 p-3 rounded-xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-between"
-            >
-              <Button
-                size="sm"
-                onClick={() => navigate(`/driver/tracking?id=${activeRideId}`)}
-                className="h-8 px-4 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold"
-              >
-                <Navigation className="w-3.5 h-3.5 ml-1" />
-                {t.driver.continueRide}
-              </Button>
-              <div className="text-right">
-                <p className="text-orange-400 font-bold text-sm">{t.driver.activeRide}</p>
-                <p className="text-white/40 text-[11px]">{t.driver.completeCurrentFirst}</p>
-              </div>
-            </motion.div>
+            <BannerCard color="orange" icon={Navigation} title={t.driver.activeRide} subtitle={t.driver.completeCurrentFirst}
+              btnLabel={t.driver.continueRide} onClick={() => navigate(`/driver/tracking?id=${activeRideId}`)} />
           )}
-          {/* Subscription banner */}
           {subscriptionExpired && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mx-4 mt-3 p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/30 flex items-center justify-between"
-            >
-              <Button
-                size="sm"
-                onClick={() => navigate("/driver/subscription")}
-                className="h-8 px-4 rounded-lg bg-gradient-to-r from-yellow-500 to-orange-500 text-black text-xs font-bold"
-              >
-                <Crown className="w-3.5 h-3.5 ml-1" />
-                اشترك الآن
-              </Button>
-              <div className="text-right">
-                <p className="text-yellow-400 font-bold text-sm">اشتراك مطلوب</p>
-                <p className="text-white/40 text-[11px]">اشترك لقبول الطلبات</p>
-              </div>
-            </motion.div>
+            <BannerCard color="amber" icon={Crown} title="اشتراك مطلوب" subtitle="اشترك لقبول الطلبات"
+              btnLabel="اشترك الآن" onClick={() => navigate("/driver/subscription")} gradient />
           )}
           {!subscriptionExpired && subDaysLeft <= 3 && subDaysLeft > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mx-4 mt-3 p-2 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-between"
-            >
-              <Button size="sm" onClick={() => navigate("/driver/subscription")} variant="ghost" className="text-orange-400 text-xs">
-                تجديد
-              </Button>
-              <p className="text-orange-400 text-xs">⚠️ اشتراكك ينتهي خلال {subDaysLeft} أيام</p>
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+              className="mx-4 mt-3 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between">
+              <Button size="sm" onClick={() => navigate("/driver/subscription")} variant="ghost" className="text-amber-400 text-xs">تجديد</Button>
+              <p className="text-amber-400 text-xs">⚠️ اشتراكك ينتهي خلال {subDaysLeft} أيام</p>
             </motion.div>
           )}
+
           {nearbyOrders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-3 border border-emerald-500/15">
-                <Radar className="w-8 h-8 text-emerald-500/30" />
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4 border border-primary/15">
+                <Radar className="w-10 h-10 text-primary/30" />
               </div>
-              <p className="text-white/70 font-medium">{t.driver.noRidesInArea}</p>
-              <p className="text-white/30 text-sm mt-1">{t.driver.ridesWillAppear}</p>
+              <p className="text-foreground/70 font-medium">{t.driver.noRidesInArea}</p>
+              <p className="text-muted-foreground text-sm mt-1">{t.driver.ridesWillAppear}</p>
             </div>
           ) : (
-            <>
-              {/* Mobile Cards */}
-              <div className="md:hidden space-y-2 p-3">
-                {nearbyOrders.map((order) => {
-                  const isSelected = selectedOrderId === order.id;
-                  return (
-                    <motion.div
-                      key={order.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      onClick={() => setSelectedOrderId(isSelected ? null : order.id)}
-                      className={`rounded-xl p-3 border transition-all cursor-pointer ${
-                        isSelected ? "bg-emerald-500/10 border-emerald-500/30" : "bg-white/[0.03] border-white/[0.06] hover:border-white/10"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <Button
-                          size="sm"
-                          onClick={(e) => { e.stopPropagation(); handleAccept(order.id); }}
-                          disabled={accepting === order.id || !!activeRideId}
-                          className="h-8 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold shrink-0"
-                        >
-                          {accepting === order.id ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            <>
-                              <CheckCircle className="w-3 h-3 ml-1" />
-                              {t.driver.accept}
-                            </>
-                          )}
-                        </Button>
-                        <div className="text-right flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 justify-end">
-                            <span className="text-white/80 text-sm truncate">{order.pickup || "\u2014"}</span>
-                            <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+            <div className="p-3 space-y-2.5">
+              {nearbyOrders.map((order, idx) => {
+                const isSelected = selectedOrderId === order.id;
+                return (
+                  <motion.div key={order.id}
+                    initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.04 }}
+                    onClick={() => setSelectedOrderId(isSelected ? null : order.id)}
+                    className={`rounded-2xl border overflow-hidden transition-all cursor-pointer ${
+                      isSelected ? "border-primary/40 bg-primary/5 shadow-lg shadow-primary/10" : "border-border bg-card hover:border-border/80"
+                    }`}>
+                    <div className="p-3.5">
+                      {/* Addresses */}
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="flex flex-col items-center gap-1 pt-0.5">
+                          <div className="w-3 h-3 rounded-full bg-emerald-500 border-2 border-emerald-500/30" />
+                          <div className="w-0.5 h-6 bg-gradient-to-b from-emerald-500/50 to-primary/50 rounded-full" />
+                          <div className="w-3 h-3 rounded-full bg-primary border-2 border-primary/30" />
+                        </div>
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div>
+                            <p className="text-[10px] text-muted-foreground">نقطة الانطلاق</p>
+                            <p className="text-sm text-foreground truncate">{order.pickup || "—"}</p>
                           </div>
-                          <div className="flex items-center gap-1.5 justify-end mt-1">
-                            <span className="text-white/80 text-sm truncate">{order.destination || "\u2014"}</span>
-                            <div className="w-2 h-2 rounded-full bg-orange-400 shrink-0" />
+                          <div>
+                            <p className="text-[10px] text-muted-foreground">الوجهة</p>
+                            <p className="text-sm text-foreground truncate">{order.destination || "—"}</p>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between pt-2 border-t border-white/[0.06]">
-                        <span className="text-emerald-400 font-black text-base">{order.totalPrice || "\u2014"} DH</span>
-                        <div className="flex items-center gap-3 text-xs">
-                          <span className="text-emerald-400">{order.totalDistance} {t.driver.km}</span>
-                          {order.distToPickup != null && (
-                            <span className="text-yellow-400 flex items-center gap-0.5">
-                              <MapPin className="w-3 h-3" />{order.distToPickup}
-                            </span>
-                          )}
-                          {order.eta && (
-                            <span className="text-blue-400 flex items-center gap-0.5">
-                              <Clock className="w-3 h-3" />{order.eta} \u062f
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
 
-              {/* Desktop Table */}
-              <table className="w-full text-sm hidden md:table">
-              <thead className="sticky top-0 z-10 bg-[#0d1320] border-b border-white/5">
-                <tr className="text-white/50 text-xs">
-                  <th className="py-2 px-3 text-right font-medium">{t.driver.pickup}</th>
-                  <th className="py-2 px-3 text-right font-medium">{t.driver.destination}</th>
-                  <th className="py-2 px-3 text-center font-medium">{t.driver.distance}</th>
-                  <th className="py-2 px-3 text-center font-medium">{t.driver.distanceToPickup}</th>
-                  <th className="py-2 px-3 text-center font-medium">{t.driver.eta}</th>
-                  <th className="py-2 px-3 text-center font-medium">{t.common.price}</th>
-                  <th className="py-2 px-3 text-center font-medium">{t.driver.action}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {nearbyOrders.map((order) => {
-                  const isSelected = selectedOrderId === order.id;
-                  return (
-                    <motion.tr
-                      key={order.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      onClick={() => setSelectedOrderId(isSelected ? null : order.id)}
-                      className={`border-b border-white/[0.04] cursor-pointer transition-colors ${
-                        isSelected ? "bg-emerald-500/10 border-emerald-500/20" : "hover:bg-white/[0.03]"
-                      }`}
-                    >
-                      <td className="py-2.5 px-3 text-right">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-                          <span className="text-white/80 truncate max-w-[100px]">{order.pickup || "—"}</span>
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full bg-orange-400 shrink-0" />
-                          <span className="text-white/80 truncate max-w-[100px]">{order.destination || "—"}</span>
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-3 text-center">
-                        <span className="text-emerald-400 font-semibold text-xs">{order.totalDistance} {t.driver.km}</span>
-                      </td>
-                      <td className="py-2.5 px-3 text-center">
-                        <div className="flex items-center justify-center gap-1 text-yellow-400 text-xs">
-                          <MapPin className="w-3 h-3" />
-                          <span>{order.distToPickup != null ? `${order.distToPickup}` : "—"}</span>
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-3 text-center">
-                        <div className="flex items-center justify-center gap-1 text-blue-400 text-xs">
-                          <Clock className="w-3 h-3" />
-                          <span>{order.eta ? `${order.eta} د` : "—"}</span>
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-3 text-center">
-                        <span className="text-emerald-400 font-black text-sm">
-                          {order.totalPrice || "—"} <span className="text-[9px] font-medium opacity-60">DH</span>
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3 text-center">
-                        <Button
-                          size="sm"
+                      {/* Info chips + accept */}
+                      <div className="flex items-center justify-between">
+                        <Button size="sm"
                           onClick={(e) => { e.stopPropagation(); handleAccept(order.id); }}
                           disabled={accepting === order.id || !!activeRideId}
-                          className="h-7 px-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-bold shadow-[0_2px_10px_hsl(155,70%,40%,0.25)]"
-                        >
-                          {accepting === order.id ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            <>
-                              <CheckCircle className="w-3 h-3 ml-1" />
-                              {t.driver.accept}
-                            </>
+                          className="h-9 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-xs font-bold shadow-lg shadow-emerald-500/20">
+                          {accepting === order.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (
+                            <><CheckCircle className="w-3.5 h-3.5 ml-1" />{t.driver.accept}</>
                           )}
                         </Button>
-                      </td>
-                    </motion.tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            </>
+                        <div className="flex items-center gap-2">
+                          {order.eta && (
+                            <span className="text-[11px] flex items-center gap-0.5 text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full">
+                              <Clock className="w-3 h-3" />{order.eta}د
+                            </span>
+                          )}
+                          <span className="text-[11px] flex items-center gap-0.5 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                            <Route className="w-3 h-3" />{order.totalDistance} كم
+                          </span>
+                          <span className="text-primary font-black text-lg">{order.totalPrice} <span className="text-[10px] font-normal opacity-60">DH</span></span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
           )}
         </div>
       </div>
@@ -564,15 +371,38 @@ const DriverPage = () => {
   );
 };
 
-/* ─── Stats Card ─── */
-const StatsCard = ({ icon: Icon, label, value, accent, bg }: {
-  icon: typeof TrendingUp; label: string; value: string; accent: string; bg: string;
-}) => (
-  <div className={`${bg} rounded-xl p-2 md:p-3 border border-white/[0.04] text-center`}>
-    <Icon className={`w-3.5 h-3.5 md:w-4 md:h-4 ${accent} mx-auto mb-0.5 md:mb-1`} />
-    <p className={`text-sm md:text-base font-black ${accent} truncate`}>{value}</p>
-    <p className="text-[9px] md:text-[10px] text-white/40 mt-0.5 truncate">{label}</p>
+/* ─── Reusable sub-components ─── */
+
+const StatCard = ({ icon: Icon, label, value, color }: { icon: typeof TrendingUp; label: string; value: string; color: string }) => (
+  <div className="bg-card/80 rounded-xl p-2 border border-border text-center">
+    <Icon className={`w-3.5 h-3.5 ${color} mx-auto mb-0.5`} />
+    <p className={`text-sm font-bold ${color} truncate`}>{value}</p>
+    <p className="text-[9px] text-muted-foreground mt-0.5 truncate">{label}</p>
   </div>
 );
+
+const BannerCard = ({ color, icon: Icon, title, subtitle, btnLabel, onClick, gradient }: {
+  color: string; icon: typeof Package; title: string; subtitle: string; btnLabel: string; onClick: () => void; gradient?: boolean;
+}) => {
+  const colorMap: Record<string, string> = {
+    blue: "bg-blue-500/10 border-blue-500/30",
+    orange: "bg-primary/10 border-primary/30",
+    amber: "bg-amber-500/10 border-amber-500/30",
+  };
+  const textMap: Record<string, string> = { blue: "text-blue-400", orange: "text-primary", amber: "text-amber-400" };
+  return (
+    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+      className={`mx-4 mt-3 p-3 rounded-xl ${colorMap[color] || ""} border flex items-center justify-between`}>
+      <Button size="sm" onClick={onClick}
+        className={`h-8 px-4 rounded-lg text-xs font-bold ${gradient ? "bg-gradient-to-r from-amber-500 to-orange-500 text-black" : `bg-${color === "blue" ? "blue" : color === "orange" ? "primary" : "amber"}-500 hover:opacity-90 text-white`}`}>
+        <Icon className="w-3.5 h-3.5 ml-1" />{btnLabel}
+      </Button>
+      <div className="text-right">
+        <p className={`${textMap[color]} font-bold text-sm`}>{title}</p>
+        <p className="text-muted-foreground text-[11px]">{subtitle}</p>
+      </div>
+    </motion.div>
+  );
+};
 
 export default DriverPage;
