@@ -6,8 +6,8 @@ const FloatingChatButton = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Hide on community chat page itself and admin pages
-  if (location.pathname === "/community" || location.pathname.startsWith("/admin")) return null;
+  // Hide on community chat page itself
+  if (location.pathname === "/community") return null;
 
   return (
     <motion.button

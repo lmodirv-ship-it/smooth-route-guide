@@ -10,6 +10,7 @@ import logo from "@/assets/hn-driver-badge.png";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
+import FloatingChatButton from "@/components/FloatingChatButton";
 import { useI18n } from "@/i18n/context";
 
 const SupervisorLayout = () => {
@@ -147,6 +148,7 @@ const SupervisorLayout = () => {
         </div>
       </div>
     </div>
+    <FloatingChatButton />
     </>
   );
 };
