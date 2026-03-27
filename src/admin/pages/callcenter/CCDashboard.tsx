@@ -233,48 +233,48 @@ const CCDashboard = () => {
         </div>
 
         <div className="rounded-2xl bg-gradient-to-b from-black/30 to-black/10 border border-white/[0.06] overflow-hidden backdrop-blur-sm">
-          <table className="w-full text-xs">
+          <table className="w-full">
             <thead>
-              <tr className="border-b border-white/[0.06]">
-                <th className="p-2.5 text-right text-[10px] font-semibold text-muted-foreground/60">إجراء</th>
-                <th className="p-2.5 text-right text-[10px] font-semibold text-muted-foreground/60">السعر</th>
-                <th className="p-2.5 text-center text-[10px] font-semibold text-muted-foreground/60">الحالة</th>
-                <th className="p-2.5 text-right text-[10px] font-semibold text-muted-foreground/60">المطعم</th>
-                <th className="p-2.5 text-center text-[10px] font-semibold text-muted-foreground/60">الوقت</th>
-                <th className="p-2.5 text-right text-[10px] font-semibold text-muted-foreground/60">الزبون</th>
+              <tr className="border-b border-white/[0.08]">
+                <th className="p-3 text-right text-sm font-bold text-foreground/80">إجراء</th>
+                <th className="p-3 text-right text-sm font-bold text-foreground/80">السعر</th>
+                <th className="p-3 text-center text-sm font-bold text-foreground/80">الحالة</th>
+                <th className="p-3 text-right text-sm font-bold text-foreground/80">المطعم</th>
+                <th className="p-3 text-center text-sm font-bold text-foreground/80">الوقت</th>
+                <th className="p-3 text-right text-sm font-bold text-foreground/80">الزبون</th>
               </tr>
             </thead>
             <tbody>
               {recentOrders.length === 0 && (
-                <tr><td colSpan={6} className="p-10 text-center text-muted-foreground/40 text-xs">لا توجد طلبات بعد</td></tr>
+                <tr><td colSpan={6} className="p-10 text-center text-muted-foreground/50 text-sm">لا توجد طلبات بعد</td></tr>
               )}
               {recentOrders.map(o => {
                 const si = getStatusInfo(o.status);
                 return (
                   <tr
                     key={o.id}
-                    className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors cursor-pointer"
+                    className="border-b border-white/[0.05] last:border-0 hover:bg-white/[0.03] transition-colors cursor-pointer"
                     onClick={() => navigate("/call-center/delivery")}
                   >
-                    <td className="p-2.5">
-                      <button className="w-6 h-6 rounded-md bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors">
-                        <Eye className="w-3 h-3 text-primary" />
+                    <td className="p-3">
+                      <button className="w-7 h-7 rounded-lg bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors">
+                        <Eye className="w-3.5 h-3.5 text-primary" />
                       </button>
                     </td>
-                    <td className="p-2.5 text-primary font-bold text-[11px]">{o.estimated_price || 0} DH</td>
-                    <td className="p-2.5 text-center">
-                      <span className={`inline-flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full font-bold ${si.bg} ${si.color} border border-white/[0.05]`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${si.dot}`} />
+                    <td className="p-3 text-primary font-bold text-sm">{o.estimated_price || 0} DH</td>
+                    <td className="p-3 text-center">
+                      <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-bold ${si.bg} ${si.color} border border-white/[0.06]`}>
+                        <span className={`w-2 h-2 rounded-full ${si.dot}`} />
                         {si.label}
                       </span>
                     </td>
-                    <td className="p-2.5 text-foreground/70 text-[11px]">{o.store_name || "—"}</td>
-                    <td className="p-2.5 text-center text-muted-foreground/50 text-[10px]">
+                    <td className="p-3 text-foreground/80 text-sm font-medium">{o.store_name || "—"}</td>
+                    <td className="p-3 text-center text-muted-foreground/60 text-sm">
                       {new Date(o.created_at).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" })}
                     </td>
-                    <td className="p-2.5 text-right">
-                      <p className="text-[11px] font-bold text-foreground/80">{o.userName}</p>
-                      <p className="text-[9px] text-muted-foreground/40">{o.userPhone}</p>
+                    <td className="p-3 text-right">
+                      <p className="text-sm font-bold text-foreground/90">{o.userName}</p>
+                      <p className="text-xs text-muted-foreground/50">{o.userPhone}</p>
                     </td>
                   </tr>
                 );
