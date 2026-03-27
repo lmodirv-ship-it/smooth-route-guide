@@ -345,6 +345,7 @@ const AdminLayout = () => {
                 <div className="w-px h-6 bg-border" />
               </>
             )}
+            <FaceGuard onLock={handleFaceLock} />
             <GlobalLogoutButton />
             <LanguageSwitcher />
             <button className="p-2 relative hover:bg-secondary rounded-lg transition-colors">
