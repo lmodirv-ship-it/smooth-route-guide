@@ -11,6 +11,10 @@ import heroEmblem from "@/assets/hero-emblem.png";
 import heroDriver from "@/assets/hero-driver.png";
 import heroCustomer from "@/assets/hero-customer.png";
 import heroDelivery from "@/assets/hero-delivery.png";
+import partnerHibaEco from "@/assets/partner-hiba-eco.png";
+import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
+import partnerTanjaPrint from "@/assets/partner-tanja-print.png";
+import partnerSlavacall from "@/assets/partner-slavacall.png";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
