@@ -25,7 +25,7 @@ const AdminLogin = () => {
         .eq("user_id", session.user.id);
       const isAdmin = (roles || []).some((r) => r.role === "admin");
       if (isAdmin) {
-        navigate("/", { replace: true });
+        navigate("/admin", { replace: true });
       } else {
         await supabase.auth.signOut();
         setChecking(false);
@@ -56,7 +56,7 @@ const AdminLogin = () => {
         return;
       }
       toast({ title: "تم تسجيل الدخول بنجاح ✅" });
-      navigate("/", { replace: true });
+      navigate("/admin", { replace: true });
     } catch (err: any) {
       let msg = err?.message || "حدث خطأ غير متوقع";
       if (msg.includes("Invalid login credentials")) msg = "بريد أو كلمة مرور غير صحيحة";
