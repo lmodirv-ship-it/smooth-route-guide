@@ -362,6 +362,59 @@ const DeliveryHome = () => {
           </button>
         </div>
 
+        {/* Our Services Section */}
+        <div className="px-5 mt-2 mb-5">
+          <h2 className="text-sm font-bold text-foreground mb-3">🌐 خدماتنا الأخرى</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <motion.a
+              href="https://souk-hn.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="relative overflow-hidden rounded-2xl border border-border bg-card group hover:border-primary/40 transition-all"
+            >
+              <div className="h-24 bg-gradient-to-br from-amber-500/20 via-orange-500/10 to-yellow-500/20 flex items-center justify-center">
+                <img
+                  src="https://images.unsplash.com/photo-1607082349566-187342175e2f?w=400&h=200&fit=crop"
+                  alt="Souk HN"
+                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
+              </div>
+              <div className="p-3 text-right relative">
+                <p className="text-sm font-bold text-foreground">🛍️ Souk.HN</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">سوق إلكتروني - تسوق الآن</p>
+                <div className="absolute top-2 left-2 bg-green-500/10 text-green-500 text-[9px] font-bold px-1.5 py-0.5 rounded-full">متاح</div>
+              </div>
+            </motion.a>
+            <motion.a
+              href="https://matba3a.hn"
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+              className="relative overflow-hidden rounded-2xl border border-border bg-card group hover:border-primary/40 transition-all"
+            >
+              <div className="h-24 bg-gradient-to-br from-blue-500/20 via-indigo-500/10 to-purple-500/20 flex items-center justify-center">
+                <img
+                  src="https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?w=400&h=200&fit=crop"
+                  alt="HN Print"
+                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
+              </div>
+              <div className="p-3 text-right relative">
+                <p className="text-sm font-bold text-foreground">🖨️ HN Print</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">مطبعة احترافية - اطلب الآن</p>
+                <div className="absolute top-2 left-2 bg-green-500/10 text-green-500 text-[9px] font-bold px-1.5 py-0.5 rounded-full">متاح</div>
+              </div>
+            </motion.a>
+          </div>
+        </div>
+
         <div className="px-5 mb-8">
           <h2 className="text-sm font-bold text-foreground mb-3">طلبات سابقة</h2>
           {recentOrders.length === 0 ? (
