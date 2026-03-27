@@ -141,7 +141,14 @@ const RequireRole = ({ children, allowed }: RequireRoleProps) => {
     );
   }
 
-  if (state === "no-auth") return <Navigate to="/login" replace />;
+  // Redirect to the appropriate login page based on context
+  if (state === "no-auth") {
+    const isAdminRoute = allowed?.some((a) => ["admin"].includes(a));
+    const isCallCenterRoute = allowed?.some((a) => ["agent", "call_center"].includes(a));
+    if (isAdminRoute) return <Navigate to="/admin/login" replace />;
+    if (isCallCenterRoute) return <Navigate to="/call-center/login" replace />;
+    return <Navigate to="/login" replace />;
+  }
 
   if (state === "wrong-role") {
     const redirectTo = bestDashboard(userRoles);
