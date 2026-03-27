@@ -209,7 +209,7 @@ const DriverPage = () => {
   return (
     <div className="h-screen flex flex-col bg-background" dir={dir} onClick={() => unlockAudio()}>
       {/* Map */}
-      <div className={`relative shrink-0 transition-all duration-500 ${mapExpanded ? "h-[55vh]" : "h-[40vh] min-h-[220px]"}`}>
+      <div className={`relative shrink-0 transition-all duration-500 ${mapExpanded ? "h-[60vh]" : "h-[45vh] min-h-[250px]"}`}>
         <LeafletMap center={driverLocation || DEFAULT_LOCATION} zoom={14} showMarker driverLocation={driverLocation} route={route} className="w-full h-full" />
 
         {/* Top overlay */}
