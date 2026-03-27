@@ -239,5 +239,67 @@
   .driver-card {
     background: linear-gradient(145deg, hsl(160, 25%, 10%), hsl(160, 25%, 6%));
   }
+
+  /* ═══ Global Cosmic Dark Theme — applies to ALL pages ═══ */
+  
+  /* All pages share the cosmic dark background */
+  .cosmic-page {
+    background: linear-gradient(180deg, hsl(220, 20%, 5%) 0%, hsl(220, 18%, 3%) 100%);
+    min-height: 100vh;
+    position: relative;
+  }
+  .cosmic-page::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 15% 25%, hsl(40, 80%, 70%, 0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 35% 55%, hsl(40, 80%, 70%, 0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 55% 15%, hsl(40, 80%, 70%, 0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 75% 75%, hsl(40, 80%, 70%, 0.25) 0%, transparent 100%),
+      radial-gradient(1px 1px at 95% 35%, hsl(40, 80%, 70%, 0.2) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 45% 40%, hsl(32, 90%, 60%, 0.35) 0%, transparent 100%),
+      radial-gradient(1px 1px at 25% 85%, hsl(205, 70%, 60%, 0.15) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 10%, hsl(205, 70%, 60%, 0.15) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .cosmic-page > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Premium card style for all pages */
+  .cosmic-card {
+    background: linear-gradient(145deg, hsl(220, 18%, 13%), hsl(220, 18%, 9%));
+    border: 1px solid hsl(220, 15%, 20%);
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+  }
+  .cosmic-card:hover {
+    border-color: hsl(32, 95%, 55%, 0.3);
+    box-shadow: 0 0 20px hsl(32, 95%, 55%, 0.1);
+  }
+
+  /* Metallic heading style */
+  .metallic-text {
+    background: linear-gradient(180deg, hsl(210, 10%, 80%) 0%, hsl(210, 10%, 55%) 40%, hsl(210, 10%, 70%) 60%, hsl(210, 10%, 50%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .golden-text {
+    background: linear-gradient(170deg, hsl(45, 90%, 75%) 0%, hsl(40, 95%, 60%) 30%, hsl(35, 100%, 50%) 60%, hsl(40, 95%, 60%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 1px 2px hsl(32, 95%, 30%, 0.5));
+  }
+
+  /* LED-bordered section */
+  @keyframes led-border-spin {
+    from { --led-angle: 0deg; }
+    to { --led-angle: 360deg; }
+  }
 }
 
