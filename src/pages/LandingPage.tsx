@@ -2,14 +2,16 @@ import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import {
   Car, Package, BarChart3, Zap, Shield, DollarSign, MapPin, ArrowRight, Menu, X,
   Users, Truck, Headphones, Store, Coffee, Shirt, Croissant, ShoppingCart,
   UtensilsCrossed, Printer, Smartphone, Clock, Download, Star, Phone,
-  ChevronDown, Globe, PlayCircle,
+  ChevronDown, Globe, PlayCircle, UserPlus, FileCheck, Quote, ChevronUp,
+  MessageSquare, HelpCircle, CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+// useState/useEffect moved to top imports
 import logo from "@/assets/hn-driver-badge.png";
 import heroEmblem from "@/assets/hero-emblem.png";
 import heroDriver from "@/assets/hero-driver.png";
@@ -47,6 +49,23 @@ const stagger = {
 const fadeChild = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
+
+const FAQItem = ({ question, answer, index }: { question: string; answer: string; index: number }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={index + 1}>
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between gap-4 p-5 rounded-2xl gradient-card border border-border hover:border-primary/30 transition-all duration-300 text-start group">
+        <span className="font-bold text-foreground group-hover:text-primary transition-colors">{question}</span>
+        <ChevronDown className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="px-5 pb-4 pt-2 text-sm text-muted-foreground leading-relaxed">
+          {answer}
+        </motion.div>
+      )}
+    </motion.div>
+  );
 };
 
 export default function LandingPage() {
@@ -471,6 +490,185 @@ export default function LandingPage() {
                 {dir === "rtl" ? "سجل كسائق" : "Register as Driver"}
               </Button>
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── How It Works ─── */}
+      <section className="py-20 md:py-28 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
+            <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-[0.2em] border border-success/30 text-success bg-success/5 mb-4">
+              {dir === "rtl" ? "بسيط وسريع" : "Simple & Fast"}
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold font-display mb-3">
+              <span className="text-gradient-primary">{dir === "rtl" ? "كيف تبدأ مع HN Driver؟" : "How to Start with HN Driver?"}</span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              {dir === "rtl" ? "4 خطوات بسيطة تفصلك عن بدء رحلتك" : "4 simple steps to begin your journey"}
+            </p>
+          </motion.div>
+
+          <div className="relative max-w-4xl mx-auto">
+            {/* Connection line */}
+            <div className="hidden md:block absolute top-24 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-primary/30 via-success/30 to-info/30 rounded-full" />
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {[
+                { number: "01", icon: UserPlus, title: dir === "rtl" ? "سجل مجاناً" : "Register Free", desc: dir === "rtl" ? "أنشئ حسابك في أقل من 3 دقائق" : "Create your account in under 3 minutes", details: dir === "rtl" ? ["معلومات شخصية بسيطة", "رخصة قيادة سارية", "بطاقة هوية وطنية"] : ["Basic personal info", "Valid driving license", "National ID card"], color: "text-primary" },
+                { number: "02", icon: FileCheck, title: dir === "rtl" ? "تحقق من الوثائق" : "Document Verification", desc: dir === "rtl" ? "نراجع مستنداتك خلال 24 ساعة" : "We review your documents within 24 hours", details: dir === "rtl" ? ["مراجعة سريعة", "تحقق آمن", "موافقة فورية"] : ["Quick review", "Secure verification", "Instant approval"], color: "text-success" },
+                { number: "03", icon: Car, title: dir === "rtl" ? "ابدأ القيادة" : "Start Driving", desc: dir === "rtl" ? "استلم طلبك الأول وابدأ الكسب" : "Receive your first order and start earning", details: dir === "rtl" ? ["طلبات فورية", "ملاحة ذكية", "دعم مباشر"] : ["Instant orders", "Smart navigation", "Live support"], color: "text-info" },
+                { number: "04", icon: DollarSign, title: dir === "rtl" ? "احصل على أرباحك" : "Get Paid", desc: dir === "rtl" ? "دفع فوري بعد كل طلب" : "Instant payment after every order", details: dir === "rtl" ? ["تحويل لحظي", "بدون رسوم", "سحب متى تشاء"] : ["Instant transfer", "No fees", "Withdraw anytime"], color: "text-[hsl(var(--warning))]" },
+              ].map((step, i) => (
+                <motion.div key={step.number} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} className="group relative text-center">
+                  <div className="relative mx-auto mb-6">
+                    <div className={`w-20 h-20 rounded-2xl bg-secondary/80 border border-border group-hover:border-primary/30 flex items-center justify-center mx-auto group-hover:scale-110 transition-all duration-300`}>
+                      <step.icon className={`w-9 h-9 ${step.color}`} />
+                    </div>
+                    <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-xs font-bold shadow-lg">
+                      {step.number}
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-bold mb-2 text-foreground group-hover:text-primary transition-colors">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{step.desc}</p>
+                  <ul className="space-y-2">
+                    {step.details.map((detail, idx) => (
+                      <li key={idx} className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                        <CheckCircle className="w-3.5 h-3.5 text-success flex-shrink-0" />
+                        <span>{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA Box */}
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={5} className="mt-16 max-w-2xl mx-auto text-center">
+            <div className="glass rounded-2xl p-8 border border-border">
+              <p className="text-lg font-bold text-foreground mb-4">
+                {dir === "rtl" ? "جاهز للبدء؟ انضم الآن وابدأ الكسب!" : "Ready to start? Join now and start earning!"}
+              </p>
+              <button onClick={() => navigate("/auth/driver")} className="gradient-primary text-primary-foreground font-bold rounded-full px-8 py-3 glow-primary hover:opacity-90 transition-opacity">
+                {dir === "rtl" ? "إنشاء حساب مجاني →" : "Create Free Account →"}
+              </button>
+              <p className="text-xs text-muted-foreground mt-3">
+                {dir === "rtl" ? "✓ بدون رسوم تسجيل  ✓ بدون التزامات  ✓ إلغاء في أي وقت" : "✓ No registration fees  ✓ No commitments  ✓ Cancel anytime"}
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── Testimonials ─── */}
+      <section className="py-20 md:py-28 relative">
+        <div className="absolute inset-0 particles-bg opacity-20" />
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
+            <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-[0.2em] border border-primary/30 text-primary bg-primary/5 mb-4">
+              {dir === "rtl" ? "قصص نجاح" : "Success Stories"}
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold font-display mb-3">
+              <span className="text-gradient-primary">{dir === "rtl" ? "ماذا يقول سائقونا؟" : "What Our Drivers Say"}</span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              {dir === "rtl" ? "آلاف السائقين حققوا أهدافهم المالية معنا" : "Thousands of drivers achieved their financial goals with us"}
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {[
+              { name: dir === "rtl" ? "أحمد محمد" : "Ahmed Mohamed", role: dir === "rtl" ? "سائق منذ 6 أشهر" : "Driver for 6 months", text: dir === "rtl" ? "أفضل قرار اتخذته! أرباحي تضاعفت 3 مرات مقارنة بعملي السابق. التطبيق سهل والدعم ممتاز." : "Best decision I made! My earnings tripled compared to my previous job. Easy app and excellent support.", earnings: dir === "rtl" ? "12,000 د.م/شهر" : "12,000 MAD/month", trips: "450+" },
+              { name: dir === "rtl" ? "خالد العتيبي" : "Khalid Otaibi", role: dir === "rtl" ? "سائق منذ سنة" : "Driver for 1 year", text: dir === "rtl" ? "المرونة في العمل رائعة. أعمل في أوقات فراغي وأحقق دخل إضافي ممتاز. أنصح الجميع بالتجربة." : "The work flexibility is amazing. I work in my free time and earn great extra income. Highly recommended.", earnings: dir === "rtl" ? "8,500 د.م/شهر" : "8,500 MAD/month", trips: "1200+" },
+              { name: dir === "rtl" ? "سعد الدوسري" : "Saad Dosari", role: dir === "rtl" ? "سائق منذ 3 أشهر" : "Driver for 3 months", text: dir === "rtl" ? "الدفع الفوري ميزة رائعة. لا أنتظر نهاية الشهر للحصول على أرباحي. التطبيق احترافي جداً." : "Instant payment is a great feature. No waiting until month-end. Very professional app.", earnings: dir === "rtl" ? "9,800 د.م/شهر" : "9,800 MAD/month", trips: "280+" },
+            ].map((t, i) => (
+              <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} className="group relative rounded-2xl p-8 gradient-card border border-border hover:border-primary/30 transition-all duration-500 overflow-hidden">
+                <div className="absolute inset-0 rounded-2xl gradient-primary opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500" />
+                <Quote className="w-8 h-8 text-primary/30 mb-4" />
+                <div className="flex gap-1 mb-4">
+                  {[...Array(5)].map((_, j) => <Star key={j} className="w-4 h-4 fill-primary text-primary" />)}
+                </div>
+                <p className="text-muted-foreground text-sm leading-relaxed mb-6 italic">"{t.text}"</p>
+                <div className="grid grid-cols-2 gap-3 mb-6 p-3 rounded-xl bg-secondary/50 border border-border/50">
+                  <div className="text-center">
+                    <div className="text-sm font-bold text-primary">{t.earnings}</div>
+                    <div className="text-[10px] text-muted-foreground">{dir === "rtl" ? "الأرباح الشهرية" : "Monthly Earnings"}</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm font-bold text-success">{t.trips}</div>
+                    <div className="text-[10px] text-muted-foreground">{dir === "rtl" ? "إجمالي الرحلات" : "Total Trips"}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
+                    {t.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-foreground">{t.name}</h4>
+                    <p className="text-xs text-muted-foreground">{t.role}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Stats strip */}
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={4} className="mt-14 max-w-4xl mx-auto">
+            <div className="glass rounded-2xl p-6 grid grid-cols-2 md:grid-cols-4 gap-6">
+              {[
+                { val: "10,000+", label: dir === "rtl" ? "سائق نشط" : "Active Drivers" },
+                { val: "4.9/5", label: dir === "rtl" ? "تقييم السائقين" : "Driver Rating" },
+                { val: "50K+", label: dir === "rtl" ? "طلب يومياً" : "Daily Orders" },
+                { val: "98%", label: dir === "rtl" ? "رضا العملاء" : "Customer Satisfaction" },
+              ].map((s) => (
+                <div key={s.label} className="text-center">
+                  <div className="text-2xl font-bold text-gradient-primary font-display">{s.val}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── FAQ ─── */}
+      <section className="py-20 md:py-28 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
+            <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-[0.2em] border border-info/30 text-info bg-info/5 mb-4">
+              <HelpCircle className="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" />
+              {dir === "rtl" ? "أسئلة شائعة" : "FAQ"}
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold font-display mb-3">
+              <span className="text-gradient-primary">{dir === "rtl" ? "الأسئلة الأكثر شيوعاً" : "Frequently Asked Questions"}</span>
+            </h2>
+          </motion.div>
+
+          <div className="max-w-3xl mx-auto space-y-4">
+            {[
+              { q: dir === "rtl" ? "كم يمكنني أن أكسب مع HN Driver؟" : "How much can I earn with HN Driver?", a: dir === "rtl" ? "الأرباح تعتمد على عدد الساعات والطلبات. متوسط الأرباح يتراوح بين 5,000 إلى 15,000 د.م شهرياً للسائقين النشطين. كلما زاد عدد الطلبات، زادت أرباحك." : "Earnings depend on hours and orders. Active drivers earn between 5,000-15,000 MAD monthly on average. More orders mean more earnings." },
+              { q: dir === "rtl" ? "ما هي المتطلبات للانضمام؟" : "What are the requirements to join?", a: dir === "rtl" ? "تحتاج إلى رخصة قيادة سارية، بطاقة هوية وطنية، هاتف ذكي، وسيارة بحالة جيدة. عملية التسجيل تستغرق أقل من 5 دقائق." : "You need a valid driving license, national ID, smartphone, and a car in good condition. Registration takes less than 5 minutes." },
+              { q: dir === "rtl" ? "كيف يتم الدفع؟" : "How does payment work?", a: dir === "rtl" ? "نوفر دفع فوري بعد كل طلب. يمكنك سحب أرباحك في أي وقت عبر التحويل البنكي أو المحفظة الإلكترونية بدون أي رسوم." : "We offer instant payment after every order. You can withdraw earnings anytime via bank transfer or e-wallet with zero fees." },
+              { q: dir === "rtl" ? "هل يوجد تأمين أثناء العمل؟" : "Is there insurance while working?", a: dir === "rtl" ? "نعم، نوفر تأمين شامل يغطي السائق والمركبة أثناء تنفيذ الطلبات. سلامتك هي أولويتنا." : "Yes, we provide comprehensive insurance covering the driver and vehicle during active orders. Your safety is our priority." },
+              { q: dir === "rtl" ? "هل يمكنني العمل بدوام جزئي؟" : "Can I work part-time?", a: dir === "rtl" ? "بالتأكيد! أنت حر في اختيار أوقات عملك. لا يوجد حد أدنى لساعات العمل. اعمل متى تشاء وتوقف متى تريد." : "Absolutely! You're free to choose your work hours. No minimum hours required. Work when you want, stop when you want." },
+              { q: dir === "rtl" ? "كيف أتواصل مع الدعم الفني؟" : "How do I contact support?", a: dir === "rtl" ? "دعمنا متاح 24/7 عبر التطبيق مباشرة، الاتصال الهاتفي، أو الدردشة المباشرة. فريقنا جاهز لمساعدتك في أي وقت." : "Our support is available 24/7 via the app, phone call, or live chat. Our team is ready to help anytime." },
+            ].map((faq, i) => (
+              <FAQItem key={i} question={faq.q} answer={faq.a} index={i} />
+            ))}
+          </div>
+
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={7} className="text-center mt-12">
+            <p className="text-muted-foreground mb-4">
+              {dir === "rtl" ? "لم تجد إجابتك؟ تواصل معنا مباشرة" : "Didn't find your answer? Contact us directly"}
+            </p>
+            <button onClick={() => navigate("/welcome")} className="inline-flex items-center gap-2 gradient-primary text-primary-foreground font-bold rounded-full px-8 py-3 glow-primary hover:opacity-90 transition-opacity">
+              <MessageSquare className="w-4 h-4" />
+              {dir === "rtl" ? "تواصل مع الدعم" : "Contact Support"}
+            </button>
           </motion.div>
         </div>
       </section>
