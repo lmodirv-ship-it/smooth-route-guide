@@ -230,6 +230,57 @@ export type Database = {
         }
         Relationships: []
       }
+      assistant_files: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          file_name: string
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+          label: string | null
+          metadata: Json | null
+          reference_number: string | null
+          tags: string[] | null
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          label?: string | null
+          metadata?: Json | null
+          reference_number?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          label?: string | null
+          metadata?: Json | null
+          reference_number?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       assistant_issue_patterns: {
         Row: {
           affected_area: string
@@ -2361,6 +2412,53 @@ export type Database = {
             columns: ["driver_id"]
             isOneToOne: false
             referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voice_orders: {
+        Row: {
+          agent_id: string | null
+          agent_notes: string | null
+          audio_url: string
+          created_at: string
+          id: string
+          order_id: string | null
+          status: string
+          transcript: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_notes?: string | null
+          audio_url?: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          status?: string
+          transcript?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string | null
+          agent_notes?: string | null
+          audio_url?: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          status?: string
+          transcript?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_orders_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_orders"
             referencedColumns: ["id"]
           },
         ]
