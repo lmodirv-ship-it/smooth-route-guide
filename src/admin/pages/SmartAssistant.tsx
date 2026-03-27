@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Bot, Send, Loader2, Paperclip, X, Image, Film, Download, History, FolderOpen, Save } from "lucide-react";
+import { Bot, Send, Loader2, Paperclip, X, Image, Film, Download, History, FolderOpen, Save, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizePlainText } from "@/lib/inputSecurity";
 import { useI18n } from "@/i18n/context";
+import { useWebSpeech } from "@/hooks/useWebSpeech";
 
 type AiMsg = { role: "user" | "assistant"; content: string | any[] };
 
