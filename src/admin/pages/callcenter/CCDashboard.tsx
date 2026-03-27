@@ -4,10 +4,9 @@ import { motion } from "framer-motion";
 import {
   Package, Clock, Users, AlertTriangle, CheckCircle, Car, Activity,
   Loader2, PhoneIncoming, Bike, UtensilsCrossed, TrendingUp, Bell,
-  ArrowRight, Eye
+  ArrowRight, Eye, Headphones, ShieldCheck, Truck, Star, Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 
 const CCDashboard = () => {
@@ -57,11 +56,11 @@ const CCDashboard = () => {
     if (ordersRes.data) {
       const uids = [...new Set(ordersRes.data.map(o => o.user_id))];
       const { data: profiles } = await supabase.from("profiles").select("id, name, phone").in("id", uids);
-      const pMap = new Map((profiles as any[])?.map((p: any) => [p.id, p]) || []);
+      const pMap = new Map((profiles || []).map((p) => [p.id, p]));
       setRecentOrders(ordersRes.data.map(o => ({
         ...o,
-        userName: (pMap.get(o.user_id) as any)?.name || "—",
-        userPhone: (pMap.get(o.user_id) as any)?.phone || "—",
+        userName: (pMap.get(o.user_id))?.name || "—",
+        userPhone: (pMap.get(o.user_id))?.phone || "—",
       })));
     }
 
@@ -81,171 +80,195 @@ const CCDashboard = () => {
   }, [fetchAll]);
 
   const statCards = [
-    { icon: Package, label: "طلبات جديدة", value: stats.newOrders, color: "text-amber-400", bg: "bg-amber-400/10", border: "border-amber-400/20", pulse: stats.newOrders > 0 },
-    { icon: CheckCircle, label: "تم التأكيد", value: stats.confirmed, color: "text-info", bg: "bg-info/10", border: "border-info/20" },
-    { icon: UtensilsCrossed, label: "جاهز / مستلم", value: stats.readyForPickup, color: "text-purple-400", bg: "bg-purple-400/10", border: "border-purple-400/20" },
-    { icon: Bike, label: "في الطريق", value: stats.inTransit, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20" },
-    { icon: TrendingUp, label: "مكتمل اليوم", value: stats.delivered, color: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/20" },
-    { icon: Car, label: "سائقون متاحون", value: `${stats.activeDrivers}/${stats.totalDrivers}`, color: "text-success", bg: "bg-success/10", border: "border-success/20" },
-    { icon: AlertTriangle, label: "شكاوى مفتوحة", value: stats.openComplaints, color: "text-destructive", bg: "bg-destructive/10", border: "border-destructive/20" },
-    { icon: PhoneIncoming, label: "مكالمات اليوم", value: stats.callsToday, color: "text-info", bg: "bg-info/10", border: "border-info/20" },
+    { icon: Package, label: "طلبات جديدة", value: stats.newOrders, gradient: "from-amber-500/20 to-orange-600/10", iconBg: "bg-amber-500", textColor: "text-amber-400", pulse: stats.newOrders > 0, path: "/call-center/delivery" },
+    { icon: CheckCircle, label: "تم التأكيد", value: stats.confirmed, gradient: "from-blue-500/20 to-cyan-600/10", iconBg: "bg-blue-500", textColor: "text-blue-400", path: "/call-center/delivery" },
+    { icon: UtensilsCrossed, label: "جاهز / مستلم", value: stats.readyForPickup, gradient: "from-purple-500/20 to-violet-600/10", iconBg: "bg-purple-500", textColor: "text-purple-400", path: "/call-center/delivery" },
+    { icon: Bike, label: "في الطريق", value: stats.inTransit, gradient: "from-cyan-500/20 to-teal-600/10", iconBg: "bg-cyan-500", textColor: "text-cyan-400", path: "/call-center/delivery" },
+    { icon: TrendingUp, label: "مكتمل اليوم", value: stats.delivered, gradient: "from-emerald-500/20 to-green-600/10", iconBg: "bg-emerald-500", textColor: "text-emerald-400", path: "/call-center/delivery" },
+    { icon: Car, label: "سائقون متاحون", value: `${stats.activeDrivers}/${stats.totalDrivers}`, gradient: "from-green-500/20 to-lime-600/10", iconBg: "bg-green-500", textColor: "text-green-400", path: "/call-center/drivers" },
+    { icon: AlertTriangle, label: "شكاوى مفتوحة", value: stats.openComplaints, gradient: "from-red-500/20 to-rose-600/10", iconBg: "bg-red-500", textColor: "text-red-400", path: "/call-center/complaints" },
+    { icon: PhoneIncoming, label: "مكالمات اليوم", value: stats.callsToday, gradient: "from-indigo-500/20 to-blue-600/10", iconBg: "bg-indigo-500", textColor: "text-indigo-400", path: "/call-center/incoming" },
   ];
 
-  const getStatusInfo = (status: string) => {
-    const map: Record<string, { label: string; color: string; bg: string }> = {
-      pending: { label: "جديد", color: "text-amber-400", bg: "bg-amber-400/10" },
-      confirmed: { label: "مؤكد", color: "text-info", bg: "bg-info/10" },
-      preparing: { label: "تحضير", color: "text-orange-400", bg: "bg-orange-400/10" },
-      ready: { label: "جاهز", color: "text-purple-400", bg: "bg-purple-400/10" },
-      driver_assigned: { label: "سائق معيّن", color: "text-cyan-400", bg: "bg-cyan-400/10" },
-      picked_up: { label: "تم الاستلام", color: "text-primary", bg: "bg-primary/10" },
-      in_transit: { label: "في الطريق", color: "text-primary", bg: "bg-primary/10" },
-      delivered: { label: "مكتمل", color: "text-emerald-400", bg: "bg-emerald-400/10" },
-      cancelled: { label: "ملغي", color: "text-destructive", bg: "bg-destructive/10" },
+  const getStatusInfo = (status) => {
+    const map = {
+      pending: { label: "جديد", color: "text-amber-400", bg: "bg-amber-500/20", dot: "bg-amber-400" },
+      confirmed: { label: "مؤكد", color: "text-blue-400", bg: "bg-blue-500/20", dot: "bg-blue-400" },
+      preparing: { label: "تحضير", color: "text-orange-400", bg: "bg-orange-500/20", dot: "bg-orange-400" },
+      ready: { label: "جاهز", color: "text-purple-400", bg: "bg-purple-500/20", dot: "bg-purple-400" },
+      driver_assigned: { label: "سائق معيّن", color: "text-cyan-400", bg: "bg-cyan-500/20", dot: "bg-cyan-400" },
+      picked_up: { label: "تم الاستلام", color: "text-teal-400", bg: "bg-teal-500/20", dot: "bg-teal-400" },
+      in_transit: { label: "في الطريق", color: "text-sky-400", bg: "bg-sky-500/20", dot: "bg-sky-400" },
+      delivered: { label: "مكتمل", color: "text-emerald-400", bg: "bg-emerald-500/20", dot: "bg-emerald-400" },
+      cancelled: { label: "ملغي", color: "text-red-400", bg: "bg-red-500/20", dot: "bg-red-400" },
     };
-    return map[status] || { label: status, color: "text-muted-foreground", bg: "bg-secondary" };
+    return map[status] || { label: status, color: "text-muted-foreground", bg: "bg-muted", dot: "bg-muted-foreground" };
   };
 
   if (loading) return (
-    <div className="flex justify-center items-center py-32">
-      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+    <div className="flex justify-center items-center py-32 min-h-[60vh]">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+        <p className="text-sm text-muted-foreground">جاري تحميل البيانات...</p>
+      </div>
     </div>
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 min-h-screen" dir="rtl">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-success/10 text-success px-3 py-1.5 rounded-full text-xs font-bold">
-            <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             مباشر
           </div>
         </div>
-        <div>
-          <h1 className="text-xl font-bold text-foreground">مركز التحكم — التوصيل</h1>
-          <p className="text-xs text-muted-foreground text-right">HN Delivery Control Center</p>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <h1 className="text-lg font-black text-foreground tracking-tight">مركز التحكم</h1>
+            <p className="text-[10px] text-muted-foreground/60 font-medium">HN Delivery Control Center</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-primary/5 border border-primary/20 flex items-center justify-center">
+            <Headphones className="w-5 h-5 text-primary" />
+          </div>
         </div>
       </div>
 
-      {/* Flow Diagram */}
-      <div className="glass rounded-xl p-3 overflow-x-auto">
-        <div className="flex items-center gap-2 min-w-max justify-center text-xs">
+      {/* Flow Steps */}
+      <div className="rounded-2xl bg-gradient-to-r from-black/40 via-black/20 to-black/40 border border-white/[0.06] p-3 overflow-x-auto backdrop-blur-sm">
+        <div className="flex items-center gap-1.5 min-w-max justify-center">
           {[
-            { icon: "👤", label: "الزبون يطلب" },
-            { icon: "📱", label: "التطبيق" },
-            { icon: "📞", label: "مركز الاتصال" },
-            { icon: "🍽️", label: "تأكيد المطعم" },
-            { icon: "🏍️", label: "تعيين سائق" },
+            { icon: "👤", label: "طلب" },
+            { icon: "📱", label: "تطبيق" },
+            { icon: "📞", label: "اتصال" },
+            { icon: "🍽️", label: "تأكيد" },
+            { icon: "🏍️", label: "سائق" },
             { icon: "📦", label: "استلام" },
-            { icon: "🚀", label: "توصيل" },
+            { icon: "✅", label: "توصيل" },
           ].map((step, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <span className="bg-card border border-border px-3 py-2 rounded-lg font-bold whitespace-nowrap flex items-center gap-1.5">
-                <span>{step.icon}</span>
+            <div key={i} className="flex items-center gap-1.5">
+              <span className="bg-white/[0.04] border border-white/[0.08] px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-foreground/80 whitespace-nowrap flex items-center gap-1">
+                <span className="text-sm">{step.icon}</span>
                 {step.label}
               </span>
-              {i < 6 && <ArrowRight className="w-4 h-4 text-primary flex-shrink-0" />}
+              {i < 6 && <ArrowRight className="w-3 h-3 text-primary/50 flex-shrink-0" />}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Stat Buttons */}
+      <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
         {statCards.map((s, i) => (
-          <motion.div
+          <motion.button
             key={i}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.04 }}
-            className={`glass rounded-xl p-4 border ${s.border} cursor-pointer hover:scale-[1.02] transition-transform`}
-            onClick={() => {
-              if (s.label.includes("طلبات")) navigate("/call-center/delivery");
-              if (s.label.includes("سائق")) navigate("/call-center/drivers");
-              if (s.label.includes("شكاوى")) navigate("/call-center/complaints");
-            }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.03 }}
+            onClick={() => navigate(s.path)}
+            className={`group relative rounded-xl p-3 border border-white/[0.06] bg-gradient-to-br ${s.gradient} backdrop-blur-sm hover:border-white/[0.12] hover:scale-[1.04] active:scale-[0.98] transition-all duration-200 cursor-pointer text-center`}
           >
-            <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center mb-3 ${s.pulse ? "animate-pulse" : ""}`}>
-              <s.icon className={`w-5 h-5 ${s.color}`} />
+            {s.pulse && (
+              <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            )}
+            <div className={`w-8 h-8 rounded-lg ${s.iconBg}/20 flex items-center justify-center mx-auto mb-1.5`}>
+              <s.icon className={`w-4 h-4 ${s.textColor}`} />
             </div>
-            <p className="text-2xl font-bold text-foreground">{s.value}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
-          </motion.div>
+            <p className={`text-xl font-black ${s.textColor}`}>{s.value}</p>
+            <p className="text-[9px] text-muted-foreground/70 mt-0.5 leading-tight">{s.label}</p>
+          </motion.button>
         ))}
       </div>
 
       {/* Alerts */}
       {alerts.length > 0 && (
-        <div className="glass rounded-xl border border-destructive/20 p-4">
-          <h2 className="text-foreground font-bold text-sm mb-3 flex items-center gap-2">
-            <Bell className="w-4 h-4 text-destructive" />
-            تنبيهات نشطة
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl bg-red-950/20 border border-red-500/15 p-4 backdrop-blur-sm"
+        >
+          <h2 className="text-foreground font-bold text-xs mb-2.5 flex items-center gap-2">
+            <Bell className="w-3.5 h-3.5 text-red-400" />
+            تنبيهات نشطة ({alerts.length})
           </h2>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {alerts.map(a => (
-              <div key={a.id} className="flex items-center gap-3 bg-destructive/5 rounded-lg p-3">
-                <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />
-                <p className="text-xs text-foreground flex-1">{a.message}</p>
-                <span className="text-[10px] text-muted-foreground">{new Date(a.created_at).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" })}</span>
+              <div key={a.id} className="flex items-center gap-2.5 bg-red-500/5 rounded-lg p-2.5 border border-red-500/10">
+                <Zap className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+                <p className="text-[11px] text-foreground/80 flex-1">{a.message}</p>
+                <span className="text-[9px] text-muted-foreground/50">
+                  {new Date(a.created_at).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" })}
+                </span>
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Recent Orders */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <Button size="sm" variant="outline" className="text-xs rounded-lg gap-1" onClick={() => navigate("/call-center/delivery")}>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-[10px] rounded-lg gap-1 text-primary hover:text-primary hover:bg-primary/10 h-7 px-2"
+            onClick={() => navigate("/call-center/delivery")}
+          >
             <Eye className="w-3 h-3" />
-            عرض الكل
+            الكل
           </Button>
-          <h2 className="text-foreground font-bold flex items-center gap-2">
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
             <Package className="w-4 h-4 text-primary" />
             آخر الطلبات
           </h2>
         </div>
 
-        <div className="glass rounded-xl border border-border overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="rounded-2xl bg-gradient-to-b from-black/30 to-black/10 border border-white/[0.06] overflow-hidden backdrop-blur-sm">
+          <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-border text-muted-foreground text-xs">
-                <td className="p-3">الإجراء</td>
-                <td className="p-3">السعر</td>
-                <td className="p-3">الحالة</td>
-                <td className="p-3">المطعم</td>
-                <td className="p-3">الوقت</td>
-                <td className="p-3 text-right">الزبون</td>
+              <tr className="border-b border-white/[0.06]">
+                <th className="p-2.5 text-right text-[10px] font-semibold text-muted-foreground/60">إجراء</th>
+                <th className="p-2.5 text-right text-[10px] font-semibold text-muted-foreground/60">السعر</th>
+                <th className="p-2.5 text-center text-[10px] font-semibold text-muted-foreground/60">الحالة</th>
+                <th className="p-2.5 text-right text-[10px] font-semibold text-muted-foreground/60">المطعم</th>
+                <th className="p-2.5 text-center text-[10px] font-semibold text-muted-foreground/60">الوقت</th>
+                <th className="p-2.5 text-right text-[10px] font-semibold text-muted-foreground/60">الزبون</th>
               </tr>
             </thead>
             <tbody>
               {recentOrders.length === 0 && (
-                <tr><td colSpan={6} className="p-8 text-center text-muted-foreground text-sm">لا توجد طلبات بعد</td></tr>
+                <tr><td colSpan={6} className="p-10 text-center text-muted-foreground/40 text-xs">لا توجد طلبات بعد</td></tr>
               )}
               {recentOrders.map(o => {
                 const si = getStatusInfo(o.status);
                 return (
-                  <tr key={o.id} className="border-b border-border last:border-0 hover:bg-secondary/20 transition-colors cursor-pointer"
-                    onClick={() => navigate("/call-center/delivery")}>
-                    <td className="p-3">
-                      <Button size="sm" variant="ghost" className="h-6 text-[10px] text-primary">
-                        <Eye className="w-3 h-3" />
-                      </Button>
+                  <tr
+                    key={o.id}
+                    className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors cursor-pointer"
+                    onClick={() => navigate("/call-center/delivery")}
+                  >
+                    <td className="p-2.5">
+                      <button className="w-6 h-6 rounded-md bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors">
+                        <Eye className="w-3 h-3 text-primary" />
+                      </button>
                     </td>
-                    <td className="p-3 text-primary font-bold text-xs">{o.estimated_price || 0} DH</td>
-                    <td className="p-3">
-                      <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${si.bg} ${si.color}`}>
+                    <td className="p-2.5 text-primary font-bold text-[11px]">{o.estimated_price || 0} DH</td>
+                    <td className="p-2.5 text-center">
+                      <span className={`inline-flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full font-bold ${si.bg} ${si.color} border border-white/[0.05]`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${si.dot}`} />
                         {si.label}
                       </span>
                     </td>
-                    <td className="p-3 text-foreground text-xs">{o.store_name || "—"}</td>
-                    <td className="p-3 text-muted-foreground text-[10px]">
+                    <td className="p-2.5 text-foreground/70 text-[11px]">{o.store_name || "—"}</td>
+                    <td className="p-2.5 text-center text-muted-foreground/50 text-[10px]">
                       {new Date(o.created_at).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" })}
                     </td>
-                    <td className="p-3 text-right">
-                      <p className="text-xs font-bold text-foreground">{o.userName}</p>
-                      <p className="text-[10px] text-muted-foreground">{o.userPhone}</p>
+                    <td className="p-2.5 text-right">
+                      <p className="text-[11px] font-bold text-foreground/80">{o.userName}</p>
+                      <p className="text-[9px] text-muted-foreground/40">{o.userPhone}</p>
                     </td>
                   </tr>
                 );
