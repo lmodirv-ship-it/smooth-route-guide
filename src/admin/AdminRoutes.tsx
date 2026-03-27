@@ -55,6 +55,7 @@ import RestaurantsCC from "@/admin/pages/callcenter/RestaurantsCC";
 import AutoImport from "@/admin/pages/callcenter/AutoImport";
 import GoogleMapsImport from "@/admin/pages/callcenter/GoogleMapsImport";
 import AssistantKnowledge from "@/admin/pages/callcenter/AssistantKnowledge";
+import InternalMessaging from "@/admin/pages/callcenter/InternalMessaging";
 import CallCenterLogin from "@/admin/pages/CallCenterLogin";
 import AdminLogin from "@/admin/pages/AdminLogin";
 
@@ -84,6 +85,7 @@ export const adminRouteElements = (
       <Route path="sub-assistants" element={<SubAssistantsPage />} />
       <Route path="driver-packages" element={<DriverPackages />} />
       <Route path="settings" element={<AdminSettings />} />
+      <Route path="messaging" element={<InternalMessaging />} />
     </Route>
 
     <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><CallCenterLayout /></RequireRole>}>
@@ -105,6 +107,7 @@ export const adminRouteElements = (
       <Route path="map" element={<AdminLiveMap />} />
       <Route path="alerts" element={<AdminAlerts />} />
       <Route path="knowledge" element={<AssistantKnowledge />} />
+      <Route path="messaging" element={<InternalMessaging />} />
     </Route>
 
     {/* ═══ Supervisor Panel ═══ */}
@@ -114,6 +117,7 @@ export const adminRouteElements = (
       <Route path="delivery" element={<SupervisorDelivery />} />
       <Route path="call-center" element={<SupervisorCallCenter />} />
       <Route path="restaurants" element={<SupervisorRestaurants />} />
+      <Route path="messaging" element={<InternalMessaging />} />
     </Route>
   </>
 );
