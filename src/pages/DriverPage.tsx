@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star, Navigation, Volume2, Percent, Package } from "lucide-react";
+import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star, Navigation, Volume2, Percent, Package, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,7 @@ import { notifyNewOrder, unlockAudio } from "@/lib/notificationSound";
 import { driverNetEarnings, COMMISSION_RATE } from "@/lib/pricing";
 import { usePricingSettings } from "@/hooks/usePricingSettings";
 import { useI18n } from "@/i18n/context";
+import { useDriverSubscription } from "@/hooks/useDriverSubscription";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 const MAX_RADIUS_KM = 10;
@@ -213,8 +214,14 @@ const DriverPage = () => {
       destination: { lat: selectedOrder.destination_lat, lng: selectedOrder.destination_lng },
     };
   }, [selectedOrder]);
+  const { isExpired: subscriptionExpired, daysLeft: subDaysLeft, loading: subLoading } = useDriverSubscription();
 
   const handleAccept = async (orderId: string) => {
+    if (subscriptionExpired) {
+      toast({ title: "اشتراك مطلوب", description: "يجب الاشتراك في باقة لقبول الطلبات", variant: "destructive" });
+      navigate("/driver/subscription");
+      return;
+    }
     if (activeRideId) {
       toast({ title: t.driver.activeRide, description: t.driver.completeCurrentFirst, variant: "destructive" });
       navigate(`/driver/tracking?id=${activeRideId}`);
