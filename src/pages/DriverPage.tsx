@@ -277,12 +277,12 @@ const DriverPage = () => {
       </div>
 
       {/* Progress Bar */}
-      <div className="shrink-0 bg-zinc-950 px-4 py-2 border-t border-white/5">
+      <div className="shrink-0 bg-zinc-950 px-4 py-1 border-t border-white/5">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-[10px] text-muted-foreground">{progressLabel}</span>
           <span className="text-[10px] text-muted-foreground">{Math.round(tripProgress * 100)}%</span>
         </div>
-        <div className="h-3 rounded-full bg-zinc-800/80 overflow-hidden border border-white/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
+        <div className="h-2 rounded-full bg-zinc-800/80 overflow-hidden border border-white/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
           <motion.div
             className={`h-full rounded-full ${progressColor} shadow-lg`}
             initial={{ width: 0 }}
@@ -294,8 +294,8 @@ const DriverPage = () => {
       </div>
 
       {/* Orders Section - compact scrollable */}
-      <div className="shrink-0 max-h-[35vh] overflow-hidden flex flex-col bg-gradient-to-b from-zinc-950 to-black border-t border-white/5">
-        <div className="px-4 py-2 flex items-center justify-between shrink-0">
+      <div className="shrink-0 max-h-[25vh] overflow-hidden flex flex-col bg-gradient-to-b from-zinc-950 to-black border-t border-white/5">
+        <div className="px-4 py-1.5 flex items-center justify-between shrink-0">
           <div className="bg-emerald-500/15 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">
             {nearbyOrders.length}
           </div>
