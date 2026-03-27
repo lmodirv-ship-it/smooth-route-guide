@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -21,6 +21,7 @@ import { AdminGeoProvider } from "@/admin/contexts/AdminGeoContext";
 import AdminGeoFilter from "@/admin/components/AdminGeoFilter";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import FloatingChatButton from "@/components/FloatingChatButton";
+import FaceGuard from "@/admin/components/FaceGuard";
 
 type AiMsg = { role: "user" | "assistant"; content: string };
 
@@ -65,6 +66,11 @@ const AdminLayout = () => {
   const [smartSiteUrl, setSmartSiteUrl] = useState("");
   const [smartPreviewUrl, setSmartPreviewUrl] = useState("");
   const [smartRefreshKey, setSmartRefreshKey] = useState(0);
+
+  const handleFaceLock = useCallback(async () => {
+    await supabase.auth.signOut();
+    navigate("/admin/login");
+  }, [navigate]);
 
   const isSmartAssistantRoute = location.pathname === "/admin/smart-assistant";
 
@@ -339,6 +345,7 @@ const AdminLayout = () => {
                 <div className="w-px h-6 bg-border" />
               </>
             )}
+            <FaceGuard onLock={handleFaceLock} />
             <GlobalLogoutButton />
             <LanguageSwitcher />
             <button className="p-2 relative hover:bg-secondary rounded-lg transition-colors">
