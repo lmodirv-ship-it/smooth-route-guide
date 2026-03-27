@@ -602,9 +602,40 @@ const SmartAssistantPage = () => {
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
             />
             <div className="flex items-center justify-between mt-2">
-              <span className="text-[10px] text-green-400/50">Shift+Enter لسطر جديد</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-green-400/50">Shift+Enter لسطر جديد</span>
+                {isListening && <span className="text-[10px] text-red-400 animate-pulse">● جاري الاستماع...</span>}
+              </div>
               <div className="flex items-center gap-2">
                 <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleFileSelect} />
+                {/* Voice input button */}
+                {speechSupported && (
+                  <Button
+                    variant="outline" size="sm"
+                    className={`gap-1.5 ${isListening ? "border-red-500 bg-red-900/50 text-red-300 hover:bg-red-800 animate-pulse" : "border-green-700 bg-green-900/50 text-green-300 hover:bg-green-800 hover:text-green-100"}`}
+                    onClick={isListening ? stopListening : startListening}
+                    disabled={!isActive}
+                  >
+                    {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                    {isListening ? "إيقاف" : "تحدث"}
+                  </Button>
+                )}
+                {/* Speak last reply */}
+                {messages.length > 0 && messages[messages.length - 1].role === "assistant" && (
+                  <Button
+                    variant="outline" size="sm"
+                    className={`gap-1.5 border-green-700 bg-green-900/50 text-green-300 hover:bg-green-800 hover:text-green-100 ${isSpeaking ? "animate-pulse border-blue-500" : ""}`}
+                    onClick={() => {
+                      if (isSpeaking) { stopSpeaking(); } else {
+                        const last = messages[messages.length - 1];
+                        if (typeof last.content === "string") speak(last.content);
+                      }
+                    }}
+                  >
+                    {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                    {isSpeaking ? "إيقاف" : "استمع"}
+                  </Button>
+                )}
                 <Button
                   variant="outline" size="sm"
                   className="gap-1.5 border-green-700 bg-green-900/50 text-green-300 hover:bg-green-800 hover:text-green-100"
