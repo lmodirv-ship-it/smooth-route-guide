@@ -175,12 +175,12 @@ const CCDashboard = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.03 }}
             onClick={() => navigate(s.path)}
-            className={`group relative rounded-xl p-3 border border-white/[0.06] bg-gradient-to-br ${s.gradient} backdrop-blur-sm hover:border-white/[0.12] hover:scale-[1.04] active:scale-[0.98] transition-all duration-200 cursor-pointer text-center`}
+            className={`group relative rounded-xl border border-white/[0.06] bg-gradient-to-br ${s.gradient} backdrop-blur-sm hover:border-white/[0.12] hover:scale-[1.04] active:scale-[0.98] transition-all duration-200 cursor-pointer text-center aspect-square flex flex-col items-center justify-center p-2`}
           >
             {s.pulse && (
               <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
             )}
-            <div className="w-9 h-9 rounded-lg overflow-hidden mx-auto mb-1.5">
+            <div className="w-9 h-9 rounded-lg overflow-hidden mb-1.5">
               <img src={s.img} alt={s.label} className="w-full h-full object-contain" loading="lazy" />
             </div>
             <p className={`text-xl font-black ${s.textColor}`}>{s.value}</p>
