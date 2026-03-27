@@ -316,9 +316,19 @@ export default function LandingPage() {
             {/* Outer glow */}
             <div className="absolute -inset-[8px] rounded-2xl bg-gradient-to-b from-[hsl(40,80%,55%/0.2)] via-transparent to-[hsl(205,78%,56%/0.1)] blur-xl pointer-events-none" />
 
-            {/* Card body */}
-            <div className="relative rounded-2xl overflow-hidden" style={{ background: "linear-gradient(180deg, hsl(220 15% 11%) 0%, hsl(220 15% 7%) 100%)" }}>
-              <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 60% 40% at 50% 20%, hsl(32 95% 55% / 0.05) 0%, transparent 70%)" }} />
+            {/* Card body — GLASS: transparent so stars show through */}
+            <div
+              className="relative rounded-2xl overflow-hidden"
+              style={{
+                background: "hsl(220 15% 8% / 0.45)",
+                backdropFilter: "blur(18px) saturate(1.3)",
+                WebkitBackdropFilter: "blur(18px) saturate(1.3)",
+                boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.08), inset 0 -1px 0 hsl(0 0% 0% / 0.3)",
+              }}
+            >
+              {/* Glass reflection highlight */}
+              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(170deg, hsl(0 0% 100% / 0.07) 0%, transparent 40%, transparent 60%, hsl(0 0% 100% / 0.02) 100%)" }} />
+              <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 60% 40% at 50% 20%, hsl(32 95% 55% / 0.04) 0%, transparent 70%)" }} />
 
               {/* Corner sparkles */}
               {[
