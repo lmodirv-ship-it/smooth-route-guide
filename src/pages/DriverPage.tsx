@@ -371,53 +371,6 @@ const DriverPage = () => {
 
 /* ─── Reusable sub-components ─── */
 
-const StatCard = ({ icon: Icon, label, value, color }: { icon: typeof TrendingUp; label: string; value: string; color: string }) => (
-  <div className="bg-white/[0.03] rounded-lg px-1.5 py-1 border border-white/[0.05] text-center">
-    <Icon className={`w-3 h-3 ${color} mx-auto`} />
-    <p className={`text-[11px] font-bold ${color} truncate leading-tight`}>{value}</p>
-    <p className="text-[8px] text-white/35 truncate">{label}</p>
-  </div>
-);
-
-const TripProgressBar = ({ activeRideId }: { activeRideId: string | null }) => {
-  const progress = activeRideId ? 50 : 0; // Will be dynamic based on trip status
-  const isActive = !!activeRideId;
-  
-  return (
-    <div className="shrink-0 px-4 py-1.5 bg-black">
-      <div className="relative h-2 rounded-full bg-zinc-800 overflow-hidden border border-white/[0.05]">
-        <motion.div
-          initial={{ width: "0%" }}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 1, ease: "easeInOut" }}
-          className={`absolute inset-y-0 left-0 rounded-full ${
-            progress >= 100
-              ? "bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.5)]"
-              : isActive
-              ? "bg-gradient-to-r from-amber-500/80 via-yellow-500/60 to-amber-400/40"
-              : "bg-zinc-700"
-          }`}
-        />
-        {isActive && progress < 100 && (
-          <motion.div
-            animate={{ opacity: [0.3, 0.8, 0.3] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="absolute inset-y-0 rounded-full bg-gradient-to-r from-transparent via-amber-400/30 to-transparent"
-            style={{ left: `${Math.max(0, progress - 10)}%`, width: "15%" }}
-          />
-        )}
-      </div>
-      <div className="flex justify-between mt-0.5">
-        <span className={`text-[8px] ${isActive ? "text-amber-400/60" : "text-white/20"}`}>
-          {isActive ? "في الطريق ←" : "في انتظار طلب"}
-        </span>
-        <span className={`text-[8px] ${progress >= 100 ? "text-amber-400" : "text-white/20"}`}>
-          وصل ✓
-        </span>
-      </div>
-    </div>
-  );
-};
 
 const BannerCard = ({ color, icon: Icon, title, subtitle, btnLabel, onClick, gradient }: {
   color: string; icon: typeof Package; title: string; subtitle: string; btnLabel: string; onClick: () => void; gradient?: boolean;
