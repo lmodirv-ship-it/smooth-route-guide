@@ -259,19 +259,6 @@ const DriverPage = () => {
         </button>
       </div>
 
-      {/* Stats - Compact */}
-      <div className="shrink-0 px-2 py-1.5 border-b border-white/5 bg-black">
-        <div className="grid grid-cols-4 gap-1">
-          <StatCard icon={TrendingUp} label={t.driver.todayTrips} value={`${todayStats.trips}`} color="text-emerald-400" />
-          <StatCard icon={Wallet} label={t.driver.netEarnings} value={`${todayStats.earnings} DH`} color="text-primary" />
-          <StatCard icon={Percent} label={t.driver.platformFee} value={`${Math.round(COMMISSION_RATE * 100)}%`} color="text-destructive" />
-          <StatCard icon={Star} label={t.driver.rating} value={todayStats.rating > 0 ? todayStats.rating.toFixed(1) : "—"} color="text-amber-400" />
-        </div>
-      </div>
-
-      {/* Trip Progress Bar */}
-      <TripProgressBar activeRideId={activeRideId} />
-
       {/* Orders */}
       <div className="flex-1 overflow-hidden flex flex-col bg-gradient-to-b from-zinc-950 via-black to-black">
         <div className="px-4 py-2.5 flex items-center justify-between border-b border-white/5 shrink-0">
