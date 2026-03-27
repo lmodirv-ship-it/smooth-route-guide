@@ -67,6 +67,11 @@ const AdminLayout = () => {
   const [smartPreviewUrl, setSmartPreviewUrl] = useState("");
   const [smartRefreshKey, setSmartRefreshKey] = useState(0);
 
+  const handleFaceLock = useCallback(async () => {
+    await supabase.auth.signOut();
+    navigate("/admin/login");
+  }, [navigate]);
+
   const isSmartAssistantRoute = location.pathname === "/admin/smart-assistant";
 
   const navItems = [
