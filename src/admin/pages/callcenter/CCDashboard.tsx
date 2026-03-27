@@ -180,8 +180,8 @@ const CCDashboard = () => {
             {s.pulse && (
               <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
             )}
-            <div className={`w-8 h-8 rounded-lg ${s.iconBg}/20 flex items-center justify-center mx-auto mb-1.5`}>
-              <s.icon className={`w-4 h-4 ${s.textColor}`} />
+            <div className="w-9 h-9 rounded-lg overflow-hidden mx-auto mb-1.5">
+              <img src={s.img} alt={s.label} className="w-full h-full object-contain" loading="lazy" />
             </div>
             <p className={`text-xl font-black ${s.textColor}`}>{s.value}</p>
             <p className="text-[9px] text-muted-foreground/70 mt-0.5 leading-tight">{s.label}</p>
@@ -227,7 +227,7 @@ const CCDashboard = () => {
             الكل
           </Button>
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <Package className="w-4 h-4 text-primary" />
+            <img src={packageImg} alt="طلبات" className="w-5 h-5 object-contain" />
             آخر الطلبات
           </h2>
         </div>
