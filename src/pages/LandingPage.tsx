@@ -436,15 +436,26 @@ export default function LandingPage() {
       {/* ─── Footer ─── */}
       <footer className="border-t border-border py-10 relative">
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <img src={logo} alt="HN Driver" className="w-7 h-7 rounded-full" />
-            <span className="text-sm text-muted-foreground">{lt.footerRights}</span>
+        <div className="container mx-auto px-4 flex flex-col items-center gap-6">
+          <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4">
+            <div className="flex items-center gap-2">
+              <img src={logo} alt="HN Driver" className="w-7 h-7 rounded-full" />
+              <span className="text-sm text-muted-foreground">{lt.footerRights}</span>
+            </div>
+            <div className="flex gap-6 text-sm text-muted-foreground">
+              <a href="#" className="hover:text-primary transition-colors">{lt.footerTerms}</a>
+              <a href="#" className="hover:text-primary transition-colors">{lt.footerPrivacy}</a>
+              <a href="#" className="hover:text-primary transition-colors">{lt.footerContact}</a>
+            </div>
           </div>
-          <div className="flex gap-6 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-primary transition-colors">{lt.footerTerms}</a>
-            <a href="#" className="hover:text-primary transition-colors">{lt.footerPrivacy}</a>
-            <a href="#" className="hover:text-primary transition-colors">{lt.footerContact}</a>
+          <div className="border-t border-border/50 pt-5 w-full text-center space-y-1">
+            <p className="text-sm text-muted-foreground">
+              مصمم البرنامج: شركة <span className="font-semibold text-primary">HN للبرمجيات</span> بتعاون مع{" "}
+              <a href="https://lovable.dev" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">Lovable</a>
+            </p>
+            <p className="text-xs text-muted-foreground/70">
+              كل الشكر والتقدير لمنصة <a href="https://lovable.dev" target="_blank" rel="noopener noreferrer" className="font-medium text-primary/80 hover:underline">Lovable</a> العالمية ❤️
+            </p>
           </div>
         </div>
       </footer>
