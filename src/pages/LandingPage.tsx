@@ -216,19 +216,54 @@ export default function LandingPage() {
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 60% at 50% 40%, hsl(32 95% 55% / 0.08) 0%, transparent 60%)" }} />
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 60% 80% at 80% 80%, hsl(205 78% 56% / 0.05) 0%, transparent 50%)" }} />
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 40% 40% at 20% 20%, hsl(280 60% 50% / 0.04) 0%, transparent 50%)" }} />
-          {/* Star particles */}
-          {[...Array(30)].map((_, i) => (
+
+          {/* ★ ROTATING STAR FIELD — spins slowly behind the hero card ★ */}
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center"
+            animate={{ rotate: [0, 360] }}
+            transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+          >
+            {[...Array(80)].map((_, i) => {
+              const angle = (i / 80) * 360;
+              const dist = 150 + Math.random() * 400;
+              const size = Math.random() * 2.5 + 0.5;
+              return (
+                <motion.div
+                  key={`star-${i}`}
+                  className="absolute rounded-full"
+                  style={{
+                    width: size, height: size,
+                    top: "50%", left: "50%",
+                    transform: `rotate(${angle}deg) translateY(-${dist}px)`,
+                    background: i % 5 === 0
+                      ? "hsl(40, 90%, 70%)"
+                      : i % 3 === 0
+                        ? "hsl(205, 80%, 70%)"
+                        : "hsl(0, 0%, 90%)",
+                    boxShadow: size > 1.5
+                      ? `0 0 ${size * 3}px ${size}px hsl(40, 90%, 70%, 0.4)`
+                      : "none",
+                  }}
+                  animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.3, 0.8] }}
+                  transition={{ duration: Math.random() * 4 + 2, repeat: Infinity, delay: Math.random() * 3 }}
+                />
+              );
+            })}
+          </motion.div>
+
+          {/* Static twinkling stars (foreground layer) */}
+          {[...Array(40)].map((_, i) => (
             <motion.div
-              key={i}
+              key={`twinkle-${i}`}
               className="absolute rounded-full bg-white"
               style={{
-                width: Math.random() * 2 + 1,
-                height: Math.random() * 2 + 1,
+                width: Math.random() * 1.5 + 0.5,
+                height: Math.random() * 1.5 + 0.5,
                 top: `${Math.random() * 100}%`,
                 left: `${Math.random() * 100}%`,
               }}
-              animate={{ opacity: [0.1, 0.8, 0.1], scale: [0.8, 1.2, 0.8] }}
-              transition={{ duration: Math.random() * 3 + 2, repeat: Infinity, delay: Math.random() * 2 }}
+              animate={{ opacity: [0, 0.9, 0], scale: [0.5, 1.5, 0.5] }}
+              transition={{ duration: Math.random() * 3 + 1.5, repeat: Infinity, delay: Math.random() * 4 }}
             />
           ))}
         </div>
@@ -238,6 +273,9 @@ export default function LandingPage() {
           <motion.div className="absolute bottom-20 h-[2px] w-64 rounded-full" style={{ background: "linear-gradient(90deg, transparent, hsl(32 95% 55% / 0.9), hsl(32 95% 55% / 0.3), transparent)" }} animate={{ x: ["-300px", "120vw"] }} transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 2 }} />
           <motion.div className="absolute bottom-32 h-[1px] w-48 bg-gradient-to-r from-transparent via-info/50 to-transparent" animate={{ x: ["120vw", "-300px"] }} transition={{ duration: 4, repeat: Infinity, ease: "linear", repeatDelay: 3 }} />
           <motion.div className="absolute top-40 h-[1px] w-32 bg-gradient-to-r from-transparent via-primary/40 to-transparent" animate={{ x: ["-200px", "120vw"] }} transition={{ duration: 5, repeat: Infinity, ease: "linear", repeatDelay: 1 }} />
+          {/* Extra comet streaks */}
+          <motion.div className="absolute top-1/3 h-[1.5px] w-40" style={{ background: "linear-gradient(90deg, transparent, hsl(280 60% 60% / 0.6), transparent)" }} animate={{ x: ["-200px", "120vw"] }} transition={{ duration: 6, repeat: Infinity, ease: "linear", repeatDelay: 4 }} />
+          <motion.div className="absolute bottom-1/4 h-[1px] w-56" style={{ background: "linear-gradient(90deg, transparent, hsl(40 90% 60% / 0.7), hsl(32 95% 50% / 0.3), transparent)" }} animate={{ x: ["120vw", "-300px"] }} transition={{ duration: 4.5, repeat: Infinity, ease: "linear", repeatDelay: 2.5 }} />
         </div>
 
         {/* Hero Content */}
