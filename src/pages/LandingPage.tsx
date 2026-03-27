@@ -304,47 +304,29 @@ export default function LandingPage() {
             transition={{ duration: 1, ease: "easeOut" }}
             className="relative max-w-2xl mx-auto"
           >
-            {/* Animated LED border */}
-            <div className="absolute -inset-[2px] rounded-2xl overflow-hidden">
-              <motion.div
-                className="absolute inset-0"
-                style={{ background: "conic-gradient(from 0deg, hsl(40,80%,55%), hsl(32,95%,45%), hsl(205,78%,56%), hsl(280,60%,50%), hsl(40,80%,55%))" }}
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-              />
-            </div>
-            {/* Outer glow */}
-            <div className="absolute -inset-[8px] rounded-2xl bg-gradient-to-b from-[hsl(40,80%,55%/0.2)] via-transparent to-[hsl(205,78%,56%/0.1)] blur-xl pointer-events-none" />
+            {/* Glass border — static glow on edges only */}
+            <div className="absolute -inset-[1.5px] rounded-2xl" style={{
+              background: "linear-gradient(180deg, hsl(0 0% 100% / 0.15) 0%, hsl(0 0% 100% / 0.05) 30%, hsl(0 0% 100% / 0.02) 70%, hsl(0 0% 100% / 0.08) 100%)",
+            }} />
+            {/* Side glow accents — fixed, not animated */}
+            <div className="absolute -inset-[6px] rounded-2xl pointer-events-none" style={{
+              boxShadow: "-8px 0 25px hsl(32 95% 55% / 0.12), 8px 0 25px hsl(205 78% 56% / 0.12), 0 0 40px hsl(0 0% 100% / 0.03)",
+            }} />
 
-            {/* Card body — GLASS: transparent so stars show through */}
+            {/* Card body — PURE GLASS: very transparent, stars fully visible behind */}
             <div
               className="relative rounded-2xl overflow-hidden"
               style={{
-                background: "hsl(220 15% 8% / 0.45)",
-                backdropFilter: "blur(18px) saturate(1.3)",
-                WebkitBackdropFilter: "blur(18px) saturate(1.3)",
-                boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.08), inset 0 -1px 0 hsl(0 0% 0% / 0.3)",
+                background: "hsl(220 15% 10% / 0.2)",
+                backdropFilter: "blur(8px) saturate(1.2)",
+                WebkitBackdropFilter: "blur(8px) saturate(1.2)",
+                boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.1), inset 0 -1px 0 hsl(0 0% 100% / 0.04), inset 1px 0 0 hsl(0 0% 100% / 0.06), inset -1px 0 0 hsl(0 0% 100% / 0.06)",
               }}
             >
-              {/* Glass reflection highlight */}
-              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(170deg, hsl(0 0% 100% / 0.07) 0%, transparent 40%, transparent 60%, hsl(0 0% 100% / 0.02) 100%)" }} />
-              <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 60% 40% at 50% 20%, hsl(32 95% 55% / 0.04) 0%, transparent 70%)" }} />
-
-              {/* Corner sparkles */}
-              {[
-                { top: "8px", right: "8px" },
-                { top: "8px", left: "8px" },
-                { bottom: "8px", right: "8px" },
-                { bottom: "8px", left: "8px" },
-              ].map((pos, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-1.5 h-1.5 rounded-full bg-[hsl(40,80%,60%)]"
-                  style={pos}
-                  animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.3, 0.8] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: i * 0.5 }}
-                />
-              ))}
+              {/* Glass reflection — subtle top-left shine like real glass */}
+              <div className="absolute inset-0 pointer-events-none" style={{
+                background: "linear-gradient(135deg, hsl(0 0% 100% / 0.08) 0%, transparent 30%, transparent 100%)",
+              }} />
 
               <div className="relative z-10 flex flex-col items-center py-10 md:py-12 px-6 md:px-10">
                 {/* Logo — smaller with cosmic glow */}
