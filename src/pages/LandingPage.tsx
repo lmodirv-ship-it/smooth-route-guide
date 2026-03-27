@@ -15,6 +15,14 @@ import partnerHibaEco from "@/assets/partner-hiba-eco.png";
 import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
 import partnerTanjaPrint from "@/assets/partner-tanja-print.png";
 import partnerSlavacall from "@/assets/partner-slavacall.png";
+import projHnDriver from "@/assets/project-hn-driver.png";
+import projSoukHn from "@/assets/project-souk-hn.png";
+import projHnPrint from "@/assets/project-hn-print.png";
+import projGtStudio from "@/assets/project-gt-studio.png";
+import projAiScene from "@/assets/project-ai-scene.png";
+import projAiVision from "@/assets/project-ai-vision.png";
+import projCloud from "@/assets/project-cloud.png";
+import projAiVideo from "@/assets/project-ai-video.png";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
