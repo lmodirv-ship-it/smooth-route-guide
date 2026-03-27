@@ -55,6 +55,8 @@ const FloatingChatButton = () => {
     fetchContacts();
   }, [open]);
 
+  if (location.pathname === "/community") return null;
+
   const filtered = contacts.filter(
     (c) =>
       c.name?.toLowerCase().includes(search.toLowerCase()) ||
