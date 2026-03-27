@@ -276,104 +276,15 @@ const DriverPage = () => {
         </div>
       </div>
 
-      {/* Progress Bar */}
+      {/* Progress Bar - minimal */}
       <div className="shrink-0 bg-zinc-950 px-4 py-1 border-t border-white/5">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[10px] text-muted-foreground">{progressLabel}</span>
-          <span className="text-[10px] text-muted-foreground">{Math.round(tripProgress * 100)}%</span>
-        </div>
         <div className="h-2 rounded-full bg-zinc-800/80 overflow-hidden border border-white/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
           <motion.div
             className={`h-full rounded-full ${progressColor} shadow-lg`}
             initial={{ width: 0 }}
             animate={{ width: `${Math.max(tripProgress * 100, 2)}%` }}
             transition={{ duration: 1, ease: "easeOut" }}
-            style={{ backgroundSize: "200% 100%" }}
           />
-        </div>
-      </div>
-
-      {/* Orders Section - compact scrollable */}
-      <div className="shrink-0 max-h-[25vh] overflow-hidden flex flex-col bg-gradient-to-b from-zinc-950 to-black border-t border-white/5">
-        <div className="px-4 py-1.5 flex items-center justify-between shrink-0">
-          <div className="bg-emerald-500/15 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">
-            {nearbyOrders.length}
-          </div>
-          <h2 className="text-foreground font-bold text-sm flex items-center gap-2">
-            <Route className="w-4 h-4 text-primary" />
-            {t.driver.availableRides}
-          </h2>
-        </div>
-
-        <div className="flex-1 overflow-y-auto pb-2">
-          {/* Banners */}
-          {(driverType === "delivery" || driverType === "both") && (
-            <BannerCard color="blue" icon={Package} title={t.driver.deliveryService} subtitle={t.driver.viewDeliveryOrders}
-              btnLabel={t.driver.deliveryOrders} onClick={() => navigate("/driver/delivery")} />
-          )}
-          {activeRideId && (
-            <BannerCard color="orange" icon={Navigation} title={t.driver.activeRide} subtitle={t.driver.completeCurrentFirst}
-              btnLabel={t.driver.continueRide} onClick={() => navigate(`/driver/tracking?id=${activeRideId}`)} />
-          )}
-          {subscriptionExpired && (
-            <BannerCard color="amber" icon={Crown} title="اشتراك مطلوب" subtitle="اشترك لقبول الطلبات"
-              btnLabel="اشترك الآن" onClick={() => navigate("/driver/subscription")} gradient />
-          )}
-
-          {nearbyOrders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <Radar className="w-8 h-8 text-primary/20 mb-2" />
-              <p className="text-foreground/70 font-medium text-sm">{t.driver.noRidesInArea}</p>
-              <p className="text-muted-foreground text-xs mt-0.5">{t.driver.ridesWillAppear}</p>
-            </div>
-          ) : (
-            <div className="px-3 space-y-2">
-              {nearbyOrders.map((order, idx) => {
-                const isSelected = selectedOrderId === order.id;
-                return (
-                  <motion.div key={order.id}
-                    initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.03 }}
-                    onClick={() => setSelectedOrderId(isSelected ? null : order.id)}
-                    className={`rounded-xl border overflow-hidden transition-all cursor-pointer ${
-                      isSelected ? "border-primary/40 bg-white/[0.06] shadow-lg shadow-primary/10" : "border-white/[0.06] bg-white/[0.03] hover:bg-white/[0.05]"
-                    }`}>
-                    <div className="p-3">
-                      <div className="flex items-center justify-between">
-                        <Button size="sm"
-                          onClick={(e) => { e.stopPropagation(); handleAccept(order.id); }}
-                          disabled={accepting === order.id || !!activeRideId}
-                          className="h-8 px-3 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-xs font-bold shadow-lg shadow-emerald-500/20">
-                          {accepting === order.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (
-                            <><CheckCircle className="w-3.5 h-3.5 ml-1" />{t.driver.accept}</>
-                          )}
-                        </Button>
-                        <div className="flex items-center gap-3">
-                          <div className="text-right">
-                            <p className="text-xs text-foreground truncate max-w-[120px]">{order.pickup || "—"}</p>
-                            <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">{order.destination || "—"}</p>
-                          </div>
-                          <span className="text-primary font-black text-lg">{order.totalPrice}<span className="text-[9px] font-normal opacity-50">DH</span></span>
-                        </div>
-                      </div>
-                      {isSelected && (
-                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="mt-2 pt-2 border-t border-white/5 flex items-center justify-end gap-2">
-                          {order.eta && (
-                            <span className="text-[10px] flex items-center gap-0.5 text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full">
-                              <Clock className="w-3 h-3" />{order.eta}د
-                            </span>
-                          )}
-                          <span className="text-[10px] flex items-center gap-0.5 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                            <Route className="w-3 h-3" />{order.totalDistance} كم
-                          </span>
-                        </motion.div>
-                      )}
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
         </div>
       </div>
 
