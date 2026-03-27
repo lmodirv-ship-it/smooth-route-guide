@@ -1,9 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, DollarSign, Calendar, ArrowUpRight, Percent, Store, Car, Bike } from "lucide-react";
+import { TrendingUp, DollarSign, Calendar, ArrowUpRight, Percent, Store, Car, Bike, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 
-const COMMISSION_RATE = 0.05; // 5%
+const COMMISSION_RATE = 0.05;
 
 const SimpleBarChart = ({ data, color }: { data: { label: string; value: number }[]; color: string }) => {
   const max = Math.max(...data.map(d => d.value), 1);
@@ -35,6 +38,13 @@ const AdminEarnings = () => {
   const [deliveryTotal, setDeliveryTotal] = useState(0);
   const [tripsTotal, setTripsTotal] = useState(0);
   const [commissionRates, setCommissionRates] = useState<Record<string, number>>({});
+  const [searchEntity, setSearchEntity] = useState("");
+
+  // Per-entity data
+  const [stores, setStores] = useState<any[]>([]);
+  const [drivers, setDrivers] = useState<any[]>([]);
+  const [deliveryOrders, setDeliveryOrders] = useState<any[]>([]);
+  const [driverProfiles, setDriverProfiles] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -42,14 +52,16 @@ const AdminEarnings = () => {
       const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
       const monthAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
 
-      const [todayRes, weekRes, monthRes, allRes, deliveryRes, tripsRes, ratesRes] = await Promise.all([
+      const [todayRes, weekRes, monthRes, allRes, deliveryRes, tripsRes, ratesRes, storesRes, driversRes] = await Promise.all([
         supabase.from("earnings").select("amount").gte("date", today),
         supabase.from("earnings").select("amount").gte("date", weekAgo),
         supabase.from("earnings").select("amount").gte("date", monthAgo),
         supabase.from("earnings").select("amount, date, driver_id").gte("date", monthAgo).order("date"),
-        supabase.from("delivery_orders").select("total_price, delivery_fee").eq("status", "delivered").gte("created_at", monthAgo),
+        supabase.from("delivery_orders").select("total_price, delivery_fee, store_id, store_name, driver_id").eq("status", "delivered").gte("created_at", monthAgo),
         supabase.from("payments").select("amount").eq("status", "completed").gte("created_at", monthAgo),
         supabase.from("commission_rates").select("category, rate"),
+        supabase.from("stores").select("id, name, store_code, commission_rate, city, country"),
+        supabase.from("drivers").select("id, user_id, driver_code, driver_type"),
       ]);
 
       setTodayTotal((todayRes.data || []).reduce((s, e) => s + Number(e.amount), 0));
@@ -58,11 +70,23 @@ const AdminEarnings = () => {
       setEarningsData(allRes.data || []);
       setDeliveryTotal((deliveryRes.data || []).reduce((s, e) => s + Number(e.total_price || 0), 0));
       setTripsTotal((tripsRes.data || []).reduce((s, e) => s + Number(e.amount || 0), 0));
+      setDeliveryOrders(deliveryRes.data || []);
+      setStores(storesRes.data || []);
+      setDrivers(driversRes.data || []);
 
       if (ratesRes.data) {
         const map: Record<string, number> = {};
         (ratesRes.data as any[]).forEach((r: any) => { map[r.category] = Number(r.rate); });
         setCommissionRates(map);
+      }
+
+      // Fetch driver names
+      const driverUserIds = (driversRes.data || []).map((d: any) => d.user_id);
+      if (driverUserIds.length > 0) {
+        const { data: profiles } = await supabase.from("profiles").select("id, name").in("id", driverUserIds);
+        const map = new Map<string, string>();
+        (profiles || []).forEach((p: any) => map.set(p.id, p.name));
+        setDriverProfiles(map);
       }
     };
     fetchAll();
@@ -80,6 +104,47 @@ const AdminEarnings = () => {
       rate: avgRate * 100,
     };
   }, [monthTotal, deliveryTotal, tripsTotal, commissionRates]);
+
+  // Per-store earnings
+  const storeEarnings = useMemo(() => {
+    const map = new Map<string, number>();
+    deliveryOrders.forEach((o: any) => {
+      if (o.store_id) {
+        map.set(o.store_id, (map.get(o.store_id) || 0) + Number(o.total_price || 0));
+      }
+    });
+    return stores.map(s => {
+      const revenue = map.get(s.id) || 0;
+      const rate = (s.commission_rate ?? 5) / 100;
+      return { ...s, revenue, commission: revenue * rate };
+    }).filter(s => s.revenue > 0 || searchEntity);
+  }, [stores, deliveryOrders, searchEntity]);
+
+  // Per-driver earnings
+  const driverEarnings = useMemo(() => {
+    const map = new Map<string, number>();
+    earningsData.forEach((e: any) => {
+      if (e.driver_id) {
+        map.set(e.driver_id, (map.get(e.driver_id) || 0) + Number(e.amount));
+      }
+    });
+    const avgRate = Object.values(commissionRates).length > 0
+      ? Object.values(commissionRates).reduce((a, b) => a + b, 0) / Object.values(commissionRates).length / 100
+      : COMMISSION_RATE;
+    return drivers.map(d => {
+      const revenue = map.get(d.id) || 0;
+      const name = driverProfiles.get(d.user_id) || "سائق";
+      return { ...d, name, revenue, commission: revenue * avgRate };
+    }).filter(d => d.revenue > 0 || searchEntity);
+  }, [drivers, earningsData, driverProfiles, commissionRates, searchEntity]);
+
+  const filteredStores = storeEarnings.filter(s =>
+    !searchEntity || s.name?.includes(searchEntity) || (s.store_code || "").includes(searchEntity)
+  );
+
+  const filteredDrivers = driverEarnings.filter(d =>
+    !searchEntity || d.name?.includes(searchEntity) || (d.driver_code || "").includes(searchEntity)
+  );
 
   const chartData = useMemo(() => {
     if (range === "daily") {
@@ -169,6 +234,88 @@ const AdminEarnings = () => {
               <p className="text-lg font-bold text-foreground">{item.value.toFixed(2)} د.م</p>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Search for entity breakdown */}
+      <div className="relative max-w-md mr-auto">
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input value={searchEntity} onChange={e => setSearchEntity(e.target.value)} placeholder="بحث بالرقم أو الاسم..." className="pr-10" />
+      </div>
+
+      {/* Per-Restaurant Earnings Table */}
+      <div className="gradient-card rounded-xl border border-border p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Store className="w-5 h-5 text-orange-500" />
+          <h3 className="font-bold text-foreground">أرباح المطاعم والمتاجر</h3>
+          <Badge variant="secondary">{filteredStores.length}</Badge>
+        </div>
+        <div className="rounded-lg border border-border overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-right">الرقم</TableHead>
+                <TableHead className="text-right">الاسم</TableHead>
+                <TableHead className="text-right">المدينة</TableHead>
+                <TableHead className="text-right">نسبة العمولة</TableHead>
+                <TableHead className="text-right">إجمالي المبيعات</TableHead>
+                <TableHead className="text-right">عمولة المنصة</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredStores.length === 0 ? (
+                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">لا توجد بيانات</TableCell></TableRow>
+              ) : filteredStores.map(s => (
+                <TableRow key={s.id}>
+                  <TableCell className="font-mono text-sm font-bold">{s.store_code || "—"}</TableCell>
+                  <TableCell className="font-medium">{s.name}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{s.city || "—"}</TableCell>
+                  <TableCell>{s.commission_rate ?? 5}%</TableCell>
+                  <TableCell className="font-bold">{s.revenue.toFixed(2)} د.م</TableCell>
+                  <TableCell className="font-bold text-primary">{s.commission.toFixed(2)} د.م</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+
+      {/* Per-Driver Earnings Table */}
+      <div className="gradient-card rounded-xl border border-border p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Car className="w-5 h-5 text-blue-500" />
+          <h3 className="font-bold text-foreground">أرباح السائقين</h3>
+          <Badge variant="secondary">{filteredDrivers.length}</Badge>
+        </div>
+        <div className="rounded-lg border border-border overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-right">الرقم</TableHead>
+                <TableHead className="text-right">الاسم</TableHead>
+                <TableHead className="text-right">النوع</TableHead>
+                <TableHead className="text-right">إجمالي الأرباح</TableHead>
+                <TableHead className="text-right">عمولة المنصة</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredDrivers.length === 0 ? (
+                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">لا توجد بيانات</TableCell></TableRow>
+              ) : filteredDrivers.map(d => (
+                <TableRow key={d.id}>
+                  <TableCell className="font-mono text-sm font-bold">{d.driver_code || "—"}</TableCell>
+                  <TableCell className="font-medium">{d.name}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={d.driver_type === "delivery" ? "text-info border-info/30" : "text-primary border-primary/30"}>
+                      {d.driver_type === "delivery" ? "طلبيات" : d.driver_type === "both" ? "الكل" : "ركاب"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-bold">{d.revenue.toFixed(2)} د.م</TableCell>
+                  <TableCell className="font-bold text-primary">{d.commission.toFixed(2)} د.م</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </div>
 

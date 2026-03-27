@@ -275,27 +275,28 @@ const AdminRestaurants = () => {
               <Table>
                 <TableHeader>
                  <TableRow>
-                     <TableHead className="w-12">#</TableHead>
-                     <TableHead>{tr.name}</TableHead>
-                     <TableHead>{tr.phone}</TableHead>
-                     <TableHead>{tr.address}</TableHead>
-                     <TableHead>{tr.rating}</TableHead>
-                     <TableHead>{tr.deliveryFee}</TableHead>
-                     <TableHead>{tr.commission}</TableHead>
-                     <TableHead>{tr.code}</TableHead>
-                     <TableHead>{tr.confirmation}</TableHead>
-                     <TableHead>{tr.actions}</TableHead>
-                   </TableRow>
+                      <TableHead>{tr.code}</TableHead>
+                      <TableHead>{tr.name}</TableHead>
+                      <TableHead>{tr.phone}</TableHead>
+                      <TableHead>{tr.address}</TableHead>
+                      <TableHead>المدينة</TableHead>
+                      <TableHead>البلد</TableHead>
+                      <TableHead>{tr.rating}</TableHead>
+                      <TableHead>{tr.commission}</TableHead>
+                      <TableHead>{tr.confirmation}</TableHead>
+                      <TableHead>{tr.actions}</TableHead>
+                    </TableRow>
                  </TableHeader>
                  <TableBody>
                    {stores.map((s, idx) => (
-                     <TableRow key={s.id}>
-                       <TableCell className="font-bold text-muted-foreground">{idx + 1}</TableCell>
-                       <TableCell className="font-bold">{s.name}</TableCell>
-                       <TableCell className="text-muted-foreground direction-ltr">{s.phone || "—"}</TableCell>
-                       <TableCell className="text-muted-foreground">{s.address}</TableCell>
-                       <TableCell>⭐ {s.rating}</TableCell>
-                       <TableCell>{s.delivery_fee} DH</TableCell>
+                      <TableRow key={s.id}>
+                        <TableCell className="font-mono text-sm font-bold">{s.store_code || "—"}</TableCell>
+                        <TableCell className="font-bold">{s.name}</TableCell>
+                        <TableCell className="text-muted-foreground direction-ltr">{s.phone || "—"}</TableCell>
+                        <TableCell className="text-muted-foreground">{s.address}</TableCell>
+                        <TableCell className="text-sm">{s.city || "—"}</TableCell>
+                        <TableCell className="text-sm">{s.country || "—"}</TableCell>
+                        <TableCell>⭐ {s.rating}</TableCell>
                        <TableCell>
                          <Input
                            type="number"
@@ -311,7 +312,7 @@ const AdminRestaurants = () => {
                            className="w-20 h-8 text-center text-sm"
                          />
                        </TableCell>
-                       <TableCell className="font-mono text-sm">{s.store_code || "—"}</TableCell>
+                       
                        <TableCell>
                          <Button
                            size="sm"

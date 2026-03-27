@@ -163,14 +163,14 @@ const SupervisorRestaurants = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="text-right">#</TableHead>
+              <TableHead className="text-right">الرقم</TableHead>
               <TableHead className="text-right">الاسم</TableHead>
               <TableHead className="text-right">الهاتف</TableHead>
               <TableHead className="text-right">العنوان</TableHead>
+              <TableHead className="text-right">المدينة</TableHead>
+              <TableHead className="text-right">البلد</TableHead>
               <TableHead className="text-right">التقييم</TableHead>
-              <TableHead className="text-right">رسوم التوصيل</TableHead>
               <TableHead className="text-right">العمولة %</TableHead>
-              <TableHead className="text-right">رقم</TableHead>
               <TableHead className="text-center">تأكيد</TableHead>
               <TableHead className="text-center">الحالة</TableHead>
             </TableRow>
@@ -180,16 +180,16 @@ const SupervisorRestaurants = () => {
               <TableRow>
                 <TableCell colSpan={10} className="text-center py-10 text-muted-foreground">لا توجد مطاعم</TableCell>
               </TableRow>
-            ) : filtered.map((s, idx) => (
+            ) : filtered.map((s) => (
               <TableRow key={s.id}>
-                <TableCell className="font-bold text-muted-foreground">{idx + 1}</TableCell>
+                <TableCell className="font-mono text-sm font-bold">{s.store_code || "—"}</TableCell>
                 <TableCell className="font-medium text-right">{s.name}</TableCell>
                 <TableCell className="text-muted-foreground text-sm" dir="ltr">{s.phone || "—"}</TableCell>
                 <TableCell className="text-right text-muted-foreground text-sm">{s.address || "—"}</TableCell>
+                <TableCell className="text-sm">{s.city || "—"}</TableCell>
+                <TableCell className="text-sm">{s.country || "—"}</TableCell>
                 <TableCell>{s.rating ? `⭐ ${Number(s.rating).toFixed(1)}` : "—"}</TableCell>
-                <TableCell>{s.delivery_fee} DH</TableCell>
                 <TableCell>{s.commission_rate ?? 5}%</TableCell>
-                <TableCell className="font-mono text-sm">{s.store_code || "—"}</TableCell>
                 <TableCell className="text-center">
                   <Badge variant="outline" className={s.is_confirmed ? "text-emerald-500 border-emerald-500/30" : "text-orange-500 border-orange-500/30"}>
                     {s.is_confirmed ? "مؤكد" : "غير مؤكد"}
