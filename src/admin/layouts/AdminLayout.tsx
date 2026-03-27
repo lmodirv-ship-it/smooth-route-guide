@@ -87,7 +87,7 @@ const AdminLayout = () => {
     { path: "/admin/sub-assistants", icon: BrainCircuit, label: t.admin.subAssistants },
     { path: "/admin/driver-packages", icon: Package, label: "باقات السائقين" },
     { path: "/admin/messaging", icon: MessageSquare, label: "المحادثات الداخلية" },
-    { path: "/community", icon: MessagesSquare, label: "الدردشة المجتمعية" },
+    { path: "/admin/community-chat", icon: MessagesSquare, label: "الدردشة المجتمعية" },
     { path: "/admin/settings", icon: Settings, label: t.admin.settingsMenu },
   ];
 
