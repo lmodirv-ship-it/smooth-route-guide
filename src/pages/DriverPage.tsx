@@ -216,13 +216,18 @@ const DriverPage = () => {
         <div className="absolute top-0 inset-x-0 z-[1000] bg-gradient-to-b from-black/80 via-black/40 to-transparent px-4 pt-3 pb-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-primary/20 border-2 border-primary/40 flex items-center justify-center">
-                <Car className="w-5 h-5 text-primary" />
-              </div>
+              <button onClick={() => navigate("/driver/profile")} className="relative">
+                <Avatar className="w-10 h-10 border-2 border-primary/40">
+                  <AvatarImage src={driverAvatar || undefined} />
+                  <AvatarFallback className="bg-primary/20 text-primary font-bold text-sm">
+                    {driverName?.charAt(0)?.toUpperCase() || "S"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-black" />
+              </button>
               <div>
                 <p className="text-white font-bold text-sm">{driverName}</p>
                 <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   <p className="text-emerald-400 text-[11px]">{t.driver.connected}</p>
                 </div>
               </div>
