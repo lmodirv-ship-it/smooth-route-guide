@@ -512,14 +512,14 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[
-              { name: "HN Driver", desc: "منصة النقل والتوصيل الذكية", color: "from-orange-500 to-amber-500", icon: Car, url: "https://smooth-route-guide.lovable.app", status: "published" },
-              { name: "Souk-HN Express", desc: "سوق إلكتروني متكامل للتجارة", color: "from-blue-500 to-cyan-500", icon: ShoppingCart, url: "https://lovable.dev", status: "published" },
-              { name: "HN Print GR", desc: "منصة الطباعة والتصميم الاحترافي", color: "from-yellow-500 to-orange-500", icon: Printer, url: "https://lovable.dev", status: "published" },
-              { name: "Grand Tanger Print Studio", desc: "استوديو طباعة احترافي بطنجة", color: "from-purple-500 to-pink-500", icon: Store, url: "https://lovable.dev", status: "active" },
-              { name: "AI Scene Studio", desc: "استوديو ذكاء اصطناعي للمشاهد", color: "from-cyan-500 to-blue-500", icon: Zap, url: "https://lovable.dev", status: "active" },
-              { name: "AI Studio Vision", desc: "رؤية ذكية بتقنية AI", color: "from-green-500 to-emerald-500", icon: Shield, url: "https://lovable.dev", status: "active" },
-              { name: "Cloud Harmony", desc: "خدمات سحابية متناغمة", color: "from-indigo-500 to-violet-500", icon: BarChart3, url: "https://lovable.dev", status: "active" },
-              { name: "Ai Video HN", desc: "إنتاج فيديو بالذكاء الاصطناعي", color: "from-red-500 to-pink-500", icon: Zap, url: "https://hn-aivideo.lovable.app/", status: "active" },
+              { name: "HN Driver", desc: "منصة النقل والتوصيل الذكية", img: projHnDriver, url: "https://smooth-route-guide.lovable.app", status: "published" },
+              { name: "Souk-HN Express", desc: "سوق إلكتروني متكامل للتجارة", img: projSoukHn, url: "https://lovable.dev", status: "published" },
+              { name: "HN Print GR", desc: "منصة الطباعة والتصميم الاحترافي", img: projHnPrint, url: "https://lovable.dev", status: "published" },
+              { name: "Grand Tanger Print Studio", desc: "استوديو طباعة احترافي بطنجة", img: projGtStudio, url: "https://lovable.dev", status: "active" },
+              { name: "AI Scene Studio", desc: "استوديو ذكاء اصطناعي للمشاهد", img: projAiScene, url: "https://lovable.dev", status: "active" },
+              { name: "AI Studio Vision", desc: "رؤية ذكية بتقنية AI", img: projAiVision, url: "https://lovable.dev", status: "active" },
+              { name: "Cloud Harmony", desc: "خدمات سحابية متناغمة", img: projCloud, url: "https://lovable.dev", status: "active" },
+              { name: "Ai Video HN", desc: "إنتاج فيديو بالذكاء الاصطناعي", img: projAiVideo, url: "https://hn-aivideo.lovable.app/", status: "active" },
             ].map((project, i) => (
               <motion.a
                 key={project.name}
@@ -533,8 +533,8 @@ export default function LandingPage() {
                 custom={i}
                 className="group relative rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 block"
               >
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${project.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                  <project.icon className="w-6 h-6 text-white" />
+                <div className="w-16 h-16 rounded-xl overflow-hidden mb-4 group-hover:scale-110 transition-transform shadow-lg">
+                  <img src={project.img} alt={project.name} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-2">{project.name}</h3>
                 <p className="text-sm text-muted-foreground mb-3">{project.desc}</p>
