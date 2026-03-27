@@ -23,6 +23,7 @@ import projAiScene from "@/assets/project-ai-scene.png";
 import projAiVision from "@/assets/project-ai-vision.png";
 import projCloud from "@/assets/project-cloud.png";
 import projAiVideo from "@/assets/project-ai-video.png";
+import projLivraisonExpress from "@/assets/project-livraison-express.jpg";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
