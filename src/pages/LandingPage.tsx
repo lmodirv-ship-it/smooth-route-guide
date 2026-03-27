@@ -11,6 +11,10 @@ import heroEmblem from "@/assets/hero-emblem.png";
 import heroDriver from "@/assets/hero-driver.png";
 import heroCustomer from "@/assets/hero-customer.png";
 import heroDelivery from "@/assets/hero-delivery.png";
+import partnerHibaEco from "@/assets/partner-hiba-eco.png";
+import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
+import partnerTanjaPrint from "@/assets/partner-tanja-print.png";
+import partnerSlavacall from "@/assets/partner-slavacall.png";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -49,6 +53,13 @@ export default function LandingPage() {
     { key: "online-stores", icon: ShoppingCart, label: lt.catOnlineStores },
     { key: "restaurants", icon: UtensilsCrossed, label: lt.catRestaurants },
     { key: "printing", icon: Printer, label: lt.catPrinting },
+  ];
+
+  const partnerSites = [
+    { name: "Hiba Eco", url: "https://www.hiba-eco.com", logo: partnerHibaEco },
+    { name: "Lavage Nizar", url: "https://www.lavagenizar.com", logo: partnerLavageNizar },
+    { name: "Tanja Print", url: "https://www.tanjaprint.com", logo: partnerTanjaPrint },
+    { name: "Slava Call Hiba", url: "https://slavacall-hiba.com", logo: partnerSlavacall },
   ];
 
   const stats = [
@@ -298,6 +309,37 @@ export default function LandingPage() {
               ))}
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* ─── Partner Sites ─── */}
+      <section className="py-16 md:py-20 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.p initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center text-sm text-muted-foreground uppercase tracking-widest mb-10">
+            {dir === "rtl" ? "مواقعنا الشريكة" : "Our Partner Sites"}
+          </motion.p>
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-14">
+            {partnerSites.map((site, i) => (
+              <motion.a
+                key={site.name}
+                href={site.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeUp}
+                custom={i + 1}
+                className="group flex flex-col items-center gap-3"
+              >
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl glass border border-border group-hover:border-primary/50 transition-all duration-500 flex items-center justify-center p-3 group-hover:glow-primary">
+                  <img src={site.logo} alt={site.name} loading="lazy" width={512} height={512} className="w-full h-full object-contain filter brightness-90 group-hover:brightness-110 transition-all duration-300" />
+                </div>
+                <span className="text-xs md:text-sm text-muted-foreground group-hover:text-primary transition-colors font-medium">{site.name}</span>
+              </motion.a>
+            ))}
+          </div>
         </div>
       </section>
 
