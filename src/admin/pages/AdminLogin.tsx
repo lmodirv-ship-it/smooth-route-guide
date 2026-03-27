@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, Loader2, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { motion } from "framer-motion";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -18,12 +19,10 @@ const AdminLogin = () => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { setChecking(false); return; }
-
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", session.user.id);
-
       const isAdmin = (roles || []).some((r) => r.role === "admin");
       if (isAdmin) {
         navigate("/", { replace: true });
@@ -41,30 +40,21 @@ const AdminLogin = () => {
       toast({ title: "يرجى ملء جميع الحقول", variant: "destructive" });
       return;
     }
-
     setLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-
-      // Verify admin role
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", data.user.id);
-
       const isAdmin = (roles || []).some((r) => r.role === "admin");
       if (!isAdmin) {
         await supabase.auth.signOut();
-        toast({
-          title: "غير مصرح",
-          description: "هذا الحساب ليس لديه صلاحيات المسؤول",
-          variant: "destructive",
-        });
+        toast({ title: "غير مصرح", description: "هذا الحساب ليس لديه صلاحيات المسؤول", variant: "destructive" });
         setLoading(false);
         return;
       }
-
       toast({ title: "تم تسجيل الدخول بنجاح ✅" });
       navigate("/", { replace: true });
     } catch (err: any) {
@@ -85,67 +75,192 @@ const AdminLogin = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4" dir="rtl">
-      <div className="w-full max-w-sm space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-3">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-            <ShieldCheck className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">لوحة الإدارة</h1>
-          <p className="text-sm text-muted-foreground">HN Driver — Admin Panel</p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background" dir="rtl">
+      {/* Animated background */}
+      <div className="absolute inset-0 z-0">
+        {/* Grid pattern */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)`,
+          backgroundSize: '60px 60px'
+        }} />
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm text-muted-foreground block">البريد الإلكتروني</label>
-            <div className="relative">
-              <Input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@example.com"
-                type="email"
-                className="bg-secondary/80 border-border h-12 rounded-xl pr-11"
-              />
-              <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            </div>
-          </div>
+        {/* Floating orbs */}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              width: 200 + i * 80,
+              height: 200 + i * 80,
+              background: `radial-gradient(circle, hsl(var(--primary) / ${0.08 - i * 0.01}), transparent 70%)`,
+              left: `${10 + i * 15}%`,
+              top: `${5 + i * 12}%`,
+            }}
+            animate={{
+              x: [0, 30 * (i % 2 === 0 ? 1 : -1), 0],
+              y: [0, 20 * (i % 2 === 0 ? -1 : 1), 0],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 8 + i * 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
 
-          <div className="space-y-2">
-            <label className="text-sm text-muted-foreground block">كلمة المرور</label>
-            <div className="relative">
-              <Input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                type={showPassword ? "text" : "password"}
-                className="bg-secondary/80 border-border h-12 rounded-xl pr-11"
-              />
-              <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute left-3 top-1/2 -translate-y-1/2"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5 text-muted-foreground" /> : <Eye className="w-5 h-5 text-muted-foreground" />}
-              </button>
-            </div>
-          </div>
-
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-bold text-lg"
-          >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "دخول"}
-          </Button>
-        </form>
-
-        <p className="text-xs text-center text-muted-foreground">
-          الوصول مقتصر على المسؤولين فقط
-        </p>
+        {/* Particles */}
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={`p-${i}`}
+            className="absolute w-1 h-1 rounded-full bg-primary/20"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              opacity: [0, 1, 0],
+              scale: [0, 1.5, 0],
+            }}
+            transition={{
+              duration: 3 + Math.random() * 4,
+              repeat: Infinity,
+              delay: Math.random() * 5,
+              ease: "easeInOut",
+            }}
+          />
+        ))}
       </div>
+
+      {/* Login card */}
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="relative z-10 w-full max-w-md mx-4"
+      >
+        <div className="backdrop-blur-xl bg-card/80 border border-border/50 rounded-3xl shadow-2xl p-8 space-y-8">
+          {/* Glow effect behind card */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-transparent to-primary/20 rounded-3xl blur-xl -z-10" />
+
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-center space-y-4"
+          >
+            <motion.div
+              animate={{ rotate: [0, 5, -5, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center mx-auto shadow-lg shadow-primary/25"
+            >
+              <ShieldCheck className="w-10 h-10 text-primary-foreground" />
+            </motion.div>
+
+            <div>
+              <h1 className="text-3xl font-bold text-foreground tracking-tight">
+                لوحة الإدارة
+              </h1>
+              <div className="flex items-center justify-center gap-2 mt-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <p className="text-sm text-muted-foreground font-medium">
+                  HN Driver — Admin Panel
+                </p>
+                <Sparkles className="w-4 h-4 text-primary" />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Form */}
+          <motion.form
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            onSubmit={handleSubmit}
+            className="space-y-5"
+          >
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground block">
+                البريد الإلكتروني
+              </label>
+              <div className="relative group">
+                <Input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  type="email"
+                  className="bg-secondary/50 border-border/50 h-13 rounded-xl pr-12 text-base transition-all duration-200 focus:bg-secondary/80 focus:border-primary/50 focus:shadow-lg focus:shadow-primary/5"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center group-focus-within:bg-primary/20 transition-colors">
+                  <Mail className="w-4 h-4 text-primary" />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground block">
+                كلمة المرور
+              </label>
+              <div className="relative group">
+                <Input
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  type={showPassword ? "text" : "password"}
+                  className="bg-secondary/50 border-border/50 h-13 rounded-xl pr-12 pl-12 text-base transition-all duration-200 focus:bg-secondary/80 focus:border-primary/50 focus:shadow-lg focus:shadow-primary/5"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center group-focus-within:bg-primary/20 transition-colors">
+                  <Lock className="w-4 h-4 text-primary" />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg hover:bg-secondary flex items-center justify-center transition-colors"
+                >
+                  {showPassword
+                    ? <EyeOff className="w-4 h-4 text-muted-foreground" />
+                    : <Eye className="w-4 h-4 text-muted-foreground" />
+                  }
+                </button>
+              </div>
+            </div>
+
+            <motion.div whileTap={{ scale: 0.98 }}>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-13 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-bold text-lg shadow-lg shadow-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30"
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5" />
+                    دخول
+                  </span>
+                )}
+              </Button>
+            </motion.div>
+          </motion.form>
+
+          {/* Footer */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="pt-2"
+          >
+            <div className="flex items-center gap-3 justify-center">
+              <div className="h-px flex-1 bg-border/50" />
+              <p className="text-xs text-muted-foreground whitespace-nowrap">
+                🔒 الوصول مقتصر على المسؤولين فقط
+              </p>
+              <div className="h-px flex-1 bg-border/50" />
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
     </div>
   );
 };
