@@ -329,44 +329,36 @@ export default function LandingPage() {
               }} />
 
               <div className="relative z-10 flex flex-col items-center py-10 md:py-12 px-6 md:px-10">
-                {/* Logo — smaller with cosmic glow */}
+                {/* Logo — larger, floating & rotating like it's alive */}
                 <motion.div
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.3 }}
                   className="relative mb-5"
                 >
+                  <div className="absolute inset-0 blur-2xl bg-primary/25 rounded-full scale-150" />
                   <motion.div
-                    className="absolute inset-0 rounded-full"
-                    style={{ background: "radial-gradient(circle, hsl(32 95% 55% / 0.3) 0%, transparent 70%)" }}
-                    animate={{ scale: [1.2, 1.5, 1.2], opacity: [0.3, 0.6, 0.3] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                  <motion.div
-                    className="absolute inset-[-15px] rounded-full border border-[hsl(40,80%,55%/0.25)]"
+                    className="absolute inset-[-20px] rounded-full border border-[hsl(40,80%,55%/0.2)]"
                     animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                    transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
                     style={{ borderStyle: "dashed" }}
                   />
-                  {/* Floating sparkles around logo */}
-                  {[0, 60, 120, 180, 240, 300].map((angle, i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute w-1 h-1 rounded-full bg-[hsl(40,80%,65%)]"
-                      style={{
-                        top: "50%", left: "50%",
-                        transform: `rotate(${angle}deg) translateY(-50px)`,
-                      }}
-                      animate={{ opacity: [0, 1, 0], scale: [0.5, 1.5, 0.5] }}
-                      transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
-                    />
-                  ))}
-                  <div className="absolute inset-0 blur-2xl bg-primary/25 rounded-full scale-125" />
-                  <img
+                  <motion.img
                     src={heroEmblem}
                     alt="HN Driver"
-                    className="relative w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-[0_0_30px_hsl(32,95%,55%,0.5)]"
+                    className="relative w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-[0_0_35px_hsl(32,95%,55%,0.5)]"
                     width={800} height={800}
+                    animate={{
+                      rotateY: [0, 360],
+                      scale: [1, 1.08, 0.95, 1.05, 1],
+                      y: [0, -8, 4, -6, 0],
+                    }}
+                    transition={{
+                      rotateY: { duration: 8, repeat: Infinity, ease: "linear" },
+                      scale: { duration: 5, repeat: Infinity, ease: "easeInOut" },
+                      y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+                    }}
+                    style={{ perspective: "600px" }}
                   />
                 </motion.div>
 
