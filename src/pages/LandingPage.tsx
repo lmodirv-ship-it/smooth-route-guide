@@ -437,7 +437,7 @@ export default function LandingPage() {
               { name: "AI Scene Studio", desc: "استوديو ذكاء اصطناعي للمشاهد", color: "from-cyan-500 to-blue-500", icon: Zap, url: "https://lovable.dev", status: "active" },
               { name: "AI Studio Vision", desc: "رؤية ذكية بتقنية AI", color: "from-green-500 to-emerald-500", icon: Shield, url: "https://lovable.dev", status: "active" },
               { name: "Cloud Harmony", desc: "خدمات سحابية متناغمة", color: "from-indigo-500 to-violet-500", icon: BarChart3, url: "https://lovable.dev", status: "active" },
-              { name: "Ai Video HN", desc: "إنتاج فيديو بالذكاء الاصطناعي", color: "from-red-500 to-pink-500", icon: Zap, url: "https://lovable.dev", status: "active" },
+              { name: "Ai Video HN", desc: "إنتاج فيديو بالذكاء الاصطناعي", color: "from-red-500 to-pink-500", icon: Zap, url: "https://hn-aivideo.lovable.app/", status: "active" },
             ].map((project, i) => (
               <motion.a
                 key={project.name}
