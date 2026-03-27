@@ -7,6 +7,7 @@ import { Outlet } from "react-router-dom";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import FloatingChatButton from "@/components/FloatingChatButton";
 import partnerHibaEco from "@/assets/partner-hiba-eco.png";
 import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
 import partnerTanjaPrint from "@/assets/partner-tanja-print.png";
@@ -67,6 +68,7 @@ const MainLayout = () => (
     </div>
     {/* Spacer for fixed bar */}
     <div className="h-11" />
+    <FloatingChatButton />
     <Outlet />
   </>
 );
