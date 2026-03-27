@@ -2,14 +2,16 @@ import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import {
   Car, Package, BarChart3, Zap, Shield, DollarSign, MapPin, ArrowRight, Menu, X,
   Users, Truck, Headphones, Store, Coffee, Shirt, Croissant, ShoppingCart,
   UtensilsCrossed, Printer, Smartphone, Clock, Download, Star, Phone,
-  ChevronDown, Globe, PlayCircle,
+  ChevronDown, Globe, PlayCircle, UserPlus, FileCheck, Quote, ChevronUp,
+  MessageSquare, HelpCircle, CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+// useState/useEffect moved to top imports
 import logo from "@/assets/hn-driver-badge.png";
 import heroEmblem from "@/assets/hero-emblem.png";
 import heroDriver from "@/assets/hero-driver.png";
