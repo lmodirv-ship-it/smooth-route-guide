@@ -390,7 +390,7 @@ const AdminDashboardPage = () => {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="gradient-card rounded-2xl border border-border overflow-hidden shadow-sm">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <button className="text-xs text-primary hover:text-primary/80 font-medium flex items-center gap-1 transition-colors">
-            {t.common?.viewAll || "View All"} <ArrowUpRight className="w-3 h-3" />
+            {t.common?.refresh || "View All"} <ArrowUpRight className="w-3 h-3" />
           </button>
           <h3 className="font-bold text-foreground text-right flex items-center gap-2">
             <Car className="w-4 h-4 text-primary" />
