@@ -7,12 +7,13 @@ import { Outlet } from "react-router-dom";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import hnLogoCoin from "@/assets/hn-logo-coin.png";
 
 const PARTNER_SITES = [
-  { name: "Hiba Eco", url: "https://www.hiba-eco.com", initials: "HE", color: "from-emerald-400 to-green-600" },
-  { name: "Lavage Nizar", url: "https://www.lavagenizar.com", initials: "LN", color: "from-blue-400 to-cyan-600" },
-  { name: "Tanja Print", url: "https://www.tanjaprint.com", initials: "TP", color: "from-amber-400 to-orange-600" },
-  { name: "Slava Call Hiba", url: "https://slavacall-hiba.com", initials: "SC", color: "from-purple-400 to-pink-600" },
+  { name: "Hiba Eco", url: "https://www.hiba-eco.com" },
+  { name: "Lavage Nizar", url: "https://www.lavagenizar.com" },
+  { name: "Tanja Print", url: "https://www.tanjaprint.com" },
+  { name: "Slava Call Hiba", url: "https://slavacall-hiba.com" },
 ];
 
 const MainLayout = () => (
