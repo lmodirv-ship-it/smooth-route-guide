@@ -40,22 +40,18 @@ const MainLayout = () => (
         <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background/90 to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/90 to-transparent z-10 pointer-events-none" />
         
-        <div className="flex animate-marquee whitespace-nowrap gap-8 items-center">
+        <div className="flex animate-marquee whitespace-nowrap items-center">
           {[...PARTNER_SITES, ...PARTNER_SITES, ...PARTNER_SITES].map((site, i) => (
             <a
               key={i}
               href={site.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-all duration-300 group shrink-0"
+              className="inline-flex items-center text-xs text-muted-foreground hover:text-primary transition-all duration-300 group shrink-0 -ml-2 first:ml-0 hover:z-10"
             >
-              <div className="w-7 h-7 rounded-md border border-primary/30 group-hover:border-primary/60 transition-all duration-300 overflow-hidden flex items-center justify-center bg-secondary/60 group-hover:shadow-[0_0_10px_hsl(32,95%,55%,0.3)]">
+              <div className="w-8 h-8 rounded-full border-2 border-background group-hover:border-primary/60 transition-all duration-300 overflow-hidden flex items-center justify-center bg-secondary shadow-md group-hover:shadow-[0_0_12px_hsl(32,95%,55%,0.4)] group-hover:scale-125">
                 <img src={site.logo} alt={site.name} className="w-full h-full object-cover" loading="lazy" />
               </div>
-              <span className="font-medium tracking-wide group-hover:text-primary transition-colors">{site.name}</span>
-              <span className="text-[9px] text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors hidden sm:inline">
-                {site.url.replace("https://", "").replace("www.", "")}
-              </span>
             </a>
           ))}
         </div>
