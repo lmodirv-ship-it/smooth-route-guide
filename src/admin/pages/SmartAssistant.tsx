@@ -475,6 +475,15 @@ const SmartAssistantPage = () => {
               <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-400 hover:bg-blue-900/50" onClick={exportHistory} title="تصدير السجل">
                 <Download className="w-3.5 h-3.5" />
               </Button>
+              {/* Auto-speak toggle */}
+              <Button
+                variant="ghost" size="icon"
+                className={`h-6 w-6 hover:bg-blue-900/50 ${autoSpeak ? "text-green-400" : "text-blue-400/50"}`}
+                onClick={() => { setAutoSpeak(!autoSpeak); if (isSpeaking) stopSpeaking(); }}
+                title={autoSpeak ? "إيقاف النطق التلقائي" : "تفعيل النطق التلقائي"}
+              >
+                {autoSpeak ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+              </Button>
             </div>
           </div>
           {showLogSettings && (
