@@ -39,6 +39,7 @@ import RestaurantsCC from "@/admin/pages/callcenter/RestaurantsCC";
 import AutoImport from "@/admin/pages/callcenter/AutoImport";
 import GoogleMapsImport from "@/admin/pages/callcenter/GoogleMapsImport";
 import AssistantKnowledge from "@/admin/pages/callcenter/AssistantKnowledge";
+import InternalMessaging from "@/admin/pages/callcenter/InternalMessaging";
 import AdminLiveMap from "@/admin/pages/LiveMap";
 import AdminAlerts from "@/admin/pages/Alerts";
 
@@ -75,6 +76,7 @@ const CallCenterApp = () => (
               <Route path="map" element={<AdminLiveMap />} />
               <Route path="alerts" element={<AdminAlerts />} />
               <Route path="knowledge" element={<AssistantKnowledge />} />
+              <Route path="messaging" element={<InternalMessaging />} />
             </Route>
 
             {/* Redirects */}

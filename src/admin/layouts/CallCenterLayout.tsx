@@ -4,7 +4,7 @@ import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
   BarChart3, Phone, Car, Users, Search, AlertTriangle, FileText,
   Headphones, BarChart, Shield, Bell, PhoneCall, PlusCircle, Clock,
-  Menu, X, UtensilsCrossed, Download, MapPin, Map, Brain
+  Menu, X, UtensilsCrossed, Download, MapPin, Map, Brain, MessageSquare
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/i18n/context";
@@ -36,6 +36,7 @@ const CallCenterLayout = () => {
     { path: "/call-center/restaurants", icon: UtensilsCrossed, label: t.callCenter.restaurantsMenu },
     { path: "/call-center/history", icon: Clock, label: t.callCenter.callHistory },
     { path: "/call-center/reports", icon: BarChart, label: t.callCenter.reports },
+    { path: "/call-center/messaging", icon: MessageSquare, label: "المحادثات" },
   ];
 
   const adminOnlyNavItems = [
