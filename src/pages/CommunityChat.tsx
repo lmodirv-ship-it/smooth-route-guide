@@ -48,12 +48,11 @@ const CommunityChat = () => {
         .from("community_messages" as any)
         .select("*")
         .order("created_at", { ascending: true })
-        .limit(100);
+        .limit(100) as any;
 
       if (msgs) {
-        setMessages(msgs as Message[]);
-        // Load profiles for message authors
-        const userIds = [...new Set((msgs as Message[]).map(m => m.user_id))];
+        setMessages(msgs as unknown as Message[]);
+        const userIds = [...new Set((msgs as any[]).map((m: any) => m.user_id))];
         if (userIds.length) {
           const { data: profs } = await supabase.from("profiles").select("id, name").in("id", userIds);
           if (profs) {
