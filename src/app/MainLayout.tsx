@@ -23,8 +23,10 @@ const MainLayout = () => (
   <>
     <GlobalNotificationListener />
     <div className="fixed top-0 left-0 right-0 z-[60] flex items-center h-11 bg-background/90 backdrop-blur-xl border-b border-border/40">
-      {/* Left: Logout + Language */}
-      <div className="flex items-center gap-1.5 px-3 shrink-0">
+      {/* Left: Logo + Logout + Language */}
+      <div className="flex items-center gap-2 px-3 shrink-0">
+        <span className="text-lg font-black tracking-tight bg-gradient-to-r from-primary to-[hsl(40,100%,65%)] bg-clip-text text-transparent drop-shadow-[0_0_8px_hsl(32,95%,55%,0.4)]">HN</span>
+        <div className="w-px h-5 bg-border/40" />
         <GlobalLogoutButton />
         <LanguageSwitcher />
       </div>
