@@ -12,6 +12,7 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import { useI18n } from "@/i18n/context";
+import SidebarNavButton from "@/admin/components/SidebarNavButton";
 
 const SupervisorLayout = () => {
   const { t, dir } = useI18n();
@@ -61,19 +62,14 @@ const SupervisorLayout = () => {
 
         <nav className="flex-1 p-3 space-y-1 overflow-auto">
           {navItems.map((item) => (
-            <button
+            <SidebarNavButton
               key={item.path}
+              icon={item.icon}
+              label={item.label}
+              isActive={isActive(item.path)}
+              collapsed={sidebarCollapsed}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "justify-start"} gap-3 px-3 py-2.5 rounded-lg transition-all ${
-                isActive(item.path)
-                  ? "gradient-primary text-primary-foreground shadow-lg"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
-              title={sidebarCollapsed ? item.label : undefined}
-            >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
-            </button>
+            />
           ))}
         </nav>
 
@@ -103,16 +99,13 @@ const SupervisorLayout = () => {
             </div>
             <nav className="flex-1 p-3 space-y-1 overflow-auto">
               {navItems.map((item) => (
-                <button
+                <SidebarNavButton
                   key={item.path}
+                  icon={item.icon}
+                  label={item.label}
+                  isActive={isActive(item.path)}
                   onClick={() => { navigate(item.path); setMobileOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
-                    isActive(item.path) ? "gradient-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
-                >
-                  <item.icon className="w-5 h-5 flex-shrink-0" />
-                  <span className="text-sm">{item.label}</span>
-                </button>
+                />
               ))}
             </nav>
           </aside>
