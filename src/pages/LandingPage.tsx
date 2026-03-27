@@ -2,11 +2,15 @@ import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, Package, BarChart3, Zap, Shield, DollarSign, MapPin, ArrowRight, Menu, X, Users, Truck, Headphones, ShieldCheck, Store, Coffee, Shirt, Croissant, ShoppingCart, UtensilsCrossed, Printer } from "lucide-react";
+import {
+  Car, Package, BarChart3, Zap, Shield, DollarSign, MapPin, ArrowRight, Menu, X,
+  Users, Truck, Headphones, Store, Coffee, Shirt, Croissant, ShoppingCart,
+  UtensilsCrossed, Printer, Smartphone, Clock, Download, Star, Phone,
+  ChevronDown, Globe, PlayCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import logo from "@/assets/hn-driver-badge.png";
-import heroSkyline from "@/assets/hero-skyline.jpg";
 import heroEmblem from "@/assets/hero-emblem.png";
 import heroDriver from "@/assets/hero-driver.png";
 import heroCustomer from "@/assets/hero-customer.png";
@@ -35,11 +39,28 @@ const scaleIn = {
   visible: { opacity: 1, scale: 1, transition: { duration: 0.8, ease: "easeOut" as const } },
 };
 
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
+};
+
+const fadeChild = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
+
 export default function LandingPage() {
   const { t, dir } = useI18n();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const lt = t.landing;
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const services = [
     { icon: Car, title: lt.rideTitle, desc: lt.rideDesc, glow: "glow-ring-orange" },
@@ -47,7 +68,16 @@ export default function LandingPage() {
     { icon: BarChart3, title: lt.businessTitle, desc: lt.businessDesc, glow: "glow-ring-orange" },
   ];
 
-  const features = [
+  const advancedFeatures = [
+    { icon: MapPin, title: dir === "rtl" ? "تتبع GPS مباشر" : "Live GPS Tracking", desc: dir === "rtl" ? "تتبع موقع السائقين في الوقت الفعلي مع دقة عالية وتحديثات فورية" : "Track driver locations in real-time with high accuracy", color: "text-info" },
+    { icon: Clock, title: dir === "rtl" ? "إدارة الوقت الذكية" : "Smart Time Management", desc: dir === "rtl" ? "جدولة الرحلات وتتبع ساعات العمل وإدارة الإجازات تلقائياً" : "Schedule trips, track hours, manage shifts automatically", color: "text-success" },
+    { icon: BarChart3, title: dir === "rtl" ? "تقارير وتحليلات" : "Reports & Analytics", desc: dir === "rtl" ? "لوحة تحكم شاملة مع تقارير مفصلة عن الأداء والإيرادات" : "Comprehensive dashboard with detailed performance reports", color: "text-[hsl(var(--warning))]" },
+    { icon: Shield, title: dir === "rtl" ? "أمان متقدم" : "Advanced Security", desc: dir === "rtl" ? "تشفير البيانات ومصادقة ثنائية وحماية كاملة للخصوصية" : "Data encryption, two-factor auth, full privacy protection", color: "text-destructive" },
+    { icon: Smartphone, title: dir === "rtl" ? "تطبيق موبايل سهل" : "Easy Mobile App", desc: dir === "rtl" ? "واجهة بسيطة وسريعة للسائقين على iOS و Android" : "Simple, fast interface for drivers on iOS & Android", color: "text-primary" },
+    { icon: Zap, title: dir === "rtl" ? "أداء فائق السرعة" : "Blazing Fast Performance", desc: dir === "rtl" ? "استجابة فورية وتحميل سريع وتجربة مستخدم سلسة" : "Instant response, fast loading, smooth UX", color: "text-[hsl(var(--warning))]" },
+  ];
+
+  const whyFeatures = [
     { icon: Zap, title: lt.why1Title, desc: lt.why1Desc },
     { icon: Shield, title: lt.why2Title, desc: lt.why2Desc },
     { icon: DollarSign, title: lt.why3Title, desc: lt.why3Desc },
@@ -72,251 +102,217 @@ export default function LandingPage() {
   ];
 
   const stats = [
-    { value: "10K+", label: dir === "rtl" ? "أكثر من 10 آلاف" : "Users", icon: MapPin },
-    { value: "500+", label: dir === "rtl" ? "أكثر من 500" : "Drivers", icon: Truck },
-    { value: "50K+", label: dir === "rtl" ? "أكثر من 50 ألف" : "Rides", icon: Users },
+    { value: "10K+", label: dir === "rtl" ? "سائق نشط" : "Active Drivers", icon: Users },
+    { value: "50K+", label: dir === "rtl" ? "رحلة يومياً" : "Daily Trips", icon: Truck },
+    { value: "4.9", label: dir === "rtl" ? "تقييم المستخدمين" : "User Rating", icon: Star },
+    { value: "24/7", label: dir === "rtl" ? "دعم متواصل" : "Support", icon: Headphones },
   ];
+
+  const navLinks = [
+    { label: dir === "rtl" ? "الميزات" : "Features", href: "#features" },
+    { label: dir === "rtl" ? "الخدمات" : "Services", href: "#services" },
+    { label: dir === "rtl" ? "التحميل" : "Download", href: "#download" },
+    { label: dir === "rtl" ? "اتصل بنا" : "Contact", href: "#contact" },
+  ];
+
+  const scrollToSection = (href: string) => {
+    setMenuOpen(false);
+    const el = document.querySelector(href);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
     <div dir={dir} className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* ─── Navbar ─── */}
-      <nav className="fixed top-0 inset-x-0 z-50 glass-strong">
-        <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+      {/* ─── Professional Navbar ─── */}
+      <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? "glass-strong shadow-lg shadow-background/50" : "bg-transparent"}`}>
+        <div className={`absolute bottom-0 inset-x-0 h-px transition-opacity duration-500 bg-gradient-to-r from-transparent via-primary/50 to-transparent ${scrolled ? "opacity-100" : "opacity-0"}`} />
         <div className="container mx-auto flex items-center justify-between h-16 px-4">
+          {/* Logo */}
           <div className="flex items-center gap-3">
-            <img src={logo} alt="HN Driver" className="w-9 h-9 rounded-full" />
-            <span className="font-display text-xl font-bold text-gradient-primary tracking-wide">
-              {dir === "rtl" ? "سائق HN" : "HN DRIVER"}
-            </span>
+            <div className="relative">
+              <img src={logo} alt="HN Driver" className="w-10 h-10 rounded-full border-2 border-primary/30" />
+              <div className="absolute inset-0 rounded-full bg-primary/20 blur-lg" />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-display text-xl font-bold text-gradient-primary tracking-wide leading-none">
+                HN DRIVER
+              </span>
+              <span className="text-[9px] text-muted-foreground/70 tracking-[0.15em] uppercase leading-none mt-0.5">
+                {dir === "rtl" ? "نظام إدارة ذكي" : "Smart Management"}
+              </span>
+            </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-4">
+          {/* Desktop Nav Links */}
+          <div className="hidden lg:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <button
+                key={link.href}
+                onClick={() => scrollToSection(link.href)}
+                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-primary/5"
+              >
+                {link.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center gap-3">
             <LanguageSwitcher variant="ghost" />
-            <Button variant="ghost" onClick={() => navigate("/login")} className="text-foreground hover:text-primary">
+            <Button variant="ghost" onClick={() => navigate("/login")} className="text-foreground hover:text-primary font-medium">
               {t.common.login}
             </Button>
-            <Button onClick={() => navigate("/auth/client")} className="gradient-primary text-primary-foreground font-semibold rounded-full px-6 glow-primary">
-              {t.common.signup}
+            <Button onClick={() => navigate("/auth/client")} className="gradient-primary text-primary-foreground font-bold rounded-full px-6 glow-primary hover:opacity-90 transition-opacity">
+              {dir === "rtl" ? "ابدأ مجاناً" : "Get Started"}
             </Button>
           </div>
 
-          <button className="md:hidden text-foreground" onClick={() => setMenuOpen(!menuOpen)}>
+          {/* Mobile Menu Button */}
+          <button className="md:hidden text-foreground p-2" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
 
+        {/* Mobile Menu */}
         {menuOpen && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="md:hidden border-t border-border bg-background px-4 py-4 flex flex-col gap-3">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="md:hidden border-t border-border bg-background/98 backdrop-blur-xl px-4 py-4 flex flex-col gap-2">
+            {navLinks.map((link) => (
+              <button key={link.href} onClick={() => scrollToSection(link.href)} className="text-start py-2.5 px-3 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">
+                {link.label}
+              </button>
+            ))}
+            <div className="h-px bg-border my-2" />
             <LanguageSwitcher variant="outline" />
             <Button variant="ghost" onClick={() => { navigate("/login"); setMenuOpen(false); }}>{t.common.login}</Button>
-            <Button onClick={() => { navigate("/auth/client"); setMenuOpen(false); }} className="gradient-primary text-primary-foreground">{t.common.signup}</Button>
+            <Button onClick={() => { navigate("/auth/client"); setMenuOpen(false); }} className="gradient-primary text-primary-foreground font-bold">{dir === "rtl" ? "ابدأ مجاناً" : "Get Started"}</Button>
           </motion.div>
         )}
       </nav>
 
       {/* ─── Hero Section ─── */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Pure black background with subtle atmospheric effects */}
+        {/* Background effects */}
         <div className="absolute inset-0 bg-background">
-          {/* Blue atmospheric haze */}
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 70% 30%, hsl(205 78% 56% / 0.06) 0%, transparent 60%)" }} />
-          {/* Orange warm accent */}
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 30% 70%, hsl(32 95% 55% / 0.04) 0%, transparent 50%)" }} />
         </div>
 
-        {/* Neon ground streaks — dramatic speed lines */}
+        {/* Neon speed streaks */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {/* Static glow lines */}
           <div className="absolute bottom-20 left-0 right-0 h-px bg-gradient-to-r from-transparent via-info/30 to-transparent" />
           <div className="absolute bottom-24 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
-          <div className="absolute bottom-32 left-0 right-0 h-px bg-gradient-to-r from-transparent via-info/15 to-transparent" />
-
-          {/* Animated speed streaks — orange */}
-          <motion.div
-            className="absolute bottom-16 h-0.5 w-48 bg-gradient-to-r from-transparent via-primary to-transparent"
-            animate={{ x: ["-200px", "110vw"] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 1.5 }}
-          />
-          <motion.div
-            className="absolute bottom-36 h-[3px] w-64 rounded-full"
-            style={{ background: "linear-gradient(90deg, transparent, hsl(32 95% 55% / 0.8), hsl(32 95% 55% / 0.4), transparent)" }}
-            animate={{ x: ["-300px", "120vw"] }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 3 }}
-          />
-          {/* Animated speed streaks — blue */}
-          <motion.div
-            className="absolute bottom-28 h-0.5 w-40 bg-gradient-to-r from-transparent via-info to-transparent"
-            animate={{ x: ["110vw", "-200px"] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "linear", repeatDelay: 2 }}
-          />
-          <motion.div
-            className="absolute bottom-44 h-[2px] w-56 rounded-full"
-            style={{ background: "linear-gradient(90deg, transparent, hsl(205 78% 56% / 0.6), hsl(205 78% 56% / 0.3), transparent)" }}
-            animate={{ x: ["120vw", "-300px"] }}
-            transition={{ duration: 3.5, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
-          />
-
-          {/* Vertical accent beams */}
-          <motion.div
-            className="absolute left-[15%] bottom-0 w-px h-40"
-            style={{ background: "linear-gradient(to top, hsl(32 95% 55% / 0.4), transparent)" }}
-            animate={{ opacity: [0.2, 0.6, 0.2], height: ["120px", "200px", "120px"] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute right-[20%] bottom-0 w-px h-32"
-            style={{ background: "linear-gradient(to top, hsl(205 78% 56% / 0.3), transparent)" }}
-            animate={{ opacity: [0.15, 0.5, 0.15], height: ["100px", "160px", "100px"] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          />
+          <motion.div className="absolute bottom-16 h-0.5 w-48 bg-gradient-to-r from-transparent via-primary to-transparent" animate={{ x: ["-200px", "110vw"] }} transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 1.5 }} />
+          <motion.div className="absolute bottom-36 h-[3px] w-64 rounded-full" style={{ background: "linear-gradient(90deg, transparent, hsl(32 95% 55% / 0.8), hsl(32 95% 55% / 0.4), transparent)" }} animate={{ x: ["-300px", "120vw"] }} transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 3 }} />
+          <motion.div className="absolute bottom-28 h-0.5 w-40 bg-gradient-to-r from-transparent via-info to-transparent" animate={{ x: ["110vw", "-200px"] }} transition={{ duration: 4, repeat: Infinity, ease: "linear", repeatDelay: 2 }} />
         </div>
 
-        {/* Hero content */}
+        {/* Hero Content */}
         <div className="container mx-auto px-4 relative z-10 pt-24">
           <div className="grid lg:grid-cols-2 gap-8 items-center max-w-7xl mx-auto">
-            {/* Left: Emblem + Text */}
+            {/* Left: Content */}
             <div className="flex flex-col items-center lg:items-start order-2 lg:order-1">
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={scaleIn}
-                className="relative mb-6"
-              >
-                {/* Outer dramatic glow */}
-                <motion.div
-                  className="absolute inset-0 rounded-full scale-150"
-                  style={{ background: "radial-gradient(circle, hsl(32 95% 55% / 0.15) 0%, hsl(205 78% 56% / 0.05) 50%, transparent 70%)" }}
-                  animate={{ scale: [1.4, 1.6, 1.4], opacity: [0.3, 0.6, 0.3] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                />
-                {/* Inner golden pulse */}
-                <motion.div
-                  className="absolute inset-0 rounded-full scale-125"
-                  style={{ background: "radial-gradient(circle, hsl(32 95% 55% / 0.3) 0%, transparent 60%)" }}
-                  animate={{ scale: [1.2, 1.35, 1.2], opacity: [0.5, 0.8, 0.5] }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                />
-                {/* Rotating ring */}
-                <motion.div
-                  className="absolute inset-0 rounded-full scale-115 border-2 border-primary/25"
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-                  style={{ borderStyle: "dashed" }}
-                />
-                {/* Blue accent ring */}
-                <motion.div
-                  className="absolute inset-0 rounded-full scale-130"
-                  style={{ border: "1px solid hsl(205 78% 56% / 0.15)" }}
-                  animate={{ scale: [1.3, 1.4, 1.3], opacity: [0.2, 0.4, 0.2] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                />
-                <div className="absolute inset-0 blur-3xl bg-primary/25 rounded-full scale-110" />
-                <img
-                  src={heroEmblem}
-                  alt="HN Driver Emblem"
-                  className="relative w-56 h-56 md:w-72 md:h-72 lg:w-[360px] lg:h-[360px] object-contain drop-shadow-[0_0_30px_hsl(32,95%,55%,0.4)]"
-                  width={800}
-                  height={800}
-                />
-              </motion.div>
-
+              {/* Badge */}
               <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
-                <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary/15 border border-primary/30 text-white text-base font-bold mb-4 tracking-wide glow-ring-orange">
-                  🚀 {dir === "rtl" ? "متوفر الآن بطنجة" : "Now available in Tangier"}
+                <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary/10 border border-primary/30 text-primary text-sm font-bold mb-6 tracking-wide">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  {dir === "rtl" ? "✨ الإصدار 1.0.0 متاح الآن" : "✨ Version 1.0.0 Available Now"}
                 </span>
               </motion.div>
 
-              <motion.h1 initial="hidden" animate="visible" variants={fadeUp} custom={1} className="text-3xl md:text-4xl lg:text-5xl font-bold font-display leading-tight text-center lg:text-start">
-                <span className="text-gradient-primary glow-text">{lt.heroTitle}</span>
+              {/* Emblem */}
+              <motion.div initial="hidden" animate="visible" variants={scaleIn} className="relative mb-6">
+                <motion.div className="absolute inset-0 rounded-full scale-150" style={{ background: "radial-gradient(circle, hsl(32 95% 55% / 0.15) 0%, transparent 70%)" }} animate={{ scale: [1.4, 1.6, 1.4], opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} />
+                <motion.div className="absolute inset-0 rounded-full scale-125 border-2 border-primary/20" animate={{ rotate: [0, 360] }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }} style={{ borderStyle: "dashed" }} />
+                <div className="absolute inset-0 blur-3xl bg-primary/25 rounded-full scale-110" />
+                <img src={heroEmblem} alt="HN Driver Emblem" className="relative w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain drop-shadow-[0_0_30px_hsl(32,95%,55%,0.4)]" width={800} height={800} />
+              </motion.div>
+
+              {/* Title */}
+              <motion.h1 initial="hidden" animate="visible" variants={fadeUp} custom={1} className="text-3xl md:text-5xl lg:text-6xl font-bold font-display leading-tight text-center lg:text-start">
+                {dir === "rtl" ? (
+                  <>إدارة السائقين<br /><span className="text-gradient-primary glow-text">بذكاء وسهولة</span></>
+                ) : (
+                  <>Driver Management<br /><span className="text-gradient-primary glow-text">Smart & Easy</span></>
+                )}
               </motion.h1>
 
+              {/* Subtitle */}
               <motion.p initial="hidden" animate="visible" variants={fadeUp} custom={2} className="mt-4 text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed text-center lg:text-start">
-                {lt.heroSubtitle}
+                {dir === "rtl"
+                  ? "منصة شاملة لإدارة السائقين، تتبع الرحلات، وتحسين الأداء. متوفرة على iOS و Android مع لوحة تحكم ويب قوية."
+                  : "A comprehensive platform for driver management, trip tracking, and performance optimization. Available on iOS & Android with a powerful web dashboard."}
               </motion.p>
 
-              <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3} className="mt-6 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button
-                  size="lg"
-                  onClick={() => navigate("/welcome")}
-                  className="gradient-primary text-primary-foreground font-bold text-lg rounded-full px-10 py-6 glow-primary animate-pulse-glow"
-                >
+              {/* CTA Buttons */}
+              <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3} className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Button size="lg" onClick={() => navigate("/welcome")} className="gradient-primary text-primary-foreground font-bold text-lg rounded-full px-10 py-6 glow-primary animate-pulse-glow group">
                   {lt.heroCta}
-                  <ArrowRight className={`w-5 h-5 ${dir === "rtl" ? "me-2 rotate-180" : "ms-2"}`} />
+                  <ArrowRight className={`w-5 h-5 group-hover:translate-x-1 transition-transform ${dir === "rtl" ? "me-2 rotate-180 group-hover:-translate-x-1" : "ms-2"}`} />
                 </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={() => navigate("/login")}
-                  className="rounded-full px-10 py-6 border-border text-foreground hover:bg-secondary hover:border-primary/30"
-                >
+                <Button size="lg" variant="outline" onClick={() => navigate("/login")} className="rounded-full px-10 py-6 border-border text-foreground hover:bg-secondary hover:border-primary/30 group">
+                  <PlayCircle className={`w-5 h-5 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
                   {t.common.login}
                 </Button>
               </motion.div>
+
+              {/* Download Buttons */}
+              <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={4} className="mt-6 flex flex-wrap gap-3 justify-center lg:justify-start" id="download">
+                {[
+                  { label: dir === "rtl" ? "App Store" : "App Store", sub: dir === "rtl" ? "متوفر على" : "Available on", icon: "🍎" },
+                  { label: dir === "rtl" ? "Google Play" : "Google Play", sub: dir === "rtl" ? "متوفر على" : "Get it on", icon: "▶️" },
+                  { label: dir === "rtl" ? "Android APK" : "Android APK", sub: dir === "rtl" ? "تحميل مباشر" : "Direct Download", icon: "📱" },
+                ].map((btn) => (
+                  <button key={btn.label} className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-secondary/80 border border-border hover:border-primary/40 hover:bg-secondary transition-all duration-300 group">
+                    <span className="text-xl">{btn.icon}</span>
+                    <div className="text-start">
+                      <div className="text-[10px] text-muted-foreground leading-none">{btn.sub}</div>
+                      <div className="text-sm font-bold text-foreground group-hover:text-primary transition-colors leading-tight">{btn.label}</div>
+                    </div>
+                  </button>
+                ))}
+              </motion.div>
             </div>
 
-            {/* Right: 3 Categories */}
+            {/* Right: 3 Category Cards */}
             <div className="order-1 lg:order-2 flex flex-col gap-4">
               {[
-                { img: heroDriver, label: dir === "rtl" ? "سائق" : "Driver", desc: dir === "rtl" ? "سائقون محترفون وموثوقون" : "Professional & trusted drivers", route: "/auth/driver" },
-                { img: heroCustomer, label: dir === "rtl" ? "زبون" : "Customer", desc: dir === "rtl" ? "احجز رحلتك بسهولة" : "Book your ride easily", route: "/auth/client" },
-                { img: heroDelivery, label: dir === "rtl" ? "توصيل" : "Delivery", desc: dir === "rtl" ? "توصيل سريع وفعّال" : "Fast & efficient delivery", route: "/delivery" },
+                { img: heroDriver, label: dir === "rtl" ? "سائق" : "Driver", desc: dir === "rtl" ? "سائقون محترفون وموثوقون" : "Professional & trusted drivers", route: "/auth/driver", accent: "border-success/30 hover:border-success/60" },
+                { img: heroCustomer, label: dir === "rtl" ? "زبون" : "Customer", desc: dir === "rtl" ? "احجز رحلتك بسهولة" : "Book your ride easily", route: "/auth/client", accent: "border-info/30 hover:border-info/60" },
+                { img: heroDelivery, label: dir === "rtl" ? "توصيل" : "Delivery", desc: dir === "rtl" ? "توصيل سريع وفعّال" : "Fast & efficient delivery", route: "/delivery", accent: "border-primary/30 hover:border-primary/60" },
               ].map((cat, i) => (
-                <motion.div
-                  key={cat.label}
-                  initial="hidden"
-                  animate="visible"
-                  variants={fadeUp}
-                  custom={i + 1}
-                  onClick={() => navigate(cat.route)}
-                  className="group relative flex items-center gap-4 p-3 rounded-2xl glass border border-border hover:border-primary/40 cursor-pointer transition-all duration-500 overflow-hidden"
-                >
-                  {/* Hover glow */}
-                  <div className="absolute inset-0 rounded-2xl gradient-primary opacity-0 group-hover:opacity-[0.06] transition-opacity duration-500" />
-                  
-                  {/* Image */}
+                <motion.div key={cat.label} initial="hidden" animate="visible" variants={fadeUp} custom={i + 1} onClick={() => navigate(cat.route)} className={`group relative flex items-center gap-4 p-3 rounded-2xl glass border ${cat.accent} cursor-pointer transition-all duration-500 overflow-hidden`}>
+                  <div className="absolute inset-0 rounded-2xl gradient-primary opacity-0 group-hover:opacity-[0.04] transition-opacity duration-500" />
                   <div className="relative w-24 h-24 md:w-28 md:h-28 flex-shrink-0 rounded-xl overflow-hidden bg-secondary/30">
-                    <img
-                      src={cat.img}
-                      alt={cat.label}
-                      className="w-full h-full object-cover object-top scale-110 group-hover:scale-125 transition-transform duration-700"
-                      width={768}
-                      height={768}
-                      loading="lazy"
-                    />
+                    <img src={cat.img} alt={cat.label} className="w-full h-full object-cover object-top scale-110 group-hover:scale-125 transition-transform duration-700" width={768} height={768} loading="lazy" />
                   </div>
-
-                  {/* Text */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg md:text-xl font-bold font-display text-foreground group-hover:text-primary transition-colors">
-                      {cat.label}
-                    </h3>
+                    <h3 className="text-lg md:text-xl font-bold font-display text-foreground group-hover:text-primary transition-colors">{cat.label}</h3>
                     <p className="text-sm text-muted-foreground mt-1">{cat.desc}</p>
                   </div>
-
-                  {/* Arrow */}
-                  <ArrowRight className={`w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0 ${dir === "rtl" ? "rotate-180" : ""}`} />
+                  <ArrowRight className={`w-5 h-5 text-muted-foreground group-hover:text-primary transition-all flex-shrink-0 group-hover:translate-x-1 ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : ""}`} />
                 </motion.div>
               ))}
             </div>
           </div>
 
-          {/* Stats bar */}
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            custom={5}
-            className="mt-16 md:mt-20 max-w-3xl mx-auto"
-          >
-            <div className="glass rounded-2xl p-6 grid grid-cols-3 gap-6">
+          {/* Stats Bar */}
+          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={5} className="mt-16 md:mt-20 max-w-4xl mx-auto">
+            <div className="glass rounded-2xl p-6 grid grid-cols-2 md:grid-cols-4 gap-6">
               {stats.map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <stat.icon className="w-6 h-6 text-primary mx-auto mb-2" />
+                <div key={stat.label} className="text-center group">
+                  <stat.icon className="w-6 h-6 text-primary mx-auto mb-2 group-hover:scale-110 transition-transform" />
                   <div className="text-2xl md:text-3xl font-bold text-gradient-primary font-display">{stat.value}</div>
                   <div className="text-xs md:text-sm text-muted-foreground mt-1">{stat.label}</div>
                 </div>
               ))}
             </div>
+          </motion.div>
+
+          {/* Scroll indicator */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }} className="flex justify-center mt-12">
+            <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }} className="text-muted-foreground/40">
+              <ChevronDown className="w-6 h-6" />
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -324,7 +320,6 @@ export default function LandingPage() {
       {/* ─── Partner Sites ─── */}
       <section className="py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
-        {/* Decorative lines */}
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-info/20 to-transparent" />
 
@@ -341,42 +336,15 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-4xl mx-auto">
             {partnerSites.map((site, i) => (
-              <motion.a
-                key={site.name}
-                href={site.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-                custom={i + 1}
-                whileHover={{ y: -8, scale: 1.03 }}
-                className="group relative flex flex-col items-center gap-4"
-              >
-                {/* Card */}
+              <motion.a key={site.name} href={site.url} target="_blank" rel="noopener noreferrer" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} whileHover={{ y: -8, scale: 1.03 }} className="group relative flex flex-col items-center gap-4">
                 <div className="relative w-full aspect-square rounded-2xl gradient-card border border-border group-hover:border-primary/50 transition-all duration-500 flex items-center justify-center p-5 overflow-hidden">
-                  {/* Hover glow overlay */}
                   <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: "radial-gradient(circle at 50% 50%, hsl(32 95% 55% / 0.08) 0%, transparent 70%)" }} />
-                  {/* Corner accent */}
-                  <div className="absolute top-0 right-0 w-12 h-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-primary/20 to-transparent rounded-bl-full" />
-                  </div>
-                  <img
-                    src={site.logo}
-                    alt={site.name}
-                    loading="lazy"
-                    width={512}
-                    height={512}
-                    className="relative z-10 w-4/5 h-4/5 object-contain filter brightness-95 group-hover:brightness-110 transition-all duration-500 drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
-                  />
+                  <img src={site.logo} alt={site.name} loading="lazy" width={512} height={512} className="relative z-10 w-4/5 h-4/5 object-contain filter brightness-95 group-hover:brightness-110 transition-all duration-500 drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]" />
                 </div>
-                {/* Name + URL */}
                 <div className="text-center">
                   <span className="block text-sm md:text-base font-bold text-foreground group-hover:text-primary transition-colors duration-300">{site.name}</span>
-                  <span className="block text-[10px] text-muted-foreground/60 mt-0.5 group-hover:text-muted-foreground transition-colors">{site.url.replace("https://", "")}</span>
+                  <span className="block text-[10px] text-muted-foreground/60 mt-0.5 group-hover:text-muted-foreground transition-colors">{site.url.replace("https://", "").replace("www.", "")}</span>
                 </div>
-                {/* Bottom glow line */}
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 group-hover:w-3/4 h-0.5 gradient-primary rounded-full transition-all duration-500" />
               </motion.a>
             ))}
@@ -384,9 +352,40 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ─── Advanced Features (6-Grid) ─── */}
+      <section id="features" className="py-20 md:py-28 relative">
+        <div className="absolute inset-0 particles-bg opacity-20" />
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
+            <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-[0.2em] border border-info/30 text-info bg-info/5 mb-4">
+              {dir === "rtl" ? "المميزات" : "Features"}
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold font-display mb-3">
+              <span className="text-gradient-primary">{dir === "rtl" ? "ميزات قوية لإدارة فعالة" : "Powerful Features for Effective Management"}</span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              {dir === "rtl" ? "كل ما تحتاجه لإدارة أسطول السائقين بكفاءة واحترافية" : "Everything you need to manage your driver fleet efficiently and professionally"}
+            </p>
+          </motion.div>
+
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {advancedFeatures.map((f, i) => (
+              <motion.div key={i} variants={fadeChild} className="group relative rounded-2xl p-8 gradient-card border border-border hover:border-primary/30 transition-all duration-500 overflow-hidden">
+                <div className="absolute inset-0 rounded-2xl gradient-primary opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500" />
+                <div className={`w-14 h-14 rounded-2xl bg-secondary/80 border border-border group-hover:border-primary/30 flex items-center justify-center mb-5 group-hover:scale-110 transition-all duration-300`}>
+                  <f.icon className={`w-7 h-7 ${f.color}`} />
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors">{f.title}</h3>
+                <p className="text-muted-foreground leading-relaxed text-sm">{f.desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* ─── Services ─── */}
-      <section className="py-20 md:py-28 relative">
-        <div className="absolute inset-0 particles-bg opacity-30" />
+      <section id="services" className="py-20 md:py-28 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
         <div className="container mx-auto px-4 relative z-10">
           <motion.h2 initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-3xl md:text-4xl font-bold text-center font-display mb-4">
             <span className="text-gradient-primary">{lt.servicesTitle}</span>
@@ -395,15 +394,7 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {services.map((s, i) => (
-              <motion.div
-                key={s.title}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-                custom={i + 1}
-                className={`group relative rounded-2xl p-8 gradient-card border border-border hover:border-primary/40 transition-all duration-500 ${s.glow}`}
-              >
+              <motion.div key={s.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} className={`group relative rounded-2xl p-8 gradient-card border border-border hover:border-primary/40 transition-all duration-500 ${s.glow}`}>
                 <div className="absolute inset-0 rounded-2xl gradient-primary opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500" />
                 <div className="icon-circle-orange mb-5">
                   <s.icon className="w-7 h-7 text-primary" />
@@ -426,17 +417,9 @@ export default function LandingPage() {
           <div className="w-20 h-1 gradient-primary mx-auto rounded-full mb-14" />
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
-            {features.map((f, i) => (
-              <motion.div
-                key={f.title}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-                custom={i + 1}
-                className="text-center p-6 rounded-2xl gradient-card border border-border hover:border-primary/30 transition-all duration-500 group"
-              >
-                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+            {whyFeatures.map((f, i) => (
+              <motion.div key={f.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} className="text-center p-6 rounded-2xl gradient-card border border-border hover:border-primary/30 transition-all duration-500 group">
+                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all">
                   <f.icon className="w-7 h-7 text-primary" />
                 </div>
                 <h3 className="font-bold mb-2 text-foreground">{f.title}</h3>
@@ -458,16 +441,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
             {serviceCategories.map((cat, i) => (
-              <motion.div
-                key={cat.key}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-                custom={i + 1}
-                onClick={() => navigate(`/delivery/${cat.key}`)}
-                className="group cursor-pointer rounded-2xl p-6 gradient-card border border-border hover:border-primary/40 transition-all duration-500 text-center"
-              >
+              <motion.div key={cat.key} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} onClick={() => navigate(`/delivery/${cat.key}`)} className="group cursor-pointer rounded-2xl p-6 gradient-card border border-border hover:border-primary/40 transition-all duration-500 text-center">
                 <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
                   <cat.icon className="w-7 h-7 text-primary" />
                 </div>
@@ -479,8 +453,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── CTA ─── */}
-      <section className="py-20 md:py-28 relative overflow-hidden">
-        {/* Neon accent lines */}
+      <section className="py-20 md:py-28 relative overflow-hidden" id="contact">
         <div className="absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
         <div className="container mx-auto px-4 text-center relative z-10">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="max-w-2xl mx-auto">
@@ -488,19 +461,21 @@ export default function LandingPage() {
               <span className="text-gradient-primary glow-text">{lt.ctaTitle}</span>
             </h2>
             <p className="text-lg text-muted-foreground mb-10">{lt.ctaSubtitle}</p>
-            <Button
-              size="lg"
-              onClick={() => navigate("/auth/client")}
-              className="gradient-primary text-primary-foreground font-bold text-lg rounded-full px-12 py-6 glow-primary animate-pulse-glow"
-            >
-              {lt.ctaButton}
-              <ArrowRight className={`w-5 h-5 ${dir === "rtl" ? "me-2 rotate-180" : "ms-2"}`} />
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" onClick={() => navigate("/auth/client")} className="gradient-primary text-primary-foreground font-bold text-lg rounded-full px-12 py-6 glow-primary animate-pulse-glow">
+                {lt.ctaButton}
+                <ArrowRight className={`w-5 h-5 ${dir === "rtl" ? "me-2 rotate-180" : "ms-2"}`} />
+              </Button>
+              <Button size="lg" variant="outline" onClick={() => navigate("/auth/driver")} className="rounded-full px-12 py-6 border-border hover:border-success/40 hover:bg-success/5">
+                <Car className={`w-5 h-5 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
+                {dir === "rtl" ? "سجل كسائق" : "Register as Driver"}
+              </Button>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* ─── مشاريعنا على Lovable ─── */}
+      {/* ─── Projects on Lovable ─── */}
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-card/20 to-background" />
         <div className="container mx-auto px-4 relative z-10">
@@ -523,18 +498,7 @@ export default function LandingPage() {
               { name: "Ai Video HN", desc: "إنتاج فيديو بالذكاء الاصطناعي", img: projAiVideo, url: "https://hn-aivideo.lovable.app/", status: "active" },
               { name: "Livraison Express", desc: "خدمة التوصيل السريع الاحترافية", img: projLivraisonExpress, url: "https://lovable.dev", status: "published" },
             ].map((project, i) => (
-              <motion.a
-                key={project.name}
-                href={project.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={fadeUp}
-                custom={i}
-                className="group relative rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 block"
-              >
+              <motion.a key={project.name} href={project.url} target="_blank" rel="noopener noreferrer" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i} className="group relative rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 block">
                 <div className="w-16 h-16 rounded-xl overflow-hidden mb-4 group-hover:scale-110 transition-transform shadow-lg">
                   <img src={project.img} alt={project.name} className="w-full h-full object-cover" loading="lazy" />
                 </div>
@@ -555,8 +519,6 @@ export default function LandingPage() {
       {/* ─── Footer ─── */}
       <footer className="border-t border-border relative">
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        
-        {/* الروابط والحقوق */}
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -570,22 +532,13 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-
-        {/* التذييل السفلي */}
         <div className="border-t border-border/40 bg-card/30">
           <div className="container mx-auto px-4 py-5 flex flex-col items-center gap-3">
-            <p className="text-sm text-muted-foreground text-center">
-              {lt.footerRights}
-            </p>
+            <p className="text-sm text-muted-foreground text-center">{lt.footerRights}</p>
             <div className="flex flex-col sm:flex-row items-center gap-2 text-xs text-muted-foreground/80 text-center">
-              <span>
-                مصمم البرنامج: شركة <span className="font-semibold text-primary">HN للبرمجيات</span> بتعاون مع{" "}
-                <a href="https://lovable.dev" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">Lovable</a>
-              </span>
+              <span>مصمم البرنامج: شركة <span className="font-semibold text-primary">HN للبرمجيات</span> بتعاون مع <a href="https://lovable.dev" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">Lovable</a></span>
               <span className="hidden sm:inline text-border">|</span>
-              <span>
-                كل الشكر والتقدير لمنصة <a href="https://lovable.dev" target="_blank" rel="noopener noreferrer" className="font-medium text-primary/80 hover:underline">Lovable</a> العالمية ❤️
-              </span>
+              <span>كل الشكر والتقدير لمنصة <a href="https://lovable.dev" target="_blank" rel="noopener noreferrer" className="font-medium text-primary/80 hover:underline">Lovable</a> العالمية ❤️</span>
             </div>
           </div>
         </div>
