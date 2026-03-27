@@ -81,44 +81,55 @@ const AdminDrivers = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {filtered.map((driver) => (
-          <motion.div key={driver.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            className="gradient-card rounded-xl border border-border p-4 hover:border-primary/30 transition-all">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => openDetail(driver)} className="text-xs h-7 text-info border-info/30">
-                  <Eye className="w-3 h-3 ml-1" />عرض
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => toggleStatus(driver)}
-                  className={`text-xs h-7 ${driver.status === "active" ? "text-destructive border-destructive/30" : "text-success border-success/30"}`}>
-                  {driver.status === "active" ? <><PowerOff className="w-3 h-3 ml-1" />تعطيل</> : <><Power className="w-3 h-3 ml-1" />تفعيل</>}
-                </Button>
-              </div>
-              <div className="flex items-center gap-3 text-right">
-                <div>
-                  <p className="text-sm font-semibold text-foreground">{driver.name}</p>
-                  <p className="text-xs text-muted-foreground">{driver.license_no || "—"}</p>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                  <Car className="w-5 h-5 text-primary" />
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <Badge variant="outline" className={driver.status === "active" ? "text-success border-success/30" : "text-muted-foreground border-border"}>
-                {driver.status === "active" ? "متصل" : "غير متصل"}
-              </Badge>
-              <Badge variant="outline" className={driver.driver_type === "delivery" ? "text-info border-info/30" : "text-primary border-primary/30"}>
-                {driver.driver_type === "delivery" ? "خدمة طلبيات" : driver.driver_type === "both" ? "الكل" : "توصيل زبائن"}
-              </Badge>
-              <div className="flex items-center gap-3">
-                {driver.vehicle && <span className="text-muted-foreground">{driver.vehicle.brand} {driver.vehicle.model} - {driver.vehicle.plate_no}</span>}
-                <span className="text-warning flex items-center gap-1"><Star className="w-3 h-3" /> {driver.rating || "—"}</span>
-              </div>
-            </div>
-          </motion.div>
-        ))}
+      <div className="rounded-xl border border-border overflow-hidden">
+        <table className="w-full caption-bottom text-sm">
+          <thead className="[&_tr]:border-b">
+            <tr className="border-b transition-colors">
+              <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">الرمز</th>
+              <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">الاسم</th>
+              <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">الرخصة</th>
+              <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">التقييم</th>
+              <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">السيارة</th>
+              <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground">النوع</th>
+              <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground">الحالة</th>
+              <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground">إجراءات</th>
+            </tr>
+          </thead>
+          <tbody className="[&_tr:last-child]:border-0">
+            {filtered.length === 0 ? (
+              <tr><td colSpan={8} className="text-center py-10 text-muted-foreground">لا يوجد سائقون</td></tr>
+            ) : filtered.map((driver) => (
+              <tr key={driver.id} className="border-b transition-colors hover:bg-muted/50">
+                <td className="p-4 align-middle font-mono text-sm font-bold">{(driver as any).driver_code || "—"}</td>
+                <td className="p-4 align-middle font-medium">{driver.name}</td>
+                <td className="p-4 align-middle text-muted-foreground text-sm">{driver.license_no || "—"}</td>
+                <td className="p-4 align-middle text-warning">★ {driver.rating || "—"}</td>
+                <td className="p-4 align-middle text-muted-foreground text-sm">{driver.vehicle ? `${driver.vehicle.brand} ${driver.vehicle.model} - ${driver.vehicle.plate_no}` : "—"}</td>
+                <td className="p-4 align-middle text-center">
+                  <Badge variant="outline" className={driver.driver_type === "delivery" ? "text-info border-info/30" : "text-primary border-primary/30"}>
+                    {driver.driver_type === "delivery" ? "طلبيات" : driver.driver_type === "both" ? "الكل" : "ركاب"}
+                  </Badge>
+                </td>
+                <td className="p-4 align-middle text-center">
+                  <Badge variant="outline" className={driver.status === "active" ? "text-success border-success/30" : "text-muted-foreground border-border"}>
+                    {driver.status === "active" ? "متصل" : "غير متصل"}
+                  </Badge>
+                </td>
+                <td className="p-4 align-middle text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <Button size="sm" variant="outline" onClick={() => openDetail(driver)} className="text-xs h-7 text-info border-info/30">
+                      <Eye className="w-3 h-3 ml-1" />عرض
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => toggleStatus(driver)}
+                      className={`text-xs h-7 ${driver.status === "active" ? "text-destructive border-destructive/30" : "text-success border-success/30"}`}>
+                      {driver.status === "active" ? <><PowerOff className="w-3 h-3 ml-1" />تعطيل</> : <><Power className="w-3 h-3 ml-1" />تفعيل</>}
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <Dialog open={!!selectedDriver} onOpenChange={() => setSelectedDriver(null)}>

@@ -402,57 +402,62 @@ const RestaurantsCC = () => {
           <Input placeholder="بحث..." value={search} onChange={e => setSearch(e.target.value)} className="bg-secondary/60 border-border pr-9 text-sm" />
         </div>
 
-        {/* Grid */}
+        {/* Table List */}
         {loading ? (
           <div className="text-center py-20 text-muted-foreground">جاري التحميل...</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filtered.map((store) => (
-              <motion.div key={store.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                className="glass-strong rounded-xl border border-border overflow-hidden hover:border-primary/30 transition-colors group">
-                <div className="h-32 bg-secondary/40 relative overflow-hidden">
-                  {store.image_url ? (
-                    <img src={store.image_url} alt={store.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center"><UtensilsCrossed className="w-10 h-10 text-muted-foreground/30" /></div>
-                  )}
-                  <div className="absolute top-2 left-2">
-                    <Badge className={`text-[10px] ${store.is_open ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-destructive/20 text-destructive border-destructive/30"}`}>
-                      {store.is_open ? "مفتوح" : "مغلق"}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="p-4 space-y-2">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-bold text-foreground text-sm">{store.name}</h3>
-                      <p className="text-[10px] text-muted-foreground">{STORE_CATEGORIES.find(c => c.value === store.category)?.label || store.category}</p>
-                    </div>
-                    {store.rating && (
-                      <div className="flex items-center gap-1 text-amber-400"><Star className="w-3.5 h-3.5 fill-amber-400" /><span className="text-xs font-bold">{store.rating}</span></div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{store.delivery_time_min}-{store.delivery_time_max} د</span>
-                    {store.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{store.phone}</span>}
-                  </div>
-                  <div className="flex items-center gap-2 pt-1">
-                    <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 border-primary/30 text-primary hover:bg-primary/10" onClick={() => enterStore(store)}>
-                      <FolderOpen className="w-3 h-3" />إدارة القائمة
-                    </Button>
-                    <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 border-info/30 text-info hover:bg-info/10" onClick={() => openStoreForm(store)}>
-                      <Edit className="w-3 h-3" />تعديل
-                    </Button>
-                    <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => handleDeleteStore(store.id)}>
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+          <div className="rounded-xl border border-border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-right">الرقم</TableHead>
+                  <TableHead className="text-right">الاسم</TableHead>
+                  <TableHead className="text-right">الهاتف</TableHead>
+                  <TableHead className="text-right">العنوان</TableHead>
+                  <TableHead className="text-right">المدينة</TableHead>
+                  <TableHead className="text-right">البلد</TableHead>
+                  <TableHead className="text-right">التقييم</TableHead>
+                  <TableHead className="text-right">العمولة %</TableHead>
+                  <TableHead className="text-center">الحالة</TableHead>
+                  <TableHead className="text-center">إجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={10} className="text-center py-10 text-muted-foreground">لا توجد مطاعم</TableCell>
+                  </TableRow>
+                ) : filtered.map((store) => (
+                  <TableRow key={store.id} className="hover:bg-secondary/30">
+                    <TableCell className="font-mono text-sm font-bold">{store.store_code || "—"}</TableCell>
+                    <TableCell className="font-bold">{store.name}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm" dir="ltr">{store.phone || "—"}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{store.address || "—"}</TableCell>
+                    <TableCell className="text-sm">{store.city || "—"}</TableCell>
+                    <TableCell className="text-sm">{store.country || "—"}</TableCell>
+                    <TableCell>{store.rating ? `⭐ ${Number(store.rating).toFixed(1)}` : "—"}</TableCell>
+                    <TableCell>{store.commission_rate ?? 5}%</TableCell>
+                    <TableCell className="text-center">
+                      <Badge className={store.is_open ? "bg-emerald-500/15 text-emerald-500 border-emerald-500/30" : "bg-destructive/15 text-destructive border-destructive/30"}>
+                        {store.is_open ? "مفتوح" : "مغلق"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 border-primary/30 text-primary" onClick={() => enterStore(store)}>
+                          <FolderOpen className="w-3 h-3" />القائمة
+                        </Button>
+                        <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1 border-info/30 text-info" onClick={() => openStoreForm(store)}>
+                          <Edit className="w-3 h-3" />تعديل
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         )}
-
         {/* Store Dialog */}
         <Dialog open={storeDialog} onOpenChange={setStoreDialog}>
           <DialogContent className="glass-strong border-border max-w-lg max-h-[90vh] overflow-y-auto" dir="rtl">
