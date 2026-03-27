@@ -28,6 +28,7 @@ import SubAssistantsPage from "@/admin/pages/SubAssistants";
 import SupervisorsPage from "@/admin/pages/Supervisors";
 import SetupAdmin from "@/admin/pages/SetupAdmin";
 import DriverPackages from "@/admin/pages/DriverPackages";
+import AdminCommunityChat from "@/admin/pages/AdminCommunityChat";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
@@ -86,6 +87,7 @@ export const adminRouteElements = (
       <Route path="driver-packages" element={<DriverPackages />} />
       <Route path="settings" element={<AdminSettings />} />
       <Route path="messaging" element={<InternalMessaging />} />
+      <Route path="community-chat" element={<AdminCommunityChat />} />
     </Route>
 
     <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><CallCenterLayout /></RequireRole>}>
