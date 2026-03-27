@@ -7,6 +7,7 @@ import {
   ChevronUp, ChevronDown, Phone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
@@ -62,6 +63,7 @@ const DriverPage = () => {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [todayStats, setTodayStats] = useState({ trips: 0, earnings: 0, rating: 0 });
   const [driverName, setDriverName] = useState("السائق");
+  const [driverAvatar, setDriverAvatar] = useState<string | null>(null);
   const [activeRideId, setActiveRideId] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [driverType, setDriverType] = useState<string>("ride");
@@ -75,8 +77,9 @@ const DriverPage = () => {
     const fetchStats = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: profile } = await supabase.from("profiles").select("name").eq("id", user.id).single();
+      const { data: profile } = await supabase.from("profiles").select("name, avatar_url").eq("id", user.id).single();
       if (profile?.name) setDriverName(profile.name);
+      if (profile?.avatar_url) setDriverAvatar(profile.avatar_url);
 
       const { data: activeRides } = await supabase.from("ride_requests").select("id, status")
         .eq("driver_id", user.id).in("status", ["accepted", "in_progress", "arriving"]).limit(1);
@@ -206,20 +209,25 @@ const DriverPage = () => {
   return (
     <div className="h-screen flex flex-col bg-background" dir={dir} onClick={() => unlockAudio()}>
       {/* Map */}
-      <div className={`relative shrink-0 transition-all duration-500 ${mapExpanded ? "h-[55vh]" : "h-[40vh] min-h-[220px]"}`}>
+      <div className={`relative shrink-0 transition-all duration-500 ${mapExpanded ? "h-[60vh]" : "h-[45vh] min-h-[250px]"}`}>
         <LeafletMap center={driverLocation || DEFAULT_LOCATION} zoom={14} showMarker driverLocation={driverLocation} route={route} className="w-full h-full" />
 
         {/* Top overlay */}
         <div className="absolute top-0 inset-x-0 z-[1000] bg-gradient-to-b from-black/80 via-black/40 to-transparent px-4 pt-3 pb-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-primary/20 border-2 border-primary/40 flex items-center justify-center">
-                <Car className="w-5 h-5 text-primary" />
-              </div>
+              <button onClick={() => navigate("/driver/profile")} className="relative">
+                <Avatar className="w-10 h-10 border-2 border-primary/40">
+                  <AvatarImage src={driverAvatar || undefined} />
+                  <AvatarFallback className="bg-primary/20 text-primary font-bold text-sm">
+                    {driverName?.charAt(0)?.toUpperCase() || "S"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-black" />
+              </button>
               <div>
                 <p className="text-white font-bold text-sm">{driverName}</p>
                 <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   <p className="text-emerald-400 text-[11px]">{t.driver.connected}</p>
                 </div>
               </div>
@@ -250,19 +258,6 @@ const DriverPage = () => {
           {mapExpanded ? "تصغير" : "تكبير"}
         </button>
       </div>
-
-      {/* Stats - Compact */}
-      <div className="shrink-0 px-2 py-1.5 border-b border-white/5 bg-black">
-        <div className="grid grid-cols-4 gap-1">
-          <StatCard icon={TrendingUp} label={t.driver.todayTrips} value={`${todayStats.trips}`} color="text-emerald-400" />
-          <StatCard icon={Wallet} label={t.driver.netEarnings} value={`${todayStats.earnings} DH`} color="text-primary" />
-          <StatCard icon={Percent} label={t.driver.platformFee} value={`${Math.round(COMMISSION_RATE * 100)}%`} color="text-destructive" />
-          <StatCard icon={Star} label={t.driver.rating} value={todayStats.rating > 0 ? todayStats.rating.toFixed(1) : "—"} color="text-amber-400" />
-        </div>
-      </div>
-
-      {/* Trip Progress Bar */}
-      <TripProgressBar activeRideId={activeRideId} />
 
       {/* Orders */}
       <div className="flex-1 overflow-hidden flex flex-col bg-gradient-to-b from-zinc-950 via-black to-black">
@@ -376,53 +371,6 @@ const DriverPage = () => {
 
 /* ─── Reusable sub-components ─── */
 
-const StatCard = ({ icon: Icon, label, value, color }: { icon: typeof TrendingUp; label: string; value: string; color: string }) => (
-  <div className="bg-white/[0.03] rounded-lg px-1.5 py-1 border border-white/[0.05] text-center">
-    <Icon className={`w-3 h-3 ${color} mx-auto`} />
-    <p className={`text-[11px] font-bold ${color} truncate leading-tight`}>{value}</p>
-    <p className="text-[8px] text-white/35 truncate">{label}</p>
-  </div>
-);
-
-const TripProgressBar = ({ activeRideId }: { activeRideId: string | null }) => {
-  const progress = activeRideId ? 50 : 0; // Will be dynamic based on trip status
-  const isActive = !!activeRideId;
-  
-  return (
-    <div className="shrink-0 px-4 py-1.5 bg-black">
-      <div className="relative h-2 rounded-full bg-zinc-800 overflow-hidden border border-white/[0.05]">
-        <motion.div
-          initial={{ width: "0%" }}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 1, ease: "easeInOut" }}
-          className={`absolute inset-y-0 left-0 rounded-full ${
-            progress >= 100
-              ? "bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.5)]"
-              : isActive
-              ? "bg-gradient-to-r from-amber-500/80 via-yellow-500/60 to-amber-400/40"
-              : "bg-zinc-700"
-          }`}
-        />
-        {isActive && progress < 100 && (
-          <motion.div
-            animate={{ opacity: [0.3, 0.8, 0.3] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="absolute inset-y-0 rounded-full bg-gradient-to-r from-transparent via-amber-400/30 to-transparent"
-            style={{ left: `${Math.max(0, progress - 10)}%`, width: "15%" }}
-          />
-        )}
-      </div>
-      <div className="flex justify-between mt-0.5">
-        <span className={`text-[8px] ${isActive ? "text-amber-400/60" : "text-white/20"}`}>
-          {isActive ? "في الطريق ←" : "في انتظار طلب"}
-        </span>
-        <span className={`text-[8px] ${progress >= 100 ? "text-amber-400" : "text-white/20"}`}>
-          وصل ✓
-        </span>
-      </div>
-    </div>
-  );
-};
 
 const BannerCard = ({ color, icon: Icon, title, subtitle, btnLabel, onClick, gradient }: {
   color: string; icon: typeof Package; title: string; subtitle: string; btnLabel: string; onClick: () => void; gradient?: boolean;
