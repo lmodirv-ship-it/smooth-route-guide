@@ -695,6 +695,139 @@ export type Database = {
           },
         ]
       }
+      driver_packages: {
+        Row: {
+          created_at: string
+          description_ar: string | null
+          description_fr: string | null
+          driver_type: string
+          duration_days: number
+          id: string
+          is_active: boolean
+          is_featured: boolean
+          max_km: number | null
+          max_orders: number | null
+          name_ar: string
+          name_en: string
+          name_fr: string
+          original_price: number | null
+          price: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description_ar?: string | null
+          description_fr?: string | null
+          driver_type?: string
+          duration_days?: number
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          max_km?: number | null
+          max_orders?: number | null
+          name_ar?: string
+          name_en?: string
+          name_fr?: string
+          original_price?: number | null
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description_ar?: string | null
+          description_fr?: string | null
+          driver_type?: string
+          duration_days?: number
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          max_km?: number | null
+          max_orders?: number | null
+          name_ar?: string
+          name_en?: string
+          name_fr?: string
+          original_price?: number | null
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      driver_subscriptions: {
+        Row: {
+          amount_paid: number
+          created_at: string
+          driver_id: string
+          expires_at: string
+          id: string
+          km_used: number
+          orders_used: number
+          package_id: string
+          payment_method: string
+          payment_status: string
+          starts_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_paid?: number
+          created_at?: string
+          driver_id: string
+          expires_at: string
+          id?: string
+          km_used?: number
+          orders_used?: number
+          package_id: string
+          payment_method?: string
+          payment_status?: string
+          starts_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number
+          created_at?: string
+          driver_id?: string
+          expires_at?: string
+          id?: string
+          km_used?: number
+          orders_used?: number
+          package_id?: string
+          payment_method?: string
+          payment_status?: string
+          starts_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_subscriptions_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "active_drivers_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_subscriptions_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_subscriptions_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "driver_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drivers: {
         Row: {
           car_id: string | null
