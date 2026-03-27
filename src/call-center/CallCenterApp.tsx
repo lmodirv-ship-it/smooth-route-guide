@@ -56,7 +56,7 @@ const CallCenterApp = () => (
             <Route path="/login" element={<CallCenterLogin />} />
 
             {/* Call Center pages */}
-            <Route path="/" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><CallCenterLayout /></RequireRole>}>
+            <Route path="/" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><SessionTracker><CallCenterLayout /></SessionTracker></RequireRole>}>
               <Route index element={<CCDashboard />} />
               <Route path="incoming" element={<IncomingCalls />} />
               <Route path="manual-booking" element={<ManualBooking />} />
