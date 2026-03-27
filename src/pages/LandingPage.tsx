@@ -521,6 +521,7 @@ export default function LandingPage() {
               { name: "AI Studio Vision", desc: "رؤية ذكية بتقنية AI", img: projAiVision, url: "https://lovable.dev", status: "active" },
               { name: "Cloud Harmony", desc: "خدمات سحابية متناغمة", img: projCloud, url: "https://lovable.dev", status: "active" },
               { name: "Ai Video HN", desc: "إنتاج فيديو بالذكاء الاصطناعي", img: projAiVideo, url: "https://hn-aivideo.lovable.app/", status: "active" },
+              { name: "Livraison Express", desc: "خدمة التوصيل السريع الاحترافية", img: projLivraisonExpress, url: "https://lovable.dev", status: "published" },
             ].map((project, i) => (
               <motion.a
                 key={project.name}
