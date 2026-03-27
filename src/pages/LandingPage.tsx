@@ -55,6 +55,13 @@ export default function LandingPage() {
     { key: "printing", icon: Printer, label: lt.catPrinting },
   ];
 
+  const partnerSites = [
+    { name: "Hiba Eco", url: "https://www.hiba-eco.com", logo: partnerHibaEco },
+    { name: "Lavage Nizar", url: "https://www.lavagenizar.com", logo: partnerLavageNizar },
+    { name: "Tanja Print", url: "https://www.tanjaprint.com", logo: partnerTanjaPrint },
+    { name: "Slava Call Hiba", url: "https://slavacall-hiba.com", logo: partnerSlavacall },
+  ];
+
   const stats = [
     { value: "10K+", label: dir === "rtl" ? "أكثر من 10 آلاف" : "Users", icon: MapPin },
     { value: "500+", label: dir === "rtl" ? "أكثر من 500" : "Drivers", icon: Truck },
