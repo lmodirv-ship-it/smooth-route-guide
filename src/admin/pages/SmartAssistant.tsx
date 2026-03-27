@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Bot, Send, Loader2, Paperclip, X, Image, Film, Download, History, FolderOpen, Save } from "lucide-react";
+import { Bot, Send, Loader2, Paperclip, X, Image, Film, Download, History, FolderOpen, Save, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizePlainText } from "@/lib/inputSecurity";
 import { useI18n } from "@/i18n/context";
+import { useWebSpeech } from "@/hooks/useWebSpeech";
 
 type AiMsg = { role: "user" | "assistant"; content: string | any[] };
 
@@ -72,6 +73,15 @@ async function callAdminAI({ messages, onResult, onError }: {
 
 const SmartAssistantPage = () => {
   const { dir } = useI18n();
+  const [autoSpeak, setAutoSpeak] = useState(false);
+  
+  const { isListening, transcript, startListening, stopListening, speak, stopSpeaking, isSpeaking, supported: speechSupported } = useWebSpeech({
+    lang: "ar-MA",
+    continuous: false,
+    onResult: (text) => {
+      setInput(prev => prev ? prev + " " + text : text);
+    },
+  });
   const {
     smartAssistantActive: isActive,
     smartPreviewUrl: previewUrl,
@@ -110,7 +120,14 @@ const SmartAssistantPage = () => {
 
   useEffect(() => {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
+    // Auto-speak last assistant message
+    if (autoSpeak && messages.length > 0) {
+      const last = messages[messages.length - 1];
+      if (last.role === "assistant" && typeof last.content === "string" && !loading) {
+        speak(last.content);
+      }
+    }
+  }, [messages, loading]);
 
   useEffect(() => {
     if (smartRefreshKey > 0) setIframeKey((k) => k + 1);
@@ -458,6 +475,15 @@ const SmartAssistantPage = () => {
               <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-400 hover:bg-blue-900/50" onClick={exportHistory} title="تصدير السجل">
                 <Download className="w-3.5 h-3.5" />
               </Button>
+              {/* Auto-speak toggle */}
+              <Button
+                variant="ghost" size="icon"
+                className={`h-6 w-6 hover:bg-blue-900/50 ${autoSpeak ? "text-green-400" : "text-blue-400/50"}`}
+                onClick={() => { setAutoSpeak(!autoSpeak); if (isSpeaking) stopSpeaking(); }}
+                title={autoSpeak ? "إيقاف النطق التلقائي" : "تفعيل النطق التلقائي"}
+              >
+                {autoSpeak ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+              </Button>
             </div>
           </div>
           {showLogSettings && (
@@ -530,8 +556,16 @@ const SmartAssistantPage = () => {
                   <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs ${msg.role === "user" ? "bg-black text-red-500" : "bg-blue-900/50 text-blue-100"}`}>
                       {msg.role === "assistant" ? (
-                        <div className="prose prose-sm max-w-none text-blue-100 [&_*]:text-blue-100">
-                          <ReactMarkdown>{typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)}</ReactMarkdown>
+                        <div>
+                          <div className="prose prose-sm max-w-none text-blue-100 [&_*]:text-blue-100">
+                            <ReactMarkdown>{typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)}</ReactMarkdown>
+                          </div>
+                          <button
+                            onClick={() => typeof msg.content === "string" && speak(msg.content)}
+                            className="mt-1 text-[9px] text-blue-400/60 hover:text-blue-300 flex items-center gap-1"
+                          >
+                            <Volume2 className="w-2.5 h-2.5" /> استمع
+                          </button>
                         </div>
                       ) : (
                         <span className="whitespace-pre-wrap">{typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)}</span>
@@ -576,9 +610,40 @@ const SmartAssistantPage = () => {
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
             />
             <div className="flex items-center justify-between mt-2">
-              <span className="text-[10px] text-green-400/50">Shift+Enter لسطر جديد</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-green-400/50">Shift+Enter لسطر جديد</span>
+                {isListening && <span className="text-[10px] text-red-400 animate-pulse">● جاري الاستماع...</span>}
+              </div>
               <div className="flex items-center gap-2">
                 <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleFileSelect} />
+                {/* Voice input button */}
+                {speechSupported && (
+                  <Button
+                    variant="outline" size="sm"
+                    className={`gap-1.5 ${isListening ? "border-red-500 bg-red-900/50 text-red-300 hover:bg-red-800 animate-pulse" : "border-green-700 bg-green-900/50 text-green-300 hover:bg-green-800 hover:text-green-100"}`}
+                    onClick={isListening ? stopListening : startListening}
+                    disabled={!isActive}
+                  >
+                    {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                    {isListening ? "إيقاف" : "تحدث"}
+                  </Button>
+                )}
+                {/* Speak last reply */}
+                {messages.length > 0 && messages[messages.length - 1].role === "assistant" && (
+                  <Button
+                    variant="outline" size="sm"
+                    className={`gap-1.5 border-green-700 bg-green-900/50 text-green-300 hover:bg-green-800 hover:text-green-100 ${isSpeaking ? "animate-pulse border-blue-500" : ""}`}
+                    onClick={() => {
+                      if (isSpeaking) { stopSpeaking(); } else {
+                        const last = messages[messages.length - 1];
+                        if (typeof last.content === "string") speak(last.content);
+                      }
+                    }}
+                  >
+                    {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                    {isSpeaking ? "إيقاف" : "استمع"}
+                  </Button>
+                )}
                 <Button
                   variant="outline" size="sm"
                   className="gap-1.5 border-green-700 bg-green-900/50 text-green-300 hover:bg-green-800 hover:text-green-100"

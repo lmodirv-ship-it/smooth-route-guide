@@ -8,6 +8,7 @@ import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FloatingChatButton from "@/components/FloatingChatButton";
+import VoiceOrderButton from "@/components/VoiceOrderButton";
 import partnerHibaEco from "@/assets/partner-hiba-eco.png";
 import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
 import partnerTanjaPrint from "@/assets/partner-tanja-print.png";
@@ -69,6 +70,7 @@ const MainLayout = () => (
     {/* Spacer for fixed bar */}
     <div className="h-11" />
     <FloatingChatButton />
+    <VoiceOrderButton />
     <Outlet />
   </>
 );
