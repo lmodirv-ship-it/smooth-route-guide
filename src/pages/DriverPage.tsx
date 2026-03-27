@@ -66,7 +66,6 @@ const DriverPage = () => {
   const [activeRideId, setActiveRideId] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [driverType, setDriverType] = useState<string>("ride");
-  const [mapExpanded, setMapExpanded] = useState(false);
   const prevOrderCountRef = useRef(0);
   const initialLoadRef = useRef(true);
   const { isExpired: subscriptionExpired, daysLeft: subDaysLeft } = useDriverSubscription();
