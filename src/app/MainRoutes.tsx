@@ -33,6 +33,7 @@ import DriverSupport from "@/pages/driver/DriverSupport";
 import DriverStatus from "@/pages/driver/DriverStatus";
 import DriverEarnings from "@/pages/driver/DriverEarnings";
 import DriverDelivery from "@/pages/driver/DriverDelivery";
+import DriverSubscription from "@/pages/driver/DriverSubscription";
 
 // ─── Client pages ───
 import CustomerHub from "@/pages/CustomerHub";
@@ -110,6 +111,7 @@ export const mainRouteElements = (
       <Route path="/driver/status" element={<RequireRole allowed={["driver"]}><DriverStatus /></RequireRole>} />
       <Route path="/driver/earnings" element={<RequireRole allowed={["driver"]}><DriverEarnings /></RequireRole>} />
       <Route path="/driver/delivery" element={<RequireRole allowed={["driver", "delivery"]}><DriverDelivery /></RequireRole>} />
+      <Route path="/driver/subscription" element={<RequireRole allowed={["driver", "delivery"]}><DriverSubscription /></RequireRole>} />
 
       {/* ─── Delivery /delivery/* ─── */}
       <Route path="/delivery" element={<RequireRole allowed={["client"]}><DeliveryHome /></RequireRole>} />
