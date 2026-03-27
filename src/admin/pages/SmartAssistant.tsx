@@ -556,8 +556,16 @@ const SmartAssistantPage = () => {
                   <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                     <div className={`max-w-[85%] rounded-lg px-3 py-2 text-xs ${msg.role === "user" ? "bg-black text-red-500" : "bg-blue-900/50 text-blue-100"}`}>
                       {msg.role === "assistant" ? (
-                        <div className="prose prose-sm max-w-none text-blue-100 [&_*]:text-blue-100">
-                          <ReactMarkdown>{typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)}</ReactMarkdown>
+                        <div>
+                          <div className="prose prose-sm max-w-none text-blue-100 [&_*]:text-blue-100">
+                            <ReactMarkdown>{typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)}</ReactMarkdown>
+                          </div>
+                          <button
+                            onClick={() => typeof msg.content === "string" && speak(msg.content)}
+                            className="mt-1 text-[9px] text-blue-400/60 hover:text-blue-300 flex items-center gap-1"
+                          >
+                            <Volume2 className="w-2.5 h-2.5" /> استمع
+                          </button>
                         </div>
                       ) : (
                         <span className="whitespace-pre-wrap">{typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)}</span>
