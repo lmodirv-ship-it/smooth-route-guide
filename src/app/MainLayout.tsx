@@ -46,8 +46,8 @@ const MainLayout = () => (
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-all duration-300 group shrink-0"
             >
-              <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${site.color} flex items-center justify-center text-[8px] font-black text-white shadow-sm group-hover:shadow-[0_0_8px_hsl(32,95%,55%,0.3)] transition-all duration-300`}>
-                {site.initials}
+              <div className="w-7 h-7 rounded-md border border-primary/30 group-hover:border-primary/60 transition-all duration-300 overflow-hidden flex items-center justify-center bg-secondary/60 group-hover:shadow-[0_0_10px_hsl(32,95%,55%,0.3)]">
+                <img src={hnLogoCoin} alt={site.name} className="w-full h-full object-cover" />
               </div>
               <span className="font-medium tracking-wide group-hover:text-primary transition-colors">{site.name}</span>
               <span className="text-[9px] text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors hidden sm:inline">
