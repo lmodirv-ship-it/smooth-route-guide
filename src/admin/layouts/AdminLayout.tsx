@@ -21,6 +21,7 @@ import { AdminGeoProvider } from "@/admin/contexts/AdminGeoContext";
 import AdminGeoFilter from "@/admin/components/AdminGeoFilter";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import FloatingChatButton from "@/components/FloatingChatButton";
+import FaceGuard from "@/admin/components/FaceGuard";
 
 type AiMsg = { role: "user" | "assistant"; content: string };
 
