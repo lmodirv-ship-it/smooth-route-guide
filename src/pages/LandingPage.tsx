@@ -2,7 +2,7 @@ import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Car, Package, BarChart3, Zap, Shield, DollarSign, MapPin, ArrowRight, Menu, X,
   Users, Truck, Headphones, Store, Coffee, Shirt, Croissant, ShoppingCart,
