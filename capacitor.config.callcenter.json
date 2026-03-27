@@ -1,0 +1,9 @@
+{
+  "appId": "app.lovable.callcenter.871f3759",
+  "appName": "HN Driver - Call Center",
+  "webDir": "dist-call-center",
+  "server": {
+    "url": "https://871f3759-73ef-4579-8f08-9a7c52b1611d.lovableproject.com?forceHideBadge=true",
+    "cleartext": true
+  }
+}

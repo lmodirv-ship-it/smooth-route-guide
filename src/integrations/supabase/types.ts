@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_sessions: {
+        Row: {
+          actions_count: number
+          agent_code: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          login_at: string
+          logout_at: string | null
+          status: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          actions_count?: number
+          agent_code?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          login_at?: string
+          logout_at?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          actions_count?: number
+          agent_code?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          login_at?: string
+          logout_at?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       alerts: {
         Row: {
           created_at: string

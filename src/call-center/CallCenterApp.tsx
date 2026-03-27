@@ -10,9 +10,16 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/i18n/context";
 import RequireRole from "@/components/RequireRole";
+import { useAgentSession } from "./hooks/useAgentSession";
 
 // Call Center Login
 import CallCenterLogin from "@/admin/pages/CallCenterLogin";
+
+/** Wrapper that activates agent session tracking */
+const SessionTracker = ({ children }: { children: React.ReactNode }) => {
+  useAgentSession();
+  return <>{children}</>;
+};
 
 // Call Center Layout & Pages
 import CallCenterLayout from "@/admin/layouts/CallCenterLayout";
@@ -49,7 +56,7 @@ const CallCenterApp = () => (
             <Route path="/login" element={<CallCenterLogin />} />
 
             {/* Call Center pages */}
-            <Route path="/" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><CallCenterLayout /></RequireRole>}>
+            <Route path="/" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><SessionTracker><CallCenterLayout /></SessionTracker></RequireRole>}>
               <Route index element={<CCDashboard />} />
               <Route path="incoming" element={<IncomingCalls />} />
               <Route path="manual-booking" element={<ManualBooking />} />
