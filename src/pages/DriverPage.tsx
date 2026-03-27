@@ -252,7 +252,7 @@ const DriverPage = () => {
       </div>
 
       {/* Stats */}
-      <div className="shrink-0 px-3 py-2 border-b border-border bg-card/50">
+      <div className="shrink-0 px-3 py-2.5 border-b border-white/5 bg-gradient-to-b from-black via-black to-zinc-950 shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
         <div className="grid grid-cols-4 gap-1.5">
           <StatCard icon={TrendingUp} label={t.driver.todayTrips} value={`${todayStats.trips}`} color="text-emerald-400" />
           <StatCard icon={Wallet} label={t.driver.netEarnings} value={`${todayStats.earnings} DH`} color="text-primary" />
@@ -262,8 +262,8 @@ const DriverPage = () => {
       </div>
 
       {/* Orders */}
-      <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="px-4 py-2.5 flex items-center justify-between border-b border-border shrink-0">
+      <div className="flex-1 overflow-hidden flex flex-col bg-gradient-to-b from-zinc-950 via-black to-black">
+        <div className="px-4 py-2.5 flex items-center justify-between border-b border-white/5 shrink-0">
           <div className="bg-emerald-500/15 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">
             {nearbyOrders.length}
           </div>
@@ -374,10 +374,10 @@ const DriverPage = () => {
 /* ─── Reusable sub-components ─── */
 
 const StatCard = ({ icon: Icon, label, value, color }: { icon: typeof TrendingUp; label: string; value: string; color: string }) => (
-  <div className="bg-card/80 rounded-xl p-2 border border-border text-center">
+  <div className="bg-white/[0.04] rounded-xl p-2 border border-white/[0.06] text-center backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
     <Icon className={`w-3.5 h-3.5 ${color} mx-auto mb-0.5`} />
     <p className={`text-sm font-bold ${color} truncate`}>{value}</p>
-    <p className="text-[9px] text-muted-foreground mt-0.5 truncate">{label}</p>
+    <p className="text-[9px] text-white/40 mt-0.5 truncate">{label}</p>
   </div>
 );
 
