@@ -313,13 +313,24 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Partner Sites ─── */}
-      <section className="py-16 md:py-20 relative">
+      <section className="py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
+        {/* Decorative lines */}
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-info/20 to-transparent" />
+
         <div className="container mx-auto px-4 relative z-10">
-          <motion.p initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center text-sm text-muted-foreground uppercase tracking-widest mb-10">
-            {dir === "rtl" ? "مواقعنا الشريكة" : "Our Partner Sites"}
-          </motion.p>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-14">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
+            <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-[0.2em] border border-primary/30 text-primary bg-primary/5 mb-4">
+              {dir === "rtl" ? "شركاؤنا" : "Partners"}
+            </span>
+            <h2 className="text-2xl md:text-3xl font-bold font-display">
+              <span className="text-gradient-primary">{dir === "rtl" ? "مواقعنا الشريكة" : "Our Partner Sites"}</span>
+            </h2>
+            <div className="w-16 h-1 gradient-primary mx-auto rounded-full mt-4" />
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-4xl mx-auto">
             {partnerSites.map((site, i) => (
               <motion.a
                 key={site.name}
@@ -331,12 +342,33 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 variants={fadeUp}
                 custom={i + 1}
-                className="group flex flex-col items-center gap-3"
+                whileHover={{ y: -8, scale: 1.03 }}
+                className="group relative flex flex-col items-center gap-4"
               >
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl glass border border-border group-hover:border-primary/50 transition-all duration-500 flex items-center justify-center p-3 group-hover:glow-primary">
-                  <img src={site.logo} alt={site.name} loading="lazy" width={512} height={512} className="w-full h-full object-contain filter brightness-90 group-hover:brightness-110 transition-all duration-300" />
+                {/* Card */}
+                <div className="relative w-full aspect-square rounded-2xl gradient-card border border-border group-hover:border-primary/50 transition-all duration-500 flex items-center justify-center p-5 overflow-hidden">
+                  {/* Hover glow overlay */}
+                  <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: "radial-gradient(circle at 50% 50%, hsl(32 95% 55% / 0.08) 0%, transparent 70%)" }} />
+                  {/* Corner accent */}
+                  <div className="absolute top-0 right-0 w-12 h-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-primary/20 to-transparent rounded-bl-full" />
+                  </div>
+                  <img
+                    src={site.logo}
+                    alt={site.name}
+                    loading="lazy"
+                    width={512}
+                    height={512}
+                    className="relative z-10 w-4/5 h-4/5 object-contain filter brightness-95 group-hover:brightness-110 transition-all duration-500 drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
+                  />
                 </div>
-                <span className="text-xs md:text-sm text-muted-foreground group-hover:text-primary transition-colors font-medium">{site.name}</span>
+                {/* Name + URL */}
+                <div className="text-center">
+                  <span className="block text-sm md:text-base font-bold text-foreground group-hover:text-primary transition-colors duration-300">{site.name}</span>
+                  <span className="block text-[10px] text-muted-foreground/60 mt-0.5 group-hover:text-muted-foreground transition-colors">{site.url.replace("https://", "")}</span>
+                </div>
+                {/* Bottom glow line */}
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 group-hover:w-3/4 h-0.5 gradient-primary rounded-full transition-all duration-500" />
               </motion.a>
             ))}
           </div>
