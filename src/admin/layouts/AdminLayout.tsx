@@ -134,16 +134,19 @@ const AdminLayout = () => {
     <GlobalNotificationListener />
     <div className="min-h-screen gradient-dark flex" dir={dir}>
       {/* Sidebar */}
-      <aside className={`${sidebarCollapsed ? "w-16" : "w-64"} glass-strong border-l border-border hidden lg:flex flex-col transition-all duration-300`}>
+      <aside className={`${sidebarCollapsed ? "w-[72px]" : "w-64"} glass-strong border-l border-border hidden lg:flex flex-col transition-all duration-300 shadow-lg`}>
         <button
           onClick={() => setSidebarNavVisible(v => !v)}
           className="p-4 flex items-center gap-3 border-b border-border w-full hover:bg-secondary/50 transition-colors cursor-pointer"
         >
-          <img src={logo} alt="HN" className="w-9 h-9 flex-shrink-0" />
+          <img src={logo} alt="HN" className="w-10 h-10 flex-shrink-0 rounded-xl shadow-md" />
           {!sidebarCollapsed && (
             <>
-              <span className="font-bold text-lg text-gradient-primary font-display">{t.admin.panelTitle}</span>
-              <span className={`text-muted-foreground text-xs transition-transform ${sidebarNavVisible ? "rotate-180" : ""}`}>▼</span>
+              <div className="flex flex-col items-start">
+                <span className="font-extrabold text-lg text-gradient-primary font-display leading-tight">{t.admin.panelTitle}</span>
+                <span className="text-[10px] text-muted-foreground font-medium">Control Panel</span>
+              </div>
+              <span className={`text-muted-foreground text-xs transition-transform duration-300 ${sidebarNavVisible ? "rotate-180" : ""}`}>▼</span>
             </>
           )}
         </button>
@@ -161,22 +164,28 @@ const AdminLayout = () => {
             </div>
           </div>
         )}
-        <nav className="flex-1 p-3 space-y-1 overflow-auto">
+        <nav className="flex-1 p-2.5 space-y-0.5 overflow-auto scrollbar-thin">
           {navItems.map((item) => (
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "justify-between"} px-3 py-2.5 rounded-lg transition-all ${
-                isActive(item.path) ? "gradient-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "justify-between"} px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+                isActive(item.path)
+                  ? "gradient-primary text-primary-foreground shadow-lg shadow-primary/20"
+                  : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground hover:translate-x-[-2px]"
               }`}
               title={sidebarCollapsed ? item.label : undefined}
             >
               <div className="flex items-center gap-3">
-                <item.icon className="w-5 h-5 flex-shrink-0" />
-                {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                  isActive(item.path) ? "bg-primary-foreground/20" : "bg-secondary group-hover:bg-secondary/80"
+                }`}>
+                  <item.icon className="w-4 h-4 flex-shrink-0" />
+                </div>
+                {!sidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
               </div>
               {!sidebarCollapsed && item.path === "/admin/requests" && pendingCount > 0 && (
-                <span className={`text-xs px-2 py-0.5 rounded-full ${isActive(item.path) ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/20 text-primary"}`}>
+                <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold animate-pulse ${isActive(item.path) ? "bg-primary-foreground/20 text-primary-foreground" : "bg-destructive/20 text-destructive"}`}>
                   {pendingCount}
                 </span>
               )}
