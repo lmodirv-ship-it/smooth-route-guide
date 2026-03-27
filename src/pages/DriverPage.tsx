@@ -206,7 +206,7 @@ const DriverPage = () => {
   return (
     <div className="h-screen flex flex-col bg-background" dir={dir} onClick={() => unlockAudio()}>
       {/* Map */}
-      <div className={`relative shrink-0 transition-all duration-500 ${mapExpanded ? "h-[50vh]" : "h-[30vh] min-h-[200px]"}`}>
+      <div className={`relative shrink-0 transition-all duration-500 ${mapExpanded ? "h-[55vh]" : "h-[40vh] min-h-[220px]"}`}>
         <LeafletMap center={driverLocation || DEFAULT_LOCATION} zoom={14} showMarker driverLocation={driverLocation} route={route} className="w-full h-full" />
 
         {/* Top overlay */}
@@ -251,15 +251,18 @@ const DriverPage = () => {
         </button>
       </div>
 
-      {/* Stats */}
-      <div className="shrink-0 px-3 py-2.5 border-b border-white/5 bg-gradient-to-b from-black via-black to-zinc-950 shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
-        <div className="grid grid-cols-4 gap-1.5">
+      {/* Stats - Compact */}
+      <div className="shrink-0 px-2 py-1.5 border-b border-white/5 bg-black">
+        <div className="grid grid-cols-4 gap-1">
           <StatCard icon={TrendingUp} label={t.driver.todayTrips} value={`${todayStats.trips}`} color="text-emerald-400" />
           <StatCard icon={Wallet} label={t.driver.netEarnings} value={`${todayStats.earnings} DH`} color="text-primary" />
           <StatCard icon={Percent} label={t.driver.platformFee} value={`${Math.round(COMMISSION_RATE * 100)}%`} color="text-destructive" />
           <StatCard icon={Star} label={t.driver.rating} value={todayStats.rating > 0 ? todayStats.rating.toFixed(1) : "—"} color="text-amber-400" />
         </div>
       </div>
+
+      {/* Trip Progress Bar */}
+      <TripProgressBar activeRideId={activeRideId} />
 
       {/* Orders */}
       <div className="flex-1 overflow-hidden flex flex-col bg-gradient-to-b from-zinc-950 via-black to-black">
@@ -374,12 +377,52 @@ const DriverPage = () => {
 /* ─── Reusable sub-components ─── */
 
 const StatCard = ({ icon: Icon, label, value, color }: { icon: typeof TrendingUp; label: string; value: string; color: string }) => (
-  <div className="bg-white/[0.04] rounded-xl p-2 border border-white/[0.06] text-center backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-    <Icon className={`w-3.5 h-3.5 ${color} mx-auto mb-0.5`} />
-    <p className={`text-sm font-bold ${color} truncate`}>{value}</p>
-    <p className="text-[9px] text-white/40 mt-0.5 truncate">{label}</p>
+  <div className="bg-white/[0.03] rounded-lg px-1.5 py-1 border border-white/[0.05] text-center">
+    <Icon className={`w-3 h-3 ${color} mx-auto`} />
+    <p className={`text-[11px] font-bold ${color} truncate leading-tight`}>{value}</p>
+    <p className="text-[8px] text-white/35 truncate">{label}</p>
   </div>
 );
+
+const TripProgressBar = ({ activeRideId }: { activeRideId: string | null }) => {
+  const progress = activeRideId ? 50 : 0; // Will be dynamic based on trip status
+  const isActive = !!activeRideId;
+  
+  return (
+    <div className="shrink-0 px-4 py-1.5 bg-black">
+      <div className="relative h-2 rounded-full bg-zinc-800 overflow-hidden border border-white/[0.05]">
+        <motion.div
+          initial={{ width: "0%" }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 1, ease: "easeInOut" }}
+          className={`absolute inset-y-0 left-0 rounded-full ${
+            progress >= 100
+              ? "bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.5)]"
+              : isActive
+              ? "bg-gradient-to-r from-amber-500/80 via-yellow-500/60 to-amber-400/40"
+              : "bg-zinc-700"
+          }`}
+        />
+        {isActive && progress < 100 && (
+          <motion.div
+            animate={{ opacity: [0.3, 0.8, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute inset-y-0 rounded-full bg-gradient-to-r from-transparent via-amber-400/30 to-transparent"
+            style={{ left: `${Math.max(0, progress - 10)}%`, width: "15%" }}
+          />
+        )}
+      </div>
+      <div className="flex justify-between mt-0.5">
+        <span className={`text-[8px] ${isActive ? "text-amber-400/60" : "text-white/20"}`}>
+          {isActive ? "في الطريق ←" : "في انتظار طلب"}
+        </span>
+        <span className={`text-[8px] ${progress >= 100 ? "text-amber-400" : "text-white/20"}`}>
+          وصل ✓
+        </span>
+      </div>
+    </div>
+  );
+};
 
 const BannerCard = ({ color, icon: Icon, title, subtitle, btnLabel, onClick, gradient }: {
   color: string; icon: typeof Package; title: string; subtitle: string; btnLabel: string; onClick: () => void; gradient?: boolean;

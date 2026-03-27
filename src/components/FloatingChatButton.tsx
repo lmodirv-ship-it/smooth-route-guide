@@ -97,7 +97,7 @@ const FloatingChatButton = () => {
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="fixed bottom-36 left-4 z-50 w-80 max-h-[70vh] glass-strong rounded-2xl border border-border shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-36 right-4 z-50 w-80 max-h-[70vh] glass-strong rounded-2xl border border-border shadow-2xl flex flex-col overflow-hidden"
             dir={dir}
           >
             {/* Header */}
@@ -205,7 +205,7 @@ const FloatingChatButton = () => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setOpen(!open)}
-        className="fixed bottom-20 left-4 z-50 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex items-center justify-center hover:shadow-xl hover:shadow-primary/40 transition-shadow"
+        className="fixed bottom-20 right-4 z-50 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex items-center justify-center hover:shadow-xl hover:shadow-primary/40 transition-shadow"
         title="جهات الاتصال والدردشة"
       >
         {open ? <X className="w-5 h-5" /> : <MessagesSquare className="w-5 h-5" />}
