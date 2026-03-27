@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star, Navigation, Volume2, Percent, Package } from "lucide-react";
+import { Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp, Wallet, Star, Navigation, Volume2, Percent, Package, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,7 @@ import { notifyNewOrder, unlockAudio } from "@/lib/notificationSound";
 import { driverNetEarnings, COMMISSION_RATE } from "@/lib/pricing";
 import { usePricingSettings } from "@/hooks/usePricingSettings";
 import { useI18n } from "@/i18n/context";
+import { useDriverSubscription } from "@/hooks/useDriverSubscription";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 const MAX_RADIUS_KM = 10;
@@ -213,8 +214,14 @@ const DriverPage = () => {
       destination: { lat: selectedOrder.destination_lat, lng: selectedOrder.destination_lng },
     };
   }, [selectedOrder]);
+  const { isExpired: subscriptionExpired, daysLeft: subDaysLeft, loading: subLoading } = useDriverSubscription();
 
   const handleAccept = async (orderId: string) => {
+    if (subscriptionExpired) {
+      toast({ title: "اشتراك مطلوب", description: "يجب الاشتراك في باقة لقبول الطلبات", variant: "destructive" });
+      navigate("/driver/subscription");
+      return;
+    }
     if (activeRideId) {
       toast({ title: t.driver.activeRide, description: t.driver.completeCurrentFirst, variant: "destructive" });
       navigate(`/driver/tracking?id=${activeRideId}`);
@@ -360,6 +367,39 @@ const DriverPage = () => {
                 <p className="text-orange-400 font-bold text-sm">{t.driver.activeRide}</p>
                 <p className="text-white/40 text-[11px]">{t.driver.completeCurrentFirst}</p>
               </div>
+            </motion.div>
+          )}
+          {/* Subscription banner */}
+          {subscriptionExpired && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mx-4 mt-3 p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/30 flex items-center justify-between"
+            >
+              <Button
+                size="sm"
+                onClick={() => navigate("/driver/subscription")}
+                className="h-8 px-4 rounded-lg bg-gradient-to-r from-yellow-500 to-orange-500 text-black text-xs font-bold"
+              >
+                <Crown className="w-3.5 h-3.5 ml-1" />
+                اشترك الآن
+              </Button>
+              <div className="text-right">
+                <p className="text-yellow-400 font-bold text-sm">اشتراك مطلوب</p>
+                <p className="text-white/40 text-[11px]">اشترك لقبول الطلبات</p>
+              </div>
+            </motion.div>
+          )}
+          {!subscriptionExpired && subDaysLeft <= 3 && subDaysLeft > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mx-4 mt-3 p-2 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-between"
+            >
+              <Button size="sm" onClick={() => navigate("/driver/subscription")} variant="ghost" className="text-orange-400 text-xs">
+                تجديد
+              </Button>
+              <p className="text-orange-400 text-xs">⚠️ اشتراكك ينتهي خلال {subDaysLeft} أيام</p>
             </motion.div>
           )}
           {nearbyOrders.length === 0 ? (

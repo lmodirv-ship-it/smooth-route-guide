@@ -27,6 +27,7 @@ import SmartAssistantPage from "@/admin/pages/SmartAssistant";
 import SubAssistantsPage from "@/admin/pages/SubAssistants";
 import SupervisorsPage from "@/admin/pages/Supervisors";
 import SetupAdmin from "@/admin/pages/SetupAdmin";
+import DriverPackages from "@/admin/pages/DriverPackages";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
@@ -81,6 +82,7 @@ export const adminRouteElements = (
       <Route path="commission-rates" element={<CommissionRatesPage />} />
       <Route path="smart-assistant" element={<SmartAssistantPage />} />
       <Route path="sub-assistants" element={<SubAssistantsPage />} />
+      <Route path="driver-packages" element={<DriverPackages />} />
       <Route path="settings" element={<AdminSettings />} />
     </Route>
 
