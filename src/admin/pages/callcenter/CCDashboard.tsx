@@ -86,14 +86,14 @@ const CCDashboard = () => {
   }, [fetchAll]);
 
   const statCards = [
-    { icon: Package, label: "طلبات جديدة", value: stats.newOrders, gradient: "from-amber-500/20 to-orange-600/10", iconBg: "bg-amber-500", textColor: "text-amber-400", pulse: stats.newOrders > 0, path: "/call-center/delivery" },
-    { icon: CheckCircle, label: "تم التأكيد", value: stats.confirmed, gradient: "from-blue-500/20 to-cyan-600/10", iconBg: "bg-blue-500", textColor: "text-blue-400", path: "/call-center/delivery" },
-    { icon: UtensilsCrossed, label: "جاهز / مستلم", value: stats.readyForPickup, gradient: "from-purple-500/20 to-violet-600/10", iconBg: "bg-purple-500", textColor: "text-purple-400", path: "/call-center/delivery" },
-    { icon: Bike, label: "في الطريق", value: stats.inTransit, gradient: "from-cyan-500/20 to-teal-600/10", iconBg: "bg-cyan-500", textColor: "text-cyan-400", path: "/call-center/delivery" },
-    { icon: TrendingUp, label: "مكتمل اليوم", value: stats.delivered, gradient: "from-emerald-500/20 to-green-600/10", iconBg: "bg-emerald-500", textColor: "text-emerald-400", path: "/call-center/delivery" },
-    { icon: Car, label: "سائقون متاحون", value: `${stats.activeDrivers}/${stats.totalDrivers}`, gradient: "from-green-500/20 to-lime-600/10", iconBg: "bg-green-500", textColor: "text-green-400", path: "/call-center/drivers" },
-    { icon: AlertTriangle, label: "شكاوى مفتوحة", value: stats.openComplaints, gradient: "from-red-500/20 to-rose-600/10", iconBg: "bg-red-500", textColor: "text-red-400", path: "/call-center/complaints" },
-    { icon: PhoneIncoming, label: "مكالمات اليوم", value: stats.callsToday, gradient: "from-indigo-500/20 to-blue-600/10", iconBg: "bg-indigo-500", textColor: "text-indigo-400", path: "/call-center/incoming" },
+    { img: packageImg, label: "طلبات جديدة", value: stats.newOrders, gradient: "from-amber-500/20 to-orange-600/10", textColor: "text-amber-400", pulse: stats.newOrders > 0, path: "/call-center/delivery" },
+    { img: checkImg, label: "تم التأكيد", value: stats.confirmed, gradient: "from-blue-500/20 to-cyan-600/10", textColor: "text-blue-400", path: "/call-center/delivery" },
+    { img: foodImg, label: "جاهز / مستلم", value: stats.readyForPickup, gradient: "from-purple-500/20 to-violet-600/10", textColor: "text-purple-400", path: "/call-center/delivery" },
+    { img: bikeImg, label: "في الطريق", value: stats.inTransit, gradient: "from-cyan-500/20 to-teal-600/10", textColor: "text-cyan-400", path: "/call-center/delivery" },
+    { img: trendImg, label: "مكتمل اليوم", value: stats.delivered, gradient: "from-emerald-500/20 to-green-600/10", textColor: "text-emerald-400", path: "/call-center/delivery" },
+    { img: carImg, label: "سائقون متاحون", value: `${stats.activeDrivers}/${stats.totalDrivers}`, gradient: "from-green-500/20 to-lime-600/10", textColor: "text-green-400", path: "/call-center/drivers" },
+    { img: alertImg, label: "شكاوى مفتوحة", value: stats.openComplaints, gradient: "from-red-500/20 to-rose-600/10", textColor: "text-red-400", path: "/call-center/complaints" },
+    { img: phoneImg, label: "مكالمات اليوم", value: stats.callsToday, gradient: "from-indigo-500/20 to-blue-600/10", textColor: "text-indigo-400", path: "/call-center/incoming" },
   ];
 
   const getStatusInfo = (status) => {
