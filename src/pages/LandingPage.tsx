@@ -240,117 +240,172 @@ export default function LandingPage() {
           <motion.div className="absolute top-40 h-[1px] w-32 bg-gradient-to-r from-transparent via-primary/40 to-transparent" animate={{ x: ["-200px", "120vw"] }} transition={{ duration: 5, repeat: Infinity, ease: "linear", repeatDelay: 1 }} />
         </div>
 
-        {/* Hero Content — Centered Card */}
+        {/* Hero Content */}
         <div className="container mx-auto px-4 relative z-10 pt-20 pb-8">
-          {/* Main Showcase Card */}
+          {/* ═══ Main Welcome Card — Compact with LED border ═══ */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className="relative max-w-4xl mx-auto"
+            className="relative max-w-2xl mx-auto"
           >
-            {/* Golden border glow */}
-            <div className="absolute -inset-[2px] rounded-3xl bg-gradient-to-b from-[hsl(40,80%,55%)] via-[hsl(32,95%,45%/0.5)] to-[hsl(32,95%,30%/0.3)] blur-[1px]" />
-            <div className="absolute -inset-[6px] rounded-3xl bg-gradient-to-b from-[hsl(40,80%,55%/0.3)] via-transparent to-[hsl(32,95%,45%/0.1)] blur-lg" />
-            
-            {/* Card body */}
-            <div className="relative rounded-3xl overflow-hidden" style={{ background: "linear-gradient(180deg, hsl(220 15% 12%) 0%, hsl(220 15% 8%) 100%)" }}>
-              {/* Inner glow overlay */}
-              <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 70% 50% at 50% 30%, hsl(32 95% 55% / 0.06) 0%, transparent 70%)" }} />
-              <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[hsl(40,80%,60%/0.6)] to-transparent" />
+            {/* Animated LED border */}
+            <div className="absolute -inset-[2px] rounded-2xl overflow-hidden">
+              <motion.div
+                className="absolute inset-0"
+                style={{ background: "conic-gradient(from 0deg, hsl(40,80%,55%), hsl(32,95%,45%), hsl(205,78%,56%), hsl(280,60%,50%), hsl(40,80%,55%))" }}
+                animate={{ rotate: [0, 360] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+              />
+            </div>
+            {/* Outer glow */}
+            <div className="absolute -inset-[8px] rounded-2xl bg-gradient-to-b from-[hsl(40,80%,55%/0.2)] via-transparent to-[hsl(205,78%,56%/0.1)] blur-xl pointer-events-none" />
 
-              <div className="relative z-10 flex flex-col items-center py-12 md:py-16 px-6 md:px-12">
-                {/* Logo with cosmic glow */}
+            {/* Card body */}
+            <div className="relative rounded-2xl overflow-hidden" style={{ background: "linear-gradient(180deg, hsl(220 15% 11%) 0%, hsl(220 15% 7%) 100%)" }}>
+              <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 60% 40% at 50% 20%, hsl(32 95% 55% / 0.05) 0%, transparent 70%)" }} />
+
+              {/* Corner sparkles */}
+              {[
+                { top: "8px", right: "8px" },
+                { top: "8px", left: "8px" },
+                { bottom: "8px", right: "8px" },
+                { bottom: "8px", left: "8px" },
+              ].map((pos, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute w-1.5 h-1.5 rounded-full bg-[hsl(40,80%,60%)]"
+                  style={pos}
+                  animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.3, 0.8] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: i * 0.5 }}
+                />
+              ))}
+
+              <div className="relative z-10 flex flex-col items-center py-10 md:py-12 px-6 md:px-10">
+                {/* Logo — smaller with cosmic glow */}
                 <motion.div
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.3 }}
-                  className="relative mb-6"
+                  className="relative mb-5"
                 >
-                  {/* Pulsing aura */}
                   <motion.div
                     className="absolute inset-0 rounded-full"
-                    style={{ background: "radial-gradient(circle, hsl(32 95% 55% / 0.25) 0%, transparent 70%)" }}
-                    animate={{ scale: [1.3, 1.6, 1.3], opacity: [0.4, 0.7, 0.4] }}
+                    style={{ background: "radial-gradient(circle, hsl(32 95% 55% / 0.3) 0%, transparent 70%)" }}
+                    animate={{ scale: [1.2, 1.5, 1.2], opacity: [0.3, 0.6, 0.3] }}
                     transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   />
-                  {/* Rotating orbit ring */}
                   <motion.div
-                    className="absolute inset-[-20px] rounded-full border border-[hsl(40,80%,55%/0.2)]"
+                    className="absolute inset-[-15px] rounded-full border border-[hsl(40,80%,55%/0.25)]"
                     animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                    transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
                     style={{ borderStyle: "dashed" }}
                   />
-                  {/* Second orbit ring */}
-                  <motion.div
-                    className="absolute inset-[-35px] rounded-full border border-[hsl(205,78%,56%/0.1)]"
-                    animate={{ rotate: [360, 0] }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                    style={{ borderStyle: "dotted" }}
-                  />
-                  <div className="absolute inset-0 blur-3xl bg-primary/30 rounded-full scale-150" />
+                  {/* Floating sparkles around logo */}
+                  {[0, 60, 120, 180, 240, 300].map((angle, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute w-1 h-1 rounded-full bg-[hsl(40,80%,65%)]"
+                      style={{
+                        top: "50%", left: "50%",
+                        transform: `rotate(${angle}deg) translateY(-50px)`,
+                      }}
+                      animate={{ opacity: [0, 1, 0], scale: [0.5, 1.5, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+                    />
+                  ))}
+                  <div className="absolute inset-0 blur-2xl bg-primary/25 rounded-full scale-125" />
                   <img
                     src={heroEmblem}
                     alt="HN Driver"
-                    className="relative w-32 h-32 md:w-44 md:h-44 object-contain drop-shadow-[0_0_40px_hsl(32,95%,55%,0.5)]"
-                    width={800}
-                    height={800}
+                    className="relative w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-[0_0_30px_hsl(32,95%,55%,0.5)]"
+                    width={800} height={800}
                   />
                 </motion.div>
 
-                {/* Title */}
-                <motion.h1
-                  initial={{ opacity: 0, y: 20 }}
+                {/* "Welcome to" — metallic brushed steel look */}
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6, duration: 0.6 }}
-                  className="text-3xl md:text-5xl lg:text-6xl font-bold font-display text-center leading-tight"
+                  transition={{ delay: 0.6, duration: 0.5 }}
+                  className="mb-2"
                 >
-                  {dir === "rtl" ? (
-                    <>
-                      <span className="text-white">مرحباً بك في</span>{" "}
-                      <span className="bg-gradient-to-r from-[hsl(40,85%,60%)] via-[hsl(32,95%,55%)] to-[hsl(25,90%,50%)] bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(32,95%,55%,0.4)]">
-                        HN Driver
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-white">Welcome to</span>{" "}
-                      <span className="bg-gradient-to-r from-[hsl(40,85%,60%)] via-[hsl(32,95%,55%)] to-[hsl(25,90%,50%)] bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(32,95%,55%,0.4)]">
-                        HN Driver
-                      </span>
-                    </>
-                  )}
-                </motion.h1>
+                  <span
+                    className="text-lg md:text-xl font-bold tracking-[0.3em] uppercase"
+                    style={{
+                      background: "linear-gradient(180deg, hsl(210 10% 75%) 0%, hsl(210 10% 50%) 40%, hsl(210 10% 65%) 60%, hsl(210 10% 45%) 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.5))",
+                      textShadow: "none",
+                    }}
+                  >
+                    {dir === "rtl" ? "مرحباً بك في" : "WELCOME TO"}
+                  </span>
+                </motion.div>
+
+                {/* "HN DRIVER" — Golden 3D metallic letters */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.8, duration: 0.6, ease: "easeOut" }}
+                  className="relative"
+                >
+                  <h1
+                    className="text-5xl md:text-7xl lg:text-8xl font-black font-display tracking-wider"
+                    style={{
+                      background: "linear-gradient(170deg, hsl(45,90%,75%) 0%, hsl(40,95%,60%) 20%, hsl(35,100%,50%) 40%, hsl(30,90%,40%) 60%, hsl(40,95%,60%) 80%, hsl(45,90%,75%) 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      filter: "drop-shadow(0 2px 4px hsl(32,95%,30%,0.6)) drop-shadow(0 0 20px hsl(32,95%,55%,0.3))",
+                    }}
+                  >
+                    HN DRIVER
+                  </h1>
+                  {/* Shimmer sweep across letters */}
+                  <motion.div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: "linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.25) 45%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.25) 55%, transparent 65%)",
+                      backgroundSize: "200% 100%",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                    }}
+                    animate={{ backgroundPosition: ["200% 0", "-200% 0"] }}
+                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+                  >
+                    <span className="text-5xl md:text-7xl lg:text-8xl font-black font-display tracking-wider opacity-0">HN DRIVER</span>
+                  </motion.div>
+                </motion.div>
 
                 {/* Subtitle */}
                 <motion.p
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8, duration: 0.5 }}
-                  className="mt-4 text-base md:text-lg text-[hsl(210,15%,55%)] max-w-2xl text-center leading-relaxed"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1, duration: 0.5 }}
+                  className="mt-3 text-sm md:text-base text-[hsl(210,15%,50%)] max-w-md text-center leading-relaxed"
                 >
                   {dir === "rtl"
-                    ? "منصة النقل والتوصيل الأقوى عربياً. أنشئ رحلات احترافية في دقائق"
-                    : "The most powerful ride & delivery platform. Create professional trips in minutes"}
+                    ? "منصة النقل والتوصيل الأقوى عربياً"
+                    : "The most powerful ride & delivery platform"}
                 </motion.p>
 
                 {/* CTA Buttons */}
                 <motion.div
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1, duration: 0.5 }}
-                  className="mt-8 flex flex-col sm:flex-row gap-4 justify-center"
+                  transition={{ delay: 1.2, duration: 0.5 }}
+                  className="mt-6 flex flex-col sm:flex-row gap-3 justify-center"
                 >
                   <Button
                     size="lg"
                     onClick={() => navigate("/welcome")}
-                    className="relative overflow-hidden rounded-full px-10 py-6 font-bold text-lg text-black bg-gradient-to-r from-[hsl(40,85%,60%)] via-[hsl(32,95%,55%)] to-[hsl(25,90%,50%)] shadow-[0_0_30px_hsl(32,95%,55%,0.4)] hover:shadow-[0_0_50px_hsl(32,95%,55%,0.6)] transition-all duration-500 group"
+                    className="relative overflow-hidden rounded-full px-8 py-5 font-bold text-base text-black bg-gradient-to-r from-[hsl(45,90%,65%)] via-[hsl(40,95%,55%)] to-[hsl(35,100%,48%)] shadow-[0_0_25px_hsl(32,95%,55%,0.4)] hover:shadow-[0_0_40px_hsl(32,95%,55%,0.6)] transition-all duration-500 group"
                   >
                     <span className="relative z-10 flex items-center gap-2">
                       {lt.heroCta}
-                      <ArrowRight className={`w-5 h-5 group-hover:translate-x-1 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : ""}`} />
+                      <ArrowRight className={`w-4 h-4 group-hover:translate-x-1 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : ""}`} />
                     </span>
-                    {/* Shimmer effect */}
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
                       animate={{ x: ["-200%", "200%"] }}
@@ -361,88 +416,100 @@ export default function LandingPage() {
                     size="lg"
                     variant="outline"
                     onClick={() => navigate("/login")}
-                    className="rounded-full px-10 py-6 border-[hsl(220,15%,25%)] text-white hover:bg-white/5 hover:border-[hsl(40,80%,55%/0.4)] transition-all duration-500 group"
+                    className="rounded-full px-8 py-5 border-[hsl(220,15%,22%)] text-white hover:bg-white/5 hover:border-[hsl(40,80%,55%/0.4)] transition-all duration-500 group"
                   >
-                    <PlayCircle className={`w-5 h-5 ${dir === "rtl" ? "ml-2" : "mr-2"} group-hover:text-[hsl(32,95%,55%)]`} />
+                    <PlayCircle className={`w-4 h-4 ${dir === "rtl" ? "ml-2" : "mr-2"} group-hover:text-[hsl(32,95%,55%)]`} />
                     {t.common.login}
                   </Button>
-                </motion.div>
-
-                {/* Download badges */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.3 }}
-                  className="mt-6 flex flex-wrap gap-3 justify-center"
-                  id="download"
-                >
-                  {[
-                    { label: "App Store", sub: dir === "rtl" ? "متوفر على" : "Available on", icon: "🍎" },
-                    { label: "Google Play", sub: dir === "rtl" ? "متوفر على" : "Get it on", icon: "▶️" },
-                    { label: "Android APK", sub: dir === "rtl" ? "تحميل مباشر" : "Direct Download", icon: "📱" },
-                  ].map((btn) => (
-                    <button
-                      key={btn.label}
-                      className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:border-[hsl(40,80%,55%/0.4)] hover:bg-white/8 transition-all duration-300 group"
-                    >
-                      <span className="text-xl">{btn.icon}</span>
-                      <div className="text-start">
-                        <div className="text-[10px] text-[hsl(210,15%,50%)] leading-none">{btn.sub}</div>
-                        <div className="text-sm font-bold text-white group-hover:text-[hsl(40,80%,60%)] transition-colors leading-tight">{btn.label}</div>
-                      </div>
-                    </button>
-                  ))}
                 </motion.div>
               </div>
             </div>
           </motion.div>
 
-          {/* 3 Role Cards below the main card */}
-          <div className="grid md:grid-cols-3 gap-5 mt-8 max-w-4xl mx-auto">
+          {/* ═══ 3 Role Cards — Glowing boxes ═══ */}
+          <div className="grid md:grid-cols-3 gap-4 mt-6 max-w-3xl mx-auto">
             {[
-              { img: heroDriver, label: dir === "rtl" ? "سائق" : "Driver", desc: dir === "rtl" ? "سائقون محترفون وموثوقون" : "Professional & trusted", route: "/auth/driver", glow: "hsl(142,71%,45%)" },
-              { img: heroCustomer, label: dir === "rtl" ? "زبون" : "Customer", desc: dir === "rtl" ? "احجز رحلتك بسهولة" : "Book your ride easily", route: "/auth/client", glow: "hsl(205,78%,56%)" },
-              { img: heroDelivery, label: dir === "rtl" ? "توصيل" : "Delivery", desc: dir === "rtl" ? "توصيل سريع وفعّال" : "Fast & efficient", route: "/delivery", glow: "hsl(32,95%,55%)" },
+              { img: heroDriver, label: dir === "rtl" ? "سائق" : "Driver", desc: dir === "rtl" ? "سائقون محترفون" : "Professional drivers", route: "/auth/driver", glow: "142,71%,45%", icon: Car },
+              { img: heroCustomer, label: dir === "rtl" ? "زبون" : "Customer", desc: dir === "rtl" ? "احجز رحلتك" : "Book your ride", route: "/auth/client", glow: "205,78%,56%", icon: Users },
+              { img: heroDelivery, label: dir === "rtl" ? "توصيل" : "Delivery", desc: dir === "rtl" ? "توصيل سريع" : "Fast delivery", route: "/delivery", glow: "32,95%,55%", icon: Package },
             ].map((cat, i) => (
               <motion.div
                 key={cat.label}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2 + i * 0.15, duration: 0.5 }}
+                transition={{ delay: 1.3 + i * 0.12, duration: 0.5 }}
                 onClick={() => navigate(cat.route)}
-                className="group relative flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-500 overflow-hidden"
-                style={{ background: "linear-gradient(135deg, hsl(220 15% 12%) 0%, hsl(220 15% 9%) 100%)", border: `1px solid hsl(220 15% 18%)` }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = cat.glow + "60"; (e.currentTarget as HTMLElement).style.boxShadow = `0 0 20px ${cat.glow}20`; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "hsl(220 15% 18%)"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}
+                whileHover={{ scale: 1.04, y: -4 }}
+                whileTap={{ scale: 0.97 }}
+                className="group relative rounded-xl cursor-pointer transition-all duration-500 overflow-hidden"
+                style={{
+                  background: "linear-gradient(135deg, hsl(220 15% 11%) 0%, hsl(220 15% 8%) 100%)",
+                  border: "1px solid hsl(220 15% 16%)",
+                  boxShadow: "0 0 0 0 transparent",
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.borderColor = `hsl(${cat.glow} / 0.5)`;
+                  el.style.boxShadow = `0 0 20px hsl(${cat.glow} / 0.2), inset 0 0 20px hsl(${cat.glow} / 0.05)`;
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.borderColor = "hsl(220 15% 16%)";
+                  el.style.boxShadow = "0 0 0 0 transparent";
+                }}
               >
-                <div className="relative w-16 h-16 flex-shrink-0 rounded-xl overflow-hidden bg-white/5">
-                  <img src={cat.img} alt={cat.label} className="w-full h-full object-cover object-top scale-110 group-hover:scale-125 transition-transform duration-700" width={768} height={768} loading="lazy" />
+                {/* Top LED line */}
+                <div className="absolute top-0 inset-x-4 h-px" style={{ background: `linear-gradient(90deg, transparent, hsl(${cat.glow} / 0.3), transparent)` }} />
+                
+                <div className="p-4 flex flex-col items-center gap-3 text-center">
+                  <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-white/5 border border-white/5 group-hover:border-white/10 transition-all">
+                    <img src={cat.img} alt={cat.label} className="w-full h-full object-cover object-top scale-110 group-hover:scale-130 transition-transform duration-700" width={768} height={768} loading="lazy" />
+                    {/* Glow overlay on hover */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `radial-gradient(circle, hsl(${cat.glow} / 0.15) 0%, transparent 70%)` }} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white group-hover:text-[hsl(40,80%,60%)] transition-colors">{cat.label}</h3>
+                    <p className="text-[11px] text-[hsl(210,15%,45%)] mt-0.5">{cat.desc}</p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-bold text-white group-hover:text-[hsl(40,80%,60%)] transition-colors">{cat.label}</h3>
-                  <p className="text-xs text-[hsl(210,15%,50%)]">{cat.desc}</p>
-                </div>
-                <ArrowRight className={`w-4 h-4 text-[hsl(210,15%,40%)] group-hover:text-[hsl(40,80%,60%)] transition-all flex-shrink-0 group-hover:translate-x-1 ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : ""}`} />
               </motion.div>
             ))}
           </div>
 
-          {/* Stats Bar */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.5, duration: 0.6 }} className="mt-10 max-w-4xl mx-auto">
-            <div className="rounded-2xl p-6 grid grid-cols-2 md:grid-cols-4 gap-6" style={{ background: "linear-gradient(135deg, hsl(220 15% 11%) 0%, hsl(220 15% 8%) 100%)", border: "1px solid hsl(220 15% 16%)" }}>
-              {stats.map((stat) => (
-                <div key={stat.label} className="text-center group">
-                  <stat.icon className="w-5 h-5 text-[hsl(40,80%,55%)] mx-auto mb-2 group-hover:scale-110 transition-transform" />
-                  <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-[hsl(40,85%,60%)] to-[hsl(32,95%,50%)] bg-clip-text text-transparent font-display">{stat.value}</div>
-                  <div className="text-xs text-[hsl(210,15%,45%)] mt-1">{stat.label}</div>
-                </div>
+          {/* ═══ Stats — Glowing boxes ═══ */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.6, duration: 0.5 }} className="mt-6 max-w-3xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {stats.map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  whileHover={{ scale: 1.05, y: -3 }}
+                  className="group rounded-xl p-4 text-center transition-all duration-500 cursor-default"
+                  style={{
+                    background: "linear-gradient(135deg, hsl(220 15% 11%) 0%, hsl(220 15% 8%) 100%)",
+                    border: "1px solid hsl(220 15% 16%)",
+                  }}
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.borderColor = "hsl(40 80% 55% / 0.4)";
+                    el.style.boxShadow = "0 0 15px hsl(40 80% 55% / 0.15)";
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.borderColor = "hsl(220 15% 16%)";
+                    el.style.boxShadow = "none";
+                  }}
+                >
+                  <stat.icon className="w-4 h-4 text-[hsl(40,80%,55%)] mx-auto mb-1.5 group-hover:scale-110 transition-transform" />
+                  <div className="text-xl font-bold bg-gradient-to-r from-[hsl(45,90%,65%)] to-[hsl(35,100%,48%)] bg-clip-text text-transparent font-display">{stat.value}</div>
+                  <div className="text-[10px] text-[hsl(210,15%,45%)] mt-0.5">{stat.label}</div>
+                </motion.div>
               ))}
             </div>
           </motion.div>
 
           {/* Scroll indicator */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }} className="flex justify-center mt-10">
-            <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }} className="text-[hsl(210,15%,30%)]">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }} className="flex justify-center mt-8">
+            <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }} className="text-[hsl(210,15%,25%)]">
               <ChevronDown className="w-6 h-6" />
             </motion.div>
           </motion.div>
