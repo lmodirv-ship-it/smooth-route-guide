@@ -162,16 +162,33 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Desktop Nav Links */}
-          <div className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <button
+          {/* Desktop Nav Links — Metallic sticker style */}
+          <div className="hidden lg:flex items-center gap-2">
+            {navLinks.map((link, i) => (
+              <motion.button
                 key={link.href}
                 onClick={() => scrollToSection(link.href)}
-                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-primary/5"
+                whileHover={{ scale: 1.08, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative px-5 py-2 text-sm font-bold tracking-wide uppercase overflow-hidden rounded-lg transition-all duration-300 group"
+                style={{
+                  background: "linear-gradient(145deg, hsl(220 15% 16%), hsl(220 15% 10%))",
+                  border: "1px solid hsl(220 15% 22%)",
+                  color: "hsl(210 15% 70%)",
+                  boxShadow: "0 2px 8px hsl(0 0% 0% / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
+                }}
               >
-                {link.label}
-              </button>
+                {/* Metallic shine sweep */}
+                <motion.div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ background: "linear-gradient(105deg, transparent 40%, hsl(0 0% 100% / 0.1) 48%, hsl(0 0% 100% / 0.15) 50%, hsl(0 0% 100% / 0.1) 52%, transparent 60%)" }}
+                  animate={{ x: ["-200%", "200%"] }}
+                  transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 + i * 0.5 }}
+                />
+                {/* Glow on hover */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg" style={{ boxShadow: "0 0 15px hsl(32 95% 55% / 0.25), inset 0 0 15px hsl(32 95% 55% / 0.05)" }} />
+                <span className="relative z-10 group-hover:text-[hsl(40,80%,65%)] transition-colors duration-300">{link.label}</span>
+              </motion.button>
             ))}
           </div>
 
