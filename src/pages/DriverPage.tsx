@@ -369,6 +369,39 @@ const DriverPage = () => {
               </div>
             </motion.div>
           )}
+          {/* Subscription banner */}
+          {subscriptionExpired && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mx-4 mt-3 p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/30 flex items-center justify-between"
+            >
+              <Button
+                size="sm"
+                onClick={() => navigate("/driver/subscription")}
+                className="h-8 px-4 rounded-lg bg-gradient-to-r from-yellow-500 to-orange-500 text-black text-xs font-bold"
+              >
+                <Crown className="w-3.5 h-3.5 ml-1" />
+                اشترك الآن
+              </Button>
+              <div className="text-right">
+                <p className="text-yellow-400 font-bold text-sm">اشتراك مطلوب</p>
+                <p className="text-white/40 text-[11px]">اشترك لقبول الطلبات</p>
+              </div>
+            </motion.div>
+          )}
+          {!subscriptionExpired && subDaysLeft <= 3 && subDaysLeft > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mx-4 mt-3 p-2 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-between"
+            >
+              <Button size="sm" onClick={() => navigate("/driver/subscription")} variant="ghost" className="text-orange-400 text-xs">
+                تجديد
+              </Button>
+              <p className="text-orange-400 text-xs">⚠️ اشتراكك ينتهي خلال {subDaysLeft} أيام</p>
+            </motion.div>
+          )}
           {nearbyOrders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-3 border border-emerald-500/15">
