@@ -7,12 +7,13 @@ import { Outlet } from "react-router-dom";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import hnLogoCoin from "@/assets/hn-logo-coin.png";
 
 const PARTNER_SITES = [
-  { name: "Hiba Eco", url: "https://www.hiba-eco.com", initials: "HE", color: "from-emerald-400 to-green-600" },
-  { name: "Lavage Nizar", url: "https://www.lavagenizar.com", initials: "LN", color: "from-blue-400 to-cyan-600" },
-  { name: "Tanja Print", url: "https://www.tanjaprint.com", initials: "TP", color: "from-amber-400 to-orange-600" },
-  { name: "Slava Call Hiba", url: "https://slavacall-hiba.com", initials: "SC", color: "from-purple-400 to-pink-600" },
+  { name: "Hiba Eco", url: "https://www.hiba-eco.com" },
+  { name: "Lavage Nizar", url: "https://www.lavagenizar.com" },
+  { name: "Tanja Print", url: "https://www.tanjaprint.com" },
+  { name: "Slava Call Hiba", url: "https://slavacall-hiba.com" },
 ];
 
 const MainLayout = () => (
@@ -45,8 +46,8 @@ const MainLayout = () => (
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-all duration-300 group shrink-0"
             >
-              <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${site.color} flex items-center justify-center text-[8px] font-black text-white shadow-sm group-hover:shadow-[0_0_8px_hsl(32,95%,55%,0.3)] transition-all duration-300`}>
-                {site.initials}
+              <div className="w-7 h-7 rounded-md border border-primary/30 group-hover:border-primary/60 transition-all duration-300 overflow-hidden flex items-center justify-center bg-secondary/60 group-hover:shadow-[0_0_10px_hsl(32,95%,55%,0.3)]">
+                <img src={hnLogoCoin} alt={site.name} className="w-full h-full object-cover" />
               </div>
               <span className="font-medium tracking-wide group-hover:text-primary transition-colors">{site.name}</span>
               <span className="text-[9px] text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors hidden sm:inline">
