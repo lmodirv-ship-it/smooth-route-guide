@@ -2,10 +2,16 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Package, Clock, Users, AlertTriangle, CheckCircle, Car, Activity,
-  Loader2, PhoneIncoming, Bike, UtensilsCrossed, TrendingUp, Bell,
-  ArrowRight, Eye, Headphones, ShieldCheck, Truck, Star, Zap
+  Loader2, Bell, ArrowRight, Eye, Headphones, Zap
 } from "lucide-react";
+import packageImg from "@/assets/icons/package-real.png";
+import checkImg from "@/assets/icons/check-real.png";
+import foodImg from "@/assets/icons/food-real.png";
+import bikeImg from "@/assets/icons/bike-real.png";
+import trendImg from "@/assets/icons/trend-real.png";
+import carImg from "@/assets/icons/car-real.png";
+import alertImg from "@/assets/icons/alert-real.png";
+import phoneImg from "@/assets/icons/phone-real.png";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
