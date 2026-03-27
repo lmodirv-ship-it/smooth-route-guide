@@ -25,8 +25,6 @@ const FloatingChatButton = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
-  if (location.pathname === "/community") return null;
-
   useEffect(() => {
     if (!open) return;
     const fetchContacts = async () => {
