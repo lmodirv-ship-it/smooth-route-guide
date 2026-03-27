@@ -120,7 +120,14 @@ const SmartAssistantPage = () => {
 
   useEffect(() => {
     chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
+    // Auto-speak last assistant message
+    if (autoSpeak && messages.length > 0) {
+      const last = messages[messages.length - 1];
+      if (last.role === "assistant" && typeof last.content === "string" && !loading) {
+        speak(last.content);
+      }
+    }
+  }, [messages, loading]);
 
   useEffect(() => {
     if (smartRefreshKey > 0) setIframeKey((k) => k + 1);
