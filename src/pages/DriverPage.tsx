@@ -313,7 +313,7 @@ const DriverPage = () => {
                     transition={{ delay: idx * 0.04 }}
                     onClick={() => setSelectedOrderId(isSelected ? null : order.id)}
                     className={`rounded-2xl border overflow-hidden transition-all cursor-pointer ${
-                      isSelected ? "border-primary/40 bg-primary/5 shadow-lg shadow-primary/10" : "border-border bg-card hover:border-border/80"
+                      isSelected ? "border-primary/40 bg-white/[0.06] shadow-lg shadow-primary/10" : "border-white/[0.06] bg-white/[0.03] hover:bg-white/[0.05]"
                     }`}>
                     <div className="p-3.5">
                       {/* Addresses */}
