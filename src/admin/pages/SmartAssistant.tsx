@@ -73,6 +73,15 @@ async function callAdminAI({ messages, onResult, onError }: {
 
 const SmartAssistantPage = () => {
   const { dir } = useI18n();
+  const [autoSpeak, setAutoSpeak] = useState(false);
+  
+  const { isListening, transcript, startListening, stopListening, speak, stopSpeaking, isSpeaking, supported: speechSupported } = useWebSpeech({
+    lang: "ar-MA",
+    continuous: false,
+    onResult: (text) => {
+      setInput(prev => prev ? prev + " " + text : text);
+    },
+  });
   const {
     smartAssistantActive: isActive,
     smartPreviewUrl: previewUrl,
