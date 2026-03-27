@@ -227,6 +227,13 @@ const DriverProfile = () => {
         </Button>
       </div>
 
+      <div className="px-4 pb-3">
+        <Button onClick={() => navigate("/driver")} className="w-full gap-2 h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
+          <MapPin className="w-4 h-4" />
+          العودة إلى الخريطة
+        </Button>
+      </div>
+
       <BottomNav role="driver" />
     </div>
   );
