@@ -63,6 +63,7 @@ const DriverPage = () => {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [todayStats, setTodayStats] = useState({ trips: 0, earnings: 0, rating: 0 });
   const [driverName, setDriverName] = useState("السائق");
+  const [driverAvatar, setDriverAvatar] = useState<string | null>(null);
   const [activeRideId, setActiveRideId] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [driverType, setDriverType] = useState<string>("ride");
@@ -76,8 +77,9 @@ const DriverPage = () => {
     const fetchStats = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: profile } = await supabase.from("profiles").select("name").eq("id", user.id).single();
+      const { data: profile } = await supabase.from("profiles").select("name, avatar_url").eq("id", user.id).single();
       if (profile?.name) setDriverName(profile.name);
+      if (profile?.avatar_url) setDriverAvatar(profile.avatar_url);
 
       const { data: activeRides } = await supabase.from("ride_requests").select("id, status")
         .eq("driver_id", user.id).in("status", ["accepted", "in_progress", "arriving"]).limit(1);
