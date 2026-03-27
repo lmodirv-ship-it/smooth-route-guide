@@ -51,6 +51,23 @@ const fadeChild = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
+const FAQItem = ({ question, answer, index }: { question: string; answer: string; index: number }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={index + 1}>
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between gap-4 p-5 rounded-2xl gradient-card border border-border hover:border-primary/30 transition-all duration-300 text-start group">
+        <span className="font-bold text-foreground group-hover:text-primary transition-colors">{question}</span>
+        <ChevronDown className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="px-5 pb-4 pt-2 text-sm text-muted-foreground leading-relaxed">
+          {answer}
+        </motion.div>
+      )}
+    </motion.div>
+  );
+};
+
 export default function LandingPage() {
   const { t, dir } = useI18n();
   const navigate = useNavigate();
