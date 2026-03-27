@@ -329,44 +329,36 @@ export default function LandingPage() {
               }} />
 
               <div className="relative z-10 flex flex-col items-center py-10 md:py-12 px-6 md:px-10">
-                {/* Logo — smaller with cosmic glow */}
+                {/* Logo — larger, floating & rotating like it's alive */}
                 <motion.div
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.3 }}
                   className="relative mb-5"
                 >
+                  <div className="absolute inset-0 blur-2xl bg-primary/25 rounded-full scale-150" />
                   <motion.div
-                    className="absolute inset-0 rounded-full"
-                    style={{ background: "radial-gradient(circle, hsl(32 95% 55% / 0.3) 0%, transparent 70%)" }}
-                    animate={{ scale: [1.2, 1.5, 1.2], opacity: [0.3, 0.6, 0.3] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                  <motion.div
-                    className="absolute inset-[-15px] rounded-full border border-[hsl(40,80%,55%/0.25)]"
+                    className="absolute inset-[-20px] rounded-full border border-[hsl(40,80%,55%/0.2)]"
                     animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                    transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
                     style={{ borderStyle: "dashed" }}
                   />
-                  {/* Floating sparkles around logo */}
-                  {[0, 60, 120, 180, 240, 300].map((angle, i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute w-1 h-1 rounded-full bg-[hsl(40,80%,65%)]"
-                      style={{
-                        top: "50%", left: "50%",
-                        transform: `rotate(${angle}deg) translateY(-50px)`,
-                      }}
-                      animate={{ opacity: [0, 1, 0], scale: [0.5, 1.5, 0.5] }}
-                      transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
-                    />
-                  ))}
-                  <div className="absolute inset-0 blur-2xl bg-primary/25 rounded-full scale-125" />
-                  <img
+                  <motion.img
                     src={heroEmblem}
                     alt="HN Driver"
-                    className="relative w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-[0_0_30px_hsl(32,95%,55%,0.5)]"
+                    className="relative w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-[0_0_35px_hsl(32,95%,55%,0.5)]"
                     width={800} height={800}
+                    animate={{
+                      rotateY: [0, 360],
+                      scale: [1, 1.08, 0.95, 1.05, 1],
+                      y: [0, -8, 4, -6, 0],
+                    }}
+                    transition={{
+                      rotateY: { duration: 8, repeat: Infinity, ease: "linear" },
+                      scale: { duration: 5, repeat: Infinity, ease: "easeInOut" },
+                      y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+                    }}
+                    style={{ perspective: "600px" }}
                   />
                 </motion.div>
 
@@ -391,38 +383,46 @@ export default function LandingPage() {
                   </span>
                 </motion.div>
 
-                {/* "HN DRIVER" — Golden 3D metallic letters */}
+                {/* "HN DRIVER" — Chrome metal badge stuck on glass */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.8, duration: 0.6, ease: "easeOut" }}
                   className="relative"
                 >
-                  <h1
-                    className="text-5xl md:text-7xl lg:text-8xl font-black font-display tracking-wider"
-                    style={{
-                      background: "linear-gradient(170deg, hsl(45,90%,75%) 0%, hsl(40,95%,60%) 20%, hsl(35,100%,50%) 40%, hsl(30,90%,40%) 60%, hsl(40,95%,60%) 80%, hsl(45,90%,75%) 100%)",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      filter: "drop-shadow(0 2px 4px hsl(32,95%,30%,0.6)) drop-shadow(0 0 20px hsl(32,95%,55%,0.3))",
-                    }}
-                  >
-                    HN DRIVER
-                  </h1>
-                  {/* Shimmer sweep across letters */}
-                  <motion.div
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      background: "linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.25) 45%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.25) 55%, transparent 65%)",
-                      backgroundSize: "200% 100%",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                    }}
-                    animate={{ backgroundPosition: ["200% 0", "-200% 0"] }}
-                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
-                  >
-                    <span className="text-5xl md:text-7xl lg:text-8xl font-black font-display tracking-wider opacity-0">HN DRIVER</span>
-                  </motion.div>
+                  {/* Metal badge backing — like a real embossed plate */}
+                  <div className="relative px-6 md:px-10 py-2 md:py-3 rounded-lg" style={{
+                    background: "linear-gradient(180deg, hsl(220 10% 25%) 0%, hsl(220 10% 15%) 40%, hsl(220 10% 18%) 60%, hsl(220 10% 12%) 100%)",
+                    boxShadow: "0 4px 12px hsl(0 0% 0% / 0.6), 0 1px 0 hsl(0 0% 100% / 0.1), inset 0 1px 0 hsl(0 0% 100% / 0.12), inset 0 -1px 0 hsl(0 0% 0% / 0.4)",
+                    border: "1px solid hsl(220 10% 28%)",
+                  }}>
+                    {/* Brushed metal texture overlay */}
+                    <div className="absolute inset-0 rounded-lg pointer-events-none opacity-30" style={{
+                      backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 2px, hsl(0 0% 100% / 0.02) 2px, hsl(0 0% 100% / 0.02) 3px)",
+                    }} />
+                    <h1
+                      className="relative text-5xl md:text-7xl lg:text-8xl font-black font-display tracking-wider"
+                      style={{
+                        background: "linear-gradient(170deg, hsl(0 0% 95%) 0%, hsl(0 0% 80%) 20%, hsl(0 0% 60%) 40%, hsl(0 0% 75%) 55%, hsl(0 0% 90%) 70%, hsl(0 0% 70%) 85%, hsl(0 0% 85%) 100%)",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        filter: "drop-shadow(0 1px 0 hsl(0 0% 100% / 0.3)) drop-shadow(0 -1px 0 hsl(0 0% 0% / 0.5)) drop-shadow(0 2px 6px hsl(0 0% 0% / 0.4))",
+                      }}
+                    >
+                      HN DRIVER
+                    </h1>
+                    {/* Shimmer sweep — like light catching chrome */}
+                    <motion.div
+                      className="absolute inset-0 rounded-lg pointer-events-none overflow-hidden"
+                    >
+                      <motion.div
+                        className="absolute inset-0"
+                        style={{ background: "linear-gradient(105deg, transparent 30%, hsl(0 0% 100% / 0.15) 45%, hsl(0 0% 100% / 0.25) 50%, hsl(0 0% 100% / 0.15) 55%, transparent 70%)" }}
+                        animate={{ x: ["-100%", "100%"] }}
+                        transition={{ duration: 3, repeat: Infinity, repeatDelay: 5 }}
+                      />
+                    </motion.div>
+                  </div>
                 </motion.div>
 
                 {/* Subtitle */}
