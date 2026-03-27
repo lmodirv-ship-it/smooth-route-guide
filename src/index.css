@@ -196,6 +196,17 @@
   .icon-circle-blue {
     @apply icon-circle glow-ring-blue;
   }
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: marquee 20s linear infinite;
+  }
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
+
   .safe-mobile-bottom {
     padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
   }
