@@ -206,30 +206,38 @@ const DriverPage = () => {
 
   const cityName = driverLocation ? detectCity(driverLocation) : "جارٍ التحديد...";
 
+  // Trip progress: 0 = waiting, 0.5 = en route, 1 = arrived
+  const tripProgress = useMemo(() => {
+    if (!activeRideId) return 0;
+    // Could be enhanced with real tracking data
+    return 0.5;
+  }, [activeRideId]);
+
+  const progressColor = useMemo(() => {
+    if (tripProgress >= 1) return "bg-emerald-500 shadow-emerald-500/40";
+    if (tripProgress > 0) return "bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 shadow-amber-500/30";
+    return "bg-zinc-700";
+  }, [tripProgress]);
+
+  const progressLabel = useMemo(() => {
+    if (tripProgress >= 1) return "✅ تم الوصول";
+    if (tripProgress > 0) return "🚗 في الطريق...";
+    return "في الانتظار";
+  }, [tripProgress]);
+
   return (
     <div className="h-screen flex flex-col bg-background" dir={dir} onClick={() => unlockAudio()}>
-      {/* Map */}
-      <div className={`relative shrink-0 transition-all duration-500 ${mapExpanded ? "h-[60vh]" : "h-[45vh] min-h-[250px]"}`}>
+      {/* Map - takes most of the screen */}
+      <div className="relative flex-1 min-h-0">
         <LeafletMap center={driverLocation || DEFAULT_LOCATION} zoom={14} showMarker driverLocation={driverLocation} route={route} className="w-full h-full" />
 
         {/* Top overlay */}
         <div className="absolute top-0 inset-x-0 z-[1000] bg-gradient-to-b from-black/80 via-black/40 to-transparent px-4 pt-3 pb-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <button onClick={() => navigate("/driver/profile")} className="relative">
-                <Avatar className="w-10 h-10 border-2 border-primary/40">
-                  <AvatarImage src={driverAvatar || undefined} />
-                  <AvatarFallback className="bg-primary/20 text-primary font-bold text-sm">
-                    {driverName?.charAt(0)?.toUpperCase() || "S"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-black" />
-              </button>
               <div>
                 <p className="text-white font-bold text-sm">{driverName}</p>
-                <div className="flex items-center gap-1">
-                  <p className="text-emerald-400 text-[11px]">{t.driver.connected}</p>
-                </div>
+                <p className="text-emerald-400 text-[11px]">{t.driver.connected}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -245,23 +253,51 @@ const DriverPage = () => {
           </div>
         </div>
 
+        {/* Driver avatar - bottom right of map */}
+        <button
+          onClick={() => navigate("/driver/profile")}
+          className="absolute bottom-4 right-4 z-[1000]"
+        >
+          <div className="relative">
+            <Avatar className="w-14 h-14 border-[3px] border-primary shadow-xl shadow-primary/30">
+              <AvatarImage src={driverAvatar || undefined} />
+              <AvatarFallback className="bg-primary text-primary-foreground font-bold text-lg">
+                {driverName?.charAt(0)?.toUpperCase() || "S"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-400 border-[3px] border-black flex items-center justify-center">
+              <div className="w-1.5 h-1.5 rounded-full bg-white" />
+            </div>
+          </div>
+        </button>
+
         {/* Radius indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1000] bg-card/90 backdrop-blur-md text-foreground px-4 py-1.5 rounded-full text-xs flex items-center gap-2 border border-border">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] bg-card/90 backdrop-blur-md text-foreground px-4 py-1.5 rounded-full text-xs flex items-center gap-2 border border-border">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           {t.driver.searchRadius}: {MAX_RADIUS_KM} {t.driver.km}
         </div>
-
-        {/* Map toggle */}
-        <button onClick={() => setMapExpanded(!mapExpanded)}
-          className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[1000] bg-card/90 backdrop-blur-md px-4 py-1.5 rounded-full border border-border flex items-center gap-1.5 text-xs text-muted-foreground">
-          {mapExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          {mapExpanded ? "تصغير" : "تكبير"}
-        </button>
       </div>
 
-      {/* Orders */}
-      <div className="flex-1 overflow-hidden flex flex-col bg-gradient-to-b from-zinc-950 via-black to-black">
-        <div className="px-4 py-2.5 flex items-center justify-between border-b border-white/5 shrink-0">
+      {/* Progress Bar */}
+      <div className="shrink-0 bg-zinc-950 px-4 py-2 border-t border-white/5">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[10px] text-muted-foreground">{progressLabel}</span>
+          <span className="text-[10px] text-muted-foreground">{Math.round(tripProgress * 100)}%</span>
+        </div>
+        <div className="h-3 rounded-full bg-zinc-800/80 overflow-hidden border border-white/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
+          <motion.div
+            className={`h-full rounded-full ${progressColor} shadow-lg`}
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.max(tripProgress * 100, 2)}%` }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            style={{ backgroundSize: "200% 100%" }}
+          />
+        </div>
+      </div>
+
+      {/* Orders Section - compact scrollable */}
+      <div className="shrink-0 max-h-[35vh] overflow-hidden flex flex-col bg-gradient-to-b from-zinc-950 to-black border-t border-white/5">
+        <div className="px-4 py-2 flex items-center justify-between shrink-0">
           <div className="bg-emerald-500/15 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">
             {nearbyOrders.length}
           </div>
@@ -271,7 +307,7 @@ const DriverPage = () => {
           </h2>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pb-2">
           {/* Banners */}
           {(driverType === "delivery" || driverType === "both") && (
             <BannerCard color="blue" icon={Package} title={t.driver.deliveryService} subtitle={t.driver.viewDeliveryOrders}
@@ -285,76 +321,55 @@ const DriverPage = () => {
             <BannerCard color="amber" icon={Crown} title="اشتراك مطلوب" subtitle="اشترك لقبول الطلبات"
               btnLabel="اشترك الآن" onClick={() => navigate("/driver/subscription")} gradient />
           )}
-          {!subscriptionExpired && subDaysLeft <= 3 && subDaysLeft > 0 && (
-            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-              className="mx-4 mt-3 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between">
-              <Button size="sm" onClick={() => navigate("/driver/subscription")} variant="ghost" className="text-amber-400 text-xs">تجديد</Button>
-              <p className="text-amber-400 text-xs">⚠️ اشتراكك ينتهي خلال {subDaysLeft} أيام</p>
-            </motion.div>
-          )}
 
           {nearbyOrders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4 border border-primary/15">
-                <Radar className="w-10 h-10 text-primary/30" />
-              </div>
-              <p className="text-foreground/70 font-medium">{t.driver.noRidesInArea}</p>
-              <p className="text-muted-foreground text-sm mt-1">{t.driver.ridesWillAppear}</p>
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <Radar className="w-8 h-8 text-primary/20 mb-2" />
+              <p className="text-foreground/70 font-medium text-sm">{t.driver.noRidesInArea}</p>
+              <p className="text-muted-foreground text-xs mt-0.5">{t.driver.ridesWillAppear}</p>
             </div>
           ) : (
-            <div className="p-3 space-y-2.5">
+            <div className="px-3 space-y-2">
               {nearbyOrders.map((order, idx) => {
                 const isSelected = selectedOrderId === order.id;
                 return (
                   <motion.div key={order.id}
-                    initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.04 }}
+                    initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.03 }}
                     onClick={() => setSelectedOrderId(isSelected ? null : order.id)}
-                    className={`rounded-2xl border overflow-hidden transition-all cursor-pointer ${
+                    className={`rounded-xl border overflow-hidden transition-all cursor-pointer ${
                       isSelected ? "border-primary/40 bg-white/[0.06] shadow-lg shadow-primary/10" : "border-white/[0.06] bg-white/[0.03] hover:bg-white/[0.05]"
                     }`}>
-                    <div className="p-3.5">
-                      {/* Addresses */}
-                      <div className="flex items-start gap-3 mb-3">
-                        <div className="flex flex-col items-center gap-1 pt-0.5">
-                          <div className="w-3 h-3 rounded-full bg-emerald-500 border-2 border-emerald-500/30" />
-                          <div className="w-0.5 h-6 bg-gradient-to-b from-emerald-500/50 to-primary/50 rounded-full" />
-                          <div className="w-3 h-3 rounded-full bg-primary border-2 border-primary/30" />
-                        </div>
-                        <div className="flex-1 min-w-0 space-y-2">
-                          <div>
-                            <p className="text-[10px] text-muted-foreground">نقطة الانطلاق</p>
-                            <p className="text-sm text-foreground truncate">{order.pickup || "—"}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] text-muted-foreground">الوجهة</p>
-                            <p className="text-sm text-foreground truncate">{order.destination || "—"}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Info chips + accept */}
+                    <div className="p-3">
                       <div className="flex items-center justify-between">
                         <Button size="sm"
                           onClick={(e) => { e.stopPropagation(); handleAccept(order.id); }}
                           disabled={accepting === order.id || !!activeRideId}
-                          className="h-9 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-xs font-bold shadow-lg shadow-emerald-500/20">
+                          className="h-8 px-3 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-xs font-bold shadow-lg shadow-emerald-500/20">
                           {accepting === order.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (
                             <><CheckCircle className="w-3.5 h-3.5 ml-1" />{t.driver.accept}</>
                           )}
                         </Button>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <p className="text-xs text-foreground truncate max-w-[120px]">{order.pickup || "—"}</p>
+                            <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">{order.destination || "—"}</p>
+                          </div>
+                          <span className="text-primary font-black text-lg">{order.totalPrice}<span className="text-[9px] font-normal opacity-50">DH</span></span>
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="mt-2 pt-2 border-t border-white/5 flex items-center justify-end gap-2">
                           {order.eta && (
-                            <span className="text-[11px] flex items-center gap-0.5 text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] flex items-center gap-0.5 text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full">
                               <Clock className="w-3 h-3" />{order.eta}د
                             </span>
                           )}
-                          <span className="text-[11px] flex items-center gap-0.5 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] flex items-center gap-0.5 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
                             <Route className="w-3 h-3" />{order.totalDistance} كم
                           </span>
-                          <span className="text-primary font-black text-lg">{order.totalPrice} <span className="text-[10px] font-normal opacity-60">DH</span></span>
-                        </div>
-                      </div>
+                        </motion.div>
+                      )}
                     </div>
                   </motion.div>
                 );
