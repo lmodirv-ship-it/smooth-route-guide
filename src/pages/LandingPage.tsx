@@ -74,6 +74,25 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const lt = t.landing;
+  const [materialPhase, setMaterialPhase] = useState(0);
+
+  // Cycle through materials: glass → wood → metal → glass...
+  useEffect(() => {
+    const timer = setInterval(() => setMaterialPhase((p) => (p + 1) % 3), 6000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const materialStyles = useMemo(() => {
+    const materials = [
+      // Glass
+      { bg: "hsl(220 15% 10% / 0.15)", blur: "blur(8px)", border: "hsl(0 0% 100% / 0.12)", label: "GLASS" },
+      // Wood
+      { bg: "hsl(25 40% 15% / 0.55)", blur: "blur(4px)", border: "hsl(30 50% 30% / 0.4)", label: "WOOD" },
+      // Metal
+      { bg: "hsl(220 10% 18% / 0.6)", blur: "blur(6px)", border: "hsl(220 10% 40% / 0.3)", label: "METAL" },
+    ];
+    return materials[materialPhase];
+  }, [materialPhase]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
