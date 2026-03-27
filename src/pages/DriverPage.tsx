@@ -16,6 +16,7 @@ import { driverNetEarnings, COMMISSION_RATE } from "@/lib/pricing";
 import { usePricingSettings } from "@/hooks/usePricingSettings";
 import { useI18n } from "@/i18n/context";
 import { useDriverSubscription } from "@/hooks/useDriverSubscription";
+import driverLogo from "@/assets/hn-driver-badge.png";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 const MAX_RADIUS_KM = 10;
@@ -233,6 +234,7 @@ const DriverPage = () => {
         <div className="absolute top-0 inset-x-0 z-[1000] bg-gradient-to-b from-black/80 via-black/40 to-transparent px-4 pt-3 pb-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
+              <img src={driverLogo} alt="HN" className="w-8 h-8 rounded-full shadow-lg border border-white/20" />
               <div>
                 <p className="text-white font-bold text-sm">{driverName}</p>
                 <p className="text-emerald-400 text-[11px]">{t.driver.connected}</p>
