@@ -13,6 +13,7 @@ import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import logo from "@/assets/hn-driver-badge.png";
+import SidebarNavButton from "@/admin/components/SidebarNavButton";
 
 const CallCenterLayout = () => {
   const { t, dir } = useI18n();
@@ -93,24 +94,16 @@ const CallCenterLayout = () => {
           </div>
         </div>
       )}
-      <nav className="flex-1 p-2 space-y-0.5 overflow-auto">
+      <nav className="flex-1 p-2 space-y-1 overflow-auto">
         {navItems.map((item) => (
-          <button
+          <SidebarNavButton
             key={item.path}
-            onClick={() => {
-              navigate(item.path);
-              setMobileOpen(false);
-            }}
-            className={`w-full flex items-center ${collapsed ? "justify-center" : "justify-start"} gap-2.5 px-3 py-2.5 rounded-lg transition-all text-sm ${
-              isActive(item.path)
-                ? "gradient-primary text-primary-foreground shadow-lg"
-                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
-            title={collapsed ? item.label : undefined}
-          >
-            <item.icon className="w-4 h-4 flex-shrink-0" />
-            {!collapsed && <span>{item.label}</span>}
-          </button>
+            icon={item.icon}
+            label={item.label}
+            isActive={isActive(item.path)}
+            collapsed={collapsed}
+            onClick={() => { navigate(item.path); setMobileOpen(false); }}
+          />
         ))}
       </nav>
       <div className="p-2 border-t border-border">

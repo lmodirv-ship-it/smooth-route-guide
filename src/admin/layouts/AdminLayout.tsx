@@ -22,6 +22,7 @@ import AdminGeoFilter from "@/admin/components/AdminGeoFilter";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import FaceGuard from "@/admin/components/FaceGuard";
+import SidebarNavButton from "@/admin/components/SidebarNavButton";
 
 type AiMsg = { role: "user" | "assistant"; content: string };
 
@@ -174,32 +175,17 @@ const AdminLayout = () => {
             </div>
           </div>
         )}
-        <nav className="flex-1 p-2.5 space-y-0.5 overflow-auto scrollbar-thin">
+        <nav className="flex-1 p-2.5 space-y-1 overflow-auto scrollbar-thin">
           {navItems.map((item) => (
-            <button
+            <SidebarNavButton
               key={item.path}
+              icon={item.icon}
+              label={item.label}
+              isActive={isActive(item.path)}
+              collapsed={sidebarCollapsed}
+              badge={item.path === "/admin/requests" ? pendingCount : undefined}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "justify-between"} px-3 py-2.5 rounded-xl transition-all duration-200 group ${
-                isActive(item.path)
-                  ? "gradient-primary text-primary-foreground shadow-lg shadow-primary/20"
-                  : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground hover:translate-x-[-2px]"
-              }`}
-              title={sidebarCollapsed ? item.label : undefined}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
-                  isActive(item.path) ? "bg-primary-foreground/20" : "bg-secondary group-hover:bg-secondary/80"
-                }`}>
-                  <item.icon className="w-4 h-4 flex-shrink-0" />
-                </div>
-                {!sidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
-              </div>
-              {!sidebarCollapsed && item.path === "/admin/requests" && pendingCount > 0 && (
-                <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold animate-pulse ${isActive(item.path) ? "bg-primary-foreground/20 text-primary-foreground" : "bg-destructive/20 text-destructive"}`}>
-                  {pendingCount}
-                </span>
-              )}
-            </button>
+            />
           ))}
         </nav>
           </motion.div>
@@ -231,18 +217,14 @@ const AdminLayout = () => {
             </div>
             <nav className="flex-1 p-3 space-y-1 overflow-auto">
               {navItems.map((item) => (
-                <button
+                <SidebarNavButton
                   key={item.path}
+                  icon={item.icon}
+                  label={item.label}
+                  isActive={isActive(item.path)}
+                  badge={item.path === "/admin/requests" ? pendingCount : undefined}
                   onClick={() => { navigate(item.path); setMobileOpen(false); }}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all ${
-                    isActive(item.path) ? "gradient-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <item.icon className="w-5 h-5 flex-shrink-0" />
-                    <span className="text-sm">{item.label}</span>
-                  </div>
-                </button>
+                />
               ))}
             </nav>
           </aside>
