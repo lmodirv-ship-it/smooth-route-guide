@@ -7,13 +7,16 @@ import { Outlet } from "react-router-dom";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
-import hnLogoCoin from "@/assets/hn-logo-coin.png";
+import partnerHibaEco from "@/assets/partner-hiba-eco.png";
+import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
+import partnerTanjaPrint from "@/assets/partner-tanja-print.png";
+import partnerSlavacall from "@/assets/partner-slavacall.png";
 
 const PARTNER_SITES = [
-  { name: "Hiba Eco", url: "https://www.hiba-eco.com" },
-  { name: "Lavage Nizar", url: "https://www.lavagenizar.com" },
-  { name: "Tanja Print", url: "https://www.tanjaprint.com" },
-  { name: "Slava Call Hiba", url: "https://slavacall-hiba.com" },
+  { name: "Hiba Eco", url: "https://www.hiba-eco.com", logo: partnerHibaEco },
+  { name: "Lavage Nizar", url: "https://www.lavagenizar.com", logo: partnerLavageNizar },
+  { name: "Tanja Print", url: "https://www.tanjaprint.com", logo: partnerTanjaPrint },
+  { name: "Slava Call Hiba", url: "https://slavacall-hiba.com", logo: partnerSlavacall },
 ];
 
 const MainLayout = () => (
@@ -47,7 +50,7 @@ const MainLayout = () => (
               className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-all duration-300 group shrink-0"
             >
               <div className="w-7 h-7 rounded-md border border-primary/30 group-hover:border-primary/60 transition-all duration-300 overflow-hidden flex items-center justify-center bg-secondary/60 group-hover:shadow-[0_0_10px_hsl(32,95%,55%,0.3)]">
-                <img src={hnLogoCoin} alt={site.name} className="w-full h-full object-cover" />
+                <img src={site.logo} alt={site.name} className="w-full h-full object-cover" loading="lazy" />
               </div>
               <span className="font-medium tracking-wide group-hover:text-primary transition-colors">{site.name}</span>
               <span className="text-[9px] text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors hidden sm:inline">
