@@ -312,7 +312,7 @@ const AdminRestaurants = () => {
                            className="w-20 h-8 text-center text-sm"
                          />
                        </TableCell>
-                       <TableCell className="font-mono text-sm">{s.store_code || "—"}</TableCell>
+                       
                        <TableCell>
                          <Button
                            size="sm"
