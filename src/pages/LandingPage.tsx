@@ -449,38 +449,50 @@ export default function LandingPage() {
                   </span>
                 </motion.div>
 
-                {/* "HN DRIVER" — Chrome metal badge stuck on glass */}
+                {/* "HN DRIVER" — Metal letters that morph: copper → gold → silver → bronze */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.8, duration: 0.6, ease: "easeOut" }}
                   className="relative"
                 >
-                  {/* Metal badge backing — like a real embossed plate */}
+                  {/* Metal badge backing */}
                   <div className="relative px-6 md:px-10 py-2 md:py-3 rounded-lg" style={{
                     background: "linear-gradient(180deg, hsl(220 10% 25%) 0%, hsl(220 10% 15%) 40%, hsl(220 10% 18%) 60%, hsl(220 10% 12%) 100%)",
                     boxShadow: "0 4px 12px hsl(0 0% 0% / 0.6), 0 1px 0 hsl(0 0% 100% / 0.1), inset 0 1px 0 hsl(0 0% 100% / 0.12), inset 0 -1px 0 hsl(0 0% 0% / 0.4)",
                     border: "1px solid hsl(220 10% 28%)",
                   }}>
-                    {/* Brushed metal texture overlay */}
                     <div className="absolute inset-0 rounded-lg pointer-events-none opacity-30" style={{
                       backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 2px, hsl(0 0% 100% / 0.02) 2px, hsl(0 0% 100% / 0.02) 3px)",
                     }} />
-                    <h1
+                    <motion.h1
                       className="relative text-5xl md:text-7xl lg:text-8xl font-black font-display tracking-wider"
+                      animate={{
+                        backgroundImage: [
+                          // Copper
+                          "linear-gradient(170deg, hsl(20,70%,70%) 0%, hsl(15,80%,50%) 25%, hsl(10,70%,40%) 50%, hsl(18,75%,55%) 75%, hsl(20,70%,65%) 100%)",
+                          // Gold
+                          "linear-gradient(170deg, hsl(45,90%,75%) 0%, hsl(40,95%,60%) 25%, hsl(35,100%,45%) 50%, hsl(40,95%,60%) 75%, hsl(45,90%,70%) 100%)",
+                          // Silver / Chrome
+                          "linear-gradient(170deg, hsl(210,10%,90%) 0%, hsl(210,10%,70%) 25%, hsl(210,10%,55%) 50%, hsl(210,10%,75%) 75%, hsl(210,10%,85%) 100%)",
+                          // Bronze
+                          "linear-gradient(170deg, hsl(30,60%,60%) 0%, hsl(25,70%,45%) 25%, hsl(20,65%,35%) 50%, hsl(28,65%,50%) 75%, hsl(30,60%,58%) 100%)",
+                          // Copper (loop)
+                          "linear-gradient(170deg, hsl(20,70%,70%) 0%, hsl(15,80%,50%) 25%, hsl(10,70%,40%) 50%, hsl(18,75%,55%) 75%, hsl(20,70%,65%) 100%)",
+                        ],
+                      }}
+                      transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
                       style={{
-                        background: "linear-gradient(170deg, hsl(0 0% 95%) 0%, hsl(0 0% 80%) 20%, hsl(0 0% 60%) 40%, hsl(0 0% 75%) 55%, hsl(0 0% 90%) 70%, hsl(0 0% 70%) 85%, hsl(0 0% 85%) 100%)",
                         WebkitBackgroundClip: "text",
                         WebkitTextFillColor: "transparent",
+                        backgroundClip: "text",
                         filter: "drop-shadow(0 1px 0 hsl(0 0% 100% / 0.3)) drop-shadow(0 -1px 0 hsl(0 0% 0% / 0.5)) drop-shadow(0 2px 6px hsl(0 0% 0% / 0.4))",
                       }}
                     >
                       HN DRIVER
-                    </h1>
-                    {/* Shimmer sweep — like light catching chrome */}
-                    <motion.div
-                      className="absolute inset-0 rounded-lg pointer-events-none overflow-hidden"
-                    >
+                    </motion.h1>
+                    {/* Shimmer sweep */}
+                    <motion.div className="absolute inset-0 rounded-lg pointer-events-none overflow-hidden">
                       <motion.div
                         className="absolute inset-0"
                         style={{ background: "linear-gradient(105deg, transparent 30%, hsl(0 0% 100% / 0.15) 45%, hsl(0 0% 100% / 0.25) 50%, hsl(0 0% 100% / 0.15) 55%, transparent 70%)" }}
