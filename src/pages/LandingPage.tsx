@@ -590,26 +590,32 @@ export default function LandingPage() {
               {stats.map((stat, i) => (
                 <motion.div
                   key={stat.label}
-                  whileHover={{ scale: 1.05, y: -3 }}
-                  className="group rounded-xl p-4 text-center transition-all duration-500 cursor-default"
+                  whileHover={{ scale: 1.08, y: -4 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="group rounded-xl p-4 text-center cursor-default overflow-hidden relative"
                   style={{
-                    background: "linear-gradient(135deg, hsl(220 15% 11%) 0%, hsl(220 15% 8%) 100%)",
-                    border: "1px solid hsl(220 15% 16%)",
-                  }}
-                  onMouseEnter={(e) => {
-                    const el = e.currentTarget as HTMLElement;
-                    el.style.borderColor = "hsl(40 80% 55% / 0.4)";
-                    el.style.boxShadow = "0 0 15px hsl(40 80% 55% / 0.15)";
-                  }}
-                  onMouseLeave={(e) => {
-                    const el = e.currentTarget as HTMLElement;
-                    el.style.borderColor = "hsl(220 15% 16%)";
-                    el.style.boxShadow = "none";
+                    background: "hsl(210 25% 8% / 0.3)",
+                    backdropFilter: "blur(12px)",
+                    WebkitBackdropFilter: "blur(12px)",
+                    border: "1px solid hsl(205 60% 50% / 0.15)",
+                    boxShadow: "inset 0 0 25px hsl(205 80% 55% / 0.08), 0 0 18px hsl(205 80% 55% / 0.1), 0 0 40px hsl(205 70% 55% / 0.05)",
                   }}
                 >
-                  <stat.icon className="w-4 h-4 text-[hsl(40,80%,55%)] mx-auto mb-1.5 group-hover:scale-110 transition-transform" />
-                  <div className="text-xl font-bold bg-gradient-to-r from-[hsl(45,90%,65%)] to-[hsl(35,100%,48%)] bg-clip-text text-transparent font-display">{stat.value}</div>
-                  <div className="text-[10px] text-[hsl(210,15%,45%)] mt-0.5">{stat.label}</div>
+                  {/* Inner blue glow */}
+                  <div className="absolute inset-0 pointer-events-none" style={{
+                    background: "radial-gradient(ellipse 80% 70% at 50% 80%, hsl(205 80% 55% / 0.15) 0%, transparent 70%)",
+                  }} />
+                  {/* Glass top reflection */}
+                  <div className="absolute top-0 left-[15%] right-[15%] h-[1px] pointer-events-none" style={{
+                    background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.18), transparent)",
+                  }} />
+                  {/* Hover glow boost */}
+                  <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{
+                    boxShadow: "inset 0 0 35px hsl(205 80% 55% / 0.15), 0 0 30px hsl(205 80% 55% / 0.2)",
+                  }} />
+                  <stat.icon className="relative z-10 w-4 h-4 text-[hsl(205,80%,65%)] mx-auto mb-1.5 group-hover:scale-110 transition-transform" />
+                  <div className="relative z-10 text-xl font-bold bg-gradient-to-r from-[hsl(45,90%,65%)] to-[hsl(35,100%,48%)] bg-clip-text text-transparent font-display">{stat.value}</div>
+                  <div className="relative z-10 text-[10px] text-[hsl(210,15%,50%)] mt-0.5">{stat.label}</div>
                 </motion.div>
               ))}
             </div>
