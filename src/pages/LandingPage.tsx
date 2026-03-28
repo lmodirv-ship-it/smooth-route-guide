@@ -528,7 +528,7 @@ export default function LandingPage() {
                   </Button>
                 </motion.div>
               </div>
-            </motion.div>
+            </div>
           </motion.div>
 
           {/* ═══ 3 Role Cards — Glowing glass with inner blue light ═══ */}
