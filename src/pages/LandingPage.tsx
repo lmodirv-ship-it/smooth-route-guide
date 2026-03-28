@@ -350,53 +350,20 @@ export default function LandingPage() {
               boxShadow: "-8px 0 25px hsl(32 95% 55% / 0.12), 8px 0 25px hsl(205 78% 56% / 0.12)",
             }} />
 
-            {/* Card body — morphs between glass / wood / metal */}
-            <motion.div
+            {/* Card body — pure glass */}
+            <div
               className="relative rounded-2xl overflow-hidden"
-              animate={{
-                backgroundColor: materialStyles.bg,
-              }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
               style={{
-                background: materialStyles.bg,
-                backdropFilter: materialStyles.blur,
-                WebkitBackdropFilter: materialStyles.blur,
-                boxShadow: `inset 0 1px 0 hsl(0 0% 100% / 0.1), inset 0 -1px 0 hsl(0 0% 100% / 0.04), inset 1px 0 0 ${materialStyles.border}, inset -1px 0 0 ${materialStyles.border}`,
+                background: "hsl(220 15% 10% / 0.15)",
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
+                boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.1), inset 0 -1px 0 hsl(0 0% 100% / 0.04), inset 1px 0 0 hsl(0 0% 100% / 0.08), inset -1px 0 0 hsl(0 0% 100% / 0.08)",
               }}
             >
-              {/* Material texture overlay */}
-              {materialPhase === 1 && (
-                /* Wood grain */
-                <div className="absolute inset-0 pointer-events-none opacity-20" style={{
-                  backgroundImage: "repeating-linear-gradient(175deg, transparent, transparent 8px, hsl(25 50% 25% / 0.3) 8px, hsl(25 50% 25% / 0.3) 9px, transparent 9px, transparent 20px)",
-                }} />
-              )}
-              {materialPhase === 2 && (
-                /* Brushed metal texture */
-                <div className="absolute inset-0 pointer-events-none opacity-15" style={{
-                  backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 1px, hsl(0 0% 100% / 0.03) 1px, hsl(0 0% 100% / 0.03) 2px)",
-                }} />
-              )}
-              {/* Glass reflection — always present */}
+              {/* Glass reflection */}
               <div className="absolute inset-0 pointer-events-none" style={{
                 background: "linear-gradient(135deg, hsl(0 0% 100% / 0.06) 0%, transparent 30%, transparent 100%)",
               }} />
-
-              {/* Corner sparkles — restored */}
-              {[
-                { top: "8px", right: "8px" },
-                { top: "8px", left: "8px" },
-                { bottom: "8px", right: "8px" },
-                { bottom: "8px", left: "8px" },
-              ].map((pos, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-1.5 h-1.5 rounded-full bg-[hsl(40,80%,60%)]"
-                  style={pos}
-                  animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.3, 0.8] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: i * 0.5 }}
-                />
-              ))}
 
               <div className="relative z-10 flex flex-col items-center py-10 md:py-12 px-6 md:px-10">
                 {/* Logo — metallic coin with 3D depth */}
