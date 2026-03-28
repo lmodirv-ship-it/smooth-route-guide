@@ -495,5 +495,51 @@
     from { --led-angle: 0deg; }
     to { --led-angle: 360deg; }
   }
+
+  /* ═══ 3D Illuminated Table Box ═══ */
+  .table-3d-box {
+    background: hsl(210, 25%, 8%, 0.4);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid hsl(205, 60%, 50%, 0.18);
+    box-shadow:
+      inset 0 0 30px hsl(205, 80%, 55%, 0.07),
+      0 4px 20px hsl(0, 0%, 0%, 0.4),
+      0 0 15px hsl(205, 80%, 55%, 0.08),
+      0 8px 32px hsl(0, 0%, 0%, 0.3);
+    position: relative;
+    overflow: hidden;
+    transform: perspective(800px) rotateX(1deg);
+    transform-style: preserve-3d;
+    transition: all 0.4s ease;
+  }
+  .table-3d-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 90% 60% at 50% 100%, hsl(205, 80%, 55%, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .table-3d-box::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(205, 80%, 70%, 0.25), transparent);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .table-3d-box:hover {
+    box-shadow:
+      inset 0 0 40px hsl(205, 80%, 55%, 0.12),
+      0 6px 25px hsl(0, 0%, 0%, 0.5),
+      0 0 25px hsl(205, 80%, 55%, 0.14),
+      0 12px 40px hsl(0, 0%, 0%, 0.35);
+    border-color: hsl(205, 60%, 55%, 0.3);
+    transform: perspective(800px) rotateX(0.5deg) translateY(-2px);
+  }
 }
 
