@@ -455,12 +455,6 @@ export default function LandingPage() {
                   whileHover={{ scale: 1.08, y: -4 }}
                   whileTap={{ scale: 0.97 }}
                   className="group rounded-xl p-4 text-center cursor-default overflow-hidden relative signage-3d-box"
-                    background: "hsl(210 25% 8% / 0.3)",
-                    backdropFilter: "blur(12px)",
-                    WebkitBackdropFilter: "blur(12px)",
-                    border: "1px solid hsl(205 60% 50% / 0.15)",
-                    boxShadow: "inset 0 0 25px hsl(205 80% 55% / 0.1), 0 0 22px hsl(205 80% 55% / 0.12), 0 0 50px hsl(205 70% 55% / 0.06)",
-                  }}
                 >
                   {/* Inner bulb glow — bright pulsing center */}
                   <motion.div 
