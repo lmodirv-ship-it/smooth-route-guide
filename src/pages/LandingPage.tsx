@@ -564,12 +564,12 @@ export default function LandingPage() {
             </motion.div>
           </motion.div>
 
-          {/* ═══ 3 Role Cards — Glowing boxes ═══ */}
+          {/* ═══ 3 Role Cards — Glowing glass with inner blue light ═══ */}
           <div className="grid md:grid-cols-3 gap-4 mt-6 max-w-3xl mx-auto">
             {[
-              { img: heroDriver, label: dir === "rtl" ? "سائق" : "Driver", desc: dir === "rtl" ? "سائقون محترفون" : "Professional drivers", route: "/auth/driver", glow: "142,71%,45%", icon: Car },
-              { img: heroCustomer, label: dir === "rtl" ? "زبون" : "Customer", desc: dir === "rtl" ? "احجز رحلتك" : "Book your ride", route: "/auth/client", glow: "205,78%,56%", icon: Users },
-              { img: heroDelivery, label: dir === "rtl" ? "توصيل" : "Delivery", desc: dir === "rtl" ? "توصيل سريع" : "Fast delivery", route: "/delivery", glow: "32,95%,55%", icon: Package },
+              { img: heroDriver, label: dir === "rtl" ? "سائق" : "Driver", desc: dir === "rtl" ? "سائقون محترفون" : "Professional drivers", route: "/auth/driver", icon: Car },
+              { img: heroCustomer, label: dir === "rtl" ? "زبون" : "Customer", desc: dir === "rtl" ? "احجز رحلتك" : "Book your ride", route: "/auth/client", icon: Users },
+              { img: heroDelivery, label: dir === "rtl" ? "توصيل" : "Delivery", desc: dir === "rtl" ? "توصيل سريع" : "Fast delivery", route: "/delivery", icon: Package },
             ].map((cat, i) => (
               <motion.div
                 key={cat.label}
@@ -577,36 +577,37 @@ export default function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.3 + i * 0.12, duration: 0.5 }}
                 onClick={() => navigate(cat.route)}
-                whileHover={{ scale: 1.04, y: -4 }}
+                whileHover={{ scale: 1.06, y: -5 }}
                 whileTap={{ scale: 0.97 }}
-                className="group relative rounded-xl cursor-pointer transition-all duration-500 overflow-hidden"
+                className="group relative rounded-xl cursor-pointer overflow-hidden"
                 style={{
-                  background: "linear-gradient(135deg, hsl(220 15% 11%) 0%, hsl(220 15% 8%) 100%)",
-                  border: "1px solid hsl(220 15% 16%)",
-                  boxShadow: "0 0 0 0 transparent",
-                }}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.borderColor = `hsl(${cat.glow} / 0.5)`;
-                  el.style.boxShadow = `0 0 20px hsl(${cat.glow} / 0.2), inset 0 0 20px hsl(${cat.glow} / 0.05)`;
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.borderColor = "hsl(220 15% 16%)";
-                  el.style.boxShadow = "0 0 0 0 transparent";
+                  background: "hsl(210 30% 8% / 0.3)",
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                  border: "1px solid hsl(205 60% 50% / 0.15)",
+                  boxShadow: "inset 0 0 30px hsl(205 80% 55% / 0.06), 0 0 15px hsl(205 80% 55% / 0.08)",
                 }}
               >
-                {/* Top LED line */}
-                <div className="absolute top-0 inset-x-4 h-px" style={{ background: `linear-gradient(90deg, transparent, hsl(${cat.glow} / 0.3), transparent)` }} />
-                
-                <div className="p-4 flex flex-col items-center gap-3 text-center">
-                  <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-white/5 border border-white/5 group-hover:border-white/10 transition-all">
+                {/* Inner blue glow */}
+                <div className="absolute inset-0 pointer-events-none" style={{
+                  background: "radial-gradient(ellipse 80% 70% at 50% 80%, hsl(205 80% 55% / 0.12) 0%, transparent 70%)",
+                }} />
+                {/* Glass reflection */}
+                <div className="absolute top-0 left-[10%] right-[10%] h-[1px] pointer-events-none" style={{
+                  background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.15), transparent)",
+                }} />
+                {/* Hover glow shift */}
+                <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{
+                  boxShadow: "inset 0 0 40px hsl(205 80% 55% / 0.12), 0 0 25px hsl(205 80% 55% / 0.15)",
+                  border: "1px solid hsl(205 60% 55% / 0.3)",
+                }} />
+
+                <div className="relative z-10 p-4 flex flex-col items-center gap-3 text-center">
+                  <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-white/5 border border-white/5 group-hover:border-[hsl(205,60%,55%/0.3)] transition-all">
                     <img src={cat.img} alt={cat.label} className="w-full h-full object-cover object-top scale-110 group-hover:scale-130 transition-transform duration-700" width={768} height={768} loading="lazy" />
-                    {/* Glow overlay on hover */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: `radial-gradient(circle, hsl(${cat.glow} / 0.15) 0%, transparent 70%)` }} />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-white group-hover:text-[hsl(40,80%,60%)] transition-colors">{cat.label}</h3>
+                    <h3 className="text-sm font-bold text-white group-hover:text-[hsl(205,80%,70%)] transition-colors">{cat.label}</h3>
                     <p className="text-[11px] text-[hsl(210,15%,45%)] mt-0.5">{cat.desc}</p>
                   </div>
                 </div>
