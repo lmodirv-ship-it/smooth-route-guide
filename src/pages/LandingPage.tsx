@@ -181,34 +181,56 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Desktop Nav Links — Metallic sticker style */}
-          <div className="hidden lg:flex items-center gap-2">
-            {navLinks.map((link, i) => (
-              <motion.button
-                key={link.href}
-                onClick={() => scrollToSection(link.href)}
-                whileHover={{ scale: 1.08, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative px-5 py-2 text-sm font-bold tracking-wide uppercase overflow-hidden rounded-lg transition-all duration-300 group"
-                style={{
-                  background: "linear-gradient(145deg, hsl(220 15% 16%), hsl(220 15% 10%))",
-                  border: "1px solid hsl(220 15% 22%)",
-                  color: "hsl(210 15% 70%)",
-                  boxShadow: "0 2px 8px hsl(0 0% 0% / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.06)",
-                }}
-              >
-                {/* Metallic shine sweep */}
-                <motion.div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{ background: "linear-gradient(105deg, transparent 40%, hsl(0 0% 100% / 0.1) 48%, hsl(0 0% 100% / 0.15) 50%, hsl(0 0% 100% / 0.1) 52%, transparent 60%)" }}
-                  animate={{ x: ["-200%", "200%"] }}
-                  transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 + i * 0.5 }}
-                />
-                {/* Glow on hover */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg" style={{ boxShadow: "0 0 15px hsl(32 95% 55% / 0.25), inset 0 0 15px hsl(32 95% 55% / 0.05)" }} />
-                <span className="relative z-10 group-hover:text-[hsl(40,80%,65%)] transition-colors duration-300">{link.label}</span>
-              </motion.button>
-            ))}
+          {/* Desktop Nav Links — Glowing liquid orbs */}
+          <div className="hidden lg:flex items-center gap-3">
+            {navLinks.map((link, i) => {
+              const hues = ["32", "205", "280", "145"];
+              const hue = hues[i % hues.length];
+              return (
+                <motion.button
+                  key={link.href}
+                  onClick={() => scrollToSection(link.href)}
+                  whileHover={{ scale: 1.12, y: -3 }}
+                  whileTap={{ scale: 0.93 }}
+                  className="relative px-5 py-2.5 rounded-full overflow-hidden group cursor-pointer"
+                  style={{
+                    background: `radial-gradient(ellipse 120% 80% at 50% 80%, hsl(${hue} 70% 35% / 0.5) 0%, hsl(${hue} 80% 20% / 0.2) 60%, transparent 100%)`,
+                    border: `1px solid hsl(${hue} 60% 50% / 0.25)`,
+                    boxShadow: `0 0 15px hsl(${hue} 80% 50% / 0.15), inset 0 -8px 20px hsl(${hue} 70% 40% / 0.15), inset 0 2px 4px hsl(0 0% 100% / 0.08)`,
+                  }}
+                >
+                  {/* Liquid water wave effect */}
+                  <motion.div
+                    className="absolute inset-0 pointer-events-none rounded-full"
+                    style={{
+                      background: `radial-gradient(ellipse 100% 40% at 50% 90%, hsl(${hue} 80% 55% / 0.35) 0%, transparent 70%)`,
+                    }}
+                    animate={{ y: [2, -2, 1, -1, 2], scaleX: [1, 1.05, 0.97, 1.03, 1] }}
+                    transition={{ duration: 3 + i * 0.5, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  {/* Second wave — offset */}
+                  <motion.div
+                    className="absolute inset-0 pointer-events-none rounded-full"
+                    style={{
+                      background: `radial-gradient(ellipse 80% 30% at 40% 85%, hsl(${hue} 90% 60% / 0.2) 0%, transparent 60%)`,
+                    }}
+                    animate={{ x: [-3, 3, -2, 4, -3], y: [1, -1, 2, -2, 1] }}
+                    transition={{ duration: 4 + i * 0.3, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  {/* Glass highlight — top bubble reflection */}
+                  <div className="absolute top-[3px] left-[20%] right-[20%] h-[6px] rounded-full pointer-events-none" style={{
+                    background: "linear-gradient(180deg, hsl(0 0% 100% / 0.25) 0%, transparent 100%)",
+                  }} />
+                  {/* Outer glow on hover */}
+                  <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{
+                    boxShadow: `0 0 20px hsl(${hue} 80% 55% / 0.4), 0 0 40px hsl(${hue} 80% 55% / 0.15)`,
+                  }} />
+                  <span className="relative z-10 text-sm font-bold tracking-wide uppercase text-[hsl(0,0%,85%)] group-hover:text-white transition-colors duration-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                    {link.label}
+                  </span>
+                </motion.button>
+              );
+            })}
           </div>
 
           {/* Desktop Actions */}
