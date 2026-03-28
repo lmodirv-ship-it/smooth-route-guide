@@ -101,7 +101,7 @@ const StatCard = ({ icon: Icon, label, value, color, isCurrency, index, trend }:
       initial={{ opacity: 0, y: 24, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: index * 0.06, type: "spring", stiffness: 300, damping: 24 }}
-      className="group relative gradient-card rounded-2xl p-5 border border-border hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 cursor-default overflow-hidden"
+      className="group relative glass-card rounded-2xl p-5 transition-all duration-300 hover:shadow-lg cursor-default overflow-hidden"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       <div className="relative z-10">
