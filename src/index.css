@@ -352,16 +352,16 @@
     overflow: hidden;
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
-    border: 1px solid hsl(var(--info) / 0.38);
-    background: linear-gradient(180deg, hsl(var(--card) / 0.96) 0%, hsl(var(--card) / 0.66) 100%);
+    border: 1px solid hsl(var(--info) / 0.44);
+    background: linear-gradient(180deg, hsl(var(--info) / 0.16) 0%, hsl(var(--info) / 0.06) 100%);
     color: hsl(var(--foreground));
     box-shadow:
-      inset 0 1px 0 hsl(var(--foreground) / 0.08),
+      inset 0 1px 0 hsl(var(--info) / 0.18),
       inset 0 -18px 28px hsl(var(--info) / 0.12),
-      inset 1px 0 0 hsl(var(--info) / 0.32),
-      inset -1px 0 0 hsl(var(--info) / 0.32),
-      0 12px 28px hsl(0 0% 0% / 0.34),
-      0 0 26px hsl(var(--info) / 0.18);
+      inset 1px 0 0 hsl(var(--info) / 0.36),
+      inset -1px 0 0 hsl(var(--info) / 0.36),
+      0 0 20px hsl(var(--info) / 0.22),
+      0 0 40px hsl(var(--info) / 0.1);
   }
   .glass-button::before {
     content: "";
@@ -384,47 +384,47 @@
   }
   .glass-button:hover {
     transform: translateY(-2px);
-    border-color: hsl(var(--info) / 0.44);
+    border-color: hsl(var(--info) / 0.52);
     box-shadow:
-      inset 0 1px 0 hsl(var(--foreground) / 0.1),
-      inset 0 -20px 30px hsl(var(--info) / 0.14),
-      inset 1px 0 0 hsl(var(--info) / 0.4),
-      inset -1px 0 0 hsl(var(--info) / 0.4),
-      0 16px 34px hsl(0 0% 0% / 0.38),
-      0 0 32px hsl(var(--info) / 0.24);
+      inset 0 1px 0 hsl(var(--info) / 0.22),
+      inset 0 -20px 30px hsl(var(--info) / 0.16),
+      inset 1px 0 0 hsl(var(--info) / 0.44),
+      inset -1px 0 0 hsl(var(--info) / 0.44),
+      0 0 28px hsl(var(--info) / 0.28),
+      0 0 48px hsl(var(--info) / 0.14);
   }
   .glass-button:active,
   .glass-button[data-active="true"],
   .glass-button[data-state="on"] {
-    background: linear-gradient(180deg, hsl(var(--info) / 0.38) 0%, hsl(var(--card) / 0.78) 100%);
+    background: linear-gradient(180deg, hsl(var(--info) / 0.38) 0%, hsl(var(--info) / 0.14) 100%);
     color: hsl(var(--foreground));
     border-color: hsl(var(--info) / 0.72);
     box-shadow:
-      inset 0 1px 0 hsl(var(--foreground) / 0.12),
+      inset 0 1px 0 hsl(var(--info) / 0.2),
       inset 0 -18px 26px hsl(var(--info) / 0.22),
       inset 1px 0 0 hsl(var(--info) / 0.5),
       inset -1px 0 0 hsl(var(--info) / 0.5),
-      0 18px 36px hsl(0 0% 0% / 0.42),
-      0 0 34px hsl(var(--info) / 0.28);
+      0 0 28px hsl(var(--info) / 0.3),
+      0 0 48px hsl(var(--info) / 0.14);
   }
 
   .glass-button-solid {
-    background: linear-gradient(180deg, hsl(var(--card) / 0.9) 0%, hsl(var(--card) / 0.62) 100%);
+    background: linear-gradient(180deg, hsl(var(--info) / 0.16) 0%, hsl(var(--info) / 0.06) 100%);
   }
   .glass-button-outline {
-    background: linear-gradient(180deg, hsl(var(--background) / 0.44) 0%, hsl(var(--card) / 0.32) 100%);
-    border-color: hsl(var(--border) / 0.9);
+    background: linear-gradient(180deg, hsl(var(--info) / 0.1) 0%, hsl(var(--info) / 0.04) 100%);
+    border-color: hsl(var(--info) / 0.3);
   }
   .glass-button-muted {
-    background: linear-gradient(180deg, hsl(var(--secondary) / 0.88) 0%, hsl(var(--secondary) / 0.62) 100%);
+    background: linear-gradient(180deg, hsl(var(--info) / 0.12) 0%, hsl(var(--info) / 0.05) 100%);
   }
   .glass-button-ghost {
-    background: linear-gradient(180deg, hsl(var(--background) / 0.24) 0%, hsl(var(--card) / 0.16) 100%);
-    border-color: hsl(var(--border) / 0.5);
+    background: linear-gradient(180deg, hsl(var(--info) / 0.08) 0%, hsl(var(--info) / 0.03) 100%);
+    border-color: hsl(var(--info) / 0.2);
     box-shadow:
-      inset 0 1px 0 hsl(var(--foreground) / 0.05),
-      0 10px 24px hsl(0 0% 0% / 0.24),
-      0 0 18px hsl(var(--info) / 0.08);
+      inset 0 1px 0 hsl(var(--info) / 0.1),
+      0 0 18px hsl(var(--info) / 0.12),
+      0 0 36px hsl(var(--info) / 0.06);
   }
   .glass-button-danger {
     border-color: hsl(var(--destructive) / 0.34);
@@ -488,62 +488,62 @@
   }
   .glass-nav-tile:active,
   .glass-nav-tile[data-active="true"] {
-    background: linear-gradient(180deg, hsl(var(--info) / 0.4) 0%, hsl(var(--card) / 0.78) 100%);
+    background: linear-gradient(180deg, hsl(var(--info) / 0.38) 0%, hsl(var(--info) / 0.15) 100%);
     color: hsl(var(--foreground));
     border-color: hsl(var(--info) / 0.76);
     box-shadow:
-      inset 0 1px 0 hsl(var(--foreground) / 0.14),
-      inset 0 -18px 28px hsl(var(--info) / 0.2),
-      inset 1px 0 0 hsl(var(--info) / 0.54),
-      inset -1px 0 0 hsl(var(--info) / 0.54),
-      0 18px 36px hsl(0 0% 0% / 0.4),
-      0 0 36px hsl(var(--info) / 0.3);
+      inset 0 1px 0 hsl(var(--info) / 0.24),
+      inset 0 -18px 28px hsl(var(--info) / 0.22),
+      inset 1px 0 0 hsl(var(--info) / 0.58),
+      inset -1px 0 0 hsl(var(--info) / 0.58),
+      0 0 28px hsl(var(--info) / 0.32),
+      0 0 50px hsl(var(--info) / 0.15);
   }
 
   button[class*="gradient-primary"],
   a[class*="gradient-primary"],
   button[class*="bg-secondary"],
   a[class*="bg-secondary"] {
-    border: 1px solid hsl(var(--info) / 0.4) !important;
-    background: linear-gradient(180deg, hsl(var(--card) / 0.96) 0%, hsl(var(--card) / 0.64) 100%) !important;
+    border: 1px solid hsl(var(--info) / 0.44) !important;
+    background: linear-gradient(180deg, hsl(var(--info) / 0.16) 0%, hsl(var(--info) / 0.06) 100%) !important;
     color: hsl(var(--foreground)) !important;
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
     box-shadow:
-      inset 0 1px 0 hsl(var(--foreground) / 0.08),
-      inset 0 -16px 26px hsl(var(--info) / 0.11),
-      inset 1px 0 0 hsl(var(--info) / 0.34),
-      inset -1px 0 0 hsl(var(--info) / 0.34),
-      0 12px 26px hsl(0 0% 0% / 0.32),
-      0 0 26px hsl(var(--info) / 0.18) !important;
+      inset 0 1px 0 hsl(var(--info) / 0.18),
+      inset 0 -16px 26px hsl(var(--info) / 0.12),
+      inset 1px 0 0 hsl(var(--info) / 0.38),
+      inset -1px 0 0 hsl(var(--info) / 0.38),
+      0 0 20px hsl(var(--info) / 0.22),
+      0 0 40px hsl(var(--info) / 0.1) !important;
   }
   button[class*="gradient-primary"]:hover,
   a[class*="gradient-primary"]:hover,
   button[class*="bg-secondary"]:hover,
   a[class*="bg-secondary"]:hover {
-    border-color: hsl(var(--info) / 0.48) !important;
+    border-color: hsl(var(--info) / 0.52) !important;
     box-shadow:
-      inset 0 1px 0 hsl(var(--foreground) / 0.1),
-      inset 0 -18px 28px hsl(var(--info) / 0.14),
-      inset 1px 0 0 hsl(var(--info) / 0.4),
-      inset -1px 0 0 hsl(var(--info) / 0.4),
-      0 14px 30px hsl(0 0% 0% / 0.34),
-      0 0 32px hsl(var(--info) / 0.24) !important;
+      inset 0 1px 0 hsl(var(--info) / 0.22),
+      inset 0 -18px 28px hsl(var(--info) / 0.16),
+      inset 1px 0 0 hsl(var(--info) / 0.44),
+      inset -1px 0 0 hsl(var(--info) / 0.44),
+      0 0 28px hsl(var(--info) / 0.28),
+      0 0 48px hsl(var(--info) / 0.14) !important;
   }
   button[class*="gradient-primary"]:active,
   a[class*="gradient-primary"]:active,
   button[class*="bg-secondary"]:active,
   a[class*="bg-secondary"]:active {
-    background: linear-gradient(180deg, hsl(var(--info) / 0.4) 0%, hsl(var(--card) / 0.78) 100%) !important;
+    background: linear-gradient(180deg, hsl(var(--info) / 0.38) 0%, hsl(var(--info) / 0.14) 100%) !important;
     border-color: hsl(var(--info) / 0.74) !important;
     color: hsl(var(--foreground)) !important;
     box-shadow:
-      inset 0 1px 0 hsl(var(--foreground) / 0.14),
-      inset 0 -18px 28px hsl(var(--info) / 0.2),
-      inset 1px 0 0 hsl(var(--info) / 0.48),
-      inset -1px 0 0 hsl(var(--info) / 0.48),
-      0 16px 34px hsl(0 0% 0% / 0.38),
-      0 0 34px hsl(var(--info) / 0.28) !important;
+      inset 0 1px 0 hsl(var(--info) / 0.24),
+      inset 0 -18px 28px hsl(var(--info) / 0.22),
+      inset 1px 0 0 hsl(var(--info) / 0.52),
+      inset -1px 0 0 hsl(var(--info) / 0.52),
+      0 0 30px hsl(var(--info) / 0.32),
+      0 0 50px hsl(var(--info) / 0.16) !important;
   }
 
   .glass-icon-button {
