@@ -13,9 +13,9 @@ import {
 import { Button } from "@/components/ui/button";
 import CinematicParticles from "@/components/CinematicParticles";
 import logo from "@/assets/hn-driver-badge.png";
-import heroDriver from "@/assets/hero-driver.png";
-import heroCustomer from "@/assets/hero-customer.png";
-import heroDelivery from "@/assets/hero-delivery.png";
+import iconVtcCar from "@/assets/icon-vtc-car.png";
+import iconDeliveryBike from "@/assets/icon-delivery-bike.png";
+import iconFleetMgmt from "@/assets/icon-fleet-mgmt.png";
 import partnerHibaEco from "@/assets/partner-hiba-eco.png";
 import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
 import partnerTanjaPrint from "@/assets/partner-tanja-print.png";
@@ -171,7 +171,7 @@ export default function LandingPage() {
                 onClick={() => scrollToSection(link.href)}
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.97 }}
-                className="glass-nav-tile min-h-0 h-11 px-5 text-sm font-bold uppercase tracking-wide text-foreground"
+                className="signage-3d-box min-h-0 h-12 px-6 text-sm font-bold uppercase tracking-wide text-foreground rounded-xl flex items-center justify-center"
               >
                 <span className="relative z-10">{link.label}</span>
               </motion.button>
@@ -423,9 +423,9 @@ export default function LandingPage() {
           {/* ═══ 3 Role Cards — Glowing glass with inner blue light ═══ */}
           <div className="grid md:grid-cols-3 gap-4 mt-6 max-w-3xl mx-auto">
             {[
-              { img: heroDriver, label: dir === "rtl" ? "سائق" : "Driver", desc: dir === "rtl" ? "سائقون محترفون" : "Professional drivers", route: "/auth/driver", icon: Car },
-              { img: heroCustomer, label: dir === "rtl" ? "زبون" : "Customer", desc: dir === "rtl" ? "احجز رحلتك" : "Book your ride", route: "/auth/client", icon: Users },
-              { img: heroDelivery, label: dir === "rtl" ? "توصيل" : "Delivery", desc: dir === "rtl" ? "توصيل سريع" : "Fast delivery", route: "/delivery", icon: Package },
+              { img: iconVtcCar, label: "VTC Taxi", desc: dir === "rtl" ? "سائقون محترفون" : "Professional drivers", route: "/auth/driver" },
+              { img: iconDeliveryBike, label: "Livraisons Express", desc: dir === "rtl" ? "توصيل سريع" : "Fast delivery", route: "/delivery" },
+              { img: iconFleetMgmt, label: "Gestion Flotte", desc: dir === "rtl" ? "إدارة الأسطول" : "Fleet management", route: "/auth/client" },
             ].map((cat, i) => (
               <motion.div
                 key={cat.label}
@@ -433,53 +433,14 @@ export default function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.3 + i * 0.12, duration: 0.5 }}
                 onClick={() => navigate(cat.route)}
-                whileHover={{ scale: 1.06, y: -5 }}
+                whileHover={{ scale: 1.05, y: -6 }}
                 whileTap={{ scale: 0.97 }}
-                className="group relative rounded-xl cursor-pointer overflow-hidden"
-                style={{
-                  background: "hsl(210 30% 8% / 0.3)",
-                  backdropFilter: "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
-                  border: "1px solid hsl(205 60% 50% / 0.15)",
-                  boxShadow: "inset 0 0 30px hsl(205 80% 55% / 0.08), 0 0 20px hsl(205 80% 55% / 0.1), 0 0 50px hsl(205 70% 55% / 0.06)",
-                }}
+                className="group relative rounded-2xl cursor-pointer overflow-hidden signage-3d-box"
               >
-                {/* Inner bulb glow — bright center */}
-                <div className="absolute inset-0 pointer-events-none" style={{
-                  background: "radial-gradient(ellipse 90% 80% at 50% 70%, hsl(205 80% 55% / 0.18) 0%, hsl(205 80% 55% / 0.06) 40%, transparent 70%)",
-                }} />
-                {/* Traveling light effect on edges */}
-                <motion.div
-                  className="absolute inset-0 rounded-xl pointer-events-none overflow-hidden"
-                >
-                  <motion.div
-                    className="absolute w-16 h-16 rounded-full"
-                    style={{ background: "radial-gradient(circle, hsl(205 80% 60% / 0.35) 0%, transparent 70%)", filter: "blur(8px)" }}
-                    animate={{ 
-                      top: ["0%", "0%", "100%", "100%", "0%"],
-                      left: ["0%", "100%", "100%", "0%", "0%"],
-                    }}
-                    transition={{ duration: 6 + i * 2, repeat: Infinity, ease: "linear" }}
-                  />
-                </motion.div>
-                {/* Glass reflection */}
-                <div className="absolute top-0 left-[10%] right-[10%] h-[1px] pointer-events-none" style={{
-                  background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.2), transparent)",
-                }} />
-                {/* Hover glow shift */}
-                <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{
-                  boxShadow: "inset 0 0 50px hsl(205 80% 55% / 0.15), 0 0 35px hsl(205 80% 55% / 0.2)",
-                  border: "1px solid hsl(205 60% 55% / 0.35)",
-                }} />
-
-                <div className="relative z-10 p-4 flex flex-col items-center gap-3 text-center">
-                    <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-foreground/5 border border-foreground/5 group-hover:border-info/30 transition-all">
-                    <img src={cat.img} alt={cat.label} className="w-full h-full object-cover object-top scale-110 group-hover:scale-130 transition-transform duration-700" width={768} height={768} loading="lazy" />
-                  </div>
-                  <div>
-                      <h3 className="text-sm font-bold text-foreground group-hover:text-info transition-colors">{cat.label}</h3>
-                    <p className="text-[11px] text-[hsl(210,15%,45%)] mt-0.5">{cat.desc}</p>
-                  </div>
+                <div className="relative z-10 p-5 flex flex-col items-center gap-3 text-center">
+                  <img src={cat.img} alt={cat.label} className="w-20 h-20 object-contain drop-shadow-[0_0_14px_hsl(205,80%,55%,0.4)] group-hover:scale-110 transition-transform duration-500" width={512} height={512} loading="lazy" />
+                  <h3 className="text-sm font-bold text-foreground group-hover:text-[hsl(var(--info))] transition-colors tracking-wide">{cat.label}</h3>
+                  <p className="text-[11px] text-muted-foreground">{cat.desc}</p>
                 </div>
               </motion.div>
             ))}
