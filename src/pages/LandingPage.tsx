@@ -129,7 +129,7 @@ export default function LandingPage() {
   const navLinks = [
     { label: dir === "rtl" ? "الميزات" : "Features", href: "#features" },
     { label: dir === "rtl" ? "الخدمات" : "Services", href: "#services" },
-    { label: dir === "rtl" ? "التحميل" : "Download", href: "#download" },
+    { label: dir === "rtl" ? "تحميل" : "Download", href: "#download" },
     { label: dir === "rtl" ? "اتصل بنا" : "Contact", href: "#contact" },
   ];
 
@@ -454,14 +454,7 @@ export default function LandingPage() {
                   key={stat.label}
                   whileHover={{ scale: 1.08, y: -4 }}
                   whileTap={{ scale: 0.97 }}
-                  className="group rounded-xl p-4 text-center cursor-default overflow-hidden relative"
-                  style={{
-                    background: "hsl(210 25% 8% / 0.3)",
-                    backdropFilter: "blur(12px)",
-                    WebkitBackdropFilter: "blur(12px)",
-                    border: "1px solid hsl(205 60% 50% / 0.15)",
-                    boxShadow: "inset 0 0 25px hsl(205 80% 55% / 0.1), 0 0 22px hsl(205 80% 55% / 0.12), 0 0 50px hsl(205 70% 55% / 0.06)",
-                  }}
+                  className="group rounded-xl p-4 text-center cursor-default overflow-hidden relative signage-3d-box"
                 >
                   {/* Inner bulb glow — bright pulsing center */}
                   <motion.div 
