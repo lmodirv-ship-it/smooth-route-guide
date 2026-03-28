@@ -76,7 +76,7 @@ const BottomNav = ({ role }: BottomNavProps) => {
       className="shrink-0 border-t border-border/30 bg-card/95 backdrop-blur-xl safe-area-bottom"
       dir={dir}
     >
-      <div className="flex items-center justify-around px-1 py-1.5">
+      <div className="grid grid-cols-5 gap-2 px-2 py-2">
         {items.map((item) => {
           const isActive =
             location.pathname === item.path ||
@@ -84,28 +84,21 @@ const BottomNav = ({ role }: BottomNavProps) => {
 
           return (
             <motion.button
+              data-active={isActive}
               key={item.path}
               onClick={() => navigate(item.path)}
               whileTap={{ scale: 0.9 }}
-              className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors relative"
+              className="glass-nav-tile relative flex min-h-[4rem] flex-col items-center justify-center gap-1 px-2 py-2"
               style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
             >
-              {isActive && (
-                <motion.div
-                  layoutId={`bottomnav-${role}`}
-                  className="absolute inset-0 bg-primary/10 rounded-xl"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
-              )}
+              {isActive ? (
+                <motion.div layoutId={`bottomnav-${role}`} className="absolute inset-0 rounded-[1rem]" transition={{ type: "spring", stiffness: 400, damping: 30 }} />
+              ) : null}
               <item.icon
-                className={`w-5 h-5 relative z-10 transition-colors ${
-                  isActive ? "text-primary" : "text-muted-foreground"
-                }`}
+                className={`relative z-10 h-5 w-5 transition-colors ${isActive ? "text-primary-foreground" : "text-foreground"}`}
               />
               <span
-                className={`text-[10px] font-medium relative z-10 transition-colors ${
-                  isActive ? "text-primary" : "text-muted-foreground"
-                }`}
+                className={`relative z-10 text-[10px] transition-colors ${isActive ? "font-bold text-primary-foreground" : "font-medium text-muted-foreground"}`}
               >
                 {getLabel(item.labelKey)}
               </span>

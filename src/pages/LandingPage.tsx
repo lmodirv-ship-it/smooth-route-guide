@@ -2,7 +2,7 @@ import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   Car, Package, BarChart3, Zap, Shield, DollarSign, MapPin, ArrowRight, Menu, X,
   Users, Truck, Headphones, Store, Coffee, Shirt, Croissant, ShoppingCart,
@@ -73,26 +73,8 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeNav, setActiveNav] = useState("#features");
   const lt = t.landing;
-  const [materialPhase, setMaterialPhase] = useState(0);
-
-  // Cycle through materials: glass → wood → metal → glass...
-  useEffect(() => {
-    const timer = setInterval(() => setMaterialPhase((p) => (p + 1) % 3), 6000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const materialStyles = useMemo(() => {
-    const materials = [
-      // Glass
-      { bg: "hsl(220 15% 10% / 0.15)", blur: "blur(8px)", border: "hsl(0 0% 100% / 0.12)", label: "GLASS" },
-      // Wood
-      { bg: "hsl(25 40% 15% / 0.55)", blur: "blur(4px)", border: "hsl(30 50% 30% / 0.4)", label: "WOOD" },
-      // Metal
-      { bg: "hsl(220 10% 18% / 0.6)", blur: "blur(6px)", border: "hsl(220 10% 40% / 0.3)", label: "METAL" },
-    ];
-    return materials[materialPhase];
-  }, [materialPhase]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -155,6 +137,7 @@ export default function LandingPage() {
 
   const scrollToSection = (href: string) => {
     setMenuOpen(false);
+    setActiveNav(href);
     const el = document.querySelector(href);
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };
@@ -185,45 +168,18 @@ export default function LandingPage() {
 
           {/* Desktop Nav Links — Glass bulbs with inner glow */}
           <div className="hidden lg:flex items-center gap-3">
-            {navLinks.map((link, i) => {
-              const hoverHues = ["32", "205", "280", "145"];
-              return (
-                <motion.button
-                  key={link.href}
-                  onClick={() => scrollToSection(link.href)}
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative px-5 py-2.5 rounded-full overflow-hidden group cursor-pointer"
-                  style={{
-                    background: "hsl(210 20% 10% / 0.25)",
-                    backdropFilter: "blur(10px)",
-                    WebkitBackdropFilter: "blur(10px)",
-                    border: "1px solid hsl(0 0% 100% / 0.08)",
-                    boxShadow: "inset 0 0 20px hsl(205 70% 55% / 0.08), inset 0 1px 0 hsl(0 0% 100% / 0.08), 0 0 10px hsl(205 70% 55% / 0.06)",
-                  }}
-                >
-                  {/* Inner blue glow — bulb effect */}
-                  <div className="absolute inset-0 rounded-full pointer-events-none" style={{
-                    background: "radial-gradient(ellipse 70% 60% at 50% 70%, hsl(205 80% 55% / 0.15) 0%, transparent 70%)",
-                  }} />
-                  {/* Top glass highlight */}
-                  <div className="absolute top-[2px] left-[25%] right-[25%] h-[1px] rounded-full pointer-events-none" style={{
-                    background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.2), transparent)",
-                  }} />
-                  {/* Hover color shift */}
-                  <div
-                    className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none"
-                    style={{
-                      background: `radial-gradient(ellipse 90% 80% at 50% 60%, hsl(${hoverHues[i % hoverHues.length]} 80% 55% / 0.25) 0%, transparent 70%)`,
-                      boxShadow: `0 0 20px hsl(${hoverHues[i % hoverHues.length]} 80% 55% / 0.2)`,
-                    }}
-                  />
-                  <span className="relative z-10 text-sm font-bold tracking-wide uppercase text-[hsl(210,20%,75%)] group-hover:text-white transition-colors duration-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
-                    {link.label}
-                  </span>
-                </motion.button>
-              );
-            })}
+            {navLinks.map((link) => (
+              <motion.button
+                key={link.href}
+                data-active={activeNav === link.href}
+                onClick={() => scrollToSection(link.href)}
+                whileHover={{ scale: 1.04, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                className="glass-nav-tile min-h-0 h-11 px-5 text-sm font-bold uppercase tracking-wide"
+              >
+                <span className="relative z-10">{link.label}</span>
+              </motion.button>
+            ))}
           </div>
 
           {/* Desktop Actions */}
@@ -247,7 +203,7 @@ export default function LandingPage() {
         {menuOpen && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="md:hidden border-t border-border bg-background/98 backdrop-blur-xl px-4 py-4 flex flex-col gap-2">
             {navLinks.map((link) => (
-              <button key={link.href} onClick={() => scrollToSection(link.href)} className="text-start py-2.5 px-3 text-sm text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors">
+              <button key={link.href} onClick={() => scrollToSection(link.href)} data-active={activeNav === link.href} className="glass-nav-tile text-start py-2.5 px-3 text-sm font-medium">
                 {link.label}
               </button>
             ))}
@@ -304,7 +260,7 @@ export default function LandingPage() {
           {[...Array(40)].map((_, i) => (
             <motion.div
               key={`twinkle-${i}`}
-              className="absolute rounded-full bg-white"
+              className="absolute rounded-full bg-foreground"
               style={{
                 width: Math.random() * 1.5 + 0.5,
                 height: Math.random() * 1.5 + 0.5,
@@ -336,30 +292,7 @@ export default function LandingPage() {
             transition={{ duration: 1, ease: "easeOut" }}
             className="relative max-w-2xl mx-auto"
           >
-            {/* Animated LED border — light traveling around edges */}
-            <div className="absolute -inset-[2px] rounded-2xl overflow-hidden">
-              <motion.div
-                className="absolute inset-0"
-                style={{ background: "conic-gradient(from 0deg, hsl(40,80%,55%), hsl(32,95%,45%), hsl(205,78%,56%), hsl(280,60%,50%), hsl(40,80%,55%))" }}
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-              />
-            </div>
-            {/* Side glow */}
-            <div className="absolute -inset-[6px] rounded-2xl pointer-events-none" style={{
-              boxShadow: "-8px 0 25px hsl(32 95% 55% / 0.12), 8px 0 25px hsl(205 78% 56% / 0.12)",
-            }} />
-
-            {/* Card body — pure glass */}
-            <div
-              className="relative rounded-2xl overflow-hidden"
-              style={{
-                background: "hsl(220 15% 10% / 0.15)",
-                backdropFilter: "blur(10px)",
-                WebkitBackdropFilter: "blur(10px)",
-                boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.1), inset 0 -1px 0 hsl(0 0% 100% / 0.04), inset 1px 0 0 hsl(0 0% 100% / 0.08), inset -1px 0 0 hsl(0 0% 100% / 0.08)",
-              }}
-            >
+            <div className="hero-tableau">
               {/* Glass reflection */}
               <div className="absolute inset-0 pointer-events-none" style={{
                 background: "linear-gradient(135deg, hsl(0 0% 100% / 0.06) 0%, transparent 30%, transparent 100%)",
@@ -383,12 +316,7 @@ export default function LandingPage() {
                     background: "linear-gradient(180deg, hsl(220 15% 12%) 0%, hsl(220 15% 8%) 100%)",
                     boxShadow: "inset 0 2px 4px hsl(0 0% 0% / 0.6), inset 0 -1px 2px hsl(0 0% 100% / 0.05)",
                   }} />
-                  <motion.div
-                    className="absolute inset-[-20px] rounded-full border border-[hsl(40,80%,55%/0.15)]"
-                    animate={{ rotate: [0, 360] }}
-                    transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-                    style={{ borderStyle: "dashed" }}
-                  />
+                   <div className="absolute inset-[-20px] rounded-full border border-border/30" style={{ borderStyle: "dashed" }} />
                   <motion.img
                     src={heroEmblem}
                     alt="HN Driver"
@@ -505,25 +433,20 @@ export default function LandingPage() {
                   <Button
                     size="lg"
                     onClick={() => navigate("/welcome")}
-                    className="relative overflow-hidden rounded-full px-8 py-5 font-bold text-base text-black bg-gradient-to-r from-[hsl(45,90%,65%)] via-[hsl(40,95%,55%)] to-[hsl(35,100%,48%)] shadow-[0_0_25px_hsl(32,95%,55%,0.4)] hover:shadow-[0_0_40px_hsl(32,95%,55%,0.6)] transition-all duration-500 group"
+                    className="min-w-[13rem] px-8"
                   >
                     <span className="relative z-10 flex items-center gap-2">
                       {lt.heroCta}
                       <ArrowRight className={`w-4 h-4 group-hover:translate-x-1 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : ""}`} />
                     </span>
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                      animate={{ x: ["-200%", "200%"] }}
-                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                    />
                   </Button>
                   <Button
                     size="lg"
                     variant="outline"
                     onClick={() => navigate("/login")}
-                    className="rounded-full px-8 py-5 border-[hsl(220,15%,22%)] text-white hover:bg-white/5 hover:border-[hsl(40,80%,55%/0.4)] transition-all duration-500 group"
+                    className="min-w-[13rem] px-8 group"
                   >
-                    <PlayCircle className={`w-4 h-4 ${dir === "rtl" ? "ml-2" : "mr-2"} group-hover:text-[hsl(32,95%,55%)]`} />
+                    <PlayCircle className={`w-4 h-4 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
                     {t.common.login}
                   </Button>
                 </motion.div>
@@ -584,11 +507,11 @@ export default function LandingPage() {
                 }} />
 
                 <div className="relative z-10 p-4 flex flex-col items-center gap-3 text-center">
-                  <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-white/5 border border-white/5 group-hover:border-[hsl(205,60%,55%/0.3)] transition-all">
+                    <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-foreground/5 border border-foreground/5 group-hover:border-info/30 transition-all">
                     <img src={cat.img} alt={cat.label} className="w-full h-full object-cover object-top scale-110 group-hover:scale-130 transition-transform duration-700" width={768} height={768} loading="lazy" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-white group-hover:text-[hsl(205,80%,70%)] transition-colors">{cat.label}</h3>
+                      <h3 className="text-sm font-bold text-foreground group-hover:text-info transition-colors">{cat.label}</h3>
                     <p className="text-[11px] text-[hsl(210,15%,45%)] mt-0.5">{cat.desc}</p>
                   </div>
                 </div>
@@ -1026,8 +949,8 @@ export default function LandingPage() {
                 <h3 className="text-lg font-bold text-foreground mb-2">{project.name}</h3>
                 <p className="text-sm text-muted-foreground mb-3">{project.desc}</p>
                 {project.status === "published" && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-green-400">
-                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
+                    <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
                     منشور
                   </span>
                 )}
