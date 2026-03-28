@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
+import FaceAuthGate from "@/components/FaceAuthGate";
+import FaceRegisterPrompt from "@/components/FaceRegisterPrompt";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -14,6 +16,9 @@ const AdminLogin = () => {
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [faceCheckActive, setFaceCheckActive] = useState(false);
+  const [faceVerified, setFaceVerified] = useState(false);
+  const [showFaceRegister, setShowFaceRegister] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -34,10 +39,20 @@ const AdminLogin = () => {
     checkSession();
   }, [navigate]);
 
+  const handleEmailBlur = () => {
+    if (email && email.includes("@") && !faceVerified) {
+      setFaceCheckActive(true);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       toast({ title: "يرجى ملء جميع الحقول", variant: "destructive" });
+      return;
+    }
+    if (!faceVerified && !faceCheckActive) {
+      setFaceCheckActive(true);
       return;
     }
     setLoading(true);
