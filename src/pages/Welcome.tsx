@@ -217,7 +217,7 @@ const Welcome = () => {
             onClick={() => void handleRoleSelect(role.id)}
             disabled={checking}
             style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
-            className="group relative z-10 w-full overflow-hidden rounded-2xl p-5 text-right gradient-card border border-border hover:border-primary/40 transition-all duration-300 disabled:opacity-50 cursor-pointer select-none active:scale-[0.97]"
+            className={`group relative z-10 w-full overflow-hidden rounded-2xl p-5 text-right glass-card${role.id === 'driver' ? '-gold' : role.id === 'client' ? '' : role.id === 'delivery' ? '-green' : '-purple'} transition-all duration-300 disabled:opacity-50 cursor-pointer select-none active:scale-[0.97]`}
             aria-label={role.title}
           >
             <div className="absolute inset-0 gradient-primary opacity-0 group-hover:opacity-5 transition-opacity pointer-events-none" />

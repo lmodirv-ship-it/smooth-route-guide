@@ -288,8 +288,8 @@ const DeliveryHome = () => {
                 onClick={() => navigate(cat.path)}
                 className="flex flex-col items-center gap-2.5 group"
               >
-                <div className={`relative w-[72px] h-[72px] rounded-full bg-gradient-to-br ${cat.color} flex items-center justify-center shadow-lg shadow-black/20 group-hover:shadow-xl group-hover:shadow-primary/20 transition-all duration-300`}>
-                  <div className="absolute inset-[3px] rounded-full bg-card flex items-center justify-center">
+                <div className="relative w-[72px] h-[72px] rounded-full glass-card flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300" style={{ boxShadow: "inset 0 0 20px hsl(205 80% 55% / 0.1), 0 0 15px hsl(205 80% 55% / 0.08)" }}>
+                  <div className="absolute inset-[3px] rounded-full bg-card/80 flex items-center justify-center">
                     <cat.icon className="w-7 h-7 text-foreground group-hover:text-primary transition-colors" />
                   </div>
                 </div>

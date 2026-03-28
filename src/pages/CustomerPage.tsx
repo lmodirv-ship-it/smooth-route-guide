@@ -259,7 +259,7 @@ const CustomerPage = () => {
 
       {/* Location selectors */}
       <div className="px-5 mt-5 relative z-10">
-        <div className="glass-strong rounded-2xl border border-border p-4 space-y-3">
+        <div className="glass-card rounded-2xl p-4 space-y-3">
           {/* Pickup */}
           <button
             onClick={() => { setShowPickupPicker(true); setShowDestPicker(false); }}
