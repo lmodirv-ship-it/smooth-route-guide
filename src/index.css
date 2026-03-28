@@ -452,14 +452,18 @@
 
   /* Premium card style for all pages */
   .cosmic-card {
-    background: linear-gradient(145deg, hsl(220, 18%, 13%), hsl(220, 18%, 9%));
-    border: 1px solid hsl(220, 15%, 20%);
+    background: hsl(210, 25%, 8%, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(205, 60%, 50%, 0.12);
     border-radius: 1rem;
+    box-shadow: inset 0 0 20px hsl(205, 80%, 55%, 0.05), 0 0 12px hsl(205, 80%, 55%, 0.06);
     transition: all 0.3s ease;
+    position: relative;
   }
   .cosmic-card:hover {
-    border-color: hsl(32, 95%, 55%, 0.3);
-    box-shadow: 0 0 20px hsl(32, 95%, 55%, 0.1);
+    border-color: hsl(205, 60%, 55%, 0.25);
+    box-shadow: inset 0 0 30px hsl(205, 80%, 55%, 0.08), 0 0 25px hsl(205, 80%, 55%, 0.12);
   }
 
   /* Metallic heading style */
