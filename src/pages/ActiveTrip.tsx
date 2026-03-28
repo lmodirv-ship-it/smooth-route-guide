@@ -191,7 +191,7 @@ const ActiveTrip = () => {
           </div>
         </div>
 
-        <div className="gradient-card rounded-xl p-4 border border-border mb-4">
+        <div className="glass-card rounded-xl p-4 mb-4">
           <div className="space-y-3">
             <div className="flex items-center gap-3 justify-end">
               <span className="text-sm text-foreground">{clientInfo.pickup}</span>

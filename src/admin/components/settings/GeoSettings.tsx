@@ -113,7 +113,7 @@ const GeoSettings = () => {
   if (loading) return <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
 
   return (
-    <div className="gradient-card rounded-xl border border-border p-6 space-y-6">
+    <div className="glass-card rounded-xl p-6 space-y-6">
       <div className="flex items-center justify-between">
         <Button onClick={handleSave} disabled={saving} className="gap-2 gradient-primary text-primary-foreground">
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}

@@ -83,7 +83,7 @@ const DriverWallet = () => {
           {filtered.length === 0 && <p className="text-center text-muted-foreground text-sm py-8">{t.driver.noTransactions}</p>}
           {filtered.map((tx, i) => (
             <motion.div key={tx.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-              className="gradient-card rounded-xl p-4 border border-border flex items-center justify-between">
+              className="glass-card rounded-xl p-4 flex items-center justify-between">
               <span className={`font-bold text-sm ${tx.type === "in" ? "text-success" : "text-destructive"}`}>{tx.amount}</span>
               <div className="flex items-center gap-3">
                 <div>

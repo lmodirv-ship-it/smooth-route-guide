@@ -159,7 +159,7 @@ const AdminCallCenter = () => {
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Ticket List */}
-        <div className="rounded-xl border border-border overflow-hidden bg-card">
+        <div className="rounded-xl border border-border overflow-hidden glass-card">
           <div className="px-4 py-3 border-b border-border bg-muted/30">
             <p className="text-sm font-semibold text-foreground flex items-center gap-2">
               <PhoneIncoming className="w-4 h-4 text-primary" />
@@ -200,7 +200,7 @@ const AdminCallCenter = () => {
           <AnimatePresence mode="wait">
             {selectedTicket ? (
               <motion.div key={selectedTicket.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                className="rounded-xl border border-border bg-card overflow-hidden">
+                className="rounded-xl border border-border glass-card overflow-hidden">
                 {/* Ticket Header */}
                 <div className="p-5 border-b border-border bg-muted/20">
                   <div className="flex items-start justify-between">
@@ -280,7 +280,7 @@ const AdminCallCenter = () => {
               </motion.div>
             ) : (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="rounded-xl border border-border bg-card p-16 flex items-center justify-center">
+                className="rounded-xl border border-border glass-card p-16 flex items-center justify-center">
                 <div className="text-center">
                   <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
                     <Headphones className="w-8 h-8 text-muted-foreground/40" />

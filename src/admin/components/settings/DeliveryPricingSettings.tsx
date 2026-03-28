@@ -37,7 +37,7 @@ const DeliveryPricingSettings = ({ pricing, onChange, onReset }: DeliveryPricing
   ];
 
   return (
-    <div className="gradient-card rounded-xl border border-border p-6">
+    <div className="glass-card rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
         <Button variant="outline" size="sm" onClick={onReset} className="text-xs gap-1">
           <RotateCcw className="w-3 h-3" />

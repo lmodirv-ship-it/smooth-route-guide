@@ -157,7 +157,7 @@ const Cart = () => {
   return (
     <div className="min-h-screen delivery-bg pb-72" dir="rtl">
       {/* Header */}
-      <div className="bg-card border-b border-border px-5 py-4 flex items-center gap-3">
+      <div className="glass-card border-b border-border px-5 py-4 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-secondary">
           <ArrowRight className="w-5 h-5 text-foreground" />
         </button>
@@ -175,7 +175,7 @@ const Cart = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="bg-card rounded-2xl border border-border p-4"
+            className="glass-card rounded-2xl p-4"
           >
             <div className="flex items-center justify-between">
               <div className="flex-1">
@@ -184,7 +184,7 @@ const Cart = () => {
               </div>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2 bg-secondary rounded-xl px-2 py-1">
-                  <button onClick={() => updateQuantity(item.menuItemId, item.quantity - 1)} className="w-7 h-7 rounded-lg bg-card flex items-center justify-center">
+                  <button onClick={() => updateQuantity(item.menuItemId, item.quantity - 1)} className="w-7 h-7 rounded-lg glass-card flex items-center justify-center">
                     <Minus className="w-3.5 h-3.5" />
                   </button>
                   <span className="text-sm font-bold min-w-[20px] text-center">{item.quantity}</span>
@@ -206,7 +206,7 @@ const Cart = () => {
 
       {/* Delivery Address */}
       <div className="px-5 mt-4 space-y-3">
-        <div className="bg-card rounded-2xl border border-border p-4 space-y-3">
+        <div className="glass-card rounded-2xl p-4 space-y-3">
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-primary" />
             <h3 className="font-bold text-foreground text-sm">عنوان التوصيل</h3>
@@ -228,7 +228,7 @@ const Cart = () => {
       </div>
 
       {/* Summary */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-5 space-y-3 z-50">
+      <div className="fixed bottom-0 left-0 right-0 glass-card border-t border-border p-5 space-y-3 z-50">
         <div className="flex justify-between text-sm">
           <span className="text-foreground font-bold">{subtotal.toFixed(0)} DH</span>
           <span className="text-muted-foreground">المنتجات</span>

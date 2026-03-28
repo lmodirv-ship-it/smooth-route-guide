@@ -193,7 +193,7 @@ const AdminEarnings = () => {
           { label: "أرباح الشهر", value: monthTotal, icon: TrendingUp, color: "text-primary" },
         ].map((card, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
-            className="gradient-card rounded-xl p-5 border border-border">
+            className="glass-card rounded-xl p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-1 text-xs text-green-500">
                 <ArrowUpRight className="w-3 h-3" />+
@@ -209,7 +209,7 @@ const AdminEarnings = () => {
       </div>
 
       {/* Platform Commission Section */}
-      <div className="gradient-card rounded-xl border border-border p-6">
+      <div className="glass-card rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <span className="text-sm text-muted-foreground">النسبة: {platformCommission.rate.toFixed(1)}%</span>
           <div className="flex items-center gap-2">
@@ -244,7 +244,7 @@ const AdminEarnings = () => {
       </div>
 
       {/* Per-Restaurant Earnings Table */}
-      <div className="gradient-card rounded-xl border border-border p-6">
+      <div className="glass-card rounded-xl p-6">
         <div className="flex items-center gap-2 mb-4">
           <Store className="w-5 h-5 text-orange-500" />
           <h3 className="font-bold text-foreground">أرباح المطاعم والمتاجر</h3>
@@ -281,7 +281,7 @@ const AdminEarnings = () => {
       </div>
 
       {/* Per-Driver Earnings Table */}
-      <div className="gradient-card rounded-xl border border-border p-6">
+      <div className="glass-card rounded-xl p-6">
         <div className="flex items-center gap-2 mb-4">
           <Car className="w-5 h-5 text-blue-500" />
           <h3 className="font-bold text-foreground">أرباح السائقين</h3>
@@ -320,7 +320,7 @@ const AdminEarnings = () => {
       </div>
 
       {/* Chart */}
-      <div className="gradient-card rounded-xl border border-border p-6">
+      <div className="glass-card rounded-xl p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex gap-2">
             {(["daily", "weekly", "monthly"] as const).map(r => (

@@ -315,8 +315,8 @@ const DeliveryHome = () => {
                   }}
                   className={`flex-shrink-0 px-3.5 py-2 rounded-full text-xs font-medium transition-all ${
                     currentZone === zone.id
-                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                      : "bg-card border border-border text-foreground hover:border-primary/30"
+                      ? "gradient-primary text-primary-foreground shadow-md shadow-primary/20 glow-primary"
+                      : "glass-card text-foreground"
                   }`}
                 >
                   {zone.name_ar}
@@ -333,7 +333,7 @@ const DeliveryHome = () => {
           className="mx-5 mt-5 mb-4"
         >
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary via-accent to-primary p-[1px]">
-            <div className="bg-card rounded-2xl px-5 py-4 flex items-center gap-4">
+            <div className="glass-card rounded-2xl px-5 py-4 flex items-center gap-4">
               <Sparkles className="w-8 h-8 text-primary flex-shrink-0" />
               <div className="text-right flex-1">
                 <p className="text-sm font-bold text-foreground">{promoTitle}</p>
@@ -349,7 +349,7 @@ const DeliveryHome = () => {
         <div className="mx-5 mb-4">
           <button
             onClick={() => navigate("/delivery/support")}
-            className="w-full bg-card rounded-2xl border border-border p-4 flex items-center gap-3 hover:border-primary/30 transition-all"
+            className="w-full glass-card rounded-2xl p-4 flex items-center gap-3 transition-all"
           >
             <div className="w-10 h-10 rounded-full bg-info/10 flex items-center justify-center">
               <Phone className="w-5 h-5 text-info" />
@@ -373,7 +373,7 @@ const DeliveryHome = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="relative overflow-hidden rounded-2xl border border-border bg-card group hover:border-primary/40 transition-all"
+              className="relative overflow-hidden rounded-2xl border border-border glass-card group hover:border-primary/40 transition-all"
             >
               <div className="h-24 bg-gradient-to-br from-amber-500/20 via-orange-500/10 to-yellow-500/20 flex items-center justify-center">
                 <img
@@ -396,7 +396,7 @@ const DeliveryHome = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.9 }}
-              className="relative overflow-hidden rounded-2xl border border-border bg-card group hover:border-primary/40 transition-all"
+              className="relative overflow-hidden rounded-2xl border border-border glass-card group hover:border-primary/40 transition-all"
             >
               <div className="h-24 bg-gradient-to-br from-blue-500/20 via-indigo-500/10 to-purple-500/20 flex items-center justify-center">
                 <img
@@ -418,7 +418,7 @@ const DeliveryHome = () => {
         <div className="px-5 mb-8">
           <h2 className="text-sm font-bold text-foreground mb-3">طلبات سابقة</h2>
           {recentOrders.length === 0 ? (
-            <div className="bg-card rounded-2xl border border-border p-5 flex flex-col items-center gap-2">
+            <div className="glass-card rounded-2xl p-5 flex flex-col items-center gap-2">
               <Store className="w-8 h-8 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">لا توجد طلبات سابقة</p>
               <p className="text-xs text-muted-foreground/60">ستظهر طلباتك هنا بعد أول توصيل</p>
@@ -426,7 +426,7 @@ const DeliveryHome = () => {
           ) : (
             <div className="space-y-2">
               {recentOrders.map((order) => (
-                <div key={order.id} className="bg-card rounded-xl border border-border p-3 flex items-center justify-between">
+                <div key={order.id} className="glass-card rounded-xl p-3 flex items-center justify-between">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     order.status === "delivered" || order.status === "completed"
                       ? "bg-success/10 text-success"

@@ -63,7 +63,7 @@ const ClientWallet = () => {
 
         {showRecharge && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
-            className="gradient-card rounded-xl p-4 border border-border mt-3">
+            className="glass-card rounded-xl p-4 mt-3">
             <p className="text-sm text-foreground font-bold mb-3">{t.customer.chooseAmount}</p>
             <div className="grid grid-cols-3 gap-2 mb-3">
               {[50, 100, 200].map(amount => (
@@ -81,7 +81,7 @@ const ClientWallet = () => {
         <div className="space-y-2">
           {transactions.length === 0 && <p className="text-center text-muted-foreground text-sm py-4">{t.customer.noTransactions}</p>}
           {transactions.map(tx => (
-            <div key={tx.id} className="gradient-card rounded-xl p-4 border border-border flex items-center justify-between">
+            <div key={tx.id} className="glass-card rounded-xl p-4 flex items-center justify-between">
               <span className={`font-bold text-sm ${tx.type === "in" ? "text-success" : "text-destructive"}`}>{tx.amount}</span>
               <div className="flex items-center gap-3">
                 <div>

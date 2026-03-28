@@ -163,7 +163,7 @@ const LanguageManagement = () => {
   if (loading) return <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
 
   return (
-    <div className="gradient-card rounded-xl border border-border p-6 space-y-6">
+    <div className="glass-card rounded-xl p-6 space-y-6">
       <div className="flex items-center justify-between">
         <Button size="sm" onClick={() => setShowAddLang(true)} className="gradient-primary text-primary-foreground gap-1">
           <Plus className="w-4 h-4" /> إضافة لغة

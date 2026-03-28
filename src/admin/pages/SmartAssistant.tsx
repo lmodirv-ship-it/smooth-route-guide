@@ -390,7 +390,7 @@ const SmartAssistantPage = () => {
     <div className="h-[calc(100vh-80px)] flex flex-col gap-3" dir={dir}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
         {/* صفحة 2 - معاينة التغييرات */}
-        <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-2 lg:order-1">
+        <div className="glass-card rounded-xl flex flex-col overflow-hidden order-2 lg:order-1">
           {previewUrl ? (
             <div className="flex-1 overflow-hidden bg-background relative">
               <iframe
@@ -411,7 +411,7 @@ const SmartAssistantPage = () => {
         </div>
 
         {/* صفحة 1 - عرض الموقع أو الملف المرفوع */}
-        <div className="gradient-card rounded-xl border border-border flex flex-col overflow-hidden order-1 lg:order-2">
+        <div className="glass-card rounded-xl flex flex-col overflow-hidden order-1 lg:order-2">
           {showUploadedFileInPage1 ? (
             <div className="flex-1 overflow-hidden bg-black relative flex items-center justify-center">
               <Button variant="ghost" size="icon" className="absolute top-2 right-2 z-10 bg-black/50 hover:bg-black/70 text-white h-7 w-7" onClick={clearUploadedFile}>

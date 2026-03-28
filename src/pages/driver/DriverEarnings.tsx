@@ -78,14 +78,14 @@ const DriverEarnings = () => {
         <div className="flex gap-2 mb-4">
           {([["day", "اليوم"], ["week", "الأسبوع"], ["month", "الشهر"]] as const).map(([key, label]) => (
             <button key={key} onClick={() => setPeriod(key)}
-              className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${period === key ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
+              className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${period === key ? "gradient-primary text-primary-foreground glow-primary" : "glass-card text-muted-foreground"}`}>
               {label}
             </button>
           ))}
         </div>
 
         <motion.div key={period} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          className="gradient-card rounded-2xl p-6 border border-border text-center mb-4">
+          className="glass-card-gold rounded-2xl p-6 text-center mb-4">
           <p className="text-muted-foreground text-sm">إجمالي الأرباح</p>
           <p className="text-4xl font-bold text-gradient-primary mt-2">{current.total} DH</p>
         </motion.div>
@@ -96,7 +96,7 @@ const DriverEarnings = () => {
             { icon: Calendar, label: "المتوسط", value: `${current.avg} DH` },
             { icon: TrendingUp, label: "الإجمالي", value: `${current.total} DH` },
           ].map((s, i) => (
-            <div key={i} className="gradient-card rounded-xl p-3 border border-border text-center">
+            <div key={i} className="glass-card rounded-xl p-3 text-center">
               <s.icon className="w-5 h-5 text-primary mx-auto mb-1" />
               <p className="text-xs text-muted-foreground">{s.label}</p>
               <p className="text-sm font-bold text-foreground mt-1">{s.value}</p>
@@ -105,7 +105,7 @@ const DriverEarnings = () => {
         </div>
 
         <h3 className="text-foreground font-bold mb-3">تفاصيل الأسبوع</h3>
-        <div className="gradient-card rounded-xl p-4 border border-border">
+        <div className="glass-card rounded-xl p-4">
           <div className="flex items-end gap-2 h-32 mb-3">
             {weeklyBreakdown.map((d, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">

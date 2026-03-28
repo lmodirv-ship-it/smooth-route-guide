@@ -56,10 +56,10 @@ const AdminDocuments = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {docs.length === 0 && <div className="col-span-full gradient-card rounded-xl p-12 border border-border text-center text-muted-foreground">لا توجد وثائق</div>}
+        {docs.length === 0 && <div className="col-span-full glass-card rounded-xl p-12 text-center text-muted-foreground">لا توجد وثائق</div>}
         {docs.map((doc, i) => (
           <motion.div key={doc.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-            className="gradient-card rounded-xl border border-border p-4">
+            className="glass-card rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
               <Badge variant="outline" className={
                 doc.status === "approved" ? "text-success border-success/30" :

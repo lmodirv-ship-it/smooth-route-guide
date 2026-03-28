@@ -95,7 +95,7 @@ const AdminCommunityChat = () => {
   return (
     <div className="h-[calc(100vh-140px)] flex gap-4" dir="rtl">
       {/* Users sidebar */}
-      <div className="w-64 hidden lg:flex flex-col bg-card border border-border rounded-xl overflow-hidden">
+      <div className="w-64 hidden lg:flex flex-col glass-card rounded-xl overflow-hidden">
         <div className="p-3 border-b border-border flex items-center gap-2 bg-muted/50">
           <Users className="w-4 h-4 text-primary" />
           <span className="font-semibold text-sm">المستخدمون ({onlineUsers.length})</span>
@@ -133,7 +133,7 @@ const AdminCommunityChat = () => {
       </div>
 
       {/* Chat area */}
-      <div className="flex-1 flex flex-col bg-card border border-border rounded-xl overflow-hidden">
+      <div className="flex-1 flex flex-col glass-card rounded-xl overflow-hidden">
         <div className="p-3 border-b border-border flex items-center gap-2 bg-muted/50">
           <MessagesSquare className="w-5 h-5 text-primary" />
           <h2 className="font-bold text-foreground">الدردشة المجتمعية</h2>

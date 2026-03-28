@@ -187,7 +187,7 @@ const DriverSubscription = () => {
         )}
 
         {/* Info */}
-        <div className="mt-6 p-4 rounded-xl gradient-card border border-border">
+        <div className="mt-6 p-4 rounded-xl glass-card">
           <p className="text-muted-foreground text-sm text-center mb-3">🎁 الشهر الأول مجاني لجميع السائقين الجدد</p>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" />طلبات غير محدودة خلال فترة الاشتراك</li>

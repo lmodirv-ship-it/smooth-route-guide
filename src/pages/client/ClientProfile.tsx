@@ -67,11 +67,11 @@ const ClientProfile = () => {
       </div>
 
       <div className="grid grid-cols-2 gap-3 px-4 mt-6">
-        <div className="gradient-card rounded-xl p-3 border border-border text-center">
+        <div className="glass-card rounded-xl p-3 text-center">
           <p className="text-xs text-muted-foreground">{t.customer.trips}</p>
           <p className="text-lg font-bold text-foreground mt-1">{profile.tripCount}</p>
         </div>
-        <div className="gradient-card rounded-xl p-3 border border-border text-center">
+        <div className="glass-card-gold rounded-xl p-3 text-center">
           <p className="text-xs text-muted-foreground">{t.customer.balance}</p>
           <p className="text-lg font-bold text-foreground mt-1">{profile.balance} {t.common.currency}</p>
         </div>
@@ -81,7 +81,7 @@ const ClientProfile = () => {
         {menuItems.map((item, i) => (
           <motion.button key={i} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
             onClick={() => navigate(item.path)}
-            className="w-full gradient-card rounded-xl p-4 border border-border flex items-center justify-between hover:border-primary/20 transition-colors">
+            className="w-full glass-card rounded-xl p-4 flex items-center justify-between hover:border-primary/20 transition-colors">
             <ChevronLeft className="w-4 h-4 text-muted-foreground" />
             <div className="flex items-center gap-3">
               <span className="text-foreground text-sm">{item.label}</span>

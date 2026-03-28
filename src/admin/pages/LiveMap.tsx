@@ -21,14 +21,14 @@ const AdminLiveMap = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Map */}
-        <div className="lg:col-span-3 gradient-card rounded-xl border border-border overflow-hidden">
+        <div className="lg:col-span-3 glass-card rounded-xl overflow-hidden">
           <div className="h-[600px]">
             <LeafletMap zoom={11} showMarker={false} nearbyDrivers={drivers.map(d => ({ id: d.id, lat: d.lat, lng: d.lng }))} />
           </div>
         </div>
 
         {/* Driver List */}
-        <div className="gradient-card rounded-xl border border-border overflow-hidden">
+        <div className="glass-card rounded-xl overflow-hidden">
           <div className="p-4 border-b border-border">
             <h3 className="font-bold text-foreground text-right text-sm">السائقون المتصلون</h3>
           </div>

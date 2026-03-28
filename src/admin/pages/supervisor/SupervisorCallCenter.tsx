@@ -142,7 +142,7 @@ const SupervisorCallCenter = () => {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-border overflow-hidden bg-card">
+      <div className="rounded-xl border border-border overflow-hidden glass-card">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30">

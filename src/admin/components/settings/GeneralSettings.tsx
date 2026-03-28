@@ -17,7 +17,7 @@ const GeneralSettings = ({ settings, onChange }: GeneralSettingsProps) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* المناطق */}
-      <div className="gradient-card rounded-xl border border-border p-6">
+      <div className="glass-card rounded-xl p-6">
         <div className="flex items-center gap-2 mb-4 text-right">
           <MapPin className="w-5 h-5 text-primary" />
           <h3 className="font-bold text-foreground">المناطق</h3>
@@ -40,7 +40,7 @@ const GeneralSettings = ({ settings, onChange }: GeneralSettingsProps) => {
       </div>
 
       {/* الإشعارات */}
-      <div className="gradient-card rounded-xl border border-border p-6">
+      <div className="glass-card rounded-xl p-6">
         <div className="flex items-center gap-2 mb-4 text-right">
           <Bell className="w-5 h-5 text-primary" />
           <h3 className="font-bold text-foreground">الإشعارات</h3>
@@ -58,7 +58,7 @@ const GeneralSettings = ({ settings, onChange }: GeneralSettingsProps) => {
       </div>
 
       {/* النظام */}
-      <div className="gradient-card rounded-xl border border-border p-6">
+      <div className="glass-card rounded-xl p-6">
         <div className="flex items-center gap-2 mb-4 text-right">
           <Shield className="w-5 h-5 text-primary" />
           <h3 className="font-bold text-foreground">النظام</h3>

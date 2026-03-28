@@ -148,7 +148,7 @@ const StoreDetail = () => {
 
         <div className="px-5 pb-5 -mt-10 relative z-10">
           <div className="flex items-end gap-3">
-            <div className="w-18 h-18 rounded-2xl bg-card border-2 border-border flex items-center justify-center overflow-hidden flex-shrink-0 w-[72px] h-[72px]">
+            <div className="w-18 h-18 rounded-2xl glass-card border-2 border-border flex items-center justify-center overflow-hidden flex-shrink-0 w-[72px] h-[72px]">
               {store.image_url ? (
                 <img src={store.image_url} className="w-full h-full object-cover" alt="" />
               ) : (
@@ -202,7 +202,7 @@ const StoreDetail = () => {
                 className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
                   activeCategory === cat.id
                     ? "bg-primary text-primary-foreground shadow-md"
-                    : "bg-card border border-border text-muted-foreground"
+                    : "glass-card text-muted-foreground"
                 }`}
               >
                 {dir === "rtl" ? cat.name_ar : cat.name_fr}
@@ -236,7 +236,7 @@ const StoreDetail = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className="bg-card rounded-2xl border border-border p-4"
+                className="glass-card rounded-2xl p-4"
               >
                 <div className="flex items-start gap-3">
                   {/* Product image */}
@@ -277,7 +277,7 @@ const StoreDetail = () => {
                   <div className="flex items-center gap-1 flex-shrink-0 pt-2">
                     {qty > 0 ? (
                       <div className="flex items-center gap-2 bg-secondary rounded-xl px-2 py-1">
-                        <button onClick={() => updateQuantity(item.id, qty - 1)} className="w-7 h-7 rounded-lg bg-card flex items-center justify-center">
+                        <button onClick={() => updateQuantity(item.id, qty - 1)} className="w-7 h-7 rounded-lg glass-card flex items-center justify-center">
                           <Minus className="w-3.5 h-3.5 text-foreground" />
                         </button>
                         <span className="text-sm font-bold text-foreground min-w-[20px] text-center">{qty}</span>
@@ -304,7 +304,7 @@ const StoreDetail = () => {
         <motion.div
           initial={{ y: 80 }}
           animate={{ y: 0 }}
-          className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 z-50"
+          className="fixed bottom-0 left-0 right-0 glass-card border-t border-border p-4 z-50"
         >
           <Button
             onClick={() => navigate("/delivery/cart")}
@@ -335,13 +335,13 @@ const StoreDetail = () => {
               <>
                 <button
                   onClick={() => setGalleryIndex((prev) => (prev > 0 ? prev - 1 : galleryImages.length - 1))}
-                  className="absolute left-6 top-1/2 -translate-y-1/2 p-2 rounded-full bg-card border border-border"
+                  className="absolute left-6 top-1/2 -translate-y-1/2 p-2 rounded-full glass-card"
                 >
                   <ChevronLeft className="w-5 h-5 text-foreground" />
                 </button>
                 <button
                   onClick={() => setGalleryIndex((prev) => (prev < galleryImages.length - 1 ? prev + 1 : 0))}
-                  className="absolute right-6 top-1/2 -translate-y-1/2 p-2 rounded-full bg-card border border-border"
+                  className="absolute right-6 top-1/2 -translate-y-1/2 p-2 rounded-full glass-card"
                 >
                   <ChevronRight className="w-5 h-5 text-foreground" />
                 </button>

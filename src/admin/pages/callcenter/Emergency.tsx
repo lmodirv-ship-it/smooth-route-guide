@@ -48,7 +48,7 @@ const Emergency = () => {
       {loading ? (
         <div className="py-20 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
       ) : emergencies.length === 0 ? (
-        <div className="gradient-card rounded-2xl p-16 border border-border text-center">
+        <div className="glass-card rounded-2xl p-16 text-center">
           <Shield className="w-20 h-20 text-success mx-auto mb-4" />
           <h2 className="text-xl font-bold text-foreground">لا توجد حالات طوارئ نشطة</h2>
           <p className="text-sm text-muted-foreground mt-2">النظام آمن حالياً</p>
@@ -60,7 +60,7 @@ const Emergency = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
-              className="gradient-card rounded-2xl p-5 border border-destructive/30 relative overflow-hidden"
+              className="glass-card rounded-2xl p-5 border border-destructive/30 relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-1.5 h-full bg-destructive" />
 

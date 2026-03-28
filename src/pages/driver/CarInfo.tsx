@@ -65,7 +65,7 @@ const CarInfo = () => {
 
       <div className="px-4 mt-4">
         {!vehicle ? (
-          <div className="gradient-card rounded-2xl p-8 border border-border text-center">
+          <div className="glass-card rounded-2xl p-8 text-center">
             <Car className="w-16 h-16 text-muted-foreground mx-auto mb-3" />
             <p className="text-foreground font-bold">لم يتم تسجيل سيارة بعد</p>
             <p className="text-sm text-muted-foreground mt-1">تواصل مع الإدارة لربط سيارتك</p>
@@ -73,7 +73,7 @@ const CarInfo = () => {
         ) : (
           <>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              className="gradient-card rounded-2xl p-6 border border-border text-center relative overflow-hidden">
+              className="glass-card rounded-2xl p-6 text-center relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
               <div className="relative z-10">
                 <div className="w-20 h-20 rounded-full gradient-primary flex items-center justify-center mx-auto mb-3 glow-primary">
@@ -85,7 +85,7 @@ const CarInfo = () => {
             </motion.div>
 
             <h3 className="text-foreground font-bold mt-6 mb-3">المواصفات</h3>
-            <div className="gradient-card rounded-xl border border-border divide-y divide-border">
+            <div className="glass-card rounded-xl divide-y divide-border">
               {specs.map((s, i) => (
                 <div key={i} className="flex items-center justify-between p-4">
                   {editing && s.key ? (
@@ -115,7 +115,7 @@ const CarInfo = () => {
         {docs.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد وثائق مرفوعة</p> : (
           <div className="space-y-3">
             {docs.map(d => (
-              <div key={d.id} className="gradient-card rounded-xl p-4 border border-border flex items-center justify-between">
+              <div key={d.id} className="glass-card rounded-xl p-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CheckCircle className={`w-4 h-4 ${d.status === "approved" ? "text-success" : d.status === "rejected" ? "text-destructive" : "text-warning"}`} />
                   <span className={`text-xs ${d.status === "approved" ? "text-success" : d.status === "rejected" ? "text-destructive" : "text-warning"}`}>

@@ -104,7 +104,7 @@ const RideAssign = () => {
               الطلبات المعلقة ({pendingRequests.length})
             </h2>
             <div className="space-y-2">
-              {pendingRequests.length === 0 && <div className="gradient-card rounded-xl p-6 border border-border text-sm text-muted-foreground text-center">لا توجد طلبات معلقة</div>}
+              {pendingRequests.length === 0 && <div className="glass-card rounded-xl p-6 text-sm text-muted-foreground text-center">لا توجد طلبات معلقة</div>}
               {pendingRequests.map((req) => (
                 <motion.button key={req.id}
                   onClick={() => setSelectedRequest(req.id)}
@@ -148,7 +148,7 @@ const RideAssign = () => {
               السائقون المتاحون ({availableDrivers.length})
             </h2>
             <div className="space-y-2">
-              {availableDrivers.length === 0 && <div className="gradient-card rounded-xl p-6 border border-border text-sm text-muted-foreground text-center">لا يوجد سائقون متاحون</div>}
+              {availableDrivers.length === 0 && <div className="glass-card rounded-xl p-6 text-sm text-muted-foreground text-center">لا يوجد سائقون متاحون</div>}
               {availableDrivers.map((d) => (
                 <motion.button key={d.id}
                   onClick={() => setSelectedDriver(d.id)}

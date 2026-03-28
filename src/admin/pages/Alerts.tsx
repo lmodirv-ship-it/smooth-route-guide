@@ -86,7 +86,7 @@ const AdminAlerts = () => {
       {loading && <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}
 
       {!loading && alerts.length === 0 && (
-        <div className="gradient-card rounded-xl p-12 border border-border text-center text-muted-foreground">{t.admin.noAlerts}</div>
+        <div className="glass-card rounded-xl p-12 text-center text-muted-foreground">{t.admin.noAlerts}</div>
       )}
 
       <div className="space-y-3">

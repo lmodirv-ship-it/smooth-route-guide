@@ -123,7 +123,7 @@ const Tickets = () => {
       </div>
 
       {showNew && (
-        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="gradient-card rounded-xl p-4 border border-border mb-4 space-y-3">
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="glass-card rounded-xl p-4 mb-4 space-y-3">
           <h3 className="text-foreground font-bold text-sm">إنشاء تذكرة جديدة</h3>
           <Input value={form.title} onChange={(e) => setForm((current) => ({ ...current, title: e.target.value }))} placeholder="الموضوع" className="bg-secondary border-border rounded-lg text-right text-sm" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -132,12 +132,12 @@ const Tickets = () => {
             <Input value={form.trip_id} onChange={(e) => setForm((current) => ({ ...current, trip_id: e.target.value }))} placeholder="UID الرحلة (اختياري)" className="bg-secondary border-border rounded-lg text-right text-sm" />
           </div>
           <div className="flex gap-2">
-            <select value={form.priority} onChange={(e) => setForm((current) => ({ ...current, priority: e.target.value }))} className="flex-1 bg-secondary border border-border rounded-lg text-sm text-foreground p-2 text-right">
+            <select value={form.priority} onChange={(e) => setForm((current) => ({ ...current, priority: e.target.value }))} className="flex-1 glass-card rounded-lg text-sm text-foreground p-2 text-right">
               <option value="high">عالي</option>
               <option value="medium">متوسط</option>
               <option value="low">منخفض</option>
             </select>
-            <select value={form.category} onChange={(e) => setForm((current) => ({ ...current, category: e.target.value }))} className="flex-1 bg-secondary border border-border rounded-lg text-sm text-foreground p-2 text-right">
+            <select value={form.category} onChange={(e) => setForm((current) => ({ ...current, category: e.target.value }))} className="flex-1 glass-card rounded-lg text-sm text-foreground p-2 text-right">
               <option value="client">عميل</option>
               <option value="driver">سائق</option>
               <option value="system">نظام</option>
@@ -157,7 +157,7 @@ const Tickets = () => {
         ))}
       </div>
 
-      <div className="gradient-card rounded-xl border border-border overflow-x-auto">
+      <div className="glass-card rounded-xl overflow-x-auto">
         {loading ? (
           <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
         ) : (

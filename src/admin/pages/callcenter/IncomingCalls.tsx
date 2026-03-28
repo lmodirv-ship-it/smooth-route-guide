@@ -171,7 +171,7 @@ const IncomingCalls = () => {
                   </div>
                 </div>
 
-                <div className="gradient-card rounded-xl p-4 border border-border mb-4">
+                <div className="glass-card rounded-xl p-4 mb-4">
                   <h3 className="text-foreground font-bold text-sm mb-3">معلومات المتصل</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {[
@@ -190,7 +190,7 @@ const IncomingCalls = () => {
                   </div>
                 </div>
 
-                <div className="gradient-card rounded-xl p-4 border border-border mb-4">
+                <div className="glass-card rounded-xl p-4 mb-4">
                   <h3 className="text-foreground font-bold text-sm mb-2">ملاحظات المكالمة</h3>
                   <Textarea
                     value={notes}
@@ -207,7 +207,7 @@ const IncomingCalls = () => {
                     { icon: Phone, label: "تحويل المكالمة", color: "text-warning" },
                     { icon: User, label: "بيانات العميل", color: "text-primary" },
                   ].map((action, index) => (
-                    <button key={index} className="gradient-card rounded-xl p-3 border border-border flex flex-col items-center gap-1.5 hover:border-primary/30 transition-colors">
+                    <button key={index} className="glass-card rounded-xl p-3 flex flex-col items-center gap-1.5 hover:border-primary/30 transition-colors">
                       <action.icon className={`w-5 h-5 ${action.color}`} />
                       <span className="text-xs text-foreground">{action.label}</span>
                     </button>
@@ -215,7 +215,7 @@ const IncomingCalls = () => {
                 </div>
               </motion.div>
             ) : (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="gradient-card rounded-2xl p-12 border border-border text-center">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-card rounded-2xl p-12 text-center">
                 <PhoneIncoming className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
                 <p className="text-foreground font-bold">اختر مكالمة للرد عليها</p>
                 <p className="text-sm text-muted-foreground mt-1">ستظهر بيانات المكالمات الحقيقية هنا.</p>

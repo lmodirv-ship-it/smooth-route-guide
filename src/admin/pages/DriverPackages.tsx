@@ -142,7 +142,7 @@ const DriverPackages = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
+        <div className="glass-card rounded-xl p-4 flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
             <Crown className="w-6 h-6 text-primary" />
           </div>
@@ -151,7 +151,7 @@ const DriverPackages = () => {
             <p className="text-muted-foreground text-sm">باقة متاحة</p>
           </div>
         </div>
-        <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
+        <div className="glass-card rounded-xl p-4 flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
             <Users className="w-6 h-6 text-emerald-500" />
           </div>
@@ -160,7 +160,7 @@ const DriverPackages = () => {
             <p className="text-muted-foreground text-sm">اشتراك نشط</p>
           </div>
         </div>
-        <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
+        <div className="glass-card rounded-xl p-4 flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center">
             <DollarSign className="w-6 h-6 text-orange-500" />
           </div>
@@ -178,7 +178,7 @@ const DriverPackages = () => {
             key={pkg.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`relative bg-card border rounded-xl p-5 ${
+            className={`relative glass-card border rounded-xl p-5 ${
               pkg.is_featured ? "border-yellow-500/50 ring-1 ring-yellow-500/20" : "border-border"
             } ${!pkg.is_active ? "opacity-50" : ""}`}
           >
@@ -220,7 +220,7 @@ const DriverPackages = () => {
       {/* Recent Subscriptions */}
       <div>
         <h2 className="font-bold text-lg mb-3">آخر الاشتراكات</h2>
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="glass-card rounded-xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">

@@ -97,7 +97,7 @@ export const SocialMediaPreview = () => {
           const status = statusLabels[post.status] || statusLabels.draft;
 
           return (
-            <div key={post.id} className="gradient-card border border-border rounded-xl p-4 space-y-3">
+            <div key={post.id} className="glass-card rounded-xl p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className={`w-8 h-8 rounded-full ${platformColors[post.platform] || "bg-primary"} flex items-center justify-center text-white`}>

@@ -360,7 +360,7 @@ const DriverTracking = () => {
           className="p-4 space-y-3"
         >
           {/* Client info card */}
-          <div className="rounded-2xl border border-border bg-card p-4">
+          <div className="rounded-2xl border border-border glass-card p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="bg-emerald-500/15 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">
                 {statusInfo.label}

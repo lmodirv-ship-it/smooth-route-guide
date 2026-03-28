@@ -51,7 +51,7 @@ const DriverSettings = () => {
       </div>
 
       <div className="mx-4 mt-4">
-        <div className="gradient-card rounded-2xl p-5 border border-border flex items-center gap-4">
+        <div className="glass-card rounded-2xl p-5 flex items-center gap-4">
           <ChevronLeft className="w-5 h-5 text-muted-foreground" />
           <div className="flex-1">
             <h2 className="font-bold text-foreground text-lg">{t.common.name}</h2>
@@ -75,7 +75,7 @@ const DriverSettings = () => {
           className="px-4 mt-5"
         >
           <h3 className="text-sm font-medium text-muted-foreground mb-2">{section.title}</h3>
-          <div className="gradient-card rounded-xl border border-border overflow-hidden">
+          <div className="glass-card rounded-xl overflow-hidden">
             {section.items.map((item, i) => (
               <button
                 key={i}

@@ -274,7 +274,7 @@ const AIAssistant = () => {
             </p>
             <div className="flex flex-wrap gap-2 justify-center mt-2">
               {quickActions.map((q, i) => (
-                <button key={i} onClick={() => send(q)} className="gradient-card border border-border rounded-full px-4 py-2 text-sm text-foreground hover:border-primary/40 transition-colors">
+                <button key={i} onClick={() => send(q)} className="glass-card rounded-full px-4 py-2 text-sm text-foreground hover:border-primary/40 transition-colors">
                   {q}
                 </button>
               ))}

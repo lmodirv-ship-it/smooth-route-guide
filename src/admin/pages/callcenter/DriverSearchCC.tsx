@@ -149,7 +149,7 @@ const DriverSearchCC = () => {
         const d = drivers.find(dr => dr.id === selected);
         if (!d) return null;
         return (
-          <div className="rounded-xl border border-border p-5 bg-card space-y-4">
+          <div className="rounded-xl border border-border p-5 glass-card space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex gap-2">
                 {d.phone && (

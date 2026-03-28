@@ -133,7 +133,7 @@ const AdminDrivers = () => {
       </div>
 
       <Dialog open={!!selectedDriver} onOpenChange={() => setSelectedDriver(null)}>
-        <DialogContent className="gradient-card border-border max-w-lg" dir="rtl">
+        <DialogContent className="glass-card border-border max-w-lg" dir="rtl">
           <DialogHeader><DialogTitle className="text-foreground">تفاصيل السائق</DialogTitle></DialogHeader>
           {selectedDriver && (
             <div className="space-y-4">

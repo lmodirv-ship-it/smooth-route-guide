@@ -123,7 +123,7 @@ const CourierSend = () => {
                   className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
                     selectedType === type.id
                       ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
-                      : "border-border bg-card hover:border-primary/30"
+                      : "border-border glass-card hover:border-primary/30"
                   }`}
                 >
                   <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${type.color} flex items-center justify-center`}>
@@ -156,7 +156,7 @@ const CourierSend = () => {
                   className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-right ${
                     selectedSize === size.id
                       ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
-                      : "border-border bg-card hover:border-primary/30"
+                      : "border-border glass-card hover:border-primary/30"
                   }`}
                 >
                   <span className="text-3xl">{size.icon}</span>
@@ -182,7 +182,7 @@ const CourierSend = () => {
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
                   placeholder="مثال: 3"
-                  className="bg-card border-border h-12 rounded-xl pr-10 text-right"
+                  className="glass-card border-border h-12 rounded-xl pr-10 text-right"
                 />
               </div>
             </div>
@@ -203,7 +203,7 @@ const CourierSend = () => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="صف محتوى الطرد بإيجاز... مثال: كتب دراسية، ملابس شتوية"
-                  className="bg-card border-border rounded-xl min-h-[100px] text-right resize-none"
+                  className="glass-card border-border rounded-xl min-h-[100px] text-right resize-none"
                   maxLength={500}
                 />
                 <p className="text-[10px] text-muted-foreground text-left">{description.length}/500</p>
@@ -213,7 +213,7 @@ const CourierSend = () => {
               <button
                 onClick={() => setFragile(!fragile)}
                 className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all ${
-                  fragile ? "border-destructive bg-destructive/5" : "border-border bg-card"
+                  fragile ? "border-destructive bg-destructive/5" : "border-border glass-card"
                 }`}
               >
                 <span className="text-2xl">⚠️</span>
@@ -231,7 +231,7 @@ const CourierSend = () => {
               </button>
 
               {/* Summary */}
-              <div className="bg-card rounded-2xl border border-border p-4 space-y-2">
+              <div className="glass-card rounded-2xl p-4 space-y-2">
                 <h3 className="text-sm font-bold text-foreground">ملخص الطرد</h3>
                 <div className="flex justify-between text-xs">
                   <span className="text-foreground">{packageTypes.find(t => t.id === selectedType)?.label}</span>

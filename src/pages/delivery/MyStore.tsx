@@ -185,7 +185,7 @@ const MyStore = () => {
   return (
     <div className="min-h-screen bg-background pb-10" dir="rtl">
       {/* Header */}
-      <div className="sticky top-0 z-50 px-5 py-4 flex items-center justify-between bg-card border-b border-border">
+      <div className="sticky top-0 z-50 px-5 py-4 flex items-center justify-between glass-card border-b border-border">
         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-secondary">
           <ArrowRight className="w-5 h-5 text-foreground" />
         </button>
@@ -195,7 +195,7 @@ const MyStore = () => {
 
       {/* Store Info */}
       <div className="px-5 mt-4">
-        <div className="bg-card rounded-2xl border border-border p-5">
+        <div className="glass-card rounded-2xl p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-14 h-14 rounded-xl bg-secondary overflow-hidden flex-shrink-0">
               {store.image_url ? (
@@ -274,7 +274,7 @@ const MyStore = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              className="bg-card rounded-2xl border border-border p-4"
+              className="glass-card rounded-2xl p-4"
             >
               <div className="flex items-start gap-3">
                 <div className="w-16 h-16 rounded-xl bg-secondary/40 overflow-hidden flex-shrink-0">

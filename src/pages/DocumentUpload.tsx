@@ -132,7 +132,7 @@ const DocumentUpload = () => {
       </div>
 
       <div className="px-4 mt-4">
-        <div className="gradient-card rounded-2xl p-5 border border-border">
+        <div className="glass-card rounded-2xl p-5">
           <div className="flex justify-between items-center mb-3">
             <span className="text-sm text-muted-foreground">{completedCount}/{docs.length}</span>
             <span className="text-sm text-foreground font-medium">نسبة الإكمال</span>
@@ -161,7 +161,7 @@ const DocumentUpload = () => {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
-              className="gradient-card rounded-xl p-4 border border-border hover:border-primary/20 transition-colors"
+              className="glass-card rounded-xl p-4 hover:border-primary/20 transition-colors"
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
