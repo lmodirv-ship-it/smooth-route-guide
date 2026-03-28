@@ -11,7 +11,7 @@ import {
   MessageSquare, HelpCircle, CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-// useState/useEffect moved to top imports
+import CinematicParticles from "@/components/CinematicParticles";
 import logo from "@/assets/hn-driver-badge.png";
 import heroEmblem from "@/assets/hero-emblem.png";
 import heroDriver from "@/assets/hero-driver.png";
