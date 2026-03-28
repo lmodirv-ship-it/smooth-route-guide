@@ -949,8 +949,8 @@ export default function LandingPage() {
                 <h3 className="text-lg font-bold text-foreground mb-2">{project.name}</h3>
                 <p className="text-sm text-muted-foreground mb-3">{project.desc}</p>
                 {project.status === "published" && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-green-400">
-                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
+                    <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
                     منشور
                   </span>
                 )}
