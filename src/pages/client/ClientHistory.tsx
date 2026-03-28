@@ -51,7 +51,7 @@ const ClientHistory = () => {
         {trips.length === 0 && <p className="text-center text-muted-foreground py-12">{t.customer.noPreviousTrips}</p>}
         {trips.map((trip, i) => (
           <motion.div key={trip.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-            className="gradient-card rounded-xl p-4 border border-border">
+            className="glass-card rounded-xl p-4">
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center gap-2">
                 <span className={`text-xs px-2 py-0.5 rounded-full ${trip.status === "completed" ? "bg-success/10 text-success" : trip.status === "in_progress" ? "bg-info/10 text-info" : "bg-destructive/10 text-destructive"}`}>

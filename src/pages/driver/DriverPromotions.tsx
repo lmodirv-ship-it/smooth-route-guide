@@ -36,7 +36,7 @@ const DriverPromotions = () => {
         <div className="space-y-3">
           {promotions.map((p, i) => (
             <motion.div key={p.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-              className="gradient-card rounded-xl p-4 border border-border">
+              className="glass-card-gold rounded-xl p-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs px-2 py-0.5 rounded-full bg-success/10 text-success">{t.common.active}</span>
                 <span className="text-primary font-mono font-bold text-lg">{p.code}</span>
