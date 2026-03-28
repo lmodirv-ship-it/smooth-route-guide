@@ -183,7 +183,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Desktop Nav Links — Illuminated glass buttons */}
+          {/* Desktop Nav Links — Glass bulbs with inner glow */}
           <div className="hidden lg:flex items-center gap-3">
             {navLinks.map((link, i) => {
               const hoverHues = ["32", "205", "280", "145"];
@@ -191,32 +191,34 @@ export default function LandingPage() {
                 <motion.button
                   key={link.href}
                   onClick={() => scrollToSection(link.href)}
-                  whileHover={{ scale: 1.08, y: -2 }}
+                  whileHover={{ scale: 1.1, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className="relative px-5 py-2.5 rounded-xl overflow-hidden group cursor-pointer"
+                  className="relative px-5 py-2.5 rounded-full overflow-hidden group cursor-pointer"
                   style={{
-                    background: "linear-gradient(145deg, hsl(220 15% 18% / 0.6), hsl(220 15% 12% / 0.8))",
-                    border: "1px solid hsl(220 15% 30% / 0.3)",
-                    boxShadow: "0 0 12px hsl(32 90% 55% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.06), inset 0 -4px 12px hsl(32 80% 50% / 0.08)",
+                    background: "hsl(210 20% 10% / 0.25)",
+                    backdropFilter: "blur(10px)",
+                    WebkitBackdropFilter: "blur(10px)",
+                    border: "1px solid hsl(0 0% 100% / 0.08)",
+                    boxShadow: "inset 0 0 20px hsl(205 70% 55% / 0.08), inset 0 1px 0 hsl(0 0% 100% / 0.08), 0 0 10px hsl(205 70% 55% / 0.06)",
                   }}
                 >
-                  {/* Inner glow — steady amber light */}
-                  <div className="absolute inset-0 rounded-xl pointer-events-none" style={{
-                    background: "radial-gradient(ellipse 80% 60% at 50% 70%, hsl(32 85% 55% / 0.18) 0%, transparent 70%)",
+                  {/* Inner blue glow — bulb effect */}
+                  <div className="absolute inset-0 rounded-full pointer-events-none" style={{
+                    background: "radial-gradient(ellipse 70% 60% at 50% 70%, hsl(205 80% 55% / 0.15) 0%, transparent 70%)",
                   }} />
-                  {/* Glass highlight */}
-                  <div className="absolute top-0 left-[15%] right-[15%] h-[1px] rounded-full pointer-events-none" style={{
+                  {/* Top glass highlight */}
+                  <div className="absolute top-[2px] left-[25%] right-[25%] h-[1px] rounded-full pointer-events-none" style={{
                     background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.2), transparent)",
                   }} />
-                  {/* Hover: color shift overlay */}
+                  {/* Hover color shift */}
                   <div
-                    className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none"
+                    className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none"
                     style={{
-                      background: `radial-gradient(ellipse 100% 80% at 50% 60%, hsl(${hoverHues[i % hoverHues.length]} 80% 55% / 0.35) 0%, transparent 70%)`,
-                      boxShadow: `0 0 25px hsl(${hoverHues[i % hoverHues.length]} 80% 55% / 0.3), 0 0 50px hsl(${hoverHues[i % hoverHues.length]} 80% 55% / 0.1)`,
+                      background: `radial-gradient(ellipse 90% 80% at 50% 60%, hsl(${hoverHues[i % hoverHues.length]} 80% 55% / 0.25) 0%, transparent 70%)`,
+                      boxShadow: `0 0 20px hsl(${hoverHues[i % hoverHues.length]} 80% 55% / 0.2)`,
                     }}
                   />
-                  <span className="relative z-10 text-sm font-bold tracking-wide uppercase text-[hsl(40,20%,80%)] group-hover:text-white transition-colors duration-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                  <span className="relative z-10 text-sm font-bold tracking-wide uppercase text-[hsl(210,20%,75%)] group-hover:text-white transition-colors duration-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
                     {link.label}
                   </span>
                 </motion.button>
