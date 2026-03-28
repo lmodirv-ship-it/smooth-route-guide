@@ -268,11 +268,9 @@ export default function LandingPage() {
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 60% 80% at 80% 80%, hsl(205 78% 56% / 0.05) 0%, transparent 50%)" }} />
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 40% 40% at 20% 20%, hsl(280 60% 50% / 0.04) 0%, transparent 50%)" }} />
 
-          {/* ★ ROTATING STAR FIELD — spins slowly behind the hero card ★ */}
-          <motion.div
+          {/* ★ STATIC STAR FIELD — fixed behind the hero card ★ */}
+          <div
             className="absolute inset-0 flex items-center justify-center"
-            animate={{ rotate: [0, 360] }}
-            transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
           >
             {[...Array(80)].map((_, i) => {
               const angle = (i / 80) * 360;
@@ -300,7 +298,7 @@ export default function LandingPage() {
                 />
               );
             })}
-          </motion.div>
+          </div>
 
           {/* Static twinkling stars (foreground layer) */}
           {[...Array(40)].map((_, i) => (
@@ -554,21 +552,35 @@ export default function LandingPage() {
                   backdropFilter: "blur(12px)",
                   WebkitBackdropFilter: "blur(12px)",
                   border: "1px solid hsl(205 60% 50% / 0.15)",
-                  boxShadow: "inset 0 0 30px hsl(205 80% 55% / 0.06), 0 0 15px hsl(205 80% 55% / 0.08)",
+                  boxShadow: "inset 0 0 30px hsl(205 80% 55% / 0.08), 0 0 20px hsl(205 80% 55% / 0.1), 0 0 50px hsl(205 70% 55% / 0.06)",
                 }}
               >
-                {/* Inner blue glow */}
+                {/* Inner bulb glow — bright center */}
                 <div className="absolute inset-0 pointer-events-none" style={{
-                  background: "radial-gradient(ellipse 80% 70% at 50% 80%, hsl(205 80% 55% / 0.12) 0%, transparent 70%)",
+                  background: "radial-gradient(ellipse 90% 80% at 50% 70%, hsl(205 80% 55% / 0.18) 0%, hsl(205 80% 55% / 0.06) 40%, transparent 70%)",
                 }} />
+                {/* Traveling light effect on edges */}
+                <motion.div
+                  className="absolute inset-0 rounded-xl pointer-events-none overflow-hidden"
+                >
+                  <motion.div
+                    className="absolute w-16 h-16 rounded-full"
+                    style={{ background: "radial-gradient(circle, hsl(205 80% 60% / 0.35) 0%, transparent 70%)", filter: "blur(8px)" }}
+                    animate={{ 
+                      top: ["0%", "0%", "100%", "100%", "0%"],
+                      left: ["0%", "100%", "100%", "0%", "0%"],
+                    }}
+                    transition={{ duration: 6 + i * 2, repeat: Infinity, ease: "linear" }}
+                  />
+                </motion.div>
                 {/* Glass reflection */}
                 <div className="absolute top-0 left-[10%] right-[10%] h-[1px] pointer-events-none" style={{
-                  background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.15), transparent)",
+                  background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.2), transparent)",
                 }} />
                 {/* Hover glow shift */}
                 <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{
-                  boxShadow: "inset 0 0 40px hsl(205 80% 55% / 0.12), 0 0 25px hsl(205 80% 55% / 0.15)",
-                  border: "1px solid hsl(205 60% 55% / 0.3)",
+                  boxShadow: "inset 0 0 50px hsl(205 80% 55% / 0.15), 0 0 35px hsl(205 80% 55% / 0.2)",
+                  border: "1px solid hsl(205 60% 55% / 0.35)",
                 }} />
 
                 <div className="relative z-10 p-4 flex flex-col items-center gap-3 text-center">
@@ -598,20 +610,37 @@ export default function LandingPage() {
                     backdropFilter: "blur(12px)",
                     WebkitBackdropFilter: "blur(12px)",
                     border: "1px solid hsl(205 60% 50% / 0.15)",
-                    boxShadow: "inset 0 0 25px hsl(205 80% 55% / 0.08), 0 0 18px hsl(205 80% 55% / 0.1), 0 0 40px hsl(205 70% 55% / 0.05)",
+                    boxShadow: "inset 0 0 25px hsl(205 80% 55% / 0.1), 0 0 22px hsl(205 80% 55% / 0.12), 0 0 50px hsl(205 70% 55% / 0.06)",
                   }}
                 >
-                  {/* Inner blue glow */}
-                  <div className="absolute inset-0 pointer-events-none" style={{
-                    background: "radial-gradient(ellipse 80% 70% at 50% 80%, hsl(205 80% 55% / 0.15) 0%, transparent 70%)",
-                  }} />
+                  {/* Inner bulb glow — bright pulsing center */}
+                  <motion.div 
+                    className="absolute inset-0 pointer-events-none"
+                    animate={{ opacity: [0.7, 1, 0.7] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.5 }}
+                    style={{
+                      background: "radial-gradient(ellipse 90% 80% at 50% 70%, hsl(205 80% 55% / 0.18) 0%, hsl(205 80% 55% / 0.06) 40%, transparent 70%)",
+                    }}
+                  />
+                  {/* Traveling light on border */}
+                  <motion.div className="absolute inset-0 rounded-xl pointer-events-none overflow-hidden">
+                    <motion.div
+                      className="absolute w-12 h-12 rounded-full"
+                      style={{ background: "radial-gradient(circle, hsl(205 80% 60% / 0.3) 0%, transparent 70%)", filter: "blur(6px)" }}
+                      animate={{
+                        top: ["0%", "0%", "100%", "100%", "0%"],
+                        left: ["0%", "100%", "100%", "0%", "0%"],
+                      }}
+                      transition={{ duration: 5 + i, repeat: Infinity, ease: "linear" }}
+                    />
+                  </motion.div>
                   {/* Glass top reflection */}
                   <div className="absolute top-0 left-[15%] right-[15%] h-[1px] pointer-events-none" style={{
-                    background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.18), transparent)",
+                    background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.2), transparent)",
                   }} />
                   {/* Hover glow boost */}
                   <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{
-                    boxShadow: "inset 0 0 35px hsl(205 80% 55% / 0.15), 0 0 30px hsl(205 80% 55% / 0.2)",
+                    boxShadow: "inset 0 0 45px hsl(205 80% 55% / 0.18), 0 0 40px hsl(205 80% 55% / 0.25)",
                   }} />
                   <stat.icon className="relative z-10 w-4 h-4 text-[hsl(205,80%,65%)] mx-auto mb-1.5 group-hover:scale-110 transition-transform" />
                   <div className="relative z-10 text-xl font-bold bg-gradient-to-r from-[hsl(45,90%,65%)] to-[hsl(35,100%,48%)] bg-clip-text text-transparent font-display">{stat.value}</div>
