@@ -44,7 +44,7 @@ const CustomerHub = () => {
             transition={{ delay: 0.1, type: "spring", stiffness: 300, damping: 25 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => navigate("/delivery")}
-            className="w-full glass-strong rounded-3xl border border-border p-6 text-right group hover:border-primary/40 transition-all duration-300"
+            className="w-full glass-card-gold rounded-3xl p-6 text-right group transition-all duration-300"
           >
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center glow-primary shrink-0 group-hover:scale-105 transition-transform">
@@ -82,7 +82,7 @@ const CustomerHub = () => {
             transition={{ delay: 0.2, type: "spring", stiffness: 300, damping: 25 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => navigate("/customer/ride")}
-            className="w-full glass-strong rounded-3xl border border-border p-6 text-right group hover:border-primary/40 transition-all duration-300"
+            className="w-full glass-card rounded-3xl p-6 text-right group transition-all duration-300"
           >
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-info/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform"
