@@ -7,7 +7,10 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
 const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model";
-const MATCH_THRESHOLD = 0.45;
+const THRESHOLD_EXCELLENT = 0.10; // >90% match → instant access
+const THRESHOLD_GOOD = 0.30;      // 70-90% → access granted
+const THRESHOLD_RETRY = 0.50;     // 50-70% → retry
+// >0.50 = <50% match → rejected
 
 type GateState = "idle" | "loading" | "scanning" | "matched" | "rejected" | "register";
 
