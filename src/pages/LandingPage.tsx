@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CinematicParticles from "@/components/CinematicParticles";
+import GlobalContactFooter from "@/components/GlobalContactFooter";
 import logo from "@/assets/hn-driver-badge.png";
 import iconVtcCar from "@/assets/icon-vtc-car.png";
 import iconDeliveryBike from "@/assets/icon-delivery-bike.png";
@@ -898,6 +899,7 @@ export default function LandingPage() {
         </div>
         <div className="border-t border-border/40 bg-card/30">
           <div className="container mx-auto px-4 py-5 flex flex-col items-center gap-3">
+            <GlobalContactFooter />
             <p className="text-sm text-muted-foreground text-center">{lt.footerRights}</p>
             <div className="flex flex-col sm:flex-row items-center gap-2 text-xs text-muted-foreground/80 text-center">
               <span>مصمم البرنامج: شركة <span className="font-semibold text-primary">HN للبرمجيات</span> بتعاون مع <a href="https://lovable.dev" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">Lovable</a></span>

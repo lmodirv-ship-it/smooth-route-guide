@@ -887,5 +887,63 @@
       0 12px 34px hsl(0 0% 0% / 0.6),
       0 0 40px hsl(var(--info) / 0.32);
   }
+
+  /* ═══ Royal Gold Contact Box — 3D illuminated with golden edges ═══ */
+  .contact-royal-box {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, hsl(45 50% 12% / 0.4) 0%, hsl(35 40% 8% / 0.3) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1.5px solid hsl(45 70% 50% / 0.45);
+    box-shadow:
+      inset 0 1px 0 hsl(45 80% 60% / 0.3),
+      inset 0 -18px 28px hsl(45 80% 50% / 0.1),
+      inset 1px 0 0 hsl(45 70% 50% / 0.35),
+      inset -1px 0 0 hsl(45 70% 50% / 0.35),
+      0 0 30px hsl(45 80% 50% / 0.15),
+      0 0 60px hsl(45 70% 45% / 0.08),
+      0 6px 20px hsl(0 0% 0% / 0.4);
+    transform: perspective(600px) rotateX(1deg);
+    transform-style: preserve-3d;
+    transition: all 0.4s ease;
+    animation: royal-glow-pulse 4s ease-in-out infinite;
+  }
+  .contact-royal-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, hsl(45 80% 60% / 0.1) 0%, transparent 20%, transparent 100%),
+      radial-gradient(circle at 50% 85%, hsl(45 80% 50% / 0.15) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .contact-royal-box::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 8%; right: 8%; height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(45 80% 65% / 0.5), transparent);
+    pointer-events: none;
+  }
+  .contact-royal-box:hover {
+    border-color: hsl(45 80% 55% / 0.65);
+    box-shadow:
+      inset 0 1px 0 hsl(45 80% 60% / 0.4),
+      inset 0 -20px 30px hsl(45 80% 50% / 0.15),
+      0 0 45px hsl(45 80% 50% / 0.25),
+      0 0 80px hsl(45 70% 45% / 0.1);
+    transform: perspective(600px) rotateX(0.5deg) translateY(-1px);
+  }
+
+  .contact-royal-icon-box {
+    background: linear-gradient(180deg, hsl(45 60% 20% / 0.5) 0%, hsl(45 50% 12% / 0.4) 100%);
+    border: 1px solid hsl(45 70% 50% / 0.35);
+    box-shadow: inset 0 0 12px hsl(45 80% 50% / 0.12), 0 0 10px hsl(45 80% 50% / 0.1);
+  }
+
+  @keyframes royal-glow-pulse {
+    0%, 100% { box-shadow: inset 0 1px 0 hsl(45 80% 60% / 0.3), inset 0 -18px 28px hsl(45 80% 50% / 0.1), 0 0 30px hsl(45 80% 50% / 0.15), 0 6px 20px hsl(0 0% 0% / 0.4); }
+    50% { box-shadow: inset 0 1px 0 hsl(45 80% 60% / 0.4), inset 0 -20px 30px hsl(45 80% 50% / 0.16), 0 0 40px hsl(45 80% 50% / 0.22), 0 6px 20px hsl(0 0% 0% / 0.4); }
+  }
 }
 

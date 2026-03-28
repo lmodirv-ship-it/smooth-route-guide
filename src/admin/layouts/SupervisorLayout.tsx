@@ -13,6 +13,7 @@ import GlobalNotificationListener from "@/components/GlobalNotificationListener"
 import FloatingChatButton from "@/components/FloatingChatButton";
 import { useI18n } from "@/i18n/context";
 import SidebarNavButton from "@/admin/components/SidebarNavButton";
+import GlobalContactFooter from "@/components/GlobalContactFooter";
 
 const SupervisorLayout = () => {
   const { t, dir } = useI18n();
@@ -142,6 +143,7 @@ const SupervisorLayout = () => {
       </div>
     </div>
     <FloatingChatButton />
+    <GlobalContactFooter />
     </>
   );
 };

@@ -23,6 +23,7 @@ import GlobalNotificationListener from "@/components/GlobalNotificationListener"
 import FloatingChatButton from "@/components/FloatingChatButton";
 import FaceGuard from "@/admin/components/FaceGuard";
 import SidebarNavButton from "@/admin/components/SidebarNavButton";
+import GlobalContactFooter from "@/components/GlobalContactFooter";
 
 type AiMsg = { role: "user" | "assistant"; content: string };
 
@@ -408,6 +409,7 @@ const AdminLayout = () => {
       )}
     </div>
     <FloatingChatButton />
+    <GlobalContactFooter />
     </AdminGeoProvider>
   );
 };
