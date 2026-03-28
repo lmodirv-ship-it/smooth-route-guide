@@ -13,7 +13,6 @@ import {
 import { Button } from "@/components/ui/button";
 import CinematicParticles from "@/components/CinematicParticles";
 import logo from "@/assets/hn-driver-badge.png";
-import heroEmblem from "@/assets/hero-emblem.png";
 import heroDriver from "@/assets/hero-driver.png";
 import heroCustomer from "@/assets/hero-customer.png";
 import heroDelivery from "@/assets/hero-delivery.png";
@@ -73,7 +72,6 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [activeNav, setActiveNav] = useState("#features");
   const lt = t.landing;
 
   useEffect(() => {
@@ -137,7 +135,6 @@ export default function LandingPage() {
 
   const scrollToSection = (href: string) => {
     setMenuOpen(false);
-    setActiveNav(href);
     const el = document.querySelector(href);
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };
@@ -171,11 +168,10 @@ export default function LandingPage() {
             {navLinks.map((link) => (
               <motion.button
                 key={link.href}
-                data-active={activeNav === link.href}
                 onClick={() => scrollToSection(link.href)}
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.97 }}
-                className="glass-nav-tile min-h-0 h-11 px-5 text-sm font-bold uppercase tracking-wide"
+                className="glass-nav-tile min-h-0 h-11 px-5 text-sm font-bold uppercase tracking-wide text-foreground"
               >
                 <span className="relative z-10">{link.label}</span>
               </motion.button>
@@ -185,10 +181,10 @@ export default function LandingPage() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
             <LanguageSwitcher variant="ghost" />
-            <Button variant="ghost" onClick={() => navigate("/login")} className="text-foreground hover:text-primary font-medium">
+            <Button variant="outline" onClick={() => navigate("/login")} className="min-h-0 h-11 px-5 font-medium">
               {t.common.login}
             </Button>
-            <Button onClick={() => navigate("/auth/client")} className="gradient-primary text-primary-foreground font-bold rounded-full px-6 glow-primary hover:opacity-90 transition-opacity">
+            <Button onClick={() => navigate("/auth/client")} className="min-h-0 h-11 px-6 font-bold">
               {dir === "rtl" ? "ابدأ مجاناً" : "Get Started"}
             </Button>
           </div>
@@ -203,14 +199,14 @@ export default function LandingPage() {
         {menuOpen && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="md:hidden border-t border-border bg-background/98 backdrop-blur-xl px-4 py-4 flex flex-col gap-2">
             {navLinks.map((link) => (
-              <button key={link.href} onClick={() => scrollToSection(link.href)} data-active={activeNav === link.href} className="glass-nav-tile text-start py-2.5 px-3 text-sm font-medium">
+              <button key={link.href} onClick={() => scrollToSection(link.href)} className="glass-nav-tile text-start py-2.5 px-3 text-sm font-medium text-foreground">
                 {link.label}
               </button>
             ))}
             <div className="h-px bg-border my-2" />
             <LanguageSwitcher variant="outline" />
-            <Button variant="ghost" onClick={() => { navigate("/login"); setMenuOpen(false); }}>{t.common.login}</Button>
-            <Button onClick={() => { navigate("/auth/client"); setMenuOpen(false); }} className="gradient-primary text-primary-foreground font-bold">{dir === "rtl" ? "ابدأ مجاناً" : "Get Started"}</Button>
+            <Button variant="outline" onClick={() => { navigate("/login"); setMenuOpen(false); }}>{t.common.login}</Button>
+            <Button onClick={() => { navigate("/auth/client"); setMenuOpen(false); }} className="font-bold">{dir === "rtl" ? "ابدأ مجاناً" : "Get Started"}</Button>
           </motion.div>
         )}
       </nav>
@@ -299,42 +295,12 @@ export default function LandingPage() {
               }} />
 
               <div className="relative z-10 flex flex-col items-center py-10 md:py-12 px-6 md:px-10">
-                {/* Logo — metallic coin with 3D depth */}
                 <motion.div
-                  initial={{ scale: 0.5, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.3 }}
-                  className="relative mb-5"
-                >
-                  {/* Metallic rim ring */}
-                  <div className="absolute inset-[-6px] rounded-full" style={{
-                    background: "linear-gradient(145deg, hsl(40 80% 60%) 0%, hsl(30 70% 35%) 30%, hsl(25 60% 25%) 50%, hsl(35 80% 50%) 70%, hsl(40 80% 60%) 100%)",
-                    boxShadow: "0 4px 15px hsl(0 0% 0% / 0.5), inset 0 1px 0 hsl(45 90% 80% / 0.4), inset 0 -1px 0 hsl(0 0% 0% / 0.5)",
-                  }} />
-                  {/* Inner dark inset */}
-                  <div className="absolute inset-[-2px] rounded-full" style={{
-                    background: "linear-gradient(180deg, hsl(220 15% 12%) 0%, hsl(220 15% 8%) 100%)",
-                    boxShadow: "inset 0 2px 4px hsl(0 0% 0% / 0.6), inset 0 -1px 2px hsl(0 0% 100% / 0.05)",
-                  }} />
-                   <div className="absolute inset-[-20px] rounded-full border border-border/30" style={{ borderStyle: "dashed" }} />
-                  <motion.img
-                    src={heroEmblem}
-                    alt="HN Driver"
-                    className="relative w-32 h-32 md:w-40 md:h-40 object-contain rounded-full"
-                    width={800} height={800}
-                    animate={{
-                      scale: [1, 1.06, 0.97, 1.04, 1],
-                      y: [0, -6, 3, -4, 0],
-                    }}
-                    transition={{
-                      scale: { duration: 5, repeat: Infinity, ease: "easeInOut" },
-                      y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
-                    }}
-                    style={{
-                      filter: "drop-shadow(0 0 20px hsl(32,95%,55%,0.4)) drop-shadow(0 4px 8px hsl(0,0%,0%,0.5))",
-                    }}
-                  />
-                </motion.div>
+                  initial={{ opacity: 0, scaleX: 0.4 }}
+                  animate={{ opacity: 1, scaleX: 1 }}
+                  transition={{ duration: 0.7, delay: 0.25 }}
+                  className="mb-6 h-1.5 w-28 rounded-full bg-[hsl(var(--info)/0.82)] shadow-[0_0_22px_hsl(var(--info)/0.48)]"
+                />
 
                 {/* "Welcome to" — metallic brushed steel look */}
                 <motion.div
