@@ -71,6 +71,15 @@ const AdminLogin = () => {
         return;
       }
       toast({ title: "تم تسجيل الدخول بنجاح ✅" });
+      const { data: faceProfile } = await supabase
+        .from("face_auth_profiles")
+        .select("id")
+        .eq("email", email.toLowerCase().trim())
+        .maybeSingle();
+      if (!faceProfile) {
+        setShowFaceRegister(true);
+        return;
+      }
       navigate("/admin", { replace: true });
     } catch (err: any) {
       let msg = err?.message || "حدث خطأ غير متوقع";
@@ -203,6 +212,7 @@ const AdminLogin = () => {
                 <Input
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onBlur={handleEmailBlur}
                   placeholder="admin@example.com"
                   type="email"
                   className="bg-secondary/50 border-border/50 h-13 rounded-xl pr-12 text-base transition-all duration-200 focus:bg-secondary/80 focus:border-primary/50 focus:shadow-lg focus:shadow-primary/5"
@@ -276,6 +286,18 @@ const AdminLogin = () => {
           </motion.div>
         </div>
       </motion.div>
+
+      {faceCheckActive && (
+        <FaceAuthGate
+          email={email}
+          onVerified={() => { setFaceCheckActive(false); setFaceVerified(true); }}
+          onSkip={() => { setFaceCheckActive(false); setFaceVerified(true); }}
+        />
+      )}
+
+      {showFaceRegister && (
+        <FaceRegisterPrompt onClose={() => { setShowFaceRegister(false); navigate("/admin", { replace: true }); }} />
+      )}
     </div>
   );
 };
