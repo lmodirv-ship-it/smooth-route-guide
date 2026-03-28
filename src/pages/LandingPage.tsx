@@ -129,7 +129,7 @@ export default function LandingPage() {
   const navLinks = [
     { label: dir === "rtl" ? "الميزات" : "Features", href: "#features" },
     { label: dir === "rtl" ? "الخدمات" : "Services", href: "#services" },
-    { label: dir === "rtl" ? "التحميل" : "Download", href: "#download" },
+    { label: dir === "rtl" ? "تحميل" : "Download", href: "#download" },
     { label: dir === "rtl" ? "اتصل بنا" : "Contact", href: "#contact" },
   ];
 
@@ -454,8 +454,7 @@ export default function LandingPage() {
                   key={stat.label}
                   whileHover={{ scale: 1.08, y: -4 }}
                   whileTap={{ scale: 0.97 }}
-                  className="group rounded-xl p-4 text-center cursor-default overflow-hidden relative"
-                  style={{
+                  className="group rounded-xl p-4 text-center cursor-default overflow-hidden relative signage-3d-box"
                     background: "hsl(210 25% 8% / 0.3)",
                     backdropFilter: "blur(12px)",
                     WebkitBackdropFilter: "blur(12px)",
