@@ -160,7 +160,9 @@ export default function LandingPage() {
   };
 
   return (
-    <div dir={dir} className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div dir={dir} className="min-h-screen bg-background text-foreground overflow-x-hidden relative">
+      {/* Cinematic Particles Background */}
+      <CinematicParticles />
       {/* ─── Professional Navbar ─── */}
       <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? "glass-strong shadow-lg shadow-background/50" : "bg-transparent"}`}>
         <div className={`absolute bottom-0 inset-x-0 h-px transition-opacity duration-500 bg-gradient-to-r from-transparent via-primary/50 to-transparent ${scrolled ? "opacity-100" : "opacity-0"}`} />
