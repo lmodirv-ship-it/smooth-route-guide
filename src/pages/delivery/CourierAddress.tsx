@@ -210,7 +210,7 @@ const CourierAddress = () => {
             </div>
 
             {deliveryLat && pickupLat && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-card rounded-2xl border border-primary/20 p-4">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-card rounded-2xl border border-primary/20 p-4">
                 <p className="text-xs text-muted-foreground mb-1">التكلفة التقديرية</p>
                 <p className="text-2xl font-bold text-primary">{estimatedPrice} DH</p>
               </motion.div>

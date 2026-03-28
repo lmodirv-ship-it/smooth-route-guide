@@ -89,13 +89,13 @@ const CallHistory = () => {
         <div className="relative flex-1">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input value={query} onChange={e => setQuery(e.target.value)}
-            placeholder="بحث بالاسم أو الرقم..." className="bg-card border-border rounded-xl pr-9 text-right h-10" />
+            placeholder="بحث بالاسم أو الرقم..." className="glass-card border-border rounded-xl pr-9 text-right h-10" />
         </div>
         <div className="flex gap-2">
           {([["all", "الكل"], ["answered", "تم الرد"], ["missed", "فائتة"], ["outgoing", "صادرة"]] as const).map(([key, label]) => (
             <button key={key} onClick={() => setFilter(key)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                filter === key ? "gradient-primary text-primary-foreground" : "bg-card text-muted-foreground"
+                filter === key ? "gradient-primary text-primary-foreground" : "glass-card text-muted-foreground"
               }`}>{label}</button>
           ))}
         </div>
@@ -149,13 +149,13 @@ const CallHistory = () => {
           <DialogHeader><DialogTitle>تسجيل مكالمة</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <Input value={newCall.callerName} onChange={e => setNewCall(f => ({ ...f, callerName: e.target.value }))}
-              placeholder="اسم المتصل" className="bg-card border-border text-right" />
+              placeholder="اسم المتصل" className="glass-card border-border text-right" />
             <Input value={newCall.callerPhone} onChange={e => setNewCall(f => ({ ...f, callerPhone: e.target.value }))}
-              placeholder="رقم الهاتف" type="tel" className="bg-card border-border text-right" />
+              placeholder="رقم الهاتف" type="tel" className="glass-card border-border text-right" />
             <Input value={newCall.reason} onChange={e => setNewCall(f => ({ ...f, reason: e.target.value }))}
-              placeholder="السبب" className="bg-card border-border text-right" />
+              placeholder="السبب" className="glass-card border-border text-right" />
             <Select value={newCall.callType} onValueChange={v => setNewCall(f => ({ ...f, callType: v }))}>
-              <SelectTrigger className="bg-card border-border"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="glass-card border-border"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="incoming">واردة</SelectItem>
                 <SelectItem value="outgoing">صادرة</SelectItem>

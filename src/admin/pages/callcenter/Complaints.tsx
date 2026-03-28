@@ -97,13 +97,13 @@ const Complaints = () => {
           className="glass rounded-xl p-4 border border-border space-y-3">
           <h3 className="text-foreground font-bold text-sm">تسجيل شكوى جديدة</h3>
           <Select onValueChange={v => setNewForm(f => ({ ...f, category: v }))}>
-            <SelectTrigger className="bg-card border-border text-sm"><SelectValue placeholder="التصنيف" /></SelectTrigger>
+            <SelectTrigger className="glass-card border-border text-sm"><SelectValue placeholder="التصنيف" /></SelectTrigger>
             <SelectContent>
               {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>)}
             </SelectContent>
           </Select>
           <Textarea value={newForm.description} onChange={e => setNewForm(f => ({ ...f, description: e.target.value }))}
-            placeholder="تفاصيل الشكوى..." className="bg-card border-border text-right text-sm min-h-[60px]" />
+            placeholder="تفاصيل الشكوى..." className="glass-card border-border text-right text-sm min-h-[60px]" />
           <div className="flex gap-2">
             <Button size="sm" className="rounded-lg" onClick={async () => {
               const { data: { user } } = await supabase.auth.getUser();
@@ -131,7 +131,7 @@ const Complaints = () => {
         ] as const).map(([key, label, count]) => (
           <button key={key} onClick={() => setFilter(key)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              filter === key ? "gradient-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"
+              filter === key ? "gradient-primary text-primary-foreground" : "glass-card text-muted-foreground hover:text-foreground"
             }`}>{label} ({count})</button>
         ))}
       </div>
@@ -199,7 +199,7 @@ const Complaints = () => {
               <div className="space-y-2">
                 <h4 className="text-xs font-bold text-foreground">ملاحظات الموظف</h4>
                 <Textarea value={agentNotes} onChange={e => setAgentNotes(e.target.value)}
-                  placeholder="أضف ملاحظاتك..." className="bg-card border-border text-right text-sm min-h-[60px]" />
+                  placeholder="أضف ملاحظاتك..." className="glass-card border-border text-right text-sm min-h-[60px]" />
                 <Button size="sm" className="rounded-lg text-xs gap-1" onClick={() => saveNotes(selected.id)}>
                   <MessageCircle className="w-3 h-3" /> حفظ الملاحظات
                 </Button>

@@ -185,7 +185,7 @@ const MyStore = () => {
   return (
     <div className="min-h-screen bg-background pb-10" dir="rtl">
       {/* Header */}
-      <div className="sticky top-0 z-50 px-5 py-4 flex items-center justify-between bg-card border-b border-border">
+      <div className="sticky top-0 z-50 px-5 py-4 flex items-center justify-between glass-card border-b border-border">
         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-secondary">
           <ArrowRight className="w-5 h-5 text-foreground" />
         </button>

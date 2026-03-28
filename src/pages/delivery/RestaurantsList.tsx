@@ -348,7 +348,7 @@ const RestaurantsList = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="ابحث عن مطعم، مقهى، متجر..."
-              className="bg-card border-border h-11 rounded-xl pr-10 text-right placeholder:text-muted-foreground/60 focus:border-primary/50"
+              className="glass-card border-border h-11 rounded-xl pr-10 text-right placeholder:text-muted-foreground/60 focus:border-primary/50"
             />
             {search && (
               <button
@@ -615,7 +615,7 @@ const RestaurantCard = ({
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ delay: Math.min(index * 0.03, 0.25) }}
       onClick={onView}
-      className={`group bg-card rounded-2xl border overflow-hidden cursor-pointer transition-all duration-300
+      className={`group glass-card rounded-2xl border overflow-hidden cursor-pointer transition-all duration-300
         hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 active:scale-[0.98]
         ${isClosed ? "border-border/50 opacity-70" : isGoogle ? "border-info/20 hover:border-info/40" : "border-border hover:border-primary/40"}`}
     >

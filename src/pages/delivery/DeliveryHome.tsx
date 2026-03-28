@@ -333,7 +333,7 @@ const DeliveryHome = () => {
           className="mx-5 mt-5 mb-4"
         >
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary via-accent to-primary p-[1px]">
-            <div className="bg-card rounded-2xl px-5 py-4 flex items-center gap-4">
+            <div className="glass-card rounded-2xl px-5 py-4 flex items-center gap-4">
               <Sparkles className="w-8 h-8 text-primary flex-shrink-0" />
               <div className="text-right flex-1">
                 <p className="text-sm font-bold text-foreground">{promoTitle}</p>
@@ -373,7 +373,7 @@ const DeliveryHome = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="relative overflow-hidden rounded-2xl border border-border bg-card group hover:border-primary/40 transition-all"
+              className="relative overflow-hidden rounded-2xl border border-border glass-card group hover:border-primary/40 transition-all"
             >
               <div className="h-24 bg-gradient-to-br from-amber-500/20 via-orange-500/10 to-yellow-500/20 flex items-center justify-center">
                 <img
@@ -396,7 +396,7 @@ const DeliveryHome = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.9 }}
-              className="relative overflow-hidden rounded-2xl border border-border bg-card group hover:border-primary/40 transition-all"
+              className="relative overflow-hidden rounded-2xl border border-border glass-card group hover:border-primary/40 transition-all"
             >
               <div className="h-24 bg-gradient-to-br from-blue-500/20 via-indigo-500/10 to-purple-500/20 flex items-center justify-center">
                 <img

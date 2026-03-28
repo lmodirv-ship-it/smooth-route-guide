@@ -113,7 +113,7 @@ const DeliverySupport = () => {
                 className={`p-3 rounded-xl border text-right transition-all ${
                   selectedReason === r.id
                     ? "border-primary bg-primary/5"
-                    : "border-border bg-card hover:border-primary/30"
+                    : "border-border glass-card hover:border-primary/30"
                 }`}
               >
                 <p className="text-xs font-bold text-foreground">{r.label}</p>
@@ -130,7 +130,7 @@ const DeliverySupport = () => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="صف مشكلتك بالتفصيل..."
-            className="bg-card border-border rounded-xl min-h-[100px] text-right resize-none"
+            className="glass-card border-border rounded-xl min-h-[100px] text-right resize-none"
             maxLength={1000}
           />
         </div>
@@ -146,7 +146,7 @@ const DeliverySupport = () => {
               placeholder="06XXXXXXXX"
               type="tel"
               maxLength={15}
-              className="bg-card border-border h-12 rounded-xl pr-10 text-right"
+              className="glass-card border-border h-12 rounded-xl pr-10 text-right"
             />
           </div>
         </div>

@@ -178,7 +178,7 @@ const DriverPackages = () => {
             key={pkg.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`relative bg-card border rounded-xl p-5 ${
+            className={`relative glass-card border rounded-xl p-5 ${
               pkg.is_featured ? "border-yellow-500/50 ring-1 ring-yellow-500/20" : "border-border"
             } ${!pkg.is_active ? "opacity-50" : ""}`}
           >

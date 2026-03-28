@@ -254,7 +254,7 @@ const DriverDelivery = () => {
                     <motion.div key={order.id}
                       initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
-                      className="rounded-2xl border border-border bg-card overflow-hidden">
+                      className="rounded-2xl border border-border glass-card overflow-hidden">
                       {/* Order header */}
                       <div className="px-4 py-3 flex items-center justify-between bg-emerald-500/5 border-b border-border">
                         <span className="text-emerald-400 font-bold text-base">{order.total_price || order.estimated_price || "—"} DH</span>

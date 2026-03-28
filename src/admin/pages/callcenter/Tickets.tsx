@@ -132,12 +132,12 @@ const Tickets = () => {
             <Input value={form.trip_id} onChange={(e) => setForm((current) => ({ ...current, trip_id: e.target.value }))} placeholder="UID الرحلة (اختياري)" className="bg-secondary border-border rounded-lg text-right text-sm" />
           </div>
           <div className="flex gap-2">
-            <select value={form.priority} onChange={(e) => setForm((current) => ({ ...current, priority: e.target.value }))} className="flex-1 bg-secondary border border-border rounded-lg text-sm text-foreground p-2 text-right">
+            <select value={form.priority} onChange={(e) => setForm((current) => ({ ...current, priority: e.target.value }))} className="flex-1 glass-card rounded-lg text-sm text-foreground p-2 text-right">
               <option value="high">عالي</option>
               <option value="medium">متوسط</option>
               <option value="low">منخفض</option>
             </select>
-            <select value={form.category} onChange={(e) => setForm((current) => ({ ...current, category: e.target.value }))} className="flex-1 bg-secondary border border-border rounded-lg text-sm text-foreground p-2 text-right">
+            <select value={form.category} onChange={(e) => setForm((current) => ({ ...current, category: e.target.value }))} className="flex-1 glass-card rounded-lg text-sm text-foreground p-2 text-right">
               <option value="client">عميل</option>
               <option value="driver">سائق</option>
               <option value="system">نظام</option>

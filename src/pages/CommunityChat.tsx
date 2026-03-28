@@ -109,7 +109,7 @@ const CommunityChat = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border px-4 py-3">
+      <div className="sticky top-0 z-50 glass-card backdrop-blur-xl border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
