@@ -62,8 +62,6 @@ const FloatingChatButton = () => {
     fetchContacts();
   }, [open]);
 
-  if (location.pathname === "/community") return null;
-
   const filtered = useMemo(
     () =>
       contacts.filter(
@@ -71,6 +69,8 @@ const FloatingChatButton = () => {
       ),
     [contacts, search],
   );
+
+  if (location.pathname === "/community") return null;
 
   const roleLabel = (role: string) => {
     const map: Record<string, string> = {

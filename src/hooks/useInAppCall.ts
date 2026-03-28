@@ -195,7 +195,7 @@ export function useInAppCall() {
         setBusy(true);
         const stream = await ensureAudioStream();
 
-        const { data: callRow, error } = await supabase
+        const callResponse: any = await supabase
           .from("call_sessions" as any)
           .insert({
             created_by: userId,
@@ -207,7 +207,8 @@ export function useInAppCall() {
           .select("id")
           .single();
 
-        if (error || !callRow?.id) throw error || new Error("call_create_failed");
+        const callRow = callResponse.data as { id?: string } | null;
+        if (callResponse.error || !callRow?.id) throw callResponse.error || new Error("call_create_failed");
 
         setActiveCall({
           callId: callRow.id,
@@ -239,7 +240,7 @@ export function useInAppCall() {
       const stream = await ensureAudioStream();
       const connection = await createPeerConnection(incomingCall.callId, incomingCall.peer.id, stream);
 
-      const { data: offerSignal } = await supabase
+      const offerResponse: any = await supabase
         .from("call_signals" as any)
         .select("payload")
         .eq("call_id", incomingCall.callId)
@@ -247,6 +248,8 @@ export function useInAppCall() {
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
+
+      const offerSignal = offerResponse.data as { payload?: RTCSessionDescriptionInit } | null;
 
       if (!offerSignal?.payload) {
         throw new Error("offer_missing");
@@ -372,11 +375,13 @@ export function useInAppCall() {
           processedSignalsRef.current.add(row.id);
 
           if (row.signal_type === "offer" && !incomingCallRef.current) {
-            const { data: callRow } = await supabase
+            const callResponse: any = await supabase
               .from("call_sessions" as any)
               .select("id, caller_id, callee_id, status")
               .eq("id", row.call_id)
               .maybeSingle();
+
+            const callRow = callResponse.data as { id: string; caller_id: string; callee_id: string; status: string } | null;
 
             if (callRow?.callee_id === userId && callRow?.status === "ringing") {
               const peer = await fetchPeer(callRow.caller_id);

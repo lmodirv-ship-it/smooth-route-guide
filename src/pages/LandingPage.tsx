@@ -260,7 +260,7 @@ export default function LandingPage() {
           {[...Array(40)].map((_, i) => (
             <motion.div
               key={`twinkle-${i}`}
-              className="absolute rounded-full bg-white"
+              className="absolute rounded-full bg-foreground"
               style={{
                 width: Math.random() * 1.5 + 0.5,
                 height: Math.random() * 1.5 + 0.5,
@@ -507,11 +507,11 @@ export default function LandingPage() {
                 }} />
 
                 <div className="relative z-10 p-4 flex flex-col items-center gap-3 text-center">
-                  <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-white/5 border border-white/5 group-hover:border-[hsl(205,60%,55%/0.3)] transition-all">
+                    <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-foreground/5 border border-foreground/5 group-hover:border-info/30 transition-all">
                     <img src={cat.img} alt={cat.label} className="w-full h-full object-cover object-top scale-110 group-hover:scale-130 transition-transform duration-700" width={768} height={768} loading="lazy" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-white group-hover:text-[hsl(205,80%,70%)] transition-colors">{cat.label}</h3>
+                      <h3 className="text-sm font-bold text-foreground group-hover:text-info transition-colors">{cat.label}</h3>
                     <p className="text-[11px] text-[hsl(210,15%,45%)] mt-0.5">{cat.desc}</p>
                   </div>
                 </div>
