@@ -57,13 +57,13 @@ const DriverSubscription = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0f1a] to-[#111827] pb-8" dir="rtl">
+    <div className="min-h-screen gradient-dark pb-8" dir="rtl">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-[#0a0f1a]/90 backdrop-blur-xl border-b border-white/5 px-4 py-3 flex items-center justify-between">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-white/5">
-          <ArrowRight className="w-5 h-5 text-white/60" />
+      <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
+        <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-secondary">
+          <ArrowRight className="w-5 h-5 text-muted-foreground" />
         </button>
-        <span className="font-bold text-white text-lg">الباقات والاشتراكات</span>
+        <span className="font-bold text-foreground text-lg">الباقات والاشتراكات</span>
         <div className="w-9" />
       </div>
 
@@ -72,7 +72,7 @@ const DriverSubscription = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mx-4 mt-4 p-4 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/30"
+          className="mx-4 mt-4 p-4 rounded-2xl glass-card-green"
         >
           <div className="flex items-center gap-3 mb-3">
             <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
@@ -80,20 +80,20 @@ const DriverSubscription = () => {
             </div>
             <div>
               <p className="text-emerald-400 font-bold">{activeSubscription.package_name}</p>
-              <p className="text-white/50 text-xs">اشتراك نشط</p>
+              <p className="text-muted-foreground text-xs">اشتراك نشط</p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white/5 rounded-xl p-3 text-center">
-              <Timer className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
-              <p className="text-white font-bold text-lg">{daysLeft}</p>
-              <p className="text-white/40 text-[11px]">يوم متبقي</p>
-            </div>
-            <div className="bg-white/5 rounded-xl p-3 text-center">
-              <Zap className="w-5 h-5 text-orange-400 mx-auto mb-1" />
-              <p className="text-white font-bold text-lg">{activeSubscription.orders_used}</p>
-              <p className="text-white/40 text-[11px]">طلب منجز</p>
-            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="glass-card rounded-xl p-3 text-center">
+                <Timer className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
+                <p className="text-foreground font-bold text-lg">{daysLeft}</p>
+                <p className="text-muted-foreground text-[11px]">يوم متبقي</p>
+              </div>
+              <div className="glass-card rounded-xl p-3 text-center">
+                <Zap className="w-5 h-5 text-primary mx-auto mb-1" />
+                <p className="text-foreground font-bold text-lg">{activeSubscription.orders_used}</p>
+                <p className="text-muted-foreground text-[11px]">طلب منجز</p>
+              </div>
           </div>
         </motion.div>
       )}
@@ -103,23 +103,23 @@ const DriverSubscription = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mx-4 mt-4 p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-center"
+          className="mx-4 mt-4 p-4 rounded-2xl glass-card-red text-center"
         >
-          <Sparkles className="w-8 h-8 text-red-400 mx-auto mb-2" />
-          <p className="text-red-400 font-bold mb-1">لا يوجد اشتراك نشط</p>
-          <p className="text-white/50 text-sm">اشترك الآن لتتمكن من قبول الطلبات</p>
+          <Sparkles className="w-8 h-8 text-destructive mx-auto mb-2" />
+          <p className="text-destructive font-bold mb-1">لا يوجد اشتراك نشط</p>
+          <p className="text-muted-foreground text-sm">اشترك الآن لتتمكن من قبول الطلبات</p>
         </motion.div>
       )}
 
       {/* Packages */}
       <div className="px-4 mt-6">
-        <h2 className="text-white font-bold text-lg mb-4 flex items-center gap-2">
-          <Crown className="w-5 h-5 text-yellow-400" />
+        <h2 className="text-foreground font-bold text-lg mb-4 flex items-center gap-2">
+          <Crown className="w-5 h-5 text-warning" />
           اختر باقتك
         </h2>
 
         {loading ? (
-          <div className="text-center py-8 text-white/30">جاري التحميل...</div>
+          <div className="text-center py-8 text-muted-foreground">جاري التحميل...</div>
         ) : (
           <div className="space-y-4">
             {packages.map((pkg, i) => (
@@ -128,10 +128,10 @@ const DriverSubscription = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className={`relative rounded-2xl p-5 border transition-all ${
+                className={`relative rounded-2xl p-5 border transition-all overflow-hidden ${
                   pkg.is_featured
-                    ? "bg-gradient-to-br from-yellow-500/15 to-orange-500/10 border-yellow-500/30"
-                    : "bg-white/[0.03] border-white/[0.08] hover:border-white/15"
+                    ? "glass-card-gold"
+                    : "gradient-card"
                 }`}
               >
                 {pkg.is_featured && (
@@ -148,18 +148,18 @@ const DriverSubscription = () => {
 
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-white font-bold text-lg">{pkg.name_ar}</h3>
-                    <p className="text-white/40 text-sm">{pkg.description_ar || `${pkg.duration_days} يوم`}</p>
+                    <h3 className="text-foreground font-bold text-lg">{pkg.name_ar}</h3>
+                    <p className="text-muted-foreground text-sm">{pkg.description_ar || `${pkg.duration_days} يوم`}</p>
                   </div>
                   <div className="text-left">
-                    <p className="text-white font-bold text-2xl">{pkg.price} <span className="text-sm text-white/50">DH</span></p>
+                    <p className="text-foreground font-bold text-2xl">{pkg.price} <span className="text-sm text-muted-foreground">DH</span></p>
                     {pkg.original_price && pkg.original_price > pkg.price && (
-                      <p className="text-white/30 text-sm line-through">{pkg.original_price} DH</p>
+                      <p className="text-muted-foreground text-sm line-through">{pkg.original_price} DH</p>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 mb-4 text-sm text-white/50">
+                <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Timer className="w-4 h-4" />
                     <span>{pkg.duration_days} يوم</span>
@@ -173,10 +173,10 @@ const DriverSubscription = () => {
                 <Button
                   onClick={() => handleSubscribe(pkg)}
                   disabled={subscribing === pkg.id}
-                  className={`w-full h-12 rounded-xl font-bold text-base ${
+                    className={`w-full h-12 rounded-xl font-bold text-base ${
                     pkg.is_featured
-                      ? "bg-gradient-to-r from-yellow-500 to-orange-500 text-black hover:from-yellow-600 hover:to-orange-600"
-                      : "bg-white/10 text-white hover:bg-white/15"
+                      ? "bg-gradient-to-r from-amber-500 to-primary text-primary-foreground hover:from-amber-600 hover:to-primary/90"
+                      : "bg-secondary text-foreground hover:bg-secondary/80"
                   }`}
                 >
                   {subscribing === pkg.id ? "جاري الاشتراك..." : "اشترك الآن"}
@@ -187,13 +187,13 @@ const DriverSubscription = () => {
         )}
 
         {/* Info */}
-        <div className="mt-6 p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-          <p className="text-white/60 text-sm text-center mb-3">🎁 الشهر الأول مجاني لجميع السائقين الجدد</p>
-          <ul className="space-y-2 text-sm text-white/40">
-            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-400" />طلبات غير محدودة خلال فترة الاشتراك</li>
-            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-400" />دعم فني على مدار الساعة</li>
-            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-400" />أولوية في توزيع الطلبات</li>
-            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-400" />تقارير الأرباح التفصيلية</li>
+        <div className="mt-6 p-4 rounded-xl gradient-card border border-border">
+          <p className="text-muted-foreground text-sm text-center mb-3">🎁 الشهر الأول مجاني لجميع السائقين الجدد</p>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" />طلبات غير محدودة خلال فترة الاشتراك</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" />دعم فني على مدار الساعة</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" />أولوية في توزيع الطلبات</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" />تقارير الأرباح التفصيلية</li>
           </ul>
         </div>
       </div>
