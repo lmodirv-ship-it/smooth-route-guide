@@ -106,13 +106,13 @@ const DriverProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-zinc-950 to-black pb-20" dir="rtl">
+    <div className="min-h-screen gradient-dark pb-20" dir="rtl">
       {/* Header */}
-      <div className="bg-black/80 backdrop-blur-xl sticky top-0 z-50 px-4 py-3 flex items-center justify-between border-b border-white/5">
+      <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate("/driver")}>
-          <ArrowRight className="w-5 h-5 text-white/60" />
+          <ArrowRight className="w-5 h-5 text-muted-foreground" />
         </button>
-        <span className="font-bold text-white">الملف الشخصي</span>
+        <span className="font-bold text-foreground">الملف الشخصي</span>
         <button onClick={() => setEditing(!editing)}>
           <Edit2 className="w-5 h-5 text-primary" />
         </button>
@@ -131,12 +131,12 @@ const DriverProfile = () => {
             profile.status === "active" ? "bg-emerald-400" : "bg-zinc-500"
           }`} />
         </div>
-        <h2 className="text-xl font-bold text-white mt-3">{profile.name || "سائق"}</h2>
+        <h2 className="text-xl font-bold text-foreground mt-3">{profile.name || "سائق"}</h2>
         <div className="flex items-center gap-2 mt-1.5">
           <span className={`text-[11px] px-3 py-1 rounded-full ${
             profile.status === "active"
               ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
-              : "bg-white/5 text-white/40 border border-white/10"
+              : "bg-muted text-muted-foreground border border-border"
           }`}>
             {profile.status === "active" ? "نشط" : "غير نشط"}
           </span>
@@ -168,7 +168,7 @@ const DriverProfile = () => {
 
       {/* Contact Info */}
       <div className="px-4 mt-5 space-y-3">
-        <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] space-y-3">
+        <div className="gradient-card rounded-xl p-4 border border-border space-y-3">
           {[
             { icon: Phone, label: "الهاتف", value: profile.phone, key: "phone" },
             { icon: Mail, label: "البريد", value: profile.email, key: "email" },
@@ -179,13 +179,13 @@ const DriverProfile = () => {
                 <Input
                   value={editForm[item.key as keyof typeof editForm]}
                   onChange={(e) => setEditForm((f) => ({ ...f, [item.key!]: e.target.value }))}
-                  className="w-48 h-8 bg-white/5 border-white/10 text-sm text-white"
+                  className="w-48 h-8 bg-secondary border-border text-sm text-foreground"
                 />
               ) : (
-                <span className="text-sm text-white/50">{item.value || "—"}</span>
+                <span className="text-sm text-muted-foreground">{item.value || "—"}</span>
               )}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-white/80">{item.label}</span>
+                <span className="text-sm text-foreground">{item.label}</span>
                 <item.icon className="w-4 h-4 text-primary" />
               </div>
             </div>
@@ -207,11 +207,11 @@ const DriverProfile = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
               onClick={() => navigate(item.path)}
-              className="w-full bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] flex items-center justify-between hover:bg-white/[0.06] transition-colors"
+              className="w-full gradient-card rounded-xl p-4 border border-border flex items-center justify-between hover:border-primary/20 transition-colors"
             >
-              <ChevronLeft className="w-4 h-4 text-white/30" />
+              <ChevronLeft className="w-4 h-4 text-muted-foreground" />
               <div className="flex items-center gap-3">
-                <span className="text-white/80 text-sm">{item.label}</span>
+                <span className="text-foreground text-sm">{item.label}</span>
                 <item.icon className={`w-5 h-5 ${item.color}`} />
               </div>
             </motion.button>
@@ -244,17 +244,17 @@ const DriverProfile = () => {
 const StatBox = ({ icon: Icon, label, value, color }: {
   icon: typeof TrendingUp; label: string; value: string; color: string;
 }) => (
-  <div className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.06] text-center">
+  <div className="glass-card rounded-xl p-3 text-center">
     <Icon className={`w-4 h-4 ${color} mx-auto mb-1`} />
     <p className={`text-base font-bold ${color}`}>{value}</p>
-    <p className="text-[10px] text-white/35 mt-0.5">{label}</p>
+    <p className="text-[10px] text-muted-foreground mt-0.5">{label}</p>
   </div>
 );
 
 const MiniStat = ({ label, value }: { label: string; value: string }) => (
-  <div className="bg-white/[0.02] rounded-lg p-2 border border-white/[0.04] text-center">
-    <p className="text-sm font-bold text-white/70">{value}</p>
-    <p className="text-[9px] text-white/30">{label}</p>
+  <div className="glass-card rounded-lg p-2 text-center">
+    <p className="text-sm font-bold text-foreground">{value}</p>
+    <p className="text-[9px] text-muted-foreground">{label}</p>
   </div>
 );
 
