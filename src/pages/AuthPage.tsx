@@ -246,7 +246,7 @@ const AuthPage = () => {
           <div className="space-y-2">
             <label className="text-sm text-muted-foreground text-right block">البريد الإلكتروني</label>
             <div className="relative">
-              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@email.com" type="email"
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} onBlur={handleEmailBlur} placeholder="example@email.com" type="email"
                 className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right" />
               <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             </div>
@@ -324,6 +324,26 @@ const AuthPage = () => {
             تسجيل الهاتف غير متاح حالياً
           </Button>
         </motion.div>
+      )}
+
+      {/* Face Auth Gate */}
+      {faceCheckActive && (
+        <FaceAuthGate
+          email={email}
+          onVerified={() => {
+            setFaceCheckActive(false);
+            setFaceVerified(true);
+          }}
+          onSkip={() => {
+            setFaceCheckActive(false);
+            setFaceVerified(true);
+          }}
+        />
+      )}
+
+      {/* Face Register Prompt */}
+      {showFaceRegister && (
+        <FaceRegisterPrompt onClose={() => setShowFaceRegister(false)} />
       )}
     </div>
   );
