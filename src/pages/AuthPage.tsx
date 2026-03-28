@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/hn-driver-badge.png";
+import FaceAuthGate from "@/components/FaceAuthGate";
+import FaceRegisterPrompt from "@/components/FaceRegisterPrompt";
 
 type RoleId = "driver" | "client" | "delivery" | "admin" | "agent" | "store_owner";
 type StoredRole = RoleId | "user";
@@ -48,6 +50,9 @@ const AuthPage = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [faceCheckActive, setFaceCheckActive] = useState(false);
+  const [faceVerified, setFaceVerified] = useState(false);
+  const [showFaceRegister, setShowFaceRegister] = useState(false);
 
   useEffect(() => {
     const syncSession = async () => {
@@ -83,10 +88,23 @@ const AuthPage = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Trigger face auth when email is entered on login
+  const handleEmailBlur = () => {
+    if (isLogin && email && email.includes("@") && !faceVerified) {
+      setFaceCheckActive(true);
+    }
+  };
+
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       toast({ title: "يرجى ملء جميع الحقول", variant: "destructive" });
+      return;
+    }
+
+    // If login mode and face not yet verified, trigger face check
+    if (isLogin && !faceVerified && !faceCheckActive) {
+      setFaceCheckActive(true);
       return;
     }
 
@@ -96,6 +114,15 @@ const AuthPage = () => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast({ title: "تم تسجيل الدخول بنجاح ✅" });
+        // Prompt face registration if not registered
+        const { data: faceProfile } = await supabase
+          .from("face_auth_profiles")
+          .select("id")
+          .eq("email", email.toLowerCase().trim())
+          .maybeSingle();
+        if (!faceProfile) {
+          setShowFaceRegister(true);
+        }
       } else {
         if (!name) {
           toast({ title: "يرجى إدخال الاسم", variant: "destructive" });
@@ -219,7 +246,7 @@ const AuthPage = () => {
           <div className="space-y-2">
             <label className="text-sm text-muted-foreground text-right block">البريد الإلكتروني</label>
             <div className="relative">
-              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="example@email.com" type="email"
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} onBlur={handleEmailBlur} placeholder="example@email.com" type="email"
                 className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right" />
               <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             </div>
@@ -297,6 +324,26 @@ const AuthPage = () => {
             تسجيل الهاتف غير متاح حالياً
           </Button>
         </motion.div>
+      )}
+
+      {/* Face Auth Gate */}
+      {faceCheckActive && (
+        <FaceAuthGate
+          email={email}
+          onVerified={() => {
+            setFaceCheckActive(false);
+            setFaceVerified(true);
+          }}
+          onSkip={() => {
+            setFaceCheckActive(false);
+            setFaceVerified(true);
+          }}
+        />
+      )}
+
+      {/* Face Register Prompt */}
+      {showFaceRegister && (
+        <FaceRegisterPrompt onClose={() => setShowFaceRegister(false)} />
       )}
     </div>
   );

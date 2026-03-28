@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.process-email-queue]
 verify_jwt = true
+
+[functions.face-auth-lookup]
+verify_jwt = false

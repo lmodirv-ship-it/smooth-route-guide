@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import FaceAuthGate from "@/components/FaceAuthGate";
+import FaceRegisterPrompt from "@/components/FaceRegisterPrompt";
 
 const SupervisorLogin = () => {
   const navigate = useNavigate();
@@ -13,6 +15,9 @@ const SupervisorLogin = () => {
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [faceCheckActive, setFaceCheckActive] = useState(false);
+  const [faceVerified, setFaceVerified] = useState(false);
+  const [showFaceRegister, setShowFaceRegister] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -35,10 +40,20 @@ const SupervisorLogin = () => {
     checkSession();
   }, [navigate]);
 
+  const handleEmailBlur = () => {
+    if (email && email.includes("@") && !faceVerified) {
+      setFaceCheckActive(true);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       toast({ title: "يرجى ملء جميع الحقول", variant: "destructive" });
+      return;
+    }
+    if (!faceVerified && !faceCheckActive) {
+      setFaceCheckActive(true);
       return;
     }
 
@@ -65,6 +80,8 @@ const SupervisorLogin = () => {
       }
 
       toast({ title: "تم تسجيل الدخول بنجاح ✅" });
+      const { data: fp } = await supabase.from("face_auth_profiles").select("id").eq("email", email.toLowerCase().trim()).maybeSingle();
+      if (!fp) { setShowFaceRegister(true); return; }
       navigate("/", { replace: true });
     } catch (err: any) {
       let msg = err?.message || "حدث خطأ غير متوقع";
@@ -101,6 +118,7 @@ const SupervisorLogin = () => {
               <Input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={handleEmailBlur}
                 placeholder="supervisor@example.com"
                 type="email"
                 className="bg-secondary/80 border-border h-12 rounded-xl pr-11"
@@ -143,6 +161,17 @@ const SupervisorLogin = () => {
           الوصول مقتصر على المشرفين فقط
         </p>
       </div>
+
+      {faceCheckActive && (
+        <FaceAuthGate
+          email={email}
+          onVerified={() => { setFaceCheckActive(false); setFaceVerified(true); }}
+          onSkip={() => { setFaceCheckActive(false); setFaceVerified(true); }}
+        />
+      )}
+      {showFaceRegister && (
+        <FaceRegisterPrompt onClose={() => { setShowFaceRegister(false); navigate("/", { replace: true }); }} />
+      )}
     </div>
   );
 };

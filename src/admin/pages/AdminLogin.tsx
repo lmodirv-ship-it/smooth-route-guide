@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
+import FaceAuthGate from "@/components/FaceAuthGate";
+import FaceRegisterPrompt from "@/components/FaceRegisterPrompt";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -14,6 +16,9 @@ const AdminLogin = () => {
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [faceCheckActive, setFaceCheckActive] = useState(false);
+  const [faceVerified, setFaceVerified] = useState(false);
+  const [showFaceRegister, setShowFaceRegister] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -34,10 +39,20 @@ const AdminLogin = () => {
     checkSession();
   }, [navigate]);
 
+  const handleEmailBlur = () => {
+    if (email && email.includes("@") && !faceVerified) {
+      setFaceCheckActive(true);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       toast({ title: "يرجى ملء جميع الحقول", variant: "destructive" });
+      return;
+    }
+    if (!faceVerified && !faceCheckActive) {
+      setFaceCheckActive(true);
       return;
     }
     setLoading(true);
@@ -56,6 +71,15 @@ const AdminLogin = () => {
         return;
       }
       toast({ title: "تم تسجيل الدخول بنجاح ✅" });
+      const { data: faceProfile } = await supabase
+        .from("face_auth_profiles")
+        .select("id")
+        .eq("email", email.toLowerCase().trim())
+        .maybeSingle();
+      if (!faceProfile) {
+        setShowFaceRegister(true);
+        return;
+      }
       navigate("/admin", { replace: true });
     } catch (err: any) {
       let msg = err?.message || "حدث خطأ غير متوقع";
@@ -188,6 +212,7 @@ const AdminLogin = () => {
                 <Input
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onBlur={handleEmailBlur}
                   placeholder="admin@example.com"
                   type="email"
                   className="bg-secondary/50 border-border/50 h-13 rounded-xl pr-12 text-base transition-all duration-200 focus:bg-secondary/80 focus:border-primary/50 focus:shadow-lg focus:shadow-primary/5"
@@ -261,6 +286,18 @@ const AdminLogin = () => {
           </motion.div>
         </div>
       </motion.div>
+
+      {faceCheckActive && (
+        <FaceAuthGate
+          email={email}
+          onVerified={() => { setFaceCheckActive(false); setFaceVerified(true); }}
+          onSkip={() => { setFaceCheckActive(false); setFaceVerified(true); }}
+        />
+      )}
+
+      {showFaceRegister && (
+        <FaceRegisterPrompt onClose={() => { setShowFaceRegister(false); navigate("/admin", { replace: true }); }} />
+      )}
     </div>
   );
 };
