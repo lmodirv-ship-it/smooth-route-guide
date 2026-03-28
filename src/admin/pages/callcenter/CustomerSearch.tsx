@@ -170,7 +170,7 @@ const CustomerSearch = () => {
 
         {selectedCustomer ? (
           <div className="lg:col-span-2 space-y-4">
-            <div className="gradient-card rounded-xl p-5 border border-border">
+            <div className="glass-card rounded-xl p-5">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-16 h-16 rounded-full bg-info/10 flex items-center justify-center">
                   <User className="w-8 h-8 text-info" />
@@ -208,7 +208,7 @@ const CustomerSearch = () => {
               </div>
             </div>
 
-            <div className="gradient-card rounded-xl p-4 border border-border">
+            <div className="glass-card rounded-xl p-4">
               <h3 className="text-foreground font-bold text-sm mb-3 flex items-center gap-2">
                 <Car className="w-4 h-4 text-primary" /> سجل الرحلات
               </h3>
@@ -229,7 +229,7 @@ const CustomerSearch = () => {
               )}
             </div>
 
-            <div className="gradient-card rounded-xl p-4 border border-border">
+            <div className="glass-card rounded-xl p-4">
               <h3 className="text-foreground font-bold text-sm mb-3 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-warning" /> الشكاوى ({selectedCustomer.complaints.length})
               </h3>
@@ -255,7 +255,7 @@ const CustomerSearch = () => {
             </div>
           </div>
         ) : (
-          <div className="lg:col-span-2 gradient-card rounded-2xl p-12 border border-border text-center">
+          <div className="lg:col-span-2 glass-card rounded-2xl p-12 text-center">
             <User className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
             <p className="text-foreground font-bold">اختر عميلاً لعرض التفاصيل</p>
           </div>

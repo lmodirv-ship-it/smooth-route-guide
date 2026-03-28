@@ -73,7 +73,7 @@ const ClientPayment = () => {
         <div className="space-y-2">
           {payments.length === 0 && <p className="text-center text-muted-foreground text-sm py-4">{t.customer.noPayments}</p>}
           {payments.map(h => (
-            <div key={h.id} className="gradient-card rounded-xl p-4 border border-border flex items-center justify-between">
+            <div key={h.id} className="glass-card rounded-xl p-4 flex items-center justify-between">
               <span className="text-primary font-bold">{h.amount}</span>
               <div>
                 <p className="text-sm text-foreground truncate max-w-[200px]">{h.trip}</p>

@@ -94,7 +94,7 @@ const OrderTracking = () => {
         <>
           {/* Order Info Card */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            className="bg-card rounded-2xl border border-border p-5 mb-4">
+            className="glass-card rounded-2xl p-5 mb-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] text-muted-foreground font-mono">#{order.id?.slice(0, 8)}</span>
               {isCancelled ? (
@@ -139,7 +139,7 @@ const OrderTracking = () => {
           {/* Items Summary */}
           {order.items && Array.isArray(order.items) && order.items.length > 0 && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-              className="bg-card rounded-2xl border border-border p-4 mb-4">
+              className="glass-card rounded-2xl p-4 mb-4">
               <h3 className="text-sm font-bold text-foreground mb-2">تفاصيل الطلب</h3>
               <div className="space-y-2">
                 {(order.items as any[]).map((item: any, i: number) => (
@@ -155,7 +155,7 @@ const OrderTracking = () => {
           {/* Driver Info */}
           {driverProfile && currentStep >= 2 && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-              className="bg-card rounded-2xl border border-border p-4 mb-4">
+              className="glass-card rounded-2xl p-4 mb-4">
               <div className="flex items-center justify-between">
                 <a href={`tel:${driverProfile.phone}`} className="p-2 rounded-xl bg-primary/10">
                   <Phone className="w-4 h-4 text-primary" />
@@ -176,7 +176,7 @@ const OrderTracking = () => {
           {/* Progress Steps */}
           {!isCancelled && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-              className="bg-card rounded-2xl border border-border p-5">
+              className="glass-card rounded-2xl p-5">
               <h3 className="font-bold text-foreground mb-5">مسار الطلب</h3>
               <div className="relative">
                 <div className="absolute right-[19px] top-5 bottom-5 w-0.5 bg-border" />

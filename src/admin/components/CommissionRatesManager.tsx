@@ -79,7 +79,7 @@ const CommissionRatesManager = () => {
   }
 
   return (
-    <div className="gradient-card rounded-xl border border-border p-6">
+    <div className="glass-card rounded-xl p-6">
       <div className="flex items-center justify-between mb-6">
         <Button
           onClick={handleSave}

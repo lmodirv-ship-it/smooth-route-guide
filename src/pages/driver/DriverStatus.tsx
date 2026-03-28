@@ -55,7 +55,7 @@ const DriverStatus = () => {
 
       <div className="px-4 mt-4">
         <motion.button whileTap={{ scale: 0.98 }} onClick={toggleStatus} className="w-full">
-          <div className={`rounded-2xl p-8 text-center transition-all ${isOnline ? "gradient-primary glow-primary" : "gradient-card border border-border"}`}>
+          <div className={`rounded-2xl p-8 text-center transition-all ${isOnline ? "gradient-primary glow-primary" : "glass-card"}`}>
             <div className={`w-24 h-24 rounded-full mx-auto flex items-center justify-center mb-4 ${isOnline ? "bg-primary-foreground/20" : "bg-secondary"}`}>
               {isOnline ? <Wifi className="w-12 h-12 text-primary-foreground" /> : <WifiOff className="w-12 h-12 text-muted-foreground" />}
             </div>
@@ -70,7 +70,7 @@ const DriverStatus = () => {
 
         <div className="space-y-2 mt-6">
           {statusInfo.map((s, i) => (
-            <div key={i} className="gradient-card rounded-xl p-4 border border-border flex items-center justify-between">
+            <div key={i} className="glass-card rounded-xl p-4 flex items-center justify-between">
               <span className={`text-sm font-medium ${s.color}`}>{s.value}</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-foreground">{s.label}</span>

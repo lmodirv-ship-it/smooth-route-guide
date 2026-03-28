@@ -43,7 +43,7 @@ const DriverSupport = () => {
           <div className="space-y-2">
             {faqs.map((faq, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
-                className="gradient-card rounded-xl border border-border overflow-hidden">
+                className="glass-card rounded-xl overflow-hidden">
                 <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full p-4 flex items-center justify-between">
                   {openFaq === i ? <ChevronUp className="w-4 h-4 text-primary flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
                   <span className="text-sm text-foreground font-medium">{faq.q}</span>
@@ -67,7 +67,7 @@ const DriverSupport = () => {
                 { icon: Bot, label: t.customer.aiAssistant, color: "text-primary", bg: "bg-primary/10", path: "/assistant" },
               ].map((c, i) => (
                 <button key={i} onClick={() => c.path && navigate(c.path)}
-                  className="gradient-card rounded-xl p-4 border border-border flex flex-col items-center gap-2 hover:border-primary/20 transition-colors">
+                  className="glass-card rounded-xl p-4 flex flex-col items-center gap-2 hover:border-primary/20 transition-colors">
                   <div className={`w-12 h-12 rounded-full ${c.bg} flex items-center justify-center`}>
                     <c.icon className={`w-6 h-6 ${c.color}`} />
                   </div>
@@ -76,7 +76,7 @@ const DriverSupport = () => {
               ))}
             </div>
 
-            <div className="gradient-card rounded-xl p-4 border border-border space-y-3">
+            <div className="glass-card rounded-xl p-4 space-y-3">
               <h3 className="text-foreground font-bold text-sm">{t.driver.sendMessageTitle}</h3>
               <Input placeholder={t.driver.subjectField} className="bg-secondary border-border rounded-xl" />
               <Textarea placeholder={t.driver.writeMessageHere} className="bg-secondary border-border rounded-xl min-h-[120px]" />

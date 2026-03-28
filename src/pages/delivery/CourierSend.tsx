@@ -231,7 +231,7 @@ const CourierSend = () => {
               </button>
 
               {/* Summary */}
-              <div className="bg-card rounded-2xl border border-border p-4 space-y-2">
+              <div className="glass-card rounded-2xl p-4 space-y-2">
                 <h3 className="text-sm font-bold text-foreground">ملخص الطرد</h3>
                 <div className="flex justify-between text-xs">
                   <span className="text-foreground">{packageTypes.find(t => t.id === selectedType)?.label}</span>

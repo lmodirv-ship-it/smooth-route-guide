@@ -111,7 +111,7 @@ const CourierTrack = () => {
         ) : (
           <>
             {/* Progress Timeline */}
-            <div className="bg-card rounded-2xl border border-border p-5 mb-4">
+            <div className="glass-card rounded-2xl p-5 mb-4">
               <h3 className="text-sm font-bold text-foreground mb-5">حالة الشحنة</h3>
               <div className="relative">
                 {/* Vertical line */}
@@ -168,7 +168,7 @@ const CourierTrack = () => {
             </div>
 
             {/* Package Details */}
-            <div className="bg-card rounded-2xl border border-border p-5 mb-4 space-y-3">
+            <div className="glass-card rounded-2xl p-5 mb-4 space-y-3">
               <h3 className="text-sm font-bold text-foreground">تفاصيل الطرد</h3>
               {packageInfo.type && <DetailRow label="النوع" value={packageInfo.type} />}
               {packageInfo.size && <DetailRow label="الحجم" value={packageInfo.size} />}
@@ -178,7 +178,7 @@ const CourierTrack = () => {
             </div>
 
             {/* Addresses */}
-            <div className="bg-card rounded-2xl border border-border p-5 mb-4 space-y-3">
+            <div className="glass-card rounded-2xl p-5 mb-4 space-y-3">
               <h3 className="text-sm font-bold text-foreground">العناوين</h3>
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
@@ -198,7 +198,7 @@ const CourierTrack = () => {
 
             {/* Recipient */}
             {packageInfo.recipient_name && (
-              <div className="bg-card rounded-2xl border border-border p-5 mb-4">
+              <div className="glass-card rounded-2xl p-5 mb-4">
                 <h3 className="text-sm font-bold text-foreground mb-3">المستلم</h3>
                 <div className="flex items-center justify-between">
                   <div className="flex gap-2">

@@ -51,7 +51,7 @@ const DeliveryHistory = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="bg-card rounded-2xl border border-border p-4"
+              className="glass-card rounded-2xl p-4"
             >
               <div className="flex items-center justify-between">
                 <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${

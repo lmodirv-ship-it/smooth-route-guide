@@ -102,15 +102,15 @@ const CommissionRatesPage = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="gradient-card rounded-xl border border-border p-4 text-center">
+        <div className="glass-card rounded-xl p-4 text-center">
           <p className="text-xs text-muted-foreground mb-1">متوسط النسبة</p>
           <p className="text-2xl font-bold text-primary">{avgRate}%</p>
         </div>
-        <div className="gradient-card rounded-xl border border-border p-4 text-center">
+        <div className="glass-card rounded-xl p-4 text-center">
           <p className="text-xs text-muted-foreground mb-1">أعلى نسبة</p>
           <p className="text-2xl font-bold text-green-500">{maxRate}%</p>
         </div>
-        <div className="gradient-card rounded-xl border border-border p-4 text-center">
+        <div className="glass-card rounded-xl p-4 text-center">
           <p className="text-xs text-muted-foreground mb-1">أدنى نسبة</p>
           <p className="text-2xl font-bold text-orange-500">{minRate}%</p>
         </div>
@@ -118,7 +118,7 @@ const CommissionRatesPage = () => {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="gradient-card rounded-xl border border-border p-6">
+        <div className="glass-card rounded-xl p-6">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="w-5 h-5 text-primary" />
             <h3 className="font-bold text-foreground">مقارنة النسب</h3>
@@ -141,7 +141,7 @@ const CommissionRatesPage = () => {
           </ResponsiveContainer>
         </div>
 
-        <div className="gradient-card rounded-xl border border-border p-6">
+        <div className="glass-card rounded-xl p-6">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-5 h-5 text-primary" />
             <h3 className="font-bold text-foreground">توزيع النسب</h3>
@@ -168,7 +168,7 @@ const CommissionRatesPage = () => {
       </div>
 
       {/* Rate Cards */}
-      <div className="gradient-card rounded-xl border border-border p-6">
+      <div className="glass-card rounded-xl p-6">
         <div className="flex items-center gap-2 mb-4">
           <Percent className="w-5 h-5 text-primary" />
           <h3 className="font-bold text-foreground">تعديل النسب</h3>

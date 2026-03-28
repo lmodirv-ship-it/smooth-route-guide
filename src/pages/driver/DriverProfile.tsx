@@ -168,7 +168,7 @@ const DriverProfile = () => {
 
       {/* Contact Info */}
       <div className="px-4 mt-5 space-y-3">
-        <div className="gradient-card rounded-xl p-4 border border-border space-y-3">
+        <div className="glass-card rounded-xl p-4 space-y-3">
           {[
             { icon: Phone, label: "الهاتف", value: profile.phone, key: "phone" },
             { icon: Mail, label: "البريد", value: profile.email, key: "email" },
@@ -207,7 +207,7 @@ const DriverProfile = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
               onClick={() => navigate(item.path)}
-              className="w-full gradient-card rounded-xl p-4 border border-border flex items-center justify-between hover:border-primary/20 transition-colors"
+              className="w-full glass-card rounded-xl p-4 flex items-center justify-between hover:border-primary/20 transition-colors"
             >
               <ChevronLeft className="w-4 h-4 text-muted-foreground" />
               <div className="flex items-center gap-3">

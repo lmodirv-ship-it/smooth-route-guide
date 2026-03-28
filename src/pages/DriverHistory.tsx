@@ -54,7 +54,7 @@ const DriverHistory = () => {
         {filteredTrips.length === 0 && <p className="text-center text-muted-foreground py-12">{t.driver.noTripsHistory}</p>}
         {filteredTrips.map((trip, i) => (
           <motion.div key={trip.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-            className="gradient-card rounded-xl p-4 border border-border">
+            className="glass-card rounded-xl p-4">
             <div className="flex justify-between items-start mb-3">
               <span className={`text-xs px-2 py-0.5 rounded-full ${trip.status === "completed" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"}`}>
                 {trip.status === "completed" ? t.driver.completedLabel : t.driver.cancelledLabel}

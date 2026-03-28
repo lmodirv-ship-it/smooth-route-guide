@@ -86,7 +86,7 @@ const ClientBooking = () => {
 
       <div className="px-4 -mt-6 relative z-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="gradient-card rounded-2xl p-4 border border-border mb-3">
+          <div className="glass-card rounded-2xl p-4 mb-3">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-success" />
@@ -100,7 +100,7 @@ const ClientBooking = () => {
             </div>
           </div>
 
-          <div className="gradient-card rounded-xl p-4 border border-border mb-3">
+          <div className="glass-card rounded-xl p-4 mb-3">
             <div className="flex justify-between items-center gap-4">
               <div className="flex items-center gap-4">
                 <div className="text-center"><p className="text-xs text-muted-foreground">{t.customer.distanceLabel}</p><p className="text-sm font-bold text-foreground">{ride.distance}</p></div>
@@ -110,7 +110,7 @@ const ClientBooking = () => {
             </div>
           </div>
 
-          <div className="gradient-card rounded-xl p-4 border border-border mb-4">
+          <div className="glass-card rounded-xl p-4 mb-4">
             <p className="text-sm text-foreground font-bold mb-3">{t.customer.paymentMethodTitle}</p>
             <div className="flex gap-3">
               {([ ["cash", t.customer.cashLabel, CreditCard], ["wallet", t.customer.walletLabel, Wallet]] as const).map(([key, label, Icon]) => (

@@ -154,7 +154,7 @@ const CCReports = () => {
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         {summaryStats.map((stat, index) => (
-          <div key={index} className="gradient-card rounded-xl p-4 border border-border text-center">
+          <div key={index} className="glass-card rounded-xl p-4 text-center">
             <stat.icon className={`w-6 h-6 ${stat.color} mx-auto mb-2`} />
             <p className="text-xs text-muted-foreground">{stat.label}</p>
             <p className="text-xl font-bold text-foreground mt-1">{stat.value}</p>
@@ -165,7 +165,7 @@ const CCReports = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <div>
           <h2 className="text-foreground font-bold mb-3">المكالمات الأسبوعية</h2>
-          <div className="gradient-card rounded-xl p-4 border border-border">
+          <div className="glass-card rounded-xl p-4">
             <div className="flex items-end gap-2 h-36 mb-2">
               {weeklyData.map((day, index) => (
                 <div key={index} className="flex-1 flex flex-col items-center gap-1">
@@ -186,7 +186,7 @@ const CCReports = () => {
 
         <div>
           <h2 className="text-foreground font-bold mb-3">أكثر المواضيع شيوعاً</h2>
-          <div className="gradient-card rounded-xl p-4 border border-border space-y-3">
+          <div className="glass-card rounded-xl p-4 space-y-3">
             {topIssues.map((issue, index) => (
               <div key={index}>
                 <div className="flex items-center justify-between mb-1">
@@ -203,7 +203,7 @@ const CCReports = () => {
       </div>
 
       <h2 className="text-foreground font-bold mb-3">أداء الوكلاء</h2>
-      <div className="gradient-card rounded-xl border border-border overflow-x-auto">
+      <div className="glass-card rounded-xl overflow-x-auto">
         <table className="w-full text-sm min-w-[500px]">
           <thead>
             <tr className="border-b border-border text-muted-foreground text-xs">

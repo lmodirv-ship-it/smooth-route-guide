@@ -114,7 +114,7 @@ const AdminRideRequests = () => {
         </div>
       </div>
 
-      <div className="gradient-card rounded-xl border border-border overflow-hidden">
+      <div className="glass-card rounded-xl overflow-hidden">
         <div className="overflow-auto">
           <table className="w-full text-sm">
             <thead>
@@ -163,7 +163,7 @@ const AdminRideRequests = () => {
       </div>
 
       <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
-        <DialogContent className="gradient-card border-border" dir="rtl">
+        <DialogContent className="glass-card border-border" dir="rtl">
           <DialogHeader><DialogTitle className="text-foreground">تعيين سائق للطلب</DialogTitle></DialogHeader>
           {assigningRequest && (
             <div className="mb-3 p-3 rounded-lg bg-secondary/50 text-sm">

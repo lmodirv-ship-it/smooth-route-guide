@@ -115,7 +115,7 @@ const AgentHub = () => {
             {agentTypes.map((agent, i) => (
               <motion.button key={agent.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
                 onClick={() => { setActiveAgent(agent.id); setMessages([]); }}
-                className="w-full gradient-card rounded-2xl p-5 border border-border hover:border-primary/30 transition-all text-right">
+                className="w-full glass-card rounded-2xl p-5 hover:border-primary/30 transition-all text-right">
                 <div className="flex items-center gap-4">
                   <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${agent.bg} flex items-center justify-center flex-shrink-0`}>
                     <agent.icon className="w-7 h-7 text-white" />
@@ -129,7 +129,7 @@ const AgentHub = () => {
             ))}
           </div>
 
-          <div className="gradient-card rounded-xl p-4 border border-border mt-6">
+          <div className="glass-card rounded-xl p-4 mt-6">
             <h3 className="text-foreground font-bold text-sm mb-2">أين يُستخدم الذكاء الاصطناعي؟</h3>
             <div className="space-y-2 text-xs text-muted-foreground">
               <p>🟠 <strong className="text-foreground">تطبيق العميل:</strong> مساعد حجز ذكي يقترح الوجهات والأسعار</p>

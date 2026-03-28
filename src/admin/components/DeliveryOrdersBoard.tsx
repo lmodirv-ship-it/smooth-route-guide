@@ -194,7 +194,7 @@ const DeliveryOrdersBoard = ({ title }: { title: string }) => {
           { label: "نشطة الآن", value: stats.live, icon: Truck, tone: "text-info bg-info/10" },
           { label: "منتهية", value: stats.done, icon: Eye, tone: "text-success bg-success/10" },
         ].map((card) => (
-          <div key={card.label} className="gradient-card rounded-xl p-4 border border-border">
+          <div key={card.label} className="glass-card rounded-xl p-4">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2 ${card.tone}`}>
               <card.icon className="w-5 h-5" />
             </div>
@@ -227,7 +227,7 @@ const DeliveryOrdersBoard = ({ title }: { title: string }) => {
       <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_1fr] gap-4">
         <div className="space-y-3">
           {filtered.length === 0 && (
-            <div className="gradient-card rounded-xl p-10 border border-border text-center text-muted-foreground">
+            <div className="glass-card rounded-xl p-10 text-center text-muted-foreground">
               لا توجد طلبات مطابقة
             </div>
           )}
@@ -268,7 +268,7 @@ const DeliveryOrdersBoard = ({ title }: { title: string }) => {
           ))}
         </div>
 
-        <div className="gradient-card rounded-xl border border-border p-4 sticky top-20 h-fit">
+        <div className="glass-card rounded-xl p-4 sticky top-20 h-fit">
           {!selected ? (
             <div className="text-center py-10 text-muted-foreground">اختر طلبًا لعرض التفاصيل</div>
           ) : (

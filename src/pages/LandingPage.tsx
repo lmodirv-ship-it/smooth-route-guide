@@ -55,7 +55,7 @@ const FAQItem = ({ question, answer, index }: { question: string; answer: string
   const [open, setOpen] = useState(false);
   return (
     <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={index + 1}>
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between gap-4 p-5 rounded-2xl gradient-card border border-border hover:border-primary/30 transition-all duration-300 text-start group">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between gap-4 p-5 rounded-2xl glass-card hover:border-primary/30 transition-all duration-300 text-start group">
         <span className="font-bold text-foreground group-hover:text-primary transition-colors">{question}</span>
         <ChevronDown className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
       </button>
@@ -602,7 +602,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-4xl mx-auto">
             {partnerSites.map((site, i) => (
               <motion.a key={site.name} href={site.url} target="_blank" rel="noopener noreferrer" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} whileHover={{ y: -8, scale: 1.03 }} className="group relative flex flex-col items-center gap-4">
-                <div className="relative w-full aspect-square rounded-2xl gradient-card border border-border group-hover:border-primary/50 transition-all duration-500 flex items-center justify-center p-5 overflow-hidden">
+                <div className="relative w-full aspect-square rounded-2xl glass-card group-hover:border-primary/50 transition-all duration-500 flex items-center justify-center p-5 overflow-hidden">
                   <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: "radial-gradient(circle at 50% 50%, hsl(32 95% 55% / 0.08) 0%, transparent 70%)" }} />
                   <img src={site.logo} alt={site.name} loading="lazy" width={512} height={512} className="relative z-10 w-4/5 h-4/5 object-contain filter brightness-95 group-hover:brightness-110 transition-all duration-500 drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]" />
                 </div>
@@ -635,7 +635,7 @@ export default function LandingPage() {
 
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {advancedFeatures.map((f, i) => (
-              <motion.div key={i} variants={fadeChild} className="group relative rounded-2xl p-8 gradient-card border border-border hover:border-primary/30 transition-all duration-500 overflow-hidden">
+              <motion.div key={i} variants={fadeChild} className="group relative rounded-2xl p-8 glass-card hover:border-primary/30 transition-all duration-500 overflow-hidden">
                 <div className="absolute inset-0 rounded-2xl gradient-primary opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500" />
                 <div className={`w-14 h-14 rounded-2xl bg-secondary/80 border border-border group-hover:border-primary/30 flex items-center justify-center mb-5 group-hover:scale-110 transition-all duration-300`}>
                   <f.icon className={`w-7 h-7 ${f.color}`} />
@@ -659,7 +659,7 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {services.map((s, i) => (
-              <motion.div key={s.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} className={`group relative rounded-2xl p-8 gradient-card border border-border hover:border-primary/40 transition-all duration-500 ${s.glow}`}>
+              <motion.div key={s.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} className={`group relative rounded-2xl p-8 glass-card hover:border-primary/40 transition-all duration-500 ${s.glow}`}>
                 <div className="absolute inset-0 rounded-2xl gradient-primary opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500" />
                 <div className="icon-circle-orange mb-5">
                   <s.icon className="w-7 h-7 text-primary" />
@@ -683,7 +683,7 @@ export default function LandingPage() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {whyFeatures.map((f, i) => (
-              <motion.div key={f.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} className="text-center p-6 rounded-2xl gradient-card border border-border hover:border-primary/30 transition-all duration-500 group">
+              <motion.div key={f.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} className="text-center p-6 rounded-2xl glass-card hover:border-primary/30 transition-all duration-500 group">
                 <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all">
                   <f.icon className="w-7 h-7 text-primary" />
                 </div>
@@ -706,7 +706,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
             {serviceCategories.map((cat, i) => (
-              <motion.div key={cat.key} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} onClick={() => navigate(`/delivery/${cat.key}`)} className="group cursor-pointer rounded-2xl p-6 gradient-card border border-border hover:border-primary/40 transition-all duration-500 text-center">
+              <motion.div key={cat.key} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} onClick={() => navigate(`/delivery/${cat.key}`)} className="group cursor-pointer rounded-2xl p-6 glass-card hover:border-primary/40 transition-all duration-500 text-center">
                 <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
                   <cat.icon className="w-7 h-7 text-primary" />
                 </div>
@@ -831,7 +831,7 @@ export default function LandingPage() {
               { name: dir === "rtl" ? "خالد العتيبي" : "Khalid Otaibi", role: dir === "rtl" ? "سائق منذ سنة" : "Driver for 1 year", text: dir === "rtl" ? "المرونة في العمل رائعة. أعمل في أوقات فراغي وأحقق دخل إضافي ممتاز. أنصح الجميع بالتجربة." : "The work flexibility is amazing. I work in my free time and earn great extra income. Highly recommended.", earnings: dir === "rtl" ? "8,500 د.م/شهر" : "8,500 MAD/month", trips: "1200+" },
               { name: dir === "rtl" ? "سعد الدوسري" : "Saad Dosari", role: dir === "rtl" ? "سائق منذ 3 أشهر" : "Driver for 3 months", text: dir === "rtl" ? "الدفع الفوري ميزة رائعة. لا أنتظر نهاية الشهر للحصول على أرباحي. التطبيق احترافي جداً." : "Instant payment is a great feature. No waiting until month-end. Very professional app.", earnings: dir === "rtl" ? "9,800 د.م/شهر" : "9,800 MAD/month", trips: "280+" },
             ].map((t, i) => (
-              <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} className="group relative rounded-2xl p-8 gradient-card border border-border hover:border-primary/30 transition-all duration-500 overflow-hidden">
+              <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} className="group relative rounded-2xl p-8 glass-card hover:border-primary/30 transition-all duration-500 overflow-hidden">
                 <div className="absolute inset-0 rounded-2xl gradient-primary opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500" />
                 <Quote className="w-8 h-8 text-primary/30 mb-4" />
                 <div className="flex gap-1 mb-4">

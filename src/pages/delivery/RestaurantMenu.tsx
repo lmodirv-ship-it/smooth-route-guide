@@ -142,7 +142,7 @@ const RestaurantMenu = () => {
               className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
                 activeCategory === cat.id
                   ? "bg-primary text-primary-foreground shadow-md"
-                  : "bg-card border border-border text-muted-foreground"
+                  : "glass-card text-muted-foreground"
               }`}
             >
               {cat.name_ar}
@@ -164,7 +164,7 @@ const RestaurantMenu = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="bg-card rounded-2xl border border-border p-4 flex items-center gap-3"
+                className="glass-card rounded-2xl p-4 flex items-center gap-3"
               >
                 {/* Item image */}
                 <div className="w-16 h-16 rounded-xl bg-secondary/40 overflow-hidden flex-shrink-0">

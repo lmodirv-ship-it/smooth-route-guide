@@ -92,7 +92,7 @@ const DeliveryTracking = () => {
       ) : (
         <>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            className="bg-card rounded-2xl border border-border p-5 mb-6">
+            className="glass-card rounded-2xl p-5 mb-6">
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">#{order.id?.slice(0, 8)}</span>
               <span className={`text-xs font-bold px-3 py-1 rounded-full ${
@@ -135,7 +135,7 @@ const DeliveryTracking = () => {
           </motion.div>
 
           {!isCancelled && (
-            <div className="bg-card rounded-2xl border border-border p-5">
+            <div className="glass-card rounded-2xl p-5">
               <h3 className="font-bold text-foreground mb-4">حالة الطلب</h3>
               <div className="space-y-4">
                 {steps.map((step, i) => {

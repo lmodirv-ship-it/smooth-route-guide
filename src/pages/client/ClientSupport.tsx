@@ -55,7 +55,7 @@ const ClientSupport = () => {
             { icon: Bot, label: t.customer.assistantLabel, color: "text-primary", bg: "bg-primary/10", path: "/assistant" },
           ].map((c, i) => (
             <button key={i} onClick={() => c.path && navigate(c.path)}
-              className="gradient-card rounded-xl p-4 border border-border flex flex-col items-center gap-2 hover:border-primary/20">
+              className="glass-card rounded-xl p-4 flex flex-col items-center gap-2 hover:border-primary/20">
               <div className={`w-12 h-12 rounded-full ${c.bg} flex items-center justify-center`}><c.icon className={`w-6 h-6 ${c.color}`} /></div>
               <span className="text-xs text-foreground">{c.label}</span>
             </button>
@@ -65,7 +65,7 @@ const ClientSupport = () => {
         <h3 className="text-foreground font-bold mb-3">{t.customer.faqTitle}</h3>
         <div className="space-y-2">
           {faqs.map((faq, i) => (
-            <div key={i} className="gradient-card rounded-xl border border-border overflow-hidden">
+            <div key={i} className="glass-card rounded-xl overflow-hidden">
               <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full p-4 flex items-center justify-between">
                 {openFaq === i ? <ChevronUp className="w-4 h-4 text-primary" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                 <span className="text-sm text-foreground">{faq.q}</span>
@@ -75,7 +75,7 @@ const ClientSupport = () => {
           ))}
         </div>
 
-        <div className="gradient-card rounded-xl p-4 border border-border mt-6 space-y-3">
+        <div className="glass-card rounded-xl p-4 mt-6 space-y-3">
           <h3 className="text-foreground font-bold text-sm">{t.customer.sendComplaintTitle}</h3>
           <Input placeholder={t.customer.subjectPlaceholder} value={subject} onChange={e => setSubject(e.target.value)} className="bg-secondary border-border rounded-xl" />
           <Textarea placeholder={t.customer.messagePlaceholder} value={message} onChange={e => setMessage(e.target.value)} className="bg-secondary border-border rounded-xl min-h-[100px]" />

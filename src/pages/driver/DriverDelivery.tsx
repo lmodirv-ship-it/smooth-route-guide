@@ -318,7 +318,7 @@ const DriverDelivery = () => {
           ) : (
             <motion.div key="active" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-4 space-y-4">
               {/* Progress steps */}
-              <div className="bg-card rounded-2xl border border-border p-4">
+              <div className="glass-card rounded-2xl p-4">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-emerald-400 font-bold">{activeOrder.total_price || activeOrder.estimated_price} DH</span>
                   <h3 className="font-bold text-foreground">{activeOrder.store_name || "طلب توصيل"}</h3>

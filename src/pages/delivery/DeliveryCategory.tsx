@@ -140,7 +140,7 @@ const DeliveryCategory = () => {
 
       {/* Delivery Type Toggle */}
       <div className="px-5 mt-4 mb-3">
-        <div className="flex gap-2 bg-card rounded-xl border border-border p-1">
+        <div className="flex gap-2 glass-card rounded-xl p-1">
           <button
             onClick={() => setDeliveryType("standard")}
             className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
@@ -185,7 +185,7 @@ const DeliveryCategory = () => {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
-              className="bg-card rounded-2xl border border-border p-4 hover:border-primary/30 transition-all"
+              className="glass-card rounded-2xl p-4 hover:border-primary/30 transition-all"
             >
               <div className="flex items-start justify-between gap-3">
                 <Button

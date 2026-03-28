@@ -111,7 +111,7 @@ const ManualBooking = () => {
 
       {step === "form" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl mx-auto">
-          <div className="gradient-card rounded-2xl p-6 border border-border space-y-4">
+          <div className="glass-card rounded-2xl p-6 space-y-4">
             <h2 className="text-foreground font-bold text-sm">معلومات العميل</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
@@ -180,7 +180,7 @@ const ManualBooking = () => {
 
       {step === "drivers" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl mx-auto">
-          <div className="gradient-card rounded-xl p-4 border border-border mb-4">
+          <div className="glass-card rounded-xl p-4 mb-4">
             <div className="flex items-center gap-3 text-sm flex-wrap">
               <div className="flex items-center gap-1.5">
                 <MapPin className="w-3 h-3 text-success" />
@@ -199,10 +199,10 @@ const ManualBooking = () => {
             <div className="py-16 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
           ) : (
             <div className="space-y-2">
-              {availableDrivers.length === 0 && <div className="gradient-card rounded-xl p-6 border border-border text-sm text-muted-foreground text-center">لا يوجد سائقون متاحون حالياً</div>}
+              {availableDrivers.length === 0 && <div className="glass-card rounded-xl p-6 text-sm text-muted-foreground text-center">لا يوجد سائقون متاحون حالياً</div>}
               {availableDrivers.map((d, i) => (
                 <motion.div key={d.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
-                  className="gradient-card rounded-xl p-4 border border-border flex items-center justify-between">
+                  className="glass-card rounded-xl p-4 flex items-center justify-between">
                   <Button size="sm" onClick={() => handleAssign(d.id, d.name)} disabled={loading}
                     className="gradient-primary text-primary-foreground rounded-lg">
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Send className="w-3 h-3 ml-1" /> إرسال</>}
@@ -229,7 +229,7 @@ const ManualBooking = () => {
 
       {step === "done" && (
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md mx-auto">
-          <div className="gradient-card rounded-2xl p-8 border border-success/30 text-center">
+          <div className="glass-card rounded-2xl p-8 border border-success/30 text-center">
             <CheckCircle className="w-20 h-20 text-success mx-auto mb-4" />
             <h2 className="text-xl font-bold text-foreground">تم إرسال الطلب بنجاح!</h2>
             <p className="text-sm text-muted-foreground mt-2">تم إنشاء الطلب وتعيين السائق بنجاح.</p>

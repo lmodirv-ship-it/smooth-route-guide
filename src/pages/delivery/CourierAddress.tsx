@@ -150,7 +150,7 @@ const CourierAddress = () => {
       <div className="px-5 mt-6 pb-32">
         {step === "pickup" && (
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-            <div className="bg-card rounded-2xl border border-border p-4">
+            <div className="glass-card rounded-2xl p-4">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center">
                   <MapPin className="w-4 h-4 text-success" />
@@ -190,7 +190,7 @@ const CourierAddress = () => {
 
         {step === "delivery" && (
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-            <div className="bg-card rounded-2xl border border-border p-4">
+            <div className="glass-card rounded-2xl p-4">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center">
                   <MapPin className="w-4 h-4 text-destructive" />
@@ -220,7 +220,7 @@ const CourierAddress = () => {
 
         {step === "contact" && (
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-            <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+            <div className="glass-card rounded-2xl p-5 space-y-4">
               <h2 className="font-bold text-foreground">بيانات المستلم</h2>
               <div className="space-y-2">
                 <label className="text-sm text-muted-foreground block">اسم المستلم</label>
@@ -255,7 +255,7 @@ const CourierAddress = () => {
 
         {step === "confirm" && (
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-            <div className="bg-card rounded-2xl border border-border p-5 space-y-3">
+            <div className="glass-card rounded-2xl p-5 space-y-3">
               <h2 className="font-bold text-foreground text-center">ملخص الطلب</h2>
               <div className="h-px bg-border" />
               <Row label="نوع الطرد" value={packageType} />

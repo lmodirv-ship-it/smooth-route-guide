@@ -62,7 +62,7 @@ const AdminClients = () => {
         </div>
       </div>
 
-      <div className="gradient-card rounded-xl border border-border overflow-hidden">
+      <div className="glass-card rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-right">
@@ -96,7 +96,7 @@ const AdminClients = () => {
       </div>
 
       <Dialog open={!!selectedClient} onOpenChange={() => setSelectedClient(null)}>
-        <DialogContent className="gradient-card border-border max-w-lg" dir="rtl">
+        <DialogContent className="glass-card border-border max-w-lg" dir="rtl">
           <DialogHeader><DialogTitle className="text-foreground">بيانات العميل</DialogTitle></DialogHeader>
           {selectedClient && (
             <div className="space-y-4">

@@ -202,7 +202,7 @@ const StoreDetail = () => {
                 className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
                   activeCategory === cat.id
                     ? "bg-primary text-primary-foreground shadow-md"
-                    : "bg-card border border-border text-muted-foreground"
+                    : "glass-card text-muted-foreground"
                 }`}
               >
                 {dir === "rtl" ? cat.name_ar : cat.name_fr}
@@ -236,7 +236,7 @@ const StoreDetail = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className="bg-card rounded-2xl border border-border p-4"
+                className="glass-card rounded-2xl p-4"
               >
                 <div className="flex items-start gap-3">
                   {/* Product image */}
@@ -335,13 +335,13 @@ const StoreDetail = () => {
               <>
                 <button
                   onClick={() => setGalleryIndex((prev) => (prev > 0 ? prev - 1 : galleryImages.length - 1))}
-                  className="absolute left-6 top-1/2 -translate-y-1/2 p-2 rounded-full bg-card border border-border"
+                  className="absolute left-6 top-1/2 -translate-y-1/2 p-2 rounded-full glass-card"
                 >
                   <ChevronLeft className="w-5 h-5 text-foreground" />
                 </button>
                 <button
                   onClick={() => setGalleryIndex((prev) => (prev < galleryImages.length - 1 ? prev + 1 : 0))}
-                  className="absolute right-6 top-1/2 -translate-y-1/2 p-2 rounded-full bg-card border border-border"
+                  className="absolute right-6 top-1/2 -translate-y-1/2 p-2 rounded-full glass-card"
                 >
                   <ChevronRight className="w-5 h-5 text-foreground" />
                 </button>

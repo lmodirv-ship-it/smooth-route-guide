@@ -314,7 +314,7 @@ const RestaurantsList = () => {
           <div className="flex items-center justify-between mb-3">
             <button
               onClick={() => navigate("/delivery")}
-              className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center hover:border-primary/40 transition-colors"
+              className="w-10 h-10 rounded-xl glass-card flex items-center justify-center hover:border-primary/40 transition-colors"
             >
               <ArrowRight className="w-5 h-5 text-foreground" />
             </button>
@@ -330,7 +330,7 @@ const RestaurantsList = () => {
 
             <button
               onClick={() => navigate("/delivery/cart")}
-              className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center hover:border-primary/40 transition-colors relative"
+              className="w-10 h-10 rounded-xl glass-card flex items-center justify-center hover:border-primary/40 transition-colors relative"
             >
               <ShoppingBag className="w-5 h-5 text-foreground" />
               {totalItems > 0 && (
@@ -370,7 +370,7 @@ const RestaurantsList = () => {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                 categoryFilter === key
                   ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
-                  : "bg-card border border-border text-muted-foreground hover:border-primary/30"
+                  : "glass-card text-muted-foreground hover:border-primary/30"
               }`}
             >
               {meta.icon}
@@ -431,7 +431,7 @@ const RestaurantsList = () => {
         {isLoading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-card border border-border rounded-2xl overflow-hidden">
+              <div key={i} className="glass-card rounded-2xl overflow-hidden">
                 <Skeleton className="w-full h-40" />
                 <div className="p-3.5 space-y-2">
                   <Skeleton className="h-4 w-3/4" />
@@ -554,7 +554,7 @@ const HorizontalSection = ({
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: i * 0.05 }}
           onClick={() => onStoreClick(store)}
-          className={`flex-shrink-0 w-44 bg-card rounded-xl border border-border overflow-hidden cursor-pointer transition-all active:scale-95 hover:border-primary/40 ${store.is_open === false ? "opacity-60" : ""}`}
+          className={`flex-shrink-0 w-44 glass-card rounded-xl overflow-hidden cursor-pointer transition-all active:scale-95 hover:border-primary/40 ${store.is_open === false ? "opacity-60" : ""}`}
         >
           <div className="relative w-full h-28 bg-secondary overflow-hidden">
             <img

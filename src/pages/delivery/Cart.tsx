@@ -175,7 +175,7 @@ const Cart = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="bg-card rounded-2xl border border-border p-4"
+            className="glass-card rounded-2xl p-4"
           >
             <div className="flex items-center justify-between">
               <div className="flex-1">
@@ -206,7 +206,7 @@ const Cart = () => {
 
       {/* Delivery Address */}
       <div className="px-5 mt-4 space-y-3">
-        <div className="bg-card rounded-2xl border border-border p-4 space-y-3">
+        <div className="glass-card rounded-2xl p-4 space-y-3">
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-primary" />
             <h3 className="font-bold text-foreground text-sm">عنوان التوصيل</h3>

@@ -284,7 +284,7 @@ const AdminDashboardPage = () => {
 
       {/* Map + Driver Status */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className="lg:col-span-2 gradient-card rounded-2xl border border-border overflow-hidden shadow-sm">
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className="lg:col-span-2 glass-card rounded-2xl overflow-hidden shadow-sm">
           <div className="p-4 border-b border-border flex items-center justify-between">
             <Badge variant="outline" className="text-success border-success/30 bg-success/10">
               <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse mr-1.5" />
@@ -300,7 +300,7 @@ const AdminDashboardPage = () => {
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }} className="gradient-card rounded-2xl border border-border p-6">
+        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }} className="glass-card rounded-2xl p-6">
           <h3 className="font-bold text-foreground text-right mb-6 flex items-center justify-end gap-2">
             <Users className="w-4 h-4 text-primary" />
             {td.driverStatus}
@@ -323,7 +323,7 @@ const AdminDashboardPage = () => {
 
       {/* Charts + Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="gradient-card rounded-2xl border border-border p-6 shadow-sm">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="glass-card rounded-2xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-5">
             <div className="flex gap-1 bg-secondary/50 p-1 rounded-xl">
               {(["daily", "weekly", "monthly"] as const).map((range) => (
@@ -344,7 +344,7 @@ const AdminDashboardPage = () => {
           <BarChartPro data={incomeChartData} color="hsl(var(--primary))" />
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }} className="gradient-card rounded-2xl border border-border overflow-hidden shadow-sm">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }} className="glass-card rounded-2xl overflow-hidden shadow-sm">
           <div className="p-4 border-b border-border flex items-center justify-between">
             <Badge variant="outline" className={alerts.length > 0 ? "text-warning border-warning/30 bg-warning/10" : "text-success border-success/30 bg-success/10"}>
               {alerts.length} {alerts.length > 0 ? "⚠" : "✓"}
@@ -387,7 +387,7 @@ const AdminDashboardPage = () => {
       </div>
 
       {/* Recent Trips */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="gradient-card rounded-2xl border border-border overflow-hidden shadow-sm">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="glass-card rounded-2xl overflow-hidden shadow-sm">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <button className="text-xs text-primary hover:text-primary/80 font-medium flex items-center gap-1 transition-colors">
             {t.common?.refresh || "View All"} <ArrowUpRight className="w-3 h-3" />

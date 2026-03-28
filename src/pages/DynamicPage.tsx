@@ -75,7 +75,7 @@ const BlockRenderer = ({ block }: { block: Block }) => {
         <section className="py-12 px-6">
           <div className={`grid gap-6 max-w-6xl mx-auto`} style={{ gridTemplateColumns: `repeat(${block.columns || 3}, minmax(0, 1fr))` }}>
             {(block.items || []).map((item: any, i: number) => (
-              <div key={i} className="gradient-card border border-border rounded-xl p-6 hover:border-primary/40 transition">
+              <div key={i} className="glass-card rounded-xl p-6 hover:border-primary/40 transition">
                 {item.image && <img src={item.image} alt={item.title} className="w-full h-40 object-cover rounded-lg mb-4" />}
                 {item.icon && <span className="text-3xl mb-3 block">{item.icon}</span>}
                 <h3 className="text-lg font-bold text-foreground mb-2">{item.title}</h3>
@@ -92,7 +92,7 @@ const BlockRenderer = ({ block }: { block: Block }) => {
         <section className="py-12 px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {(block.items || []).map((item: any, i: number) => (
-              <div key={i} className="text-center p-6 gradient-card rounded-xl border border-border">
+              <div key={i} className="text-center p-6 glass-card rounded-xl">
                 {item.icon && <span className="text-3xl mb-2 block">{item.icon}</span>}
                 <div className="text-3xl font-bold" style={{ color: item.color || "hsl(var(--primary))" }}>{item.value}</div>
                 <div className="text-muted-foreground text-sm mt-1">{item.label}</div>
@@ -122,7 +122,7 @@ const BlockRenderer = ({ block }: { block: Block }) => {
         <section className="py-12 px-6 max-w-3xl mx-auto">
           <div className="space-y-4">
             {(block.items || []).map((item: any, i: number) => (
-              <details key={i} className="gradient-card border border-border rounded-xl p-4 group">
+              <details key={i} className="glass-card rounded-xl p-4 group">
                 <summary className="font-bold text-foreground cursor-pointer list-none flex justify-between items-center">
                   {item.question}
                   <span className="text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
@@ -206,7 +206,7 @@ const BlockRenderer = ({ block }: { block: Block }) => {
         <section className="py-12 px-6">
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {(block.items || []).map((item: any, i: number) => (
-              <div key={i} className="gradient-card border border-border rounded-xl p-6">
+              <div key={i} className="glass-card rounded-xl p-6">
                 <p className="text-foreground text-sm mb-4 italic">"{item.text}"</p>
                 <div className="flex items-center gap-3">
                   {item.avatar && <img src={item.avatar} alt={item.name} className="w-10 h-10 rounded-full object-cover" />}

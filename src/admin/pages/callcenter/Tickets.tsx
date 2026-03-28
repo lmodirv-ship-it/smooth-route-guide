@@ -123,7 +123,7 @@ const Tickets = () => {
       </div>
 
       {showNew && (
-        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="gradient-card rounded-xl p-4 border border-border mb-4 space-y-3">
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="glass-card rounded-xl p-4 mb-4 space-y-3">
           <h3 className="text-foreground font-bold text-sm">إنشاء تذكرة جديدة</h3>
           <Input value={form.title} onChange={(e) => setForm((current) => ({ ...current, title: e.target.value }))} placeholder="الموضوع" className="bg-secondary border-border rounded-lg text-right text-sm" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -157,7 +157,7 @@ const Tickets = () => {
         ))}
       </div>
 
-      <div className="gradient-card rounded-xl border border-border overflow-x-auto">
+      <div className="glass-card rounded-xl overflow-x-auto">
         {loading ? (
           <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
         ) : (
