@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useLogout } from "@/hooks/useLogout";
 import { useI18n } from "@/i18n/context";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 const roleDashboard: Record<string, string> = {
   driver: "/driver",
@@ -61,30 +62,34 @@ const GlobalLogoutButton = () => {
 
   if (isLoggedIn) {
     return (
-      <button
+      <Button
         type="button"
         onClick={logout}
         aria-label={t.common.logout}
         title={t.common.logout}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-destructive/30 bg-destructive/10 text-destructive text-xs font-medium transition-colors hover:bg-destructive/20"
+        variant="outline"
+        size="sm"
+        className="glass-nav-tile h-9 min-h-0 px-3"
       >
         <LogOut className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">{t.common.logout}</span>
-      </button>
+      </Button>
     );
   }
 
   return (
-    <button
+    <Button
       type="button"
       onClick={handleLogin}
       aria-label={t.common.login}
       title={t.common.login}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-success/30 bg-success/10 text-success text-xs font-medium transition-colors hover:bg-success/20"
+      variant="outline"
+      size="sm"
+      className="glass-nav-tile h-9 min-h-0 px-3"
     >
       <LogIn className="h-3.5 w-3.5" />
       <span className="hidden sm:inline">{t.common.login}</span>
-    </button>
+    </Button>
   );
 };
 

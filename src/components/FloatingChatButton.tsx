@@ -1,12 +1,15 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessagesSquare, Phone, X, Search, Users } from "lucide-react";
+import { MessagesSquare, PhoneCall, X, Search, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/i18n/context";
+import { cn } from "@/lib/utils";
+import { useInAppCall } from "@/hooks/useInAppCall";
+import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 interface Contact {
   id: string;
@@ -24,18 +27,20 @@ const FloatingChatButton = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
+  const inAppCall = useInAppCall();
 
   useEffect(() => {
     if (!open) return;
+
     const fetchContacts = async () => {
       setLoading(true);
+
       const { data: profiles } = await supabase
         .from("profiles")
         .select("id, name, phone, avatar_url")
         .order("name");
 
       if (profiles) {
-        // Fetch roles for each user
         const { data: roles } = await supabase
           .from("user_roles")
           .select("user_id, role");
@@ -50,17 +55,21 @@ const FloatingChatButton = () => {
           }))
         );
       }
+
       setLoading(false);
     };
+
     fetchContacts();
   }, [open]);
 
   if (location.pathname === "/community") return null;
 
-  const filtered = contacts.filter(
-    (c) =>
-      c.name?.toLowerCase().includes(search.toLowerCase()) ||
-      c.phone?.includes(search)
+  const filtered = useMemo(
+    () =>
+      contacts.filter(
+        (c) => c.name.toLowerCase().includes(search.toLowerCase()) || c.phone?.includes(search),
+      ),
+    [contacts, search],
   );
 
   const roleLabel = (role: string) => {
@@ -89,20 +98,38 @@ const FloatingChatButton = () => {
     return map[role] || "bg-muted text-muted-foreground";
   };
 
+  const startInternalCall = async (contact: Contact) => {
+    await inAppCall.startCall({
+      id: contact.id,
+      name: contact.name || "بدون اسم",
+      avatarUrl: contact.avatar_url,
+    });
+  };
+
   return (
     <>
+      <InAppCallDialog
+        incomingCall={inAppCall.incomingCall}
+        activeCall={inAppCall.activeCall}
+        remoteStream={inAppCall.remoteStream}
+        isMuted={inAppCall.isMuted}
+        busy={inAppCall.busy}
+        onAccept={inAppCall.acceptCall}
+        onEnd={inAppCall.endCall}
+        onToggleMute={inAppCall.toggleMute}
+      />
+
       <AnimatePresence>
         {open && (
           <motion.div
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="fixed bottom-36 right-4 z-50 w-80 max-h-[70vh] glass-strong rounded-2xl border border-border shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-36 right-4 z-50 flex max-h-[70vh] w-80 flex-col overflow-hidden rounded-[1.6rem] glass-card"
             dir={dir}
           >
-            {/* Header */}
             <div className="p-3 border-b border-border flex items-center justify-between">
-              <button onClick={() => setOpen(false)} className="p-1 hover:bg-secondary rounded-lg">
+              <button onClick={() => setOpen(false)} className="glass-icon-button h-8 w-8">
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
               <div className="flex items-center gap-2">
@@ -111,7 +138,6 @@ const FloatingChatButton = () => {
               </div>
             </div>
 
-            {/* Search */}
             <div className="p-2 border-b border-border">
               <div className="relative">
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -124,7 +150,6 @@ const FloatingChatButton = () => {
               </div>
             </div>
 
-            {/* Contact List */}
             <div className="flex-1 overflow-auto p-2 space-y-1">
               {loading ? (
                 <div className="text-center py-8 text-muted-foreground text-sm">جارٍ التحميل...</div>
@@ -134,7 +159,8 @@ const FloatingChatButton = () => {
                 filtered.map((contact) => (
                   <div
                     key={contact.id}
-                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-secondary/80 transition-colors group"
+                    className="glass-nav-tile flex items-center gap-3 p-2.5"
+                    data-active="false"
                   >
                     <Avatar className="w-9 h-9">
                       <AvatarImage src={contact.avatar_url || undefined} />
@@ -161,22 +187,18 @@ const FloatingChatButton = () => {
                           navigate("/community");
                           setOpen(false);
                         }}
-                        className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"
+                        className="glass-icon-button h-8 w-8 text-primary"
                         title="دردشة"
                       >
                         <MessagesSquare className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => {
-                          if (contact.phone) {
-                            window.open(`tel:${contact.phone}`, "_self");
-                          }
-                        }}
-                        className="p-1.5 rounded-lg hover:bg-success/10 text-success transition-colors"
-                        title="اتصال"
-                        disabled={!contact.phone}
+                        onClick={() => startInternalCall(contact)}
+                        className={cn("glass-icon-button h-8 w-8 text-info", (inAppCall.isInCall || inAppCall.busy || inAppCall.userId === contact.id) && "opacity-50")}
+                        title="اتصال داخلي"
+                        disabled={inAppCall.isInCall || inAppCall.busy || inAppCall.userId === contact.id}
                       >
-                        <Phone className="w-4 h-4" />
+                        <PhoneCall className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -184,11 +206,11 @@ const FloatingChatButton = () => {
               )}
             </div>
 
-            {/* Footer - Go to community chat */}
             <div className="p-2 border-t border-border">
               <button
                 onClick={() => { navigate("/community"); setOpen(false); }}
-                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium"
+                className="glass-nav-tile w-full flex items-center justify-center gap-2 py-2 text-sm font-medium"
+                data-active="false"
               >
                 <MessagesSquare className="w-4 h-4" />
                 الدردشة المجتمعية
@@ -205,8 +227,9 @@ const FloatingChatButton = () => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setOpen(!open)}
-        className="fixed bottom-20 right-4 z-50 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex items-center justify-center hover:shadow-xl hover:shadow-primary/40 transition-shadow"
+        className="glass-button fixed bottom-20 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full"
         title="جهات الاتصال والدردشة"
+        data-active={open}
       >
         {open ? <X className="w-5 h-5" /> : <MessagesSquare className="w-5 h-5" />}
       </motion.button>
