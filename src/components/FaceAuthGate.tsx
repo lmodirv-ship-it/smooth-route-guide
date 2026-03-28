@@ -7,7 +7,10 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
 const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model";
-const MATCH_THRESHOLD = 0.45;
+const THRESHOLD_EXCELLENT = 0.10; // >90% match → instant access
+const THRESHOLD_GOOD = 0.30;      // 70-90% → access granted
+const THRESHOLD_RETRY = 0.50;     // 50-70% → retry
+// >0.50 = <50% match → rejected
 
 type GateState = "idle" | "loading" | "scanning" | "matched" | "rejected" | "register";
 
@@ -113,7 +116,6 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
 
     if (!detection) {
       toast.error("لم يتم اكتشاف وجه. حاول مرة أخرى.");
-      // Retry after 2 seconds
       setTimeout(() => scanFace(), 2000);
       return;
     }
@@ -123,23 +125,31 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
       savedDescriptor
     );
 
-    if (distance <= MATCH_THRESHOLD) {
+    // >90% match (distance < 0.10) or 70-90% (distance < 0.30) → access granted
+    if (distance <= THRESHOLD_GOOD) {
       setState("matched");
       stopCamera();
-      toast.success("✅ تم التحقق من هويتك بنجاح");
+      const matchPercent = Math.round((1 - distance) * 100);
+      toast.success(`✅ تم التحقق من هويتك بنجاح (${matchPercent}%)`);
       setTimeout(() => onVerified(), 1000);
-    } else {
+    }
+    // 50-70% match (distance 0.30-0.50) → retry
+    else if (distance <= THRESHOLD_RETRY) {
+      const matchPercent = Math.round((1 - distance) * 100);
+      toast.warning(`⚠️ التطابق ${matchPercent}% — أعد المحاولة بوضوح أمام الكاميرا`);
+      setTimeout(() => scanFace(), 2500);
+    }
+    // <50% match (distance > 0.50) → rejected
+    else {
       setState("rejected");
       stopCamera();
 
-      // Capture photo as base64
       const canvas = document.createElement("canvas");
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
       canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
       const photoData = canvas.toDataURL("image/jpeg", 0.6);
 
-      // Log failed attempt via edge function
       try {
         const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
         await fetch(
@@ -156,7 +166,7 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
         );
       } catch {}
 
-      toast.error("🚫 وجه غير مطابق — ليس لديك حق الوصول");
+      toast.error("🚫 أنت غير معني — ليس لديك حق الوصول");
     }
   };
 
