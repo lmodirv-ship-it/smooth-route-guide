@@ -1306,6 +1306,60 @@ export type Database = {
         }
         Relationships: []
       }
+      face_auth_attempts: {
+        Row: {
+          created_at: string | null
+          id: string
+          photo_data: string | null
+          result: string | null
+          target_email: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          photo_data?: string | null
+          result?: string | null
+          target_email: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          photo_data?: string | null
+          result?: string | null
+          target_email?: string
+        }
+        Relationships: []
+      }
+      face_auth_profiles: {
+        Row: {
+          created_at: string | null
+          descriptor: Json
+          email: string
+          id: string
+          photo_url: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          descriptor?: Json
+          email: string
+          id?: string
+          photo_url?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          descriptor?: Json
+          email?: string
+          id?: string
+          photo_url?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       geo_codes: {
         Row: {
           code: string
