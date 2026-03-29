@@ -396,20 +396,37 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
         <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-lg shadow-primary/10">
           <video
             ref={videoRef}
-            className="w-full aspect-video object-cover"
+            className="w-full aspect-[4/3] object-cover"
             muted
             playsInline
             style={{ transform: "scaleX(-1)" }}
           />
-          {/* Scanning overlay */}
+          {/* Canvas for face landmarks */}
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            style={{ transform: "scaleX(-1)" }}
+          />
+          {/* Oval face focus mask */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <mask id="face-mask">
+                <rect width="400" height="300" fill="white" />
+                <ellipse cx="200" cy="140" rx="90" ry="115" fill="black" />
+              </mask>
+            </defs>
+            <rect width="400" height="300" fill="rgba(0,0,0,0.5)" mask="url(#face-mask)" />
+            <ellipse cx="200" cy="140" rx="90" ry="115" fill="none" stroke="hsl(217, 91%, 60%)" strokeWidth="2" strokeDasharray="8 4" opacity="0.8" />
+          </svg>
+          {/* Scanning pulse */}
           <motion.div
-            className="absolute inset-0 border-4 border-primary/40 rounded-2xl"
-            animate={{ opacity: [0.3, 1, 0.3] }}
+            className="absolute inset-0 border-4 border-primary/30 rounded-2xl"
+            animate={{ opacity: [0.2, 0.6, 0.2] }}
             transition={{ duration: 2, repeat: Infinity }}
           />
           <div className="absolute bottom-3 left-0 right-0 text-center">
             <span className="text-xs bg-black/60 text-white px-3 py-1 rounded-full">
-              جاري المسح...
+              🔍 جاري تحليل ملامح الوجه...
             </span>
           </div>
         </div>
