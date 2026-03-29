@@ -21,6 +21,18 @@ import { adminRouteElements } from "./admin";
 
 const queryClient = new QueryClient();
 
+const AppInner = () => {
+  usePresenceHeartbeat();
+  return (
+    <BrowserRouter>
+      <Routes>
+        {mainRouteElements}
+        {adminRouteElements}
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <I18nProvider>
@@ -28,15 +40,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <CartProvider>
-          <BrowserRouter>
-            <Routes>
-              {/* ═══ Main Application (Customer / Driver / Delivery) ═══ */}
-              {mainRouteElements}
-
-              {/* ═══ Admin Panel (Dashboard / Call Center) ═══ */}
-              {adminRouteElements}
-            </Routes>
-          </BrowserRouter>
+          <AppInner />
         </CartProvider>
       </TooltipProvider>
     </I18nProvider>
