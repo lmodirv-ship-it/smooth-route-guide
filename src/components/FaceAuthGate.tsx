@@ -23,7 +23,9 @@ interface FaceAuthGateProps {
 
 const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const landmarkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [state, setState] = useState<GateState>("loading");
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [savedDescriptor, setSavedDescriptor] = useState<number[] | null>(null);
@@ -91,15 +93,17 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 320, height: 240, facingMode: "user" },
+        video: { width: 480, height: 360, facingMode: "user" },
       });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
       }
+      // Start real-time landmark tracking
+      startLandmarkTracking();
       // Auto-scan after brief delay
-      setTimeout(() => scanFace(), 1500);
+      setTimeout(() => scanFace(), 2000);
     } catch {
       toast.error("لا يمكن الوصول إلى الكاميرا");
       onSkip();
@@ -107,8 +111,64 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
   };
 
   const stopCamera = () => {
+    if (landmarkIntervalRef.current) {
+      clearInterval(landmarkIntervalRef.current);
+      landmarkIntervalRef.current = null;
+    }
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+  };
+
+  // Real-time face landmark drawing
+  const startLandmarkTracking = () => {
+    if (landmarkIntervalRef.current) return;
+    landmarkIntervalRef.current = setInterval(async () => {
+      if (!videoRef.current || !canvasRef.current) return;
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      canvas.width = video.videoWidth || 320;
+      canvas.height = video.videoHeight || 240;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const detection = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks(true);
+
+      if (detection) {
+        const landmarks = detection.landmarks;
+        // Draw all facial landmark points
+        const points = landmarks.positions;
+        ctx.fillStyle = "hsl(217, 91%, 60%)"; // primary blue
+        points.forEach((pt) => {
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 2, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // Draw connections for jaw, eyes, nose, mouth
+        const drawPath = (pts: faceapi.Point[], close = false) => {
+          if (pts.length < 2) return;
+          ctx.strokeStyle = "hsl(217, 91%, 60%)";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(pts[0].x, pts[0].y);
+          pts.slice(1).forEach((p) => ctx.lineTo(p.x, p.y));
+          if (close) ctx.closePath();
+          ctx.stroke();
+        };
+
+        drawPath(landmarks.getJawOutline());
+        drawPath(landmarks.getLeftEye(), true);
+        drawPath(landmarks.getRightEye(), true);
+        drawPath(landmarks.getNose());
+        drawPath(landmarks.getMouth(), true);
+        drawPath(landmarks.getLeftEyeBrow());
+        drawPath(landmarks.getRightEyeBrow());
+      }
+    }, 200);
   };
 
   const scanFace = async () => {
@@ -336,20 +396,37 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
         <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-lg shadow-primary/10">
           <video
             ref={videoRef}
-            className="w-full aspect-video object-cover"
+            className="w-full aspect-[4/3] object-cover"
             muted
             playsInline
             style={{ transform: "scaleX(-1)" }}
           />
-          {/* Scanning overlay */}
+          {/* Canvas for face landmarks */}
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            style={{ transform: "scaleX(-1)" }}
+          />
+          {/* Oval face focus mask */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <mask id="face-mask">
+                <rect width="400" height="300" fill="white" />
+                <ellipse cx="200" cy="140" rx="90" ry="115" fill="black" />
+              </mask>
+            </defs>
+            <rect width="400" height="300" fill="rgba(0,0,0,0.5)" mask="url(#face-mask)" />
+            <ellipse cx="200" cy="140" rx="90" ry="115" fill="none" stroke="hsl(217, 91%, 60%)" strokeWidth="2" strokeDasharray="8 4" opacity="0.8" />
+          </svg>
+          {/* Scanning pulse */}
           <motion.div
-            className="absolute inset-0 border-4 border-primary/40 rounded-2xl"
-            animate={{ opacity: [0.3, 1, 0.3] }}
+            className="absolute inset-0 border-4 border-primary/30 rounded-2xl"
+            animate={{ opacity: [0.2, 0.6, 0.2] }}
             transition={{ duration: 2, repeat: Infinity }}
           />
           <div className="absolute bottom-3 left-0 right-0 text-center">
             <span className="text-xs bg-black/60 text-white px-3 py-1 rounded-full">
-              جاري المسح...
+              🔍 جاري تحليل ملامح الوجه...
             </span>
           </div>
         </div>
