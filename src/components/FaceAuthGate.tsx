@@ -213,6 +213,30 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
   }
 
   if (state === "rejected") {
+    const handlePasswordFallback = async () => {
+      if (!fallbackPassword) {
+        toast.error("يرجى إدخال كلمة المرور");
+        return;
+      }
+      setFallbackLoading(true);
+      try {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password: fallbackPassword,
+        });
+        if (error) {
+          toast.error("كلمة المرور غير صحيحة");
+        } else {
+          toast.success("✅ تم التحقق بكلمة المرور");
+          onVerified();
+        }
+      } catch {
+        toast.error("حدث خطأ أثناء التحقق");
+      } finally {
+        setFallbackLoading(false);
+      }
+    };
+
     return (
       <motion.div
         initial={{ opacity: 0 }}
@@ -223,25 +247,71 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
           className="text-center space-y-6 max-w-sm mx-auto px-6"
+          dir="rtl"
         >
-          <div className="w-24 h-24 rounded-full bg-destructive/20 flex items-center justify-center mx-auto">
-            <ShieldAlert className="w-14 h-14 text-destructive" />
-          </div>
-          <div>
-            <p className="text-xl font-bold text-destructive">ليس لديك حق الوصول</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              الوجه المكتشف لا يتطابق مع صاحب الحساب.
-              <br />
-              تم إرسال إشعار أمني لصاحب الحساب.
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => window.location.reload()}
-            className="w-full"
-          >
-            إعادة المحاولة
-          </Button>
+          {!showPasswordFallback ? (
+            <>
+              <div className="w-24 h-24 rounded-full bg-destructive/20 flex items-center justify-center mx-auto">
+                <ShieldAlert className="w-14 h-14 text-destructive" />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-destructive">ليس لديك حق الوصول</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  الوجه المكتشف لا يتطابق مع صاحب الحساب.
+                  <br />
+                  تم إرسال إشعار أمني لصاحب الحساب.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setShowPasswordFallback(true)}
+                className="w-full gap-2"
+              >
+                <Lock className="w-4 h-4" />
+                إعادة المحاولة بكلمة المرور
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
+                <Lock className="w-10 h-10 text-primary" />
+              </div>
+              <div>
+                <p className="text-lg font-bold text-foreground">أدخل كلمة المرور</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  يجب التحقق بكلمة المرور بعد فشل التعرف على الوجه
+                </p>
+              </div>
+              <div className="relative">
+                <Input
+                  value={fallbackPassword}
+                  onChange={(e) => setFallbackPassword(e.target.value)}
+                  placeholder="••••••••"
+                  type={showFallbackPassword ? "text" : "password"}
+                  className="bg-secondary/50 border-border h-12 rounded-xl pr-11 pl-11"
+                  onKeyDown={(e) => e.key === "Enter" && handlePasswordFallback()}
+                />
+                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <button
+                  type="button"
+                  onClick={() => setShowFallbackPassword(!showFallbackPassword)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2"
+                >
+                  {showFallbackPassword ? <EyeOff className="w-5 h-5 text-muted-foreground" /> : <Eye className="w-5 h-5 text-muted-foreground" />}
+                </button>
+              </div>
+              <Button
+                onClick={handlePasswordFallback}
+                disabled={fallbackLoading}
+                className="w-full h-12 rounded-xl gap-2"
+              >
+                {fallbackLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "تأكيد الدخول"}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={onSkip} className="w-full">
+                إلغاء
+              </Button>
+            </>
+          )}
         </motion.div>
       </motion.div>
     );
