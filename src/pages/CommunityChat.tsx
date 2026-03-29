@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Send, Users, Car, Package, ShoppingCart, Ban, Loader2, Trash2, Bell } from "lucide-react";
+import { MessageSquare, Send, Users, Car, Package, ShoppingCart, Ban, Loader2, Trash2, Bell, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -195,6 +195,15 @@ const CommunityChat = () => {
             <span className="font-bold text-foreground">مجتمع HN</span>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="border-destructive/40 text-destructive hover:bg-destructive/10 gap-1 text-xs"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              خروج
+            </Button>
             <Badge variant="outline" className="border-primary/30 text-primary text-xs">
               <Users className="w-3 h-3 ml-1" />
               {onlineUsers.length} متصل
