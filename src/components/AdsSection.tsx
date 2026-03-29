@@ -142,7 +142,8 @@ const AdsSection = () => {
           </h2>
           <p className="text-muted-foreground mt-2">Advertising Screens</p>
         </div>
-        <div className="max-w-7xl mx-auto rounded-2xl border-2 border-black bg-black/90 p-4 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+        <div className="max-w-7xl mx-auto rounded-3xl p-[3px] bg-gradient-to-br from-white/40 via-white/10 to-white/40 shadow-[0_0_40px_rgba(255,255,255,0.08)]">
+        <div className="rounded-2xl border-2 border-black bg-black/90 p-4 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
             {[1, 2, 3, 4].map(slot => (
               <AdSlot key={slot} ads={ads} slotNumber={slot} />
