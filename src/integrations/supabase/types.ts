@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      ads: {
+        Row: {
+          content_text: string | null
+          content_type: string
+          created_at: string
+          duration_seconds: number
+          id: string
+          image_url: string | null
+          is_active: boolean
+          link_url: string | null
+          slot_number: number
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content_text?: string | null
+          content_type?: string
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          link_url?: string | null
+          slot_number: number
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          content_text?: string | null
+          content_type?: string
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          link_url?: string | null
+          slot_number?: number
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       agent_presence_log: {
         Row: {
           created_at: string
