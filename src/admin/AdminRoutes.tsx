@@ -61,6 +61,7 @@ import AssistantKnowledge from "@/admin/pages/callcenter/AssistantKnowledge";
 import InternalMessaging from "@/admin/pages/callcenter/InternalMessaging";
 import CallCenterLogin from "@/admin/pages/CallCenterLogin";
 import AdminLogin from "@/admin/pages/AdminLogin";
+import CommunityChat from "@/pages/CommunityChat";
 
 export const adminRouteElements = (
   <>
@@ -113,6 +114,7 @@ export const adminRouteElements = (
       <Route path="alerts" element={<AdminAlerts />} />
       <Route path="knowledge" element={<AssistantKnowledge />} />
       <Route path="messaging" element={<InternalMessaging />} />
+      <Route path="community" element={<CommunityChat />} />
     </Route>
 
     {/* ═══ Supervisor Panel ═══ */}
@@ -125,6 +127,7 @@ export const adminRouteElements = (
       <Route path="restaurants" element={<SupervisorRestaurants />} />
       <Route path="city-activation" element={<CityActivation />} />
       <Route path="messaging" element={<InternalMessaging />} />
+      <Route path="community" element={<CommunityChat />} />
     </Route>
   </>
 );
