@@ -20,7 +20,11 @@ const formatDuration = (seconds: number) => {
   return `${h}س ${m}د`;
 };
 
-const AgentStaffPanel = () => {
+interface AgentStaffPanelProps {
+  onAgentClick?: (userId: string) => void;
+}
+
+const AgentStaffPanel = ({ onAgentClick }: AgentStaffPanelProps = {}) => {
   const [agents, setAgents] = useState<AgentRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -148,7 +152,7 @@ const AgentStaffPanel = () => {
           </TableHeader>
           <TableBody>
             {agents.map(agent => (
-              <TableRow key={agent.userId} className="hover:bg-muted/20 transition-colors">
+              <TableRow key={agent.userId} className={`hover:bg-muted/20 transition-colors ${onAgentClick ? "cursor-pointer" : ""}`} onClick={() => onAgentClick?.(agent.userId)}>
                 <TableCell className="text-right font-mono text-xs text-muted-foreground">{agent.userCode}</TableCell>
                 <TableCell className="text-right font-medium">{agent.name}</TableCell>
                 <TableCell className="text-right text-sm text-muted-foreground">{agent.email}</TableCell>

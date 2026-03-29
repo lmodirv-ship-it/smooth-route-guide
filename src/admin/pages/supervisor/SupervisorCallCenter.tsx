@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Headphones, Loader2, Search, Clock, AlertCircle, CheckCircle, XCircle, PhoneIncoming, RefreshCw, BarChart3 } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import AgentStaffPanel from "@/admin/components/AgentStaffPanel";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,9 @@ const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; co
 };
 
 const SupervisorCallCenter = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const basePath = location.pathname.includes("/supervisor/") ? "/supervisor" : "";
   const [calls, setCalls] = useState<CallRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -88,7 +92,7 @@ const SupervisorCallCenter = () => {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5" dir="rtl">
       {/* Agent Staff Panel */}
-      <AgentStaffPanel />
+      <AgentStaffPanel onAgentClick={(id) => navigate(`${basePath}/agent/${id}`)} />
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
