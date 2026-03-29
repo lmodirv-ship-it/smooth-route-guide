@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessagesSquare, PhoneCall, X, Search, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
