@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { FileText, Car, DollarSign, Zap, MapPin, Clock, BatteryLow, Package, TrendingUp, TrendingDown, Users, ArrowUpRight } from "lucide-react";
+import { FileText, Car, DollarSign, Zap, MapPin, Clock, BatteryLow, Package, TrendingUp, TrendingDown, Users, ArrowUpRight, CreditCard, Crown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGeo } from "@/admin/contexts/AdminGeoContext";
@@ -17,6 +17,8 @@ interface DashboardStats {
   offlineDrivers: number;
   deliveryPending: number;
   deliveryActive: number;
+  activeDriverSubs: number;
+  activeCustomerSubs: number;
 }
 
 interface DashboardAlert {
@@ -134,6 +136,7 @@ const AdminDashboardPage = () => {
   const [stats, setStats] = useState<DashboardStats>({
     requestsToday: 0, activeDrivers: 0, ongoingRides: 0, incomeToday: 0,
     totalDrivers: 0, offlineDrivers: 0, deliveryPending: 0, deliveryActive: 0,
+    activeDriverSubs: 0, activeCustomerSubs: 0,
   });
   const [incomeRange, setIncomeRange] = useState<"daily" | "weekly" | "monthly">("weekly");
   const [recentTrips, setRecentTrips] = useState<any[]>([]);
