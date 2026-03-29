@@ -30,7 +30,7 @@ const CommunityChat = () => {
   const [sending, setSending] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
-  const [profiles, setProfiles] = useState<Record<string, { name: string; avatar_url: string | null }>>({});
+  const [profiles, setProfiles] = useState<Record<string, { name: string; avatar_url: string | null; user_code: string | null }>>({});
   const [isAdmin, setIsAdmin] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState<PresenceUser[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -39,12 +39,12 @@ const CommunityChat = () => {
   // Fetch profile for a user id
   const fetchProfile = useCallback(async (uid: string) => {
     if (profiles[uid]) return profiles[uid];
-    const { data } = await supabase.from("profiles").select("id, name, avatar_url").eq("id", uid).maybeSingle();
+    const { data } = await supabase.from("profiles").select("id, name, avatar_url, user_code").eq("id", uid).maybeSingle();
     if (data) {
-      setProfiles(prev => ({ ...prev, [data.id]: { name: data.name || "مستخدم", avatar_url: data.avatar_url } }));
-      return { name: data.name || "مستخدم", avatar_url: data.avatar_url };
+      setProfiles(prev => ({ ...prev, [data.id]: { name: data.name || "مستخدم", avatar_url: data.avatar_url, user_code: data.user_code } }));
+      return { name: data.name || "مستخدم", avatar_url: data.avatar_url, user_code: data.user_code };
     }
-    return { name: "مستخدم", avatar_url: null };
+    return { name: "مستخدم", avatar_url: null, user_code: null };
   }, [profiles]);
 
   useEffect(() => {
@@ -121,10 +121,10 @@ const CommunityChat = () => {
       setMessages(msgs as Message[]);
       const userIds = [...new Set((msgs as any[]).map((m: any) => m.user_id))];
       if (userIds.length) {
-        const { data: profs } = await supabase.from("profiles").select("id, name, avatar_url").in("id", userIds);
+        const { data: profs } = await supabase.from("profiles").select("id, name, avatar_url, user_code").in("id", userIds);
         if (profs) {
-          const map: Record<string, { name: string; avatar_url: string | null }> = {};
-          profs.forEach(p => { map[p.id] = { name: p.name || "مستخدم", avatar_url: p.avatar_url }; });
+          const map: Record<string, { name: string; avatar_url: string | null; user_code: string | null }> = {};
+          profs.forEach(p => { map[p.id] = { name: p.name || "مستخدم", avatar_url: p.avatar_url, user_code: p.user_code }; });
           setProfiles(prev => ({ ...prev, ...map }));
         }
       }
@@ -239,7 +239,7 @@ const CommunityChat = () => {
                       </Avatar>
                       <div className="absolute -bottom-0.5 -left-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-card" />
                     </div>
-                    <span className="text-sm truncate max-w-[90px] text-foreground">{u.name}</span>
+                    <span className="text-sm truncate max-w-[90px] text-foreground font-mono">{profiles[u.user_id]?.user_code || u.name}</span>
                   </div>
                   {isAdmin && u.user_id !== userId && (
                     <button
@@ -302,7 +302,7 @@ const CommunityChat = () => {
             <AnimatePresence>
               {messages.map((msg) => {
                 const isMe = msg.user_id === userId;
-                const name = profiles[msg.user_id]?.name || "مستخدم";
+                const ref = profiles[msg.user_id]?.user_code || profiles[msg.user_id]?.name || "مستخدم";
                 const isOnline = onlineUsers.some(u => u.user_id === msg.user_id);
                 return (
                   <motion.div
@@ -315,7 +315,7 @@ const CommunityChat = () => {
                     <div className="relative shrink-0 mt-1">
                       <Avatar className="w-8 h-8">
                         <AvatarFallback className={`text-xs ${isMe ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>
-                          {name.charAt(0)}
+                          {ref.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       {isOnline && (
@@ -324,7 +324,7 @@ const CommunityChat = () => {
                     </div>
                     <div className={`max-w-[75%] ${isMe ? "text-right" : "text-left"}`}>
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="text-[11px] font-medium text-muted-foreground">{name}</span>
+                        <span className="text-[11px] font-medium text-muted-foreground font-mono">{ref}</span>
                         <span className="text-[9px] text-muted-foreground/50">
                           {new Date(msg.created_at).toLocaleTimeString("ar", { hour: "2-digit", minute: "2-digit" })}
                         </span>
