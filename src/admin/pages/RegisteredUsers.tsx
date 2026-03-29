@@ -24,6 +24,8 @@ interface UserRecord {
   createdAt: string;
   userCode: string;
   isConfirmed: boolean;
+  lastSeenAt: string | null;
+  isSuspended: boolean;
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -56,7 +58,7 @@ const RegisteredUsers = () => {
     setLoading(true);
     const { data: profiles, error } = await supabase
       .from("profiles")
-      .select("id, name, email, phone, created_at, user_code, is_confirmed")
+      .select("id, name, email, phone, created_at, user_code, is_confirmed, last_seen_at, is_suspended")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -82,6 +84,8 @@ const RegisteredUsers = () => {
       createdAt: p.created_at,
       userCode: (p as any).user_code || "—",
       isConfirmed: (p as any).is_confirmed ?? false,
+      lastSeenAt: (p as any).last_seen_at || null,
+      isSuspended: (p as any).is_suspended ?? false,
     })));
     setLoading(false);
   };
@@ -168,7 +172,13 @@ const RegisteredUsers = () => {
                 <TableCell className="text-center">
                   <Badge
                     variant="outline"
-                    className="font-mono text-xs cursor-pointer hover:bg-primary/10 transition-colors"
+                    className={`font-mono text-xs cursor-pointer transition-colors ${
+                      u.isSuspended
+                        ? "bg-black text-white border-black hover:bg-black/80"
+                        : u.lastSeenAt && (Date.now() - new Date(u.lastSeenAt).getTime()) < 5 * 60 * 1000
+                          ? "bg-green-500/15 text-green-600 border-green-500/50 hover:bg-green-500/25"
+                          : "bg-red-500/15 text-red-600 border-red-500/50 hover:bg-red-500/25"
+                    }`}
                     onClick={() => openDetail(u)}
                   >
                     {u.userCode}
