@@ -13,21 +13,32 @@ interface Ad {
   duration_seconds: number;
   is_active: boolean;
   sort_order: number;
+  start_date: string | null;
+  end_date: string | null;
 }
 
+const isAdScheduledNow = (ad: Ad): boolean => {
+  const now = new Date();
+  if (ad.start_date && new Date(ad.start_date) > now) return false;
+  if (ad.end_date && new Date(ad.end_date) < now) return false;
+  return true;
+};
+
 const AdSlot = ({ ads, slotNumber }: { ads: Ad[]; slotNumber: number }) => {
-  const slotAds = ads.filter(a => a.slot_number === slotNumber && a.is_active).sort((a, b) => a.sort_order - b.sort_order);
+  const slotAds = ads
+    .filter(a => a.slot_number === slotNumber && a.is_active && isAdScheduledNow(a))
+    .sort((a, b) => a.sort_order - b.sort_order);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     if (slotAds.length <= 1) return;
-    const current = slotAds[currentIndex];
+    const current = slotAds[currentIndex % slotAds.length];
     const duration = (current?.duration_seconds || 5) * 1000;
     const timer = setTimeout(() => setCurrentIndex(i => (i + 1) % slotAds.length), duration);
     return () => clearTimeout(timer);
   }, [currentIndex, slotAds.length]);
 
-  const current = slotAds[currentIndex];
+  const current = slotAds.length > 0 ? slotAds[currentIndex % slotAds.length] : null;
 
   const content = current ? (
     <AnimatePresence mode="wait">
@@ -62,22 +73,22 @@ const AdSlot = ({ ads, slotNumber }: { ads: Ad[]; slotNumber: number }) => {
     </AnimatePresence>
   ) : (
     <div className="w-full h-full flex items-center justify-center">
-      <span className="text-xs text-muted-foreground/50">AD {slotNumber}</span>
+      <div className="text-center space-y-1">
+        <span className="text-2xl">📺</span>
+        <p className="text-xs text-muted-foreground/50">Ad {slotNumber}</p>
+      </div>
     </div>
   );
 
   return (
     <div className="relative group">
-      {/* EDGE-style TV frame */}
       <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-br from-primary/40 via-primary/10 to-primary/40 opacity-60 group-hover:opacity-100 transition-opacity" />
       <div className="relative rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm overflow-hidden aspect-video min-h-[140px] shadow-lg shadow-primary/5">
-        {/* Screen glow */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
-        {/* Dot indicators */}
         {slotAds.length > 1 && (
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
             {slotAds.map((_, i) => (
-              <span key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === currentIndex ? "bg-primary" : "bg-muted-foreground/30"}`} />
+              <span key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === (currentIndex % slotAds.length) ? "bg-primary" : "bg-muted-foreground/30"}`} />
             ))}
           </div>
         )}
@@ -91,7 +102,7 @@ const AdsSection = () => {
   const [ads, setAds] = useState<Ad[]>([]);
 
   const loadAds = useCallback(async () => {
-    const { data } = await supabase.from("ads" as any).select("*").eq("is_active", true);
+    const { data } = await supabase.from("ads").select("*");
     if (data) setAds(data as unknown as Ad[]);
   }, []);
 
@@ -116,9 +127,7 @@ const AdsSection = () => {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
           {[1, 2, 3, 4].map(slot => (
-            <div key={slot}>
-              <AdSlot ads={ads} slotNumber={slot} />
-            </div>
+            <AdSlot key={slot} ads={ads} slotNumber={slot} />
           ))}
         </div>
       </div>
