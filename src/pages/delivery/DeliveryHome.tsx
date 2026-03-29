@@ -21,6 +21,7 @@ import RoleSwitcher from "@/components/RoleSwitcher";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
+import SubscriptionIndicator from "@/components/SubscriptionIndicator";
 
 const CATEGORY_META = [
   {
@@ -213,7 +214,7 @@ const DeliveryHome = () => {
             <div className="absolute bottom-10 left-20 w-1 h-1 rounded-full bg-white/25 animate-pulse" style={{ animationDelay: "1s" }} />
           </div>
 
-          <div className="flex items-center justify-between mb-5 relative z-10">
+          <div className="flex items-center justify-between mb-3 relative z-10">
             <div className="flex items-center gap-1">
               <button onClick={logout} className="p-2 rounded-xl bg-white/10 backdrop-blur-sm" title="تسجيل الخروج">
                 <LogOut className="w-4 h-4 text-primary-foreground" />
@@ -227,6 +228,9 @@ const DeliveryHome = () => {
               <MapPin className="w-3.5 h-3.5 text-primary-foreground" />
               <span className="text-xs text-primary-foreground font-medium truncate max-w-[120px]">{location}</span>
             </div>
+          </div>
+          <div className="flex justify-end mb-3 relative z-10">
+            <SubscriptionIndicator />
           </div>
 
           <motion.div

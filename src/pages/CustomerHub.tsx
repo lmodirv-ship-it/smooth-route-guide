@@ -4,6 +4,7 @@ import { Car, ShoppingBag, Sparkles, UtensilsCrossed, Package } from "lucide-rea
 import BottomNav from "@/components/BottomNav";
 import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import SubscriptionIndicator from "@/components/SubscriptionIndicator";
 
 const CustomerHub = () => {
   const navigate = useNavigate();
@@ -18,8 +19,11 @@ const CustomerHub = () => {
       </div>
 
       {/* Header */}
-      <div className="sticky top-0 z-50 px-5 py-4 flex items-center justify-between glass-strong border-b border-border">
-        <LanguageSwitcher />
+      <div className="sticky top-0 z-50 px-5 py-3 flex items-center justify-between glass-strong border-b border-border">
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <SubscriptionIndicator />
+        </div>
         <div className="flex items-center gap-2.5">
           <Sparkles className="w-5 h-5 text-primary" />
           <span className="font-bold text-xl text-gradient-primary font-display">{t.customer.welcomeTitle}</span>
