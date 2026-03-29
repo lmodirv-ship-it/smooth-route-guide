@@ -22,7 +22,7 @@ const DriverProfile = () => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState({
     name: "", phone: "", email: "", rating: 0, trips: 0,
-    license: "", status: "", avatarUrl: "", driverType: "ride",
+    license: "", status: "", avatarUrl: "", driverType: "ride", driverCode: "",
   });
   const [editForm, setEditForm] = useState({ name: "", phone: "", email: "" });
   const [stats, setStats] = useState({
@@ -36,7 +36,7 @@ const DriverProfile = () => {
 
       const [profRes, driverRes, tripsRes] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
-        supabase.from("drivers").select("id, rating, status, license_no, driver_type").eq("user_id", user.id).maybeSingle(),
+        supabase.from("drivers").select("id, rating, status, license_no, driver_type, driver_code").eq("user_id", user.id).maybeSingle(),
         supabase.from("ride_requests").select("id, price, distance, created_at")
           .eq("driver_id", user.id).eq("status", "completed"),
       ]);
@@ -51,6 +51,7 @@ const DriverProfile = () => {
         status: driverRes.data?.status || "inactive",
         avatarUrl: profRes.data?.avatar_url || "",
         driverType: driverRes.data?.driver_type || "ride",
+        driverCode: driverRes.data?.driver_code || "",
       };
       setProfile(p);
       setEditForm({ name: p.name, phone: p.phone, email: p.email });
@@ -132,6 +133,11 @@ const DriverProfile = () => {
           }`} />
         </div>
         <h2 className="text-xl font-bold text-foreground mt-3">{profile.name || "سائق"}</h2>
+        {profile.driverCode && (
+          <span className="mt-1 text-xs font-mono px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+            {profile.driverCode}
+          </span>
+        )}
         <div className="flex items-center gap-2 mt-1.5">
           <span className={`text-[11px] px-3 py-1 rounded-full ${
             profile.status === "active"
