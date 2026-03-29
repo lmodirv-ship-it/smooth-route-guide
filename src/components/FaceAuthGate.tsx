@@ -90,6 +90,11 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
     return () => stopCamera();
   }, [modelsLoaded, hasProfile, savedDescriptor]);
 
+  // Ensure camera stops on unmount
+  useEffect(() => {
+    return () => stopCamera();
+  }, []);
+
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
