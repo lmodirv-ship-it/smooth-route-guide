@@ -13,6 +13,12 @@ import PaymentSettings from "@/admin/components/settings/PaymentSettings";
 import LanguageManagement from "@/admin/components/LanguageManagement";
 import GeoSettings from "@/admin/components/settings/GeoSettings";
 import VisibilitySettings from "@/admin/components/settings/VisibilitySettings";
+import SecuritySettings from "@/admin/components/settings/SecuritySettings";
+import BrandingSettings from "@/admin/components/settings/BrandingSettings";
+import DriverSettings from "@/admin/components/settings/DriverSettings";
+import CommunicationSettings from "@/admin/components/settings/CommunicationSettings";
+import StoreSettings from "@/admin/components/settings/StoreSettings";
+import CommissionSettings from "@/admin/components/settings/CommissionSettings";
 
 const AdminSettings = () => {
   const { t } = useI18n();
@@ -150,29 +156,75 @@ const AdminSettings = () => {
         </div>
       </div>
 
-      <PricingSettings
-        settings={settings}
-        onChange={(key, value) => setSettings(s => ({ ...s, [key]: value }))}
-      />
+      <Tabs defaultValue="general" dir="rtl">
+        <TabsList className="flex flex-wrap h-auto gap-1 bg-secondary/30 p-1 rounded-xl">
+          <TabsTrigger value="general" className="text-xs">⚙️ عام</TabsTrigger>
+          <TabsTrigger value="pricing" className="text-xs">💰 التسعيرة</TabsTrigger>
+          <TabsTrigger value="delivery" className="text-xs">🛵 تسعير التوصيل</TabsTrigger>
+          <TabsTrigger value="commissions" className="text-xs">📊 العمولات</TabsTrigger>
+          <TabsTrigger value="payment" className="text-xs">💳 الدفع</TabsTrigger>
+          <TabsTrigger value="drivers" className="text-xs">🚗 السائقين</TabsTrigger>
+          <TabsTrigger value="stores" className="text-xs">🏪 المتاجر</TabsTrigger>
+          <TabsTrigger value="communication" className="text-xs">💬 التواصل</TabsTrigger>
+          <TabsTrigger value="security" className="text-xs">🔒 الأمان</TabsTrigger>
+          <TabsTrigger value="branding" className="text-xs">🎨 العلامة التجارية</TabsTrigger>
+          <TabsTrigger value="geo" className="text-xs">🌍 الجغرافيا</TabsTrigger>
+          <TabsTrigger value="visibility" className="text-xs">👁️ الإظهار</TabsTrigger>
+          <TabsTrigger value="languages" className="text-xs">🌐 اللغات</TabsTrigger>
+        </TabsList>
 
-      <GeneralSettings
-        settings={settings}
-        onChange={(key, value) => setSettings(s => ({ ...s, [key]: value }))}
-      />
+        <TabsContent value="general" className="mt-4">
+          <GeneralSettings settings={settings} onChange={(key, value) => setSettings(s => ({ ...s, [key]: value }))} />
+        </TabsContent>
 
-      <DeliveryPricingSettings
-        pricing={deliveryPricing}
-        onChange={(key, value) => setDeliveryPricing(s => ({ ...s, [key]: value }))}
-        onReset={handleResetDeliveryPricing}
-      />
+        <TabsContent value="pricing" className="mt-4">
+          <PricingSettings settings={settings} onChange={(key, value) => setSettings(s => ({ ...s, [key]: value }))} />
+        </TabsContent>
 
-      <PaymentSettings />
+        <TabsContent value="delivery" className="mt-4">
+          <DeliveryPricingSettings pricing={deliveryPricing} onChange={(key, value) => setDeliveryPricing(s => ({ ...s, [key]: value }))} onReset={handleResetDeliveryPricing} />
+        </TabsContent>
 
-      <GeoSettings />
+        <TabsContent value="commissions" className="mt-4">
+          <CommissionSettings />
+        </TabsContent>
 
-      <VisibilitySettings />
+        <TabsContent value="payment" className="mt-4">
+          <PaymentSettings />
+        </TabsContent>
 
-      <LanguageManagement />
+        <TabsContent value="drivers" className="mt-4">
+          <DriverSettings />
+        </TabsContent>
+
+        <TabsContent value="stores" className="mt-4">
+          <StoreSettings />
+        </TabsContent>
+
+        <TabsContent value="communication" className="mt-4">
+          <CommunicationSettings />
+        </TabsContent>
+
+        <TabsContent value="security" className="mt-4">
+          <SecuritySettings />
+        </TabsContent>
+
+        <TabsContent value="branding" className="mt-4">
+          <BrandingSettings />
+        </TabsContent>
+
+        <TabsContent value="geo" className="mt-4">
+          <GeoSettings />
+        </TabsContent>
+
+        <TabsContent value="visibility" className="mt-4">
+          <VisibilitySettings />
+        </TabsContent>
+
+        <TabsContent value="languages" className="mt-4">
+          <LanguageManagement />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
