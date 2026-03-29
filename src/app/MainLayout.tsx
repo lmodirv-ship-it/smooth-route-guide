@@ -9,6 +9,7 @@ import GlobalNotificationListener from "@/components/GlobalNotificationListener"
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import VoiceOrderButton from "@/components/VoiceOrderButton";
+import FloatingCommunityButton from "@/components/FloatingCommunityButton";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
 import logo from "@/assets/hn-driver-badge.png";
 import partnerHibaEco from "@/assets/partner-hiba-eco.png";
@@ -73,6 +74,7 @@ const MainLayout = () => (
     <div className="h-11" />
     <FloatingChatButton />
     <VoiceOrderButton />
+    <FloatingCommunityButton />
     <Outlet />
     <GlobalContactFooter />
   </>
