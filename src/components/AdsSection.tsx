@@ -48,22 +48,22 @@ const AdSlot = ({ ads, slotNumber }: { ads: Ad[]; slotNumber: number }) => {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.5 }}
-        className="w-full h-full flex items-center justify-center p-3"
+        className="w-full h-full flex items-center justify-center"
       >
         {current.content_type === "image" && current.image_url ? (
           current.link_url ? (
             <a href={current.link_url} target="_blank" rel="noopener noreferrer" className="w-full h-full">
-              <img src={current.image_url} alt={current.title} className="w-full h-full object-cover rounded-lg" />
+              <img src={current.image_url} alt={current.title} className="w-full h-full object-cover" />
             </a>
           ) : (
-            <img src={current.image_url} alt={current.title} className="w-full h-full object-cover rounded-lg" />
+            <img src={current.image_url} alt={current.title} className="w-full h-full object-cover" />
           )
         ) : (
-          <div className="text-center space-y-2">
-            {current.title && <h4 className="text-sm font-bold text-foreground">{current.title}</h4>}
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 p-4">
+            {current.title && <h4 className="text-sm font-bold text-foreground mb-1">{current.title}</h4>}
             {current.content_text && <p className="text-xs text-muted-foreground leading-relaxed">{current.content_text}</p>}
             {current.link_url && (
-              <a href={current.link_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
+              <a href={current.link_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline mt-2">
                 المزيد →
               </a>
             )}
@@ -72,11 +72,10 @@ const AdSlot = ({ ads, slotNumber }: { ads: Ad[]; slotNumber: number }) => {
       </motion.div>
     </AnimatePresence>
   ) : (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="text-center space-y-1">
-        <span className="text-2xl">📺</span>
-        <p className="text-xs text-muted-foreground/50">Ad {slotNumber}</p>
-      </div>
+    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-muted/30 to-muted/10">
+      <span className="text-4xl mb-2">📺</span>
+      <p className="text-sm font-semibold text-muted-foreground/60">Ad {slotNumber}</p>
+      <p className="text-xs text-muted-foreground/40 mt-1">Your ad here</p>
     </div>
   );
 
@@ -143,7 +142,7 @@ const AdsSection = () => {
           </h2>
           <p className="text-muted-foreground mt-2">Advertising Screens</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 max-w-7xl mx-auto">
           {[1, 2, 3, 4].map(slot => (
             <AdSlot key={slot} ads={ads} slotNumber={slot} />
           ))}
