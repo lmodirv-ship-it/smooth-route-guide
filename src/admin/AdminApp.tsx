@@ -27,6 +27,7 @@ import AdminRestaurants from "./pages/AdminRestaurants";
 import ZonesManagement from "./pages/ZonesManagement";
 import AdminSettings from "./pages/Settings";
 import SetupAdmin from "./pages/SetupAdmin";
+import AdsManagement from "./pages/AdsManagement";
 
 // Call Center layout & pages
 import CallCenterLayout from "./layouts/CallCenterLayout";
@@ -82,6 +83,7 @@ const AdminApp = () => (
               <Route path="call-center" element={<AdminCallCenter />} />
               <Route path="restaurants" element={<AdminRestaurants />} />
               <Route path="zones" element={<ZonesManagement />} />
+              <Route path="ads" element={<AdsManagement />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
 
