@@ -254,8 +254,8 @@ const RegisteredUsers = () => {
         onOpenChange={setDetailOpen}
         currentUserId={currentUserId}
         onUserUpdated={(updated) => {
-          setUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
-          setDetailUser(updated);
+          setUsers(prev => prev.map(u => u.id === updated.id ? { ...u, ...updated } : u));
+          setDetailUser(prev => prev ? { ...prev, ...updated } : prev);
         }}
       />
     </motion.div>
