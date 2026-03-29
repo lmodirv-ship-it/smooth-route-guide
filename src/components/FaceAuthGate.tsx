@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as faceapi from "face-api.js";
 import { supabase } from "@/integrations/supabase/client";
-import { Camera, ShieldAlert, ScanFace, Loader2, X, CheckCircle } from "lucide-react";
+import { Camera, ShieldAlert, ScanFace, Loader2, X, CheckCircle, Lock, Eye, EyeOff } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
