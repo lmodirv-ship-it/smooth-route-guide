@@ -30,6 +30,7 @@ import SetupAdmin from "@/admin/pages/SetupAdmin";
 import DriverPackages from "@/admin/pages/DriverPackages";
 import AdminCommunityChat from "@/admin/pages/AdminCommunityChat";
 import CityActivation from "@/admin/pages/CityActivation";
+import ThemesPage from "@/admin/pages/Themes";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
@@ -89,6 +90,7 @@ export const adminRouteElements = (
       <Route path="smart-assistant" element={<SmartAssistantPage />} />
       <Route path="sub-assistants" element={<SubAssistantsPage />} />
       <Route path="driver-packages" element={<DriverPackages />} />
+      <Route path="themes" element={<ThemesPage />} />
       <Route path="settings" element={<AdminSettings />} />
       <Route path="messaging" element={<InternalMessaging />} />
       <Route path="community-chat" element={<AdminCommunityChat />} />
