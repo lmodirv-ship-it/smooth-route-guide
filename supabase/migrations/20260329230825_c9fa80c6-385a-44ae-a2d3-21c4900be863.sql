@@ -1,0 +1,2 @@
+ALTER TABLE public.ads ADD COLUMN IF NOT EXISTS start_date timestamp with time zone DEFAULT now();
+ALTER TABLE public.ads ADD COLUMN IF NOT EXISTS end_date timestamp with time zone DEFAULT (now() + interval '30 days');

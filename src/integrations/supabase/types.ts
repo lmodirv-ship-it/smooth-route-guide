@@ -20,12 +20,14 @@ export type Database = {
           content_type: string
           created_at: string
           duration_seconds: number
+          end_date: string | null
           id: string
           image_url: string | null
           is_active: boolean
           link_url: string | null
           slot_number: number
           sort_order: number
+          start_date: string | null
           title: string
           updated_at: string
         }
@@ -34,12 +36,14 @@ export type Database = {
           content_type?: string
           created_at?: string
           duration_seconds?: number
+          end_date?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
           link_url?: string | null
           slot_number: number
           sort_order?: number
+          start_date?: string | null
           title?: string
           updated_at?: string
         }
@@ -48,12 +52,14 @@ export type Database = {
           content_type?: string
           created_at?: string
           duration_seconds?: number
+          end_date?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
           link_url?: string | null
           slot_number?: number
           sort_order?: number
+          start_date?: string | null
           title?: string
           updated_at?: string
         }
