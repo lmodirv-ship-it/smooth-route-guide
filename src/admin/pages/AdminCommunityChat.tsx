@@ -13,7 +13,7 @@ type Msg = {
   content: string;
   user_id: string;
   created_at: string;
-  profile?: { name: string; avatar_url: string | null } | null;
+  profile?: { name: string; avatar_url: string | null; user_code: string | null } | null;
 };
 
 const AdminCommunityChat = () => {
@@ -38,14 +38,14 @@ const AdminCommunityChat = () => {
       const userIds = [...new Set(data.map((m) => m.user_id))];
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, name, avatar_url")
+        .select("id, name, avatar_url, user_code")
         .in("id", userIds);
       const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
       setMessages(data.map((m) => ({ ...m, profile: profileMap.get(m.user_id) })));
       setOnlineUsers(
         userIds.map((uid) => ({
           id: uid,
-          name: profileMap.get(uid)?.name || "مستخدم",
+          name: profileMap.get(uid)?.user_code || profileMap.get(uid)?.name || "مستخدم",
         }))
       );
     }
@@ -152,8 +152,8 @@ const AdminCommunityChat = () => {
                     : "bg-muted text-foreground rounded-bl-sm"
                 }`}>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-bold opacity-80">
-                      {msg.profile?.name || "مستخدم"}
+                    <span className="text-xs font-bold opacity-80 font-mono">
+                      {msg.profile?.user_code || msg.profile?.name || "مستخدم"}
                     </span>
                     {isMuted && <ShieldAlert className="w-3 h-3 text-destructive" />}
                   </div>
