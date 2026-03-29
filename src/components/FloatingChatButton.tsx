@@ -108,7 +108,7 @@ const FloatingChatButton = () => {
     });
   };
 
-  return (
+  return createPortal(
     <>
       <InAppCallDialog
         incomingCall={inAppCall.incomingCall}
@@ -127,7 +127,7 @@ const FloatingChatButton = () => {
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="fixed bottom-36 right-4 z-50 flex max-h-[70vh] w-80 flex-col overflow-hidden rounded-[1.6rem] glass-card"
+            className="fixed bottom-36 right-4 z-[9999] flex max-h-[70vh] w-80 flex-col overflow-hidden rounded-[1.6rem] glass-card"
             dir={dir}
           >
             <div className="p-3 border-b border-border flex items-center justify-between">
@@ -229,13 +229,14 @@ const FloatingChatButton = () => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setOpen(!open)}
-        className="glass-button fixed bottom-20 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full"
+        className="glass-button fixed bottom-20 right-4 z-[9999] flex h-12 w-12 items-center justify-center rounded-full"
         title="جهات الاتصال والدردشة"
         data-active={open}
       >
         {open ? <X className="w-5 h-5" /> : <MessagesSquare className="w-5 h-5" />}
       </motion.button>
-    </>
+    </>,
+    document.body
   );
 };
 

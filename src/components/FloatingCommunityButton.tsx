@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { Users } from "lucide-react";
 
@@ -9,6 +10,7 @@ interface Props {
 /**
  * Floating button to access Community Chat.
  * Hidden when already on the community page.
+ * Uses portal to ensure fixed positioning works correctly.
  */
 const FloatingCommunityButton = ({ communityPath = "/community" }: Props) => {
   const navigate = useNavigate();
@@ -16,15 +18,16 @@ const FloatingCommunityButton = ({ communityPath = "/community" }: Props) => {
 
   if (location.pathname.includes("community")) return null;
 
-  return (
+  return createPortal(
     <motion.button
       whileTap={{ scale: 0.9 }}
       onClick={() => navigate(communityPath)}
-      className="fixed bottom-24 right-4 z-50 w-12 h-12 rounded-full bg-emerald-500 text-white shadow-lg flex items-center justify-center hover:bg-emerald-600 transition-colors"
+      className="fixed bottom-24 right-4 z-[9999] w-12 h-12 rounded-full bg-emerald-500 text-white shadow-lg flex items-center justify-center hover:bg-emerald-600 transition-colors"
       title="مجتمع HN"
     >
       <Users className="w-5 h-5" />
-    </motion.button>
+    </motion.button>,
+    document.body
   );
 };
 
