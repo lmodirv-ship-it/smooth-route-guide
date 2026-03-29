@@ -296,7 +296,7 @@ export default function VisibilitySettings() {
           className="gap-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
           onClick={() => {
             const all: Record<string, boolean> = {};
-            SECTIONS.forEach(s => { all[s.key] = false; });
+            ALL_SECTIONS.forEach(s => { all[s.key] = false; });
             setVisibility(all);
           }}
         >
@@ -308,7 +308,7 @@ export default function VisibilitySettings() {
           className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
           onClick={() => {
             const all: Record<string, boolean> = {};
-            SECTIONS.forEach(s => { all[s.key] = true; });
+            ALL_SECTIONS.forEach(s => { all[s.key] = true; });
             setVisibility(all);
           }}
         >
@@ -316,16 +316,45 @@ export default function VisibilitySettings() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {SECTIONS.map(s => (
-          <div key={s.key} className="flex items-center justify-between p-3 rounded-lg border border-border bg-secondary/30">
-            <Switch
-              checked={visibility[s.key] !== false}
-              onCheckedChange={v => setVisibility(prev => ({ ...prev, [s.key]: v }))}
-            />
-            <div className="flex items-center gap-2 text-sm text-foreground">
-              {visibility[s.key] !== false ? <Eye className="w-4 h-4 text-primary" /> : <EyeOff className="w-4 h-4 text-muted-foreground" />}
-              {s.label}
+      {/* Grouped sections */}
+      <div className="space-y-5">
+        {SECTION_GROUPS.map(group => (
+          <div key={group.group} className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex gap-1">
+                <button
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => {
+                    const updated = { ...visibility };
+                    group.items.forEach(s => { updated[s.key] = true; });
+                    setVisibility(updated);
+                  }}
+                >إظهار المجموعة</button>
+                <span className="text-muted-foreground text-xs">|</span>
+                <button
+                  className="text-xs text-destructive hover:underline"
+                  onClick={() => {
+                    const updated = { ...visibility };
+                    group.items.forEach(s => { updated[s.key] = false; });
+                    setVisibility(updated);
+                  }}
+                >إخفاء المجموعة</button>
+              </div>
+              <h4 className="text-sm font-bold text-foreground">{group.group}</h4>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {group.items.map(s => (
+                <div key={s.key} className="flex items-center justify-between p-3 rounded-lg border border-border bg-secondary/30">
+                  <Switch
+                    checked={visibility[s.key] !== false}
+                    onCheckedChange={v => setVisibility(prev => ({ ...prev, [s.key]: v }))}
+                  />
+                  <div className="flex items-center gap-2 text-sm text-foreground">
+                    {visibility[s.key] !== false ? <Eye className="w-4 h-4 text-primary" /> : <EyeOff className="w-4 h-4 text-muted-foreground" />}
+                    {s.label}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ))}
