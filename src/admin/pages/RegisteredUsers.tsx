@@ -198,7 +198,7 @@ const RegisteredUsers = () => {
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" dir="rtl">
+                    <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => openDetail(u)}>
                         <Eye className="w-4 h-4 ml-2" /> عرض الملف الكامل
                       </DropdownMenuItem>

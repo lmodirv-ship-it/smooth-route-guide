@@ -170,6 +170,8 @@ const AdminSettings = () => {
 
       <GeoSettings />
 
+      <VisibilitySettings />
+
       <LanguageManagement />
     </div>
   );
