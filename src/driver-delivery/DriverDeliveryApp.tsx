@@ -56,6 +56,7 @@ const DeliveryDriverLayout = () => {
         </div>
       </div>
       <div className="h-12" />
+      <FloatingChatButton />
       <FloatingCommunityButton />
     </>
   );
