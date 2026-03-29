@@ -38,6 +38,7 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import RequireRole from "@/components/RequireRole";
 import FloatingCommunityButton from "@/components/FloatingCommunityButton";
 import FloatingChatButton from "@/components/FloatingChatButton";
+import ThemeLoader from "@/components/ThemeLoader";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,7 @@ const DriverRideApp = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <ThemeLoader />
         <BrowserRouter>
           <Routes>
             {/* Auth */}

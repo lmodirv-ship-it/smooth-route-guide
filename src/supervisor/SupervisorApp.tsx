@@ -25,6 +25,8 @@ import SupervisorRestaurants from "@/admin/pages/supervisor/SupervisorRestaurant
 import InternalMessaging from "@/admin/pages/callcenter/InternalMessaging";
 import CommunityChat from "@/pages/CommunityChat";
 
+import ThemeLoader from "@/components/ThemeLoader";
+
 const queryClient = new QueryClient();
 
 const SupervisorApp = () => (
@@ -33,6 +35,7 @@ const SupervisorApp = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <ThemeLoader />
         <BrowserRouter>
           <Routes>
             {/* Login */}
