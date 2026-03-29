@@ -1,16 +1,17 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Users, Search, Filter, Loader2, Copy, Check, UserCog, Save, KeyRound, Eye, EyeOff } from "lucide-react";
+import { Users, Search, Filter, Loader2, Copy, Check, UserCog, Save, KeyRound, Eye, EyeOff, MoreHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import UserDetailSheet from "@/admin/components/UserDetailSheet";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -42,31 +43,23 @@ const RegisteredUsers = () => {
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [detailUser, setDetailUser] = useState<UserRecord | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCurrentUserId(data.user?.id ?? null));
   }, []);
-  const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState<string>("all");
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [roleDialogOpen, setRoleDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
-  const [saving, setSaving] = useState(false);
-  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
-  const [passwordUser, setPasswordUser] = useState<UserRecord | null>(null);
-  const [newPassword, setNewPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [savingPassword, setSavingPassword] = useState(false);
 
   const fetchUsers = async () => {
     setLoading(true);
-    const { data: profiles, error: profilesError } = await supabase
+    const { data: profiles, error } = await supabase
       .from("profiles")
       .select("id, name, email, phone, created_at, user_code, is_confirmed")
       .order("created_at", { ascending: false });
 
-    if (profilesError) {
+    if (error) {
       toast({ title: "خطأ في جلب المستخدمين", variant: "destructive" });
       setLoading(false);
       return;
@@ -80,7 +73,7 @@ const RegisteredUsers = () => {
       roleMap.set(r.user_id, existing);
     });
 
-    const mapped: UserRecord[] = (profiles || []).map(p => ({
+    setUsers((profiles || []).map(p => ({
       id: p.id,
       name: p.name || "—",
       phone: p.phone || "—",
@@ -89,9 +82,7 @@ const RegisteredUsers = () => {
       createdAt: p.created_at,
       userCode: (p as any).user_code || "—",
       isConfirmed: (p as any).is_confirmed ?? false,
-    }));
-
-    setUsers(mapped);
+    })));
     setLoading(false);
   };
 
@@ -99,147 +90,26 @@ const RegisteredUsers = () => {
 
   const filtered = useMemo(() => {
     return users.filter(u => {
-      const matchSearch = !search || u.name.includes(search) || u.email.includes(search) || u.phone.includes(search);
+      const matchSearch = !search || u.name.includes(search) || u.email.includes(search) || u.phone.includes(search) || u.userCode.includes(search);
       const matchRole = roleFilter === "all" || u.roles.includes(roleFilter);
       return matchSearch && matchRole;
     });
   }, [users, search, roleFilter]);
 
-  const handleCopyId = (id: string) => {
-    navigator.clipboard.writeText(id);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+  const openDetail = (user: UserRecord) => {
+    setDetailUser(user);
+    setDetailOpen(true);
   };
 
-  const openPasswordDialog = (user: UserRecord) => {
-    setPasswordUser(user);
-    setNewPassword("");
-    setShowPassword(false);
-    setPasswordDialogOpen(true);
-  };
-
-  const handleChangePassword = async () => {
-    if (!passwordUser || savingPassword || newPassword.length < 6) return;
-    setSavingPassword(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-reset-password`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.access_token}`,
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          },
-          body: JSON.stringify({ user_id: passwordUser.id, new_password: newPassword }),
-        }
-      );
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "خطأ");
-      toast({ title: `✅ تم تغيير كلمة مرور "${passwordUser.name}" بنجاح` });
-      setPasswordDialogOpen(false);
-    } catch (e: any) {
-      toast({ title: "خطأ في تغيير كلمة المرور", description: e.message, variant: "destructive" });
-    } finally {
-      setSavingPassword(false);
+  const handleQuickRole = async (user: UserRecord, role: string) => {
+    const { error } = await supabase.from("user_roles").insert({ user_id: user.id, role: role as AppRole });
+    if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
+    if (role === "driver" || role === "delivery") {
+      const { data: ex } = await supabase.from("drivers").select("id").eq("user_id", user.id).maybeSingle();
+      if (!ex) await supabase.from("drivers").insert({ user_id: user.id, status: "inactive", driver_type: role === "delivery" ? "delivery" : "ride" });
     }
-  };
-
-  const openRoleDialog = (user: UserRecord) => {
-    setSelectedUser(user);
-    setSelectedRoles([...user.roles]);
-    setRoleDialogOpen(true);
-  };
-
-  const isSelf = selectedUser?.id === currentUserId;
-
-  const toggleRole = (role: string) => {
-    setSelectedRoles(prev => {
-      if (prev.includes(role)) {
-        // Prevent removing admin from self
-        if (role === "admin" && isSelf) {
-          toast({ title: "⚠️ لا يمكنك إزالة دور المسؤول عن نفسك", variant: "destructive" });
-          return prev;
-        }
-        if (prev.length === 1) return prev; // Must have at least one role
-        return prev.filter(r => r !== role);
-      }
-      return [...prev, role];
-    });
-  };
-
-  const handleSaveRoles = async () => {
-    if (!selectedUser || saving) return;
-
-    // Prevent admin from removing admin role from themselves
-    if (selectedUser.id === currentUserId && !selectedRoles.includes("admin")) {
-      toast({ title: "⚠️ لا يمكنك إزالة دور المسؤول عن نفسك", variant: "destructive" });
-      return;
-    }
-    
-    // Check if roles actually changed
-    const sortedOld = [...selectedUser.roles].sort().join(",");
-    const sortedNew = [...selectedRoles].sort().join(",");
-    if (sortedOld === sortedNew) {
-      setRoleDialogOpen(false);
-      return;
-    }
-
-    setSaving(true);
-    try {
-      // Delete all existing roles
-      const { error: delError } = await supabase
-        .from("user_roles")
-        .delete()
-        .eq("user_id", selectedUser.id);
-      if (delError) throw delError;
-
-      // Insert all selected roles
-      const inserts = selectedRoles.map(role => ({
-        user_id: selectedUser.id,
-        role: role as AppRole,
-      }));
-      const { error: insError } = await supabase
-        .from("user_roles")
-        .insert(inserts);
-      if (insError) throw insError;
-
-      // If driver role added, ensure driver record exists
-      if (selectedRoles.includes("driver") && !selectedUser.roles.includes("driver")) {
-        const { data: existing } = await supabase
-          .from("drivers")
-          .select("id")
-          .eq("user_id", selectedUser.id)
-          .maybeSingle();
-        if (!existing) {
-          await supabase.from("drivers").insert({ user_id: selectedUser.id, status: "inactive", driver_type: "ride" });
-        }
-      }
-
-      // If delivery role added, ensure driver record exists with delivery type
-      if (selectedRoles.includes("delivery") && !selectedUser.roles.includes("delivery")) {
-        const { data: existing } = await supabase
-          .from("drivers")
-          .select("id")
-          .eq("user_id", selectedUser.id)
-          .maybeSingle();
-        if (!existing) {
-          await supabase.from("drivers").insert({ user_id: selectedUser.id, status: "inactive", driver_type: "delivery" });
-        } else {
-          await supabase.from("drivers").update({ driver_type: "delivery" }).eq("user_id", selectedUser.id);
-        }
-      }
-
-      const roleNames = selectedRoles.map(r => ROLE_LABELS[r] || r).join("، ");
-      toast({ title: `✅ تم تحديث أدوار "${selectedUser.name}" إلى: ${roleNames}` });
-      setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, roles: [...selectedRoles] } : u));
-      setRoleDialogOpen(false);
-    } catch (e: any) {
-      toast({ title: "خطأ في تحديث الأدوار", description: e.message, variant: "destructive" });
-    } finally {
-      setSaving(false);
-    }
+    toast({ title: `✅ تم تعيين "${user.userCode}" كـ ${ROLE_LABELS[role] || role}` });
+    setUsers(prev => prev.map(x => x.id === user.id ? { ...x, roles: [...x.roles, role] } : x));
   };
 
   if (loading) {
@@ -259,7 +129,7 @@ const RegisteredUsers = () => {
       <div className="flex gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="بحث بالاسم أو البريد أو الهاتف" className="pr-10" />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="بحث بالاسم، البريد، الهاتف أو الرمز" className="pr-10" />
         </div>
         <Select value={roleFilter} onValueChange={setRoleFilter}>
           <SelectTrigger className="w-40">
@@ -279,10 +149,9 @@ const RegisteredUsers = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="text-right">الاسم</TableHead>
               <TableHead className="text-center">الرمز</TableHead>
+              <TableHead className="text-right">الاسم</TableHead>
               <TableHead className="text-right">البريد</TableHead>
-              <TableHead className="text-right">الهاتف</TableHead>
               <TableHead className="text-center">الأدوار</TableHead>
               <TableHead className="text-center">التأكيد</TableHead>
               <TableHead className="text-center">التسجيل</TableHead>
@@ -292,106 +161,75 @@ const RegisteredUsers = () => {
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
-                  لا يوجد مستخدمون
-                </TableCell>
+                <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">لا يوجد مستخدمون</TableCell>
               </TableRow>
             ) : filtered.map(u => (
               <TableRow key={u.id}>
-                <TableCell className="font-medium text-right">{u.name}</TableCell>
                 <TableCell className="text-center">
-                  <Badge variant="outline" className="font-mono text-xs">{u.userCode}</Badge>
+                  <Badge
+                    variant="outline"
+                    className="font-mono text-xs cursor-pointer hover:bg-primary/10 transition-colors"
+                    onClick={() => openDetail(u)}
+                  >
+                    {u.userCode}
+                  </Badge>
                 </TableCell>
+                <TableCell className="font-medium text-right">{u.name}</TableCell>
                 <TableCell className="text-right text-muted-foreground text-sm">{u.email}</TableCell>
-                <TableCell className="text-right text-muted-foreground text-sm">{u.phone}</TableCell>
                 <TableCell className="text-center">
                   <div className="flex flex-wrap justify-center gap-1">
                     {u.roles.map(role => (
-                      <Badge key={role} className={ROLE_COLORS[role] || ROLE_COLORS.user}>
+                      <Badge key={role} className={`text-xs ${ROLE_COLORS[role] || ROLE_COLORS.user}`}>
                         {ROLE_LABELS[role] || role}
                       </Badge>
                     ))}
                   </div>
                 </TableCell>
                 <TableCell className="text-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={u.isConfirmed ? "text-green-600" : "text-muted-foreground"}
-                    onClick={async () => {
-                      const newVal = !u.isConfirmed;
-                      const { error } = await supabase.from("profiles").update({ is_confirmed: newVal } as any).eq("id", u.id);
-                      if (error) {
-                        toast({ title: "خطأ", description: error.message, variant: "destructive" });
-                        return;
-                      }
-                      setUsers(prev => prev.map(x => x.id === u.id ? { ...x, isConfirmed: newVal } : x));
-                      toast({ title: newVal ? "✅ تم التأكيد" : "❌ تم إلغاء التأكيد" });
-                    }}
-                  >
-                    {u.isConfirmed ? <Check className="w-4 h-4 text-green-600" /> : "—"}
-                  </Button>
+                  {u.isConfirmed ? <Check className="w-4 h-4 text-green-600 mx-auto" /> : <span className="text-muted-foreground">—</span>}
                 </TableCell>
                 <TableCell className="text-center text-muted-foreground text-xs">
                   {new Date(u.createdAt).toLocaleDateString("ar-MA")}
                 </TableCell>
                 <TableCell className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <Button variant="outline" size="sm" onClick={() => openRoleDialog(u)} className="gap-1.5 text-xs">
-                      <UserCog className="w-3.5 h-3.5" />
-                      الأدوار
-                    </Button>
-                    {/* Quick supervisor assignment */}
-                    {!u.roles.includes("moderator") && !u.roles.includes("admin") && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5 text-xs border-orange-500/30 text-orange-600 hover:bg-orange-500/10"
-                        onClick={async () => {
-                          const { error } = await supabase.from("user_roles").insert({ user_id: u.id, role: "moderator" as AppRole });
-                          if (error) {
-                            toast({ title: "خطأ في تعيين المشرف", description: error.message, variant: "destructive" });
-                            return;
-                          }
-                          toast({ title: `✅ تم تعيين "${u.name}" كمشرف` });
-                          setUsers(prev => prev.map(x => x.id === u.id ? { ...x, roles: [...x.roles, "moderator"] } : x));
-                        }}
-                      >
-                        🛡️ تعيين مشرف
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <MoreHorizontal className="w-4 h-4" />
                       </Button>
-                    )}
-                    {/* Quick delivery role assignment */}
-                    {(u.roles.includes("user") || u.roles.includes("driver")) && !u.roles.includes("delivery") && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5 text-xs border-success/30 text-success hover:bg-success/10"
-                        onClick={async () => {
-                          const newRoles = [...u.roles, "delivery"];
-                          const { error } = await supabase.from("user_roles").insert({ user_id: u.id, role: "delivery" as AppRole });
-                          if (error) {
-                            toast({ title: "خطأ في إضافة دور التوصيل", description: error.message, variant: "destructive" });
-                            return;
-                          }
-                          const { data: existing } = await supabase.from("drivers").select("id").eq("user_id", u.id).maybeSingle();
-                          if (!existing) {
-                            await supabase.from("drivers").insert({ user_id: u.id, status: "inactive", driver_type: "delivery" });
-                          }
-                          toast({ title: `✅ تم تعيين "${u.name}" كسائق توصيل` });
-                          setUsers(prev => prev.map(x => x.id === u.id ? { ...x, roles: newRoles } : x));
-                        }}
-                      >
-                        🚚 تعيين توصيل
-                      </Button>
-                    )}
-                    <Button variant="outline" size="sm" onClick={() => openPasswordDialog(u)} className="gap-1.5 text-xs border-orange-500/30 text-orange-600 hover:bg-orange-500/10">
-                      <KeyRound className="w-3.5 h-3.5" />
-                      كلمة السر
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleCopyId(u.id)} title="نسخ ID">
-                      {copiedId === u.id ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
-                    </Button>
-                  </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => openDetail(u)}>
+                        <Eye className="w-4 h-4 ml-2" /> عرض الملف الكامل
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      {!u.roles.includes("moderator") && !u.roles.includes("admin") && (
+                        <DropdownMenuItem onClick={() => handleQuickRole(u, "moderator")}>
+                          🛡️ تعيين كمشرف
+                        </DropdownMenuItem>
+                      )}
+                      {!u.roles.includes("agent") && (
+                        <DropdownMenuItem onClick={() => handleQuickRole(u, "agent")}>
+                          📞 تعيين كمركز اتصال
+                        </DropdownMenuItem>
+                      )}
+                      {!u.roles.includes("delivery") && (
+                        <DropdownMenuItem onClick={() => handleQuickRole(u, "delivery")}>
+                          🚚 تعيين كسائق توصيل
+                        </DropdownMenuItem>
+                      )}
+                      {!u.roles.includes("driver") && (
+                        <DropdownMenuItem onClick={() => handleQuickRole(u, "driver")}>
+                          🚗 تعيين كسائق ركاب
+                        </DropdownMenuItem>
+                      )}
+                      {!u.roles.includes("store_owner") && (
+                        <DropdownMenuItem onClick={() => handleQuickRole(u, "store_owner")}>
+                          🏪 تعيين كصاحب محل
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
@@ -399,106 +237,17 @@ const RegisteredUsers = () => {
         </Table>
       </div>
 
-      {/* Multi-Role Dialog */}
-      <Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
-        <DialogContent className="max-w-sm" dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="text-right flex items-center gap-2">
-              <UserCog className="w-5 h-5 text-primary" />
-              تعيين الأدوار
-            </DialogTitle>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4">
-              <div className="p-3 rounded-lg bg-secondary/50 border border-border">
-                <p className="font-semibold text-foreground">{selectedUser.name}</p>
-                <p className="text-xs text-muted-foreground">{selectedUser.email}</p>
-              </div>
-              <p className="text-sm text-muted-foreground">اختر الأدوار (يمكنك تحديد أكثر من دور):</p>
-              <div className="space-y-2">
-                {Object.entries(ROLE_LABELS).map(([key, label]) => (
-                  <label
-                    key={key}
-                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                      selectedRoles.includes(key)
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:bg-muted/50"
-                    }`}
-                  >
-                    <Checkbox
-                      checked={selectedRoles.includes(key)}
-                      onCheckedChange={() => toggleRole(key)}
-                    />
-                    <Badge className={ROLE_COLORS[key] || ROLE_COLORS.user}>
-                      {label}
-                    </Badge>
-                  </label>
-                ))}
-              </div>
-              <Button
-                onClick={handleSaveRoles}
-                disabled={saving || selectedRoles.length === 0}
-                className="w-full gap-2"
-              >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                حفظ الأدوار
-              </Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Password Change Dialog */}
-      <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
-        <DialogContent className="max-w-sm" dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="text-right flex items-center gap-2">
-              <KeyRound className="w-5 h-5 text-orange-500" />
-              تغيير كلمة المرور
-            </DialogTitle>
-          </DialogHeader>
-          {passwordUser && (
-            <div className="space-y-4">
-              <div className="p-3 rounded-lg bg-secondary/50 border border-border">
-                <p className="font-semibold text-foreground">{passwordUser.name}</p>
-                <p className="text-xs text-muted-foreground">{passwordUser.email}</p>
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">أدخل كلمة المرور الجديدة:</p>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    value={newPassword}
-                    onChange={e => setNewPassword(e.target.value)}
-                    placeholder="كلمة المرور الجديدة (6 أحرف على الأقل)"
-                    className="pl-10"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </Button>
-                </div>
-                {newPassword.length > 0 && newPassword.length < 6 && (
-                  <p className="text-xs text-destructive">يجب أن تكون 6 أحرف على الأقل</p>
-                )}
-              </div>
-              <Button
-                onClick={handleChangePassword}
-                disabled={savingPassword || newPassword.length < 6}
-                className="w-full gap-2"
-              >
-                {savingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
-                تغيير كلمة المرور
-              </Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* User Detail Sheet */}
+      <UserDetailSheet
+        user={detailUser}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        currentUserId={currentUserId}
+        onUserUpdated={(updated) => {
+          setUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
+          setDetailUser(updated);
+        }}
+      />
     </motion.div>
   );
 };
