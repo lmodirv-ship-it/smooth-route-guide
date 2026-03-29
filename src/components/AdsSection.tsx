@@ -72,11 +72,10 @@ const AdSlot = ({ ads, slotNumber }: { ads: Ad[]; slotNumber: number }) => {
       </motion.div>
     </AnimatePresence>
   ) : (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="text-center space-y-1">
-        <span className="text-2xl">📺</span>
-        <p className="text-xs text-muted-foreground/50">Ad {slotNumber}</p>
-      </div>
+    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-muted/30 to-muted/10">
+      <span className="text-4xl mb-2">📺</span>
+      <p className="text-sm font-semibold text-muted-foreground/60">Ad {slotNumber}</p>
+      <p className="text-xs text-muted-foreground/40 mt-1">Your ad here</p>
     </div>
   );
 
