@@ -81,19 +81,37 @@ const AdSlot = ({ ads, slotNumber }: { ads: Ad[]; slotNumber: number }) => {
   );
 
   return (
-    <div className="relative group">
-      <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-br from-primary/40 via-primary/10 to-primary/40 opacity-60 group-hover:opacity-100 transition-opacity" />
-      <div className="relative rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm overflow-hidden aspect-video min-h-[140px] shadow-lg shadow-primary/5">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
-        {slotAds.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
-            {slotAds.map((_, i) => (
-              <span key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === (currentIndex % slotAds.length) ? "bg-primary" : "bg-muted-foreground/30"}`} />
-            ))}
+    <div className="relative group" style={{ perspective: "800px" }}>
+      {/* Outer 3D box shadow layers */}
+      <div className="absolute inset-0 rounded-2xl bg-primary/10 translate-x-3 translate-y-3 blur-[1px]" />
+      <div className="absolute inset-0 rounded-2xl bg-primary/5 translate-x-5 translate-y-5 blur-[2px]" />
+
+      {/* Outer frame */}
+      <div className="relative rounded-2xl p-[3px] bg-gradient-to-br from-primary/60 via-primary/20 to-primary/60 shadow-[0_8px_32px_hsl(var(--primary)/0.2),inset_0_1px_0_hsl(var(--primary)/0.3)] group-hover:shadow-[0_12px_48px_hsl(var(--primary)/0.35)] transition-all duration-500"
+        style={{ transform: "rotateX(2deg) rotateY(-1deg)", transformStyle: "preserve-3d" }}>
+
+        {/* Inner frame with depth */}
+        <div className="rounded-xl p-[3px] bg-gradient-to-br from-card via-background to-card">
+          <div className="relative rounded-lg border border-border/60 bg-card/90 backdrop-blur-sm overflow-hidden aspect-video min-h-[200px] shadow-[inset_0_2px_8px_rgba(0,0,0,0.3),inset_0_-1px_4px_hsl(var(--primary)/0.1)]">
+            {/* Screen glare */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none z-[2]" />
+            <div className="absolute top-0 left-0 right-0 h-[30%] bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none z-[2]" />
+
+            {/* Dots indicator */}
+            {slotAds.length > 1 && (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                {slotAds.map((_, i) => (
+                  <span key={i} className={`w-2 h-2 rounded-full transition-all duration-300 ${i === (currentIndex % slotAds.length) ? "bg-primary scale-125 shadow-[0_0_6px_hsl(var(--primary)/0.6)]" : "bg-muted-foreground/30"}`} />
+                ))}
+              </div>
+            )}
+            {content}
           </div>
-        )}
-        {content}
+        </div>
       </div>
+
+      {/* Bottom "stand" */}
+      <div className="mx-auto w-[40%] h-1.5 rounded-b-full bg-gradient-to-r from-transparent via-primary/20 to-transparent mt-1" />
     </div>
   );
 };
