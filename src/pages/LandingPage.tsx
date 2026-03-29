@@ -75,6 +75,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [storeDialogOpen, setStoreDialogOpen] = useState(false);
   const lt = t.landing;
 
   useEffect(() => {
@@ -426,17 +427,17 @@ export default function LandingPage() {
           {/* ═══ 3 Role Cards — Glowing glass with inner blue light ═══ */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 max-w-4xl mx-auto">
             {[
-              { img: iconClientApp, label: dir === "rtl" ? "العميل" : "Client", desc: dir === "rtl" ? "اطلب رحلة أو توصيل" : "Book a ride or delivery", route: "/login" },
-              { img: iconVtcCar, label: "VTC Taxi", desc: dir === "rtl" ? "سائقون محترفون" : "Professional drivers", route: "/auth/driver" },
-              { img: iconDeliveryBike, label: "Livraisons Express", desc: dir === "rtl" ? "توصيل سريع" : "Fast delivery", route: "/delivery" },
-              { img: iconFleetMgmt, label: "Gestion Flotte", desc: dir === "rtl" ? "إدارة الأسطول" : "Fleet management", route: "/auth/client" },
+              { img: iconClientApp, label: dir === "rtl" ? "العميل" : "Client", desc: dir === "rtl" ? "اطلب رحلة أو توصيل" : "Book a ride or delivery", action: () => navigate("/login") },
+              { img: iconVtcCar, label: "VTC Taxi", desc: dir === "rtl" ? "سائقون محترفون" : "Professional drivers", action: () => navigate("/auth/driver") },
+              { img: iconDeliveryBike, label: "Livraisons Express", desc: dir === "rtl" ? "توصيل سريع" : "Fast delivery", action: () => navigate("/delivery") },
+              { img: iconStoreMarketplace, label: dir === "rtl" ? "متجر" : "Store", desc: dir === "rtl" ? "أضف محلك أو تسوّق" : "Add your shop or browse", action: () => setStoreDialogOpen(true) },
             ].map((cat, i) => (
               <motion.div
                 key={cat.label}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.3 + i * 0.12, duration: 0.5 }}
-                onClick={() => navigate(cat.route)}
+                onClick={cat.action}
                 whileHover={{ scale: 1.05, y: -6 }}
                 whileTap={{ scale: 0.97 }}
                 className="group relative rounded-2xl cursor-pointer overflow-hidden signage-3d-box"
@@ -449,6 +450,68 @@ export default function LandingPage() {
               </motion.div>
             ))}
           </div>
+
+          {/* Store Dialog */}
+          <Dialog open={storeDialogOpen} onOpenChange={setStoreDialogOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-center text-xl">
+                  {dir === "rtl" ? "المتجر" : "Store"}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3 mt-4">
+                {/* Login to existing store */}
+                <button
+                  onClick={() => { setStoreDialogOpen(false); navigate("/login"); }}
+                  className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-accent/50 transition-all group"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <LogIn className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="text-start">
+                    <p className="font-bold text-foreground">{dir === "rtl" ? "دخول إلى محلي" : "Login to my store"}</p>
+                    <p className="text-xs text-muted-foreground">{dir === "rtl" ? "لديك حساب مسجل بالفعل" : "Already have an account"}</p>
+                  </div>
+                </button>
+
+                {/* Add new store */}
+                <button
+                  onClick={() => { setStoreDialogOpen(false); navigate("/auth/store_owner"); }}
+                  className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-info/50 hover:bg-accent/50 transition-all group"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-info/10 flex items-center justify-center group-hover:bg-info/20 transition-colors">
+                    <PlusCircle className="w-6 h-6 text-info" />
+                  </div>
+                  <div className="text-start">
+                    <p className="font-bold text-foreground">{dir === "rtl" ? "إضافة محلي" : "Add my store"}</p>
+                    <p className="text-xs text-muted-foreground">{dir === "rtl" ? "سجّل محلك واختر نوعه" : "Register and choose your store type"}</p>
+                  </div>
+                </button>
+
+                {/* Store types preview */}
+                <div className="pt-3 border-t border-border">
+                  <p className="text-xs text-muted-foreground mb-3 text-center">{dir === "rtl" ? "أنواع المحلات المدعومة" : "Supported store types"}</p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { icon: Store, label: dir === "rtl" ? "متجر" : "Shop" },
+                      { icon: Coffee, label: dir === "rtl" ? "مقهى" : "Café" },
+                      { icon: UtensilsCrossed, label: dir === "rtl" ? "مطعم" : "Restaurant" },
+                      { icon: Pill, label: dir === "rtl" ? "صيدلية" : "Pharmacy" },
+                      { icon: Croissant, label: dir === "rtl" ? "مخبزة" : "Bakery" },
+                      { icon: Printer, label: dir === "rtl" ? "مطبعة" : "Print" },
+                      { icon: Shirt, label: dir === "rtl" ? "ملابس" : "Clothing" },
+                      { icon: Wrench, label: dir === "rtl" ? "خدمات" : "Services" },
+                    ].map((t) => (
+                      <div key={t.label} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-muted/30">
+                        <t.icon className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-[10px] text-muted-foreground">{t.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* ═══ Stats — Glowing boxes ═══ */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.6, duration: 0.5 }} className="mt-6 max-w-3xl mx-auto">
