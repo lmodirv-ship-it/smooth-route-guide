@@ -136,11 +136,13 @@ const AdsSection = () => {
     <section className="py-20 relative overflow-hidden" id="ads-section">
       <div className="absolute inset-0 bg-gradient-to-b from-background via-card/20 to-background" />
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl md:text-3xl font-bold font-display">
-            <span className="text-gradient-primary glow-text">📺 شاشات إعلانية</span>
-          </h2>
-          <p className="text-muted-foreground mt-2">Advertising Screens</p>
+        <div className="max-w-7xl mx-auto rounded-2xl border border-white/20 bg-gradient-to-br from-black via-gray-900 to-black p-6 mb-6 shadow-[0_0_30px_rgba(255,255,255,0.05),inset_0_1px_0_rgba(255,255,255,0.1)]">
+          <div className="text-center">
+            <h2 className="text-2xl md:text-3xl font-bold font-display">
+              <span className="text-gradient-primary glow-text">📺 شاشات إعلانية</span>
+            </h2>
+            <p className="text-white/50 mt-2">Advertising Screens</p>
+          </div>
         </div>
         <div className="max-w-7xl mx-auto rounded-3xl p-[3px] bg-gradient-to-br from-white/40 via-white/10 to-white/40 shadow-[0_0_40px_rgba(255,255,255,0.08)]">
         <div className="rounded-2xl border-2 border-black bg-black/90 p-4 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
