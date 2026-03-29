@@ -56,13 +56,13 @@ export function useInAppCall() {
   const fetchPeer = useCallback(async (peerId: string, fallback?: Partial<CallPeer>) => {
     const { data } = await supabase
       .from("profiles")
-      .select("id, name, avatar_url")
+      .select("id, name, avatar_url, user_code")
       .eq("id", peerId)
       .maybeSingle();
 
     return {
       id: peerId,
-      name: data?.name || fallback?.name || "مستخدم",
+      name: data?.user_code || data?.name || fallback?.name || "مستخدم",
       avatarUrl: data?.avatar_url || fallback?.avatarUrl || null,
     } satisfies CallPeer;
   }, []);
