@@ -109,8 +109,64 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
   };
 
   const stopCamera = () => {
+    if (landmarkIntervalRef.current) {
+      clearInterval(landmarkIntervalRef.current);
+      landmarkIntervalRef.current = null;
+    }
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+  };
+
+  // Real-time face landmark drawing
+  const startLandmarkTracking = () => {
+    if (landmarkIntervalRef.current) return;
+    landmarkIntervalRef.current = setInterval(async () => {
+      if (!videoRef.current || !canvasRef.current) return;
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      canvas.width = video.videoWidth || 320;
+      canvas.height = video.videoHeight || 240;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const detection = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks(true);
+
+      if (detection) {
+        const landmarks = detection.landmarks;
+        // Draw all facial landmark points
+        const points = landmarks.positions;
+        ctx.fillStyle = "hsl(217, 91%, 60%)"; // primary blue
+        points.forEach((pt) => {
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 2, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // Draw connections for jaw, eyes, nose, mouth
+        const drawPath = (pts: faceapi.Point[], close = false) => {
+          if (pts.length < 2) return;
+          ctx.strokeStyle = "hsl(217, 91%, 60%)";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(pts[0].x, pts[0].y);
+          pts.slice(1).forEach((p) => ctx.lineTo(p.x, p.y));
+          if (close) ctx.closePath();
+          ctx.stroke();
+        };
+
+        drawPath(landmarks.getJawOutline());
+        drawPath(landmarks.getLeftEye(), true);
+        drawPath(landmarks.getRightEye(), true);
+        drawPath(landmarks.getNose());
+        drawPath(landmarks.getMouth(), true);
+        drawPath(landmarks.getLeftEyeBrow());
+        drawPath(landmarks.getRightEyeBrow());
+      }
+    }, 200);
   };
 
   const scanFace = async () => {
