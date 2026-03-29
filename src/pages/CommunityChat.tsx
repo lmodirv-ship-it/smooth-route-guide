@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Send, Users, Car, Package, ShoppingCart, Ban, Loader2, Trash2, Bell } from "lucide-react";
+import { MessageSquare, Send, Users, Car, Package, ShoppingCart, Ban, Loader2, Trash2, Bell, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
