@@ -6,24 +6,93 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-const SECTIONS = [
-  { key: "hero", label: "قسم الترحيب (Hero)" },
-  { key: "services", label: "قائمة الخدمات" },
-  { key: "store_button", label: "زر المتجر" },
-  { key: "download_apps", label: "تحميل التطبيقات" },
-  { key: "community_chat", label: "الدردشة المجتمعية" },
-  { key: "ai_assistant", label: "المساعد الذكي" },
-  { key: "contact_footer", label: "تذييل التواصل" },
-  { key: "driver_section", label: "قسم السائقين" },
-  { key: "delivery_section", label: "قسم التوصيل" },
-  { key: "promotions", label: "العروض والترويج" },
-  { key: "subscription_plans", label: "خطط الاشتراك" },
-  { key: "city_activation", label: "تنشيط المدن" },
-  { key: "earnings_page", label: "صفحة الأرباح" },
-  { key: "live_map", label: "الخريطة الحية" },
-  { key: "documents_page", label: "صفحة الوثائق" },
-  { key: "alerts_page", label: "صفحة التنبيهات" },
+const SECTION_GROUPS = [
+  {
+    group: "🏠 الصفحة الرئيسية",
+    items: [
+      { key: "hero", label: "قسم الترحيب (Hero)" },
+      { key: "services", label: "قائمة الخدمات" },
+      { key: "store_button", label: "زر المتجر" },
+      { key: "download_apps", label: "تحميل التطبيقات" },
+      { key: "promotions", label: "العروض والترويج" },
+      { key: "partner_bar", label: "شريط الشركاء (أعلى)" },
+    ],
+  },
+  {
+    group: "👤 صفحة العميل",
+    items: [
+      { key: "client_booking", label: "حجز رحلة" },
+      { key: "client_history", label: "سجل الرحلات" },
+      { key: "client_wallet", label: "المحفظة" },
+      { key: "client_support", label: "الدعم" },
+      { key: "client_profile", label: "الملف الشخصي" },
+      { key: "client_payment", label: "الدفع" },
+      { key: "subscription_plans", label: "خطط الاشتراك" },
+    ],
+  },
+  {
+    group: "🚗 صفحة السائق",
+    items: [
+      { key: "driver_section", label: "قسم السائقين" },
+      { key: "driver_earnings", label: "أرباح السائق" },
+      { key: "driver_wallet", label: "محفظة السائق" },
+      { key: "driver_subscription", label: "اشتراك السائق" },
+      { key: "driver_promotions", label: "عروض السائق" },
+      { key: "driver_support", label: "دعم السائق" },
+      { key: "driver_status", label: "حالة السائق" },
+      { key: "driver_car_info", label: "معلومات السيارة" },
+    ],
+  },
+  {
+    group: "🛵 صفحة التوصيل",
+    items: [
+      { key: "delivery_section", label: "قسم التوصيل" },
+      { key: "delivery_home", label: "الصفحة الرئيسية للتوصيل" },
+      { key: "delivery_restaurants", label: "قائمة المطاعم" },
+      { key: "delivery_tracking", label: "تتبع التوصيل" },
+      { key: "delivery_history", label: "سجل التوصيل" },
+      { key: "delivery_cart", label: "سلة المشتريات" },
+      { key: "courier_send", label: "إرسال طرد" },
+      { key: "courier_track", label: "تتبع الطرد" },
+      { key: "my_store", label: "متجري" },
+    ],
+  },
+  {
+    group: "💬 التواصل والمجتمع",
+    items: [
+      { key: "community_chat", label: "الدردشة المجتمعية" },
+      { key: "ai_assistant", label: "المساعد الذكي" },
+      { key: "contact_footer", label: "شريط التواصل (تذييل)" },
+      { key: "floating_chat_btn", label: "زر الدردشة العائم" },
+      { key: "voice_order_btn", label: "زر الطلب الصوتي" },
+      { key: "community_btn", label: "زر المجتمع العائم" },
+    ],
+  },
+  {
+    group: "🧭 التنقل والأزرار العامة",
+    items: [
+      { key: "bottom_nav", label: "شريط التنقل السفلي" },
+      { key: "logout_btn", label: "زر تسجيل الخروج" },
+      { key: "language_switcher", label: "مبدل اللغة" },
+      { key: "role_switcher", label: "مبدل الأدوار" },
+      { key: "notification_listener", label: "الإشعارات" },
+    ],
+  },
+  {
+    group: "📊 صفحات الإدارة",
+    items: [
+      { key: "live_map", label: "الخريطة الحية" },
+      { key: "earnings_page", label: "صفحة الأرباح" },
+      { key: "documents_page", label: "صفحة الوثائق" },
+      { key: "alerts_page", label: "صفحة التنبيهات" },
+      { key: "city_activation", label: "تنشيط المدن" },
+      { key: "zones_page", label: "إدارة المناطق" },
+      { key: "commission_page", label: "العمولات" },
+    ],
+  },
 ];
+
+const ALL_SECTIONS = SECTION_GROUPS.flatMap(g => g.items);
 
 export default function VisibilitySettings() {
   const [visibility, setVisibility] = useState<Record<string, boolean>>({});
