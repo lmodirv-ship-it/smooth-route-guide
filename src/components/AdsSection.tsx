@@ -48,7 +48,7 @@ const AdSlot = ({ ads, slotNumber }: { ads: Ad[]; slotNumber: number }) => {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.5 }}
-        className="w-full h-full flex items-center justify-center p-3"
+        className="w-full h-full flex items-center justify-center"
       >
         {current.content_type === "image" && current.image_url ? (
           current.link_url ? (
