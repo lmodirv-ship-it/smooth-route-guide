@@ -29,6 +29,7 @@ import SupervisorsPage from "@/admin/pages/Supervisors";
 import SetupAdmin from "@/admin/pages/SetupAdmin";
 import DriverPackages from "@/admin/pages/DriverPackages";
 import AdminCommunityChat from "@/admin/pages/AdminCommunityChat";
+import CityActivation from "@/admin/pages/CityActivation";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
