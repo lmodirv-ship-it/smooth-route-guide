@@ -23,7 +23,9 @@ interface FaceAuthGateProps {
 
 const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const landmarkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [state, setState] = useState<GateState>("loading");
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [savedDescriptor, setSavedDescriptor] = useState<number[] | null>(null);
