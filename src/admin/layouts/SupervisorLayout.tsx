@@ -146,6 +146,7 @@ const SupervisorLayout = () => {
       </div>
     </div>
     <FloatingChatButton />
+    <FloatingCommunityButton communityPath="/community" />
     <GlobalContactFooter />
     </>
   );
