@@ -4,7 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Globe, Building2, MapPin, Search, ChevronRight, ChevronDown } from "lucide-react";
+import { Loader2, Globe, Building2, MapPin, Search, ChevronRight, ChevronDown, Hash } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -18,27 +18,111 @@ type ZoneRow = {
   zone_code?: string | null;
 };
 
+type GeoCode = {
+  id: string;
+  type: string;
+  name: string;
+  code: string;
+  parent_name: string | null;
+};
+
+// Geographic proximity order from Morocco
+const COUNTRY_PRIORITY: Record<string, number> = {
+  "المغرب": 1,
+  "إسبانيا": 2,
+  "فرنسا": 3,
+  "الجزائر": 4,
+  "تونس": 5,
+  "موريتانيا": 6,
+  "البرتغال": 7,
+  "إيطاليا": 8,
+  "بلجيكا": 9,
+  "هولندا": 10,
+  "ألمانيا": 11,
+  "بريطانيا": 12,
+  "ليبيا": 13,
+  "مصر": 14,
+  "السودان": 15,
+  "تركيا": 16,
+  "لبنان": 17,
+  "سوريا": 18,
+  "الأردن": 19,
+  "فلسطين": 20,
+  "العراق": 21,
+  "السعودية": 22,
+  "الإمارات": 23,
+  "الكويت": 24,
+  "قطر": 25,
+  "البحرين": 26,
+  "عُمان": 27,
+  "اليمن": 28,
+  "كندا": 29,
+  "الولايات المتحدة": 30,
+};
+
+const sortByProximity = (a: string, b: string) => {
+  const pa = COUNTRY_PRIORITY[a] ?? 999;
+  const pb = COUNTRY_PRIORITY[b] ?? 999;
+  if (pa !== pb) return pa - pb;
+  return a.localeCompare(b, "ar");
+};
+
 const CityActivation = () => {
   const [zones, setZones] = useState<ZoneRow[]>([]);
+  const [geoCodes, setGeoCodes] = useState<GeoCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [expandedCountry, setExpandedCountry] = useState<string | null>(null);
   const [expandedCity, setExpandedCity] = useState<string | null>(null);
   const [toggling, setToggling] = useState<string | null>(null);
 
-  const fetchZones = async () => {
+  const fetchData = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("zones")
-      .select("id, name_ar, name_fr, city, country, is_active, zone_code")
-      .order("country")
-      .order("city")
-      .order("name_ar");
-    setZones((data as ZoneRow[]) || []);
+    const [zonesRes, geoRes] = await Promise.all([
+      supabase.from("zones")
+        .select("id, name_ar, name_fr, city, country, is_active, zone_code")
+        .order("country").order("city").order("name_ar"),
+      supabase.from("geo_codes").select("*"),
+    ]);
+    setZones((zonesRes.data as ZoneRow[]) || []);
+    setGeoCodes((geoRes.data as GeoCode[]) || []);
+
+    // Auto-generate geo_codes for countries and cities that don't have one
+    const existingGeo = new Set((geoRes.data || []).map((g: GeoCode) => `${g.type}|${g.name}|${g.parent_name || ""}`));
+    const zonesData = (zonesRes.data as ZoneRow[]) || [];
+    const toInsert: { type: string; name: string; code: string; parent_name: string | null }[] = [];
+
+    const countries = new Set(zonesData.map(z => z.country));
+    for (const country of countries) {
+      if (!existingGeo.has(`country|${country}|`)) {
+        toInsert.push({ type: "country", name: country, code: "G" + String(Math.floor(100000 + Math.random() * 900000)), parent_name: null });
+        existingGeo.add(`country|${country}|`);
+      }
+    }
+    const cityPairs = new Set(zonesData.map(z => `${z.country}|${z.city}`));
+    for (const pair of cityPairs) {
+      const [country, city] = pair.split("|");
+      if (!existingGeo.has(`city|${city}|${country}`)) {
+        toInsert.push({ type: "city", name: city, code: "G" + String(Math.floor(100000 + Math.random() * 900000)), parent_name: country });
+        existingGeo.add(`city|${city}|${country}`);
+      }
+    }
+
+    if (toInsert.length > 0) {
+      await supabase.from("geo_codes").insert(toInsert);
+      const { data: refreshed } = await supabase.from("geo_codes").select("*");
+      setGeoCodes((refreshed as GeoCode[]) || []);
+    }
+
     setLoading(false);
   };
 
-  useEffect(() => { fetchZones(); }, []);
+  useEffect(() => { fetchData(); }, []);
+
+  // Lookup helpers
+  const getGeoRef = (type: string, name: string, parent?: string | null) => {
+    return geoCodes.find(g => g.type === type && g.name === name && (parent ? g.parent_name === parent : !g.parent_name))?.code || "—";
+  };
 
   const hierarchy = useMemo(() => {
     const map: Record<string, Record<string, ZoneRow[]>> = {};
@@ -53,13 +137,12 @@ const CityActivation = () => {
   }, [zones]);
 
   const filteredCountries = useMemo(() => {
-    const countries = Object.keys(hierarchy).sort();
+    const countries = Object.keys(hierarchy).sort(sortByProximity);
     if (!search.trim()) return countries;
     const s = search.toLowerCase();
     return countries.filter(c => {
       if (c.toLowerCase().includes(s)) return true;
-      const cities = Object.keys(hierarchy[c]);
-      return cities.some(city => city.toLowerCase().includes(s));
+      return Object.keys(hierarchy[c]).some(city => city.toLowerCase().includes(s));
     });
   }, [hierarchy, search]);
 
@@ -142,12 +225,7 @@ const CityActivation = () => {
       {/* Search */}
       <div className="relative">
         <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder="بحث عن دولة أو مدينة..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="pr-10"
-        />
+        <Input placeholder="بحث عن دولة أو مدينة..." value={search} onChange={e => setSearch(e.target.value)} className="pr-10" />
       </div>
 
       {/* Hierarchy */}
@@ -157,7 +235,8 @@ const CityActivation = () => {
           const allZonesInCountry = Object.values(cities).flat();
           const activeCount = countActive(allZonesInCountry);
           const isExpanded = expandedCountry === country;
-          const allActive = activeCount === allZonesInCountry.length;
+          const allActive = activeCount === allZonesInCountry.length && allZonesInCountry.length > 0;
+          const countryRef = getGeoRef("country", country);
 
           return (
             <div key={country} className="glass-card rounded-xl overflow-hidden">
@@ -170,9 +249,7 @@ const CityActivation = () => {
                   <Switch
                     checked={allActive}
                     disabled={toggling === country}
-                    onCheckedChange={(val) => {
-                      toggleCountry(country, val);
-                    }}
+                    onCheckedChange={(val) => toggleCountry(country, val)}
                     onClick={e => e.stopPropagation()}
                   />
                   <Badge variant={activeCount > 0 ? "default" : "secondary"} className="text-xs">
@@ -182,6 +259,9 @@ const CityActivation = () => {
                 <div className="flex items-center gap-2">
                   {isExpanded ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
                   <span className="font-semibold text-foreground">{country}</span>
+                  <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">
+                    <Hash className="w-2.5 h-2.5 ml-0.5" />{countryRef}
+                  </Badge>
                   <Globe className="w-4 h-4 text-primary" />
                 </div>
               </div>
@@ -200,7 +280,8 @@ const CityActivation = () => {
                       const cityZones = cities[city];
                       const cityActive = countActive(cityZones);
                       const cityExpanded = expandedCity === `${country}|${city}`;
-                      const cityAllActive = cityActive === cityZones.length;
+                      const cityAllActive = cityActive === cityZones.length && cityZones.length > 0;
+                      const cityRef = getGeoRef("city", city, country);
 
                       return (
                         <div key={city} className="border-t border-border/50">
@@ -223,6 +304,9 @@ const CityActivation = () => {
                             <div className="flex items-center gap-2">
                               {cityExpanded ? <ChevronDown className="w-3 h-3 text-muted-foreground" /> : <ChevronRight className="w-3 h-3 text-muted-foreground" />}
                               <span className="text-sm font-medium text-foreground">{city}</span>
+                              <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">
+                                <Hash className="w-2.5 h-2.5 ml-0.5" />{cityRef}
+                              </Badge>
                               <Building2 className="w-3.5 h-3.5 text-muted-foreground" />
                             </div>
                           </div>
@@ -241,7 +325,7 @@ const CityActivation = () => {
                                   <TableHeader>
                                     <TableRow>
                                       <TableHead className="text-center w-20">الحالة</TableHead>
-                                      <TableHead className="text-right">الرمز</TableHead>
+                                      <TableHead className="text-right">المرجع</TableHead>
                                       <TableHead className="text-right">المنطقة (عربي)</TableHead>
                                       <TableHead className="text-right">المنطقة (فرنسي)</TableHead>
                                     </TableRow>
@@ -256,8 +340,10 @@ const CityActivation = () => {
                                             onCheckedChange={() => toggleZone(zone)}
                                           />
                                         </TableCell>
-                                        <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                                          {zone.zone_code || "—"}
+                                        <TableCell className="text-right">
+                                          <Badge variant="outline" className="font-mono text-[10px] px-1.5">
+                                            Z{zone.zone_code || "—"}
+                                          </Badge>
                                         </TableCell>
                                         <TableCell className="text-right text-sm">{zone.name_ar}</TableCell>
                                         <TableCell className="text-right text-sm text-muted-foreground">{zone.name_fr}</TableCell>
