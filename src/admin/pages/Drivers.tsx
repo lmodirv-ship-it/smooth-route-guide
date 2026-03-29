@@ -141,6 +141,7 @@ const AdminDrivers = () => {
                 <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center"><Car className="w-8 h-8 text-primary" /></div>
                 <div>
                   <p className="text-lg font-bold text-foreground">{selectedDriver.name}</p>
+                  <p className="text-sm font-mono text-primary font-bold">{(selectedDriver as any).driver_code || "—"}</p>
                   <p className="text-sm text-muted-foreground">رخصة: {selectedDriver.license_no || "—"}</p>
                   <p className="text-sm text-warning">★ {selectedDriver.rating || "—"}</p>
                 </div>

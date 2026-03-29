@@ -13,6 +13,7 @@ interface DriverRecord {
   status: string;
   rating: number | null;
   driverType: string;
+  driverCode: string;
 }
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
@@ -30,7 +31,7 @@ const SupervisorDrivers = () => {
     const fetch = async () => {
       const { data } = await supabase
         .from("drivers")
-        .select("id, user_id, status, rating, driver_type")
+        .select("id, user_id, status, rating, driver_type, driver_code")
         .eq("driver_type", "ride")
         .order("created_at", { ascending: false });
 
@@ -53,6 +54,7 @@ const SupervisorDrivers = () => {
           status: d.status,
           rating: d.rating,
           driverType: d.driver_type,
+          driverCode: d.driver_code || "—",
         };
       }));
       setLoading(false);
@@ -87,6 +89,7 @@ const SupervisorDrivers = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="text-right">الرمز</TableHead>
               <TableHead className="text-right">الاسم</TableHead>
               <TableHead className="text-right">الهاتف</TableHead>
               <TableHead className="text-center">الحالة</TableHead>
@@ -96,10 +99,11 @@ const SupervisorDrivers = () => {
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">لا يوجد سائقون</TableCell>
+                <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">لا يوجد سائقون</TableCell>
               </TableRow>
             ) : filtered.map(d => (
               <TableRow key={d.id}>
+                <TableCell className="font-mono text-sm font-bold text-primary">{d.driverCode}</TableCell>
                 <TableCell className="font-medium text-right">{d.name}</TableCell>
                 <TableCell className="text-right text-muted-foreground text-sm">{d.phone}</TableCell>
                 <TableCell className="text-center">
