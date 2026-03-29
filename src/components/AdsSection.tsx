@@ -56,7 +56,7 @@ const AdSlot = ({ ads, slotNumber }: { ads: Ad[]; slotNumber: number }) => {
               <img src={current.image_url} alt={current.title} className="w-full h-full object-cover" />
             </a>
           ) : (
-            <img src={current.image_url} alt={current.title} className="w-full h-full object-cover rounded-lg" />
+            <img src={current.image_url} alt={current.title} className="w-full h-full object-cover" />
           )
         ) : (
           <div className="text-center space-y-2">
