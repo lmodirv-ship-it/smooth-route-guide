@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Headphones, Loader2, Search, Clock, AlertCircle, CheckCircle, XCircle, PhoneIncoming, RefreshCw, BarChart3 } from "lucide-react";
+import AgentStaffPanel from "@/admin/components/AgentStaffPanel";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -86,6 +87,8 @@ const SupervisorCallCenter = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5" dir="rtl">
+      {/* Agent Staff Panel */}
+      <AgentStaffPanel />
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
