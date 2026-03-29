@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import CinematicParticles from "@/components/CinematicParticles";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
+import AdsSection from "@/components/AdsSection";
 import logo from "@/assets/hn-driver-badge.png";
 import iconVtcCar from "@/assets/icon-vtc-car.png";
 import iconDeliveryBike from "@/assets/icon-delivery-bike.png";
@@ -946,6 +947,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ─── Ads Section ─── */}
+      <AdsSection />
 
       {/* ─── Footer ─── */}
       <footer className="border-t border-border relative">
