@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface Client {
   id: string; name: string; email: string | null; phone: string | null;
-  created_at: string; tripCount?: number; walletBalance?: number;
+  created_at: string; tripCount?: number; walletBalance?: number; user_code?: string | null;
 }
 
 const AdminClients = () => {
@@ -45,7 +45,7 @@ const AdminClients = () => {
 
   const filtered = clients.filter(c => {
     if (!search) return true;
-    return c.name?.includes(search) || c.email?.includes(search) || c.phone?.includes(search);
+    return c.name?.includes(search) || c.email?.includes(search) || c.phone?.includes(search) || c.user_code?.includes(search);
   });
 
   return (
@@ -65,17 +65,18 @@ const AdminClients = () => {
       <div className="glass-card rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border text-right">
+             <tr className="border-b border-border text-right">
               <th className="p-4 text-muted-foreground font-medium">إجراءات</th>
               <th className="p-4 text-muted-foreground font-medium">الرصيد</th>
               <th className="p-4 text-muted-foreground font-medium">الرحلات</th>
               <th className="p-4 text-muted-foreground font-medium">الهاتف</th>
               <th className="p-4 text-muted-foreground font-medium">البريد</th>
               <th className="p-4 text-muted-foreground font-medium">الاسم</th>
+              <th className="p-4 text-muted-foreground font-medium text-center">الرمز</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">لا يوجد عملاء</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">لا يوجد عملاء</td></tr>}
             {filtered.map(client => (
               <motion.tr key={client.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
@@ -89,6 +90,9 @@ const AdminClients = () => {
                 <td className="p-4 text-muted-foreground">{client.phone || "—"}</td>
                 <td className="p-4 text-muted-foreground">{client.email || "—"}</td>
                 <td className="p-4 text-foreground font-medium">{client.name || "—"}</td>
+                <td className="p-4 text-center">
+                  <Badge variant="outline" className="font-mono text-xs font-bold">{client.user_code || "—"}</Badge>
+                </td>
               </motion.tr>
             ))}
           </tbody>
@@ -104,6 +108,7 @@ const AdminClients = () => {
                 <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center"><Users className="w-7 h-7 text-primary" /></div>
                 <div>
                   <p className="text-lg font-bold text-foreground">{selectedClient.name}</p>
+                  <p className="text-sm font-mono text-primary font-bold">{selectedClient.user_code || "—"}</p>
                   {selectedClient.email && <p className="text-sm text-muted-foreground flex items-center gap-1"><Mail className="w-3 h-3" />{selectedClient.email}</p>}
                   {selectedClient.phone && <p className="text-sm text-muted-foreground flex items-center gap-1"><Phone className="w-3 h-3" />{selectedClient.phone}</p>}
                 </div>
