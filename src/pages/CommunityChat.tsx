@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, Send, Users, Car, Package, ShoppingCart, Shield, Ban, Loader2, Trash2 } from "lucide-react";
+import { MessageSquare, Send, Users, Car, Package, ShoppingCart, Ban, Loader2, Trash2, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -17,6 +17,12 @@ interface Message {
   created_at: string;
 }
 
+interface PresenceUser {
+  user_id: string;
+  name: string;
+  inChat: boolean;
+}
+
 const CommunityChat = () => {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -26,7 +32,20 @@ const CommunityChat = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [profiles, setProfiles] = useState<Record<string, { name: string; avatar_url: string | null }>>({});
   const [isAdmin, setIsAdmin] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState<PresenceUser[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const presenceChannelRef = useRef<any>(null);
+
+  // Fetch profile for a user id
+  const fetchProfile = useCallback(async (uid: string) => {
+    if (profiles[uid]) return profiles[uid];
+    const { data } = await supabase.from("profiles").select("id, name, avatar_url").eq("id", uid).maybeSingle();
+    if (data) {
+      setProfiles(prev => ({ ...prev, [data.id]: { name: data.name || "مستخدم", avatar_url: data.avatar_url } }));
+      return { name: data.name || "مستخدم", avatar_url: data.avatar_url };
+    }
+    return { name: "مستخدم", avatar_url: null };
+  }, [profiles]);
 
   useEffect(() => {
     const init = async () => {
@@ -40,9 +59,55 @@ const CommunityChat = () => {
       const { data: mute } = await supabase.from("community_mutes" as any).select("id").eq("user_id", user.id).maybeSingle();
       if (mute) setIsMuted(true);
 
+      // Get profile name for presence
+      const { data: myProfile } = await supabase.from("profiles").select("name").eq("id", user.id).maybeSingle();
+      const myName = myProfile?.name || "مستخدم";
+
+      // Setup presence channel
+      const presenceChannel = supabase.channel("community-presence", {
+        config: { presence: { key: user.id } }
+      });
+
+      presenceChannel
+        .on("presence", { event: "sync" }, () => {
+          const state = presenceChannel.presenceState();
+          const users: PresenceUser[] = [];
+          Object.entries(state).forEach(([key, presences]: [string, any[]]) => {
+            if (presences.length > 0) {
+              users.push({
+                user_id: key,
+                name: presences[0].name || "مستخدم",
+                inChat: presences[0].inChat ?? true,
+              });
+            }
+          });
+          setOnlineUsers(users);
+        })
+        .on("broadcast", { event: "invite-to-chat" }, (payload: any) => {
+          if (payload.payload?.target_user_id === user.id) {
+            toast({
+              title: "📢 دعوة للدردشة",
+              description: `${payload.payload.inviter_name} يدعوك للانضمام إلى الدردشة المجتمعية`,
+            });
+          }
+        })
+        .subscribe(async (status: string) => {
+          if (status === "SUBSCRIBED") {
+            await presenceChannel.track({ name: myName, inChat: true });
+          }
+        });
+
+      presenceChannelRef.current = presenceChannel;
+
       await fetchMessages();
     };
     init();
+
+    return () => {
+      if (presenceChannelRef.current) {
+        supabase.removeChannel(presenceChannelRef.current);
+      }
+    };
   }, [navigate]);
 
   const fetchMessages = async () => {
@@ -60,7 +125,7 @@ const CommunityChat = () => {
         if (profs) {
           const map: Record<string, { name: string; avatar_url: string | null }> = {};
           profs.forEach(p => { map[p.id] = { name: p.name || "مستخدم", avatar_url: p.avatar_url }; });
-          setProfiles(map);
+          setProfiles(prev => ({ ...prev, ...map }));
         }
       }
     }
@@ -68,7 +133,7 @@ const CommunityChat = () => {
 
   useEffect(() => {
     const channel = supabase
-      .channel("community-chat")
+      .channel("community-chat-changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "community_messages" }, fetchMessages)
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -98,7 +163,19 @@ const CommunityChat = () => {
     await supabase.from("community_messages" as any).delete().eq("id", msgId);
   };
 
-  const uniqueUsers = [...new Set(messages.map(m => m.user_id))];
+  const handleInviteUser = async (targetUserId: string, targetName: string) => {
+    if (!presenceChannelRef.current || !userId) return;
+    const myName = profiles[userId]?.name || "المدير";
+    await presenceChannelRef.current.send({
+      type: "broadcast",
+      event: "invite-to-chat",
+      payload: { target_user_id: targetUserId, inviter_name: myName },
+    });
+    toast({ title: `تم إرسال دعوة لـ ${targetName} ✅` });
+  };
+
+  const inChatUsers = onlineUsers.filter(u => u.inChat);
+  const notInChatUsers = onlineUsers.filter(u => !u.inChat);
 
   const services = [
     { icon: Car, label: "طلب سائق", path: "/customer", color: "from-blue-500 to-cyan-500" },
@@ -120,7 +197,10 @@ const CommunityChat = () => {
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="border-primary/30 text-primary text-xs">
               <Users className="w-3 h-3 ml-1" />
-              {uniqueUsers.length} مشارك
+              {onlineUsers.length} متصل
+            </Badge>
+            <Badge variant="secondary" className="text-xs">
+              {inChatUsers.length} في الدردشة
             </Badge>
             {services.map((s) => (
               <button
@@ -142,27 +222,28 @@ const CommunityChat = () => {
         <aside className="w-56 hidden lg:flex flex-col border-l border-border bg-card/50">
           <div className="p-3 border-b border-border flex items-center gap-2">
             <Users className="w-4 h-4 text-primary" />
-            <span className="font-semibold text-sm text-foreground">المتصلون ({uniqueUsers.length})</span>
+            <span className="font-semibold text-sm text-foreground">في الدردشة ({inChatUsers.length})</span>
           </div>
           <ScrollArea className="flex-1 p-2">
-            {uniqueUsers.map((uid) => {
-              const p = profiles[uid];
+            {/* Users in chat */}
+            {inChatUsers.map((u) => {
+              const p = profiles[u.user_id];
               return (
-                <div key={uid} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 group">
+                <div key={u.user_id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 group">
                   <div className="flex items-center gap-2">
                     <div className="relative">
                       <Avatar className="w-7 h-7">
                         <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                          {(p?.name || "م").charAt(0)}
+                          {(u.name || "م").charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="absolute -bottom-0.5 -left-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-card" />
                     </div>
-                    <span className="text-sm truncate max-w-[90px] text-foreground">{p?.name || "مستخدم"}</span>
+                    <span className="text-sm truncate max-w-[90px] text-foreground">{u.name}</span>
                   </div>
-                  {isAdmin && uid !== userId && (
+                  {isAdmin && u.user_id !== userId && (
                     <button
-                      onClick={() => handleMuteUser(uid)}
+                      onClick={() => handleMuteUser(u.user_id)}
                       className="p-1 opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/10 rounded"
                       title="كتم المستخدم"
                     >
@@ -172,6 +253,39 @@ const CommunityChat = () => {
                 </div>
               );
             })}
+
+            {/* Separator for not-in-chat users */}
+            {notInChatUsers.length > 0 && (
+              <>
+                <div className="px-2 py-2 mt-2 border-t border-border">
+                  <span className="text-xs text-muted-foreground font-medium">متصلون ({notInChatUsers.length})</span>
+                </div>
+                {notInChatUsers.map((u) => (
+                  <div key={u.user_id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 group">
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <Avatar className="w-7 h-7">
+                          <AvatarFallback className="text-xs bg-muted text-muted-foreground">
+                            {(u.name || "م").charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -bottom-0.5 -left-0.5 w-2.5 h-2.5 rounded-full bg-yellow-500 border-2 border-card" />
+                      </div>
+                      <span className="text-sm truncate max-w-[70px] text-muted-foreground">{u.name}</span>
+                    </div>
+                    {isAdmin && u.user_id !== userId && (
+                      <button
+                        onClick={() => handleInviteUser(u.user_id, u.name)}
+                        className="p-1 opacity-0 group-hover:opacity-100 text-primary hover:bg-primary/10 rounded"
+                        title="دعوة للدردشة"
+                      >
+                        <Bell className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </>
+            )}
           </ScrollArea>
         </aside>
 
@@ -189,6 +303,7 @@ const CommunityChat = () => {
               {messages.map((msg) => {
                 const isMe = msg.user_id === userId;
                 const name = profiles[msg.user_id]?.name || "مستخدم";
+                const isOnline = onlineUsers.some(u => u.user_id === msg.user_id);
                 return (
                   <motion.div
                     key={msg.id}
@@ -197,11 +312,16 @@ const CommunityChat = () => {
                     exit={{ opacity: 0 }}
                     className={`flex gap-2 group ${isMe ? "flex-row-reverse" : ""}`}
                   >
-                    <Avatar className="w-8 h-8 shrink-0 mt-1">
-                      <AvatarFallback className={`text-xs ${isMe ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>
-                        {name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative shrink-0 mt-1">
+                      <Avatar className="w-8 h-8">
+                        <AvatarFallback className={`text-xs ${isMe ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>
+                          {name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {isOnline && (
+                        <div className="absolute -bottom-0.5 -left-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-card" />
+                      )}
+                    </div>
                     <div className={`max-w-[75%] ${isMe ? "text-right" : "text-left"}`}>
                       <div className="flex items-center gap-1.5 mb-0.5">
                         <span className="text-[11px] font-medium text-muted-foreground">{name}</span>
