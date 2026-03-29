@@ -128,6 +128,27 @@ export default function VisibilitySettings() {
       setLoaded(true);
     };
     load();
+
+    // Realtime sync — reflects changes from other admin sessions
+    const channel = supabase
+      .channel("admin-visibility-rt")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "app_settings" },
+        (payload: any) => {
+          if (payload.new?.key === "ui_visibility" && payload.new?.value) {
+            setVisibility(payload.new.value as Record<string, boolean>);
+          }
+          if (payload.new?.key === "contact_info" && payload.new?.value) {
+            const c = payload.new.value as Record<string, string>;
+            if (c.email) setContactEmail(c.email);
+            if (c.phone) setContactPhone(c.phone);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const handleSave = async () => {
