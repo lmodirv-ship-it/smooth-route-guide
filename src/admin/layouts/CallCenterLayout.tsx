@@ -180,6 +180,7 @@ const CallCenterLayout = () => {
     </div>
     <AgentFacePresence />
     <FloatingChatButton />
+    <FloatingCommunityButton communityPath="/call-center/community" />
     <GlobalContactFooter />
     </>
   );
