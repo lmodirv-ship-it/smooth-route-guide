@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_presence_log: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          present_end: string | null
+          present_start: string
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          present_end?: string | null
+          present_start?: string
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          present_end?: string | null
+          present_start?: string
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_presence_log_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "agent_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_sessions: {
         Row: {
           actions_count: number
