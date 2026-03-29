@@ -8,15 +8,16 @@ import {
   Users, Truck, Headphones, Store, Coffee, Shirt, Croissant, ShoppingCart,
   UtensilsCrossed, Printer, Smartphone, Clock, Download, Star, Phone,
   ChevronDown, Globe, PlayCircle, UserPlus, FileCheck, Quote, ChevronUp,
-  MessageSquare, HelpCircle, CheckCircle,
+  MessageSquare, HelpCircle, CheckCircle, LogIn, PlusCircle, Pill, Wrench,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import CinematicParticles from "@/components/CinematicParticles";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
 import logo from "@/assets/hn-driver-badge.png";
 import iconVtcCar from "@/assets/icon-vtc-car.png";
 import iconDeliveryBike from "@/assets/icon-delivery-bike.png";
-import iconFleetMgmt from "@/assets/icon-fleet-mgmt.png";
+import iconStoreMarketplace from "@/assets/icon-store-marketplace.png";
 import iconClientApp from "@/assets/icon-client-app.png";
 import partnerHibaEco from "@/assets/partner-hiba-eco.png";
 import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
