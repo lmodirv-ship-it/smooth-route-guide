@@ -13,6 +13,7 @@ import { useReverseGeocode } from "@/hooks/useReverseGeocode";
 import { tangierLocations, locationCategories, TangierLocation } from "@/data/tangierLocations";
 import { usePricingSettings } from "@/hooks/usePricingSettings";
 import SubscriptionIndicator from "@/components/SubscriptionIndicator";
+import { useUserReference } from "@/hooks/useUserReference";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 
@@ -38,6 +39,7 @@ const CustomerPage = () => {
   const { name: destName, loading: destLoading } = useReverseGeocode(destCoords);
   const pricing = usePricingSettings();
   const [mapExpanded, setMapExpanded] = useState(false);
+  const { userCode } = useUserReference();
 
   const calcPrice = useCallback((km: number) => {
     return Math.max(pricing.minFare, Math.round(pricing.baseFare + km * pricing.perKmRate));
@@ -249,6 +251,11 @@ const CustomerPage = () => {
       {/* Header */}
       <div className="sticky top-0 z-50 px-5 py-3 flex items-center justify-between glass-strong border-b border-border">
         <div className="flex items-center gap-1.5">
+          {userCode && (
+            <span className="text-xs font-mono font-bold text-primary px-2 py-1 rounded-full glass border border-primary/30 bg-primary/10">
+              {userCode}
+            </span>
+          )}
           <span className="text-xs text-muted-foreground px-2 py-1 rounded-full glass border border-border">
             {nearbyDrivers.length > 0 ? `${nearbyDrivers.length} سائق متاح` : "جارٍ البحث..."}
           </span>

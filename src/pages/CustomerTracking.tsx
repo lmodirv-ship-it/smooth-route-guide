@@ -54,6 +54,7 @@ const CustomerTracking = () => {
   const [driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [driverName, setDriverName] = useState<string | null>(null);
   const [driverPhone, setDriverPhone] = useState<string | null>(null);
+  const [driverRefCode, setDriverRefCode] = useState<string | null>(null);
   const [vehicleInfo, setVehicleInfo] = useState<string | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
@@ -75,13 +76,15 @@ const CustomerTracking = () => {
   // Driver info + realtime location
   useEffect(() => {
     if (!ride?.driver_id) {
-      setDriverLocation(null); setDriverName(null); setDriverPhone(null); setVehicleInfo(null);
+      setDriverLocation(null); setDriverName(null); setDriverPhone(null); setVehicleInfo(null); setDriverRefCode(null);
       return;
     }
     const fetchDriver = async () => {
       const { data: driver } = await supabase
-        .from("drivers").select("user_id, current_lat, current_lng, car_id")
+        .from("drivers").select("user_id, current_lat, current_lng, car_id, driver_code")
         .eq("id", ride.driver_id!).single();
+      if (!driver) return;
+      if (driver.driver_code) setDriverRefCode(driver.driver_code);
       if (!driver) return;
       if (driver.current_lat && driver.current_lng) {
         setDriverLocation({ lat: Number(driver.current_lat), lng: Number(driver.current_lng) });
@@ -255,6 +258,11 @@ const CustomerTracking = () => {
                 <p className="text-white font-bold flex items-center gap-2 justify-end">
                   <User className="w-4 h-4 text-blue-400" />
                   {driverName || "السائق"}
+                  {driverRefCode && (
+                    <span className="font-mono text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded-md border border-primary/30">
+                      {driverRefCode}
+                    </span>
+                  )}
                 </p>
                 {vehicleInfo && <p className="text-white/40 text-[11px]">{vehicleInfo}</p>}
               </div>
