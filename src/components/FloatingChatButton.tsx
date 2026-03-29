@@ -71,7 +71,7 @@ const FloatingChatButton = () => {
     [contacts, search],
   );
 
-  if (location.pathname === "/community") return null;
+  // Don't hide on community - contacts button should always be available
 
   const roleLabel = (role: string) => {
     const map: Record<string, string> = {
