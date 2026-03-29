@@ -267,6 +267,8 @@ const AdminDashboardPage = () => {
     { icon: Package, label: td.pendingDelivery, value: stats.deliveryPending, color: "text-accent", isCurrency: false },
     { icon: Package, label: td.activeDelivery, value: stats.deliveryActive, color: "text-info", isCurrency: false },
     { icon: DollarSign, label: td.todayEarnings, value: stats.incomeToday, color: "text-warning", isCurrency: true },
+    { icon: Crown, label: "اشتراكات السائقين", value: stats.activeDriverSubs, color: "text-primary", isCurrency: false },
+    { icon: CreditCard, label: "اشتراكات العملاء", value: stats.activeCustomerSubs, color: "text-info", isCurrency: false },
   ];
 
   return (
