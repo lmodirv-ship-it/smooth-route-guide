@@ -117,45 +117,65 @@ export default function VisibilitySettings() {
       </div>
       <p className="text-sm text-muted-foreground text-right">تحكم في ما يظهر وما يختفي في الصفحات الرئيسية</p>
 
-      {/* Contact Footer Special Controls */}
-      <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-4 space-y-3">
+      {/* Contact Footer Special Controls — Glowing Panel */}
+      <div className="relative rounded-2xl p-5 space-y-4 overflow-hidden border border-primary/40"
+        style={{
+          background: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(220 60% 10% / 0.9), hsl(var(--primary) / 0.05))',
+          boxShadow: '0 0 30px hsl(var(--primary) / 0.15), inset 0 1px 0 hsl(var(--primary) / 0.2), 0 4px 20px rgba(0,0,0,0.4)',
+        }}
+      >
+        {/* Glow accent line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)' }} />
+        
         <div className="flex items-center justify-between">
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             {/* Green = Show */}
-            <Button
-              size="sm"
-              className="gap-1.5 bg-green-600 hover:bg-green-700 text-white"
+            <button
               onClick={() => {
                 setVisibility(prev => ({ ...prev, contact_footer: true }));
                 toast({ title: "✅ شريط التواصل: مُفعّل (اضغط حفظ)" });
               }}
+              className="relative group flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white transition-all duration-300"
+              style={{
+                background: 'linear-gradient(135deg, #16a34a, #22c55e)',
+                boxShadow: '0 0 16px rgba(34,197,94,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+              }}
             >
-              <Eye className="w-4 h-4" /> إظهار
-            </Button>
+              <span className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ boxShadow: '0 0 24px rgba(34,197,94,0.7), 0 0 60px rgba(34,197,94,0.3)' }} />
+              <Eye className="w-4 h-4 relative z-10" /> <span className="relative z-10">إظهار</span>
+            </button>
             {/* Red = Hide */}
-            <Button
-              size="sm"
-              className="gap-1.5 bg-red-600 hover:bg-red-700 text-white"
+            <button
               onClick={() => {
                 setVisibility(prev => ({ ...prev, contact_footer: false }));
                 toast({ title: "🚫 شريط التواصل: مُخفي (اضغط حفظ)" });
               }}
+              className="relative group flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-white transition-all duration-300"
+              style={{
+                background: 'linear-gradient(135deg, #dc2626, #ef4444)',
+                boxShadow: '0 0 16px rgba(239,68,68,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+              }}
             >
-              <EyeOff className="w-4 h-4" /> إخفاء
-            </Button>
+              <span className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ boxShadow: '0 0 24px rgba(239,68,68,0.7), 0 0 60px rgba(239,68,68,0.3)' }} />
+              <EyeOff className="w-4 h-4 relative z-10" /> <span className="relative z-10">إخفاء</span>
+            </button>
             {/* Yellow = Edit */}
-            <Button
-              size="sm"
-              className="gap-1.5 bg-yellow-500 hover:bg-yellow-600 text-black"
+            <button
               onClick={() => setEditingContact(!editingContact)}
+              className="relative group flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-black transition-all duration-300"
+              style={{
+                background: 'linear-gradient(135deg, #eab308, #facc15)',
+                boxShadow: '0 0 16px rgba(234,179,8,0.4), inset 0 1px 0 rgba(255,255,255,0.3)',
+              }}
             >
-              <Pencil className="w-4 h-4" /> تغيير
-            </Button>
+              <span className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ boxShadow: '0 0 24px rgba(234,179,8,0.7), 0 0 60px rgba(234,179,8,0.3)' }} />
+              <Pencil className="w-4 h-4 relative z-10" /> <span className="relative z-10">تغيير</span>
+            </button>
           </div>
           <div className="flex items-center gap-2 text-sm font-bold text-foreground">
             {isFooterVisible
-              ? <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />
-              : <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />
+              ? <span className="w-3 h-3 rounded-full inline-block animate-pulse" style={{ background: 'radial-gradient(circle, #4ade80, #16a34a)', boxShadow: '0 0 10px #22c55e' }} />
+              : <span className="w-3 h-3 rounded-full inline-block animate-pulse" style={{ background: 'radial-gradient(circle, #f87171, #dc2626)', boxShadow: '0 0 10px #ef4444' }} />
             }
             📞 شريط التواصل
           </div>
