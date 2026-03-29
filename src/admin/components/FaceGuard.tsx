@@ -168,12 +168,12 @@ const FaceGuard = ({ onLock }: { onLock: () => void }) => {
     return (
       <button
         onClick={() => setMinimized(false)}
-        className="relative w-9 h-9 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors"
+        className="fixed top-3 left-3 z-50 w-8 h-8 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors shadow-md"
         title="كاميرا الأمان"
       >
-        <Camera className="w-4 h-4 text-muted-foreground" />
+        <Camera className="w-3.5 h-3.5 text-muted-foreground" />
         <span
-          className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background ${
+          className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border-2 border-background ${
             state === "monitoring" ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
           }`}
         />
