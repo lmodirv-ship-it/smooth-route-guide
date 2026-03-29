@@ -59,11 +59,11 @@ const AdSlot = ({ ads, slotNumber }: { ads: Ad[]; slotNumber: number }) => {
             <img src={current.image_url} alt={current.title} className="w-full h-full object-cover" />
           )
         ) : (
-          <div className="text-center space-y-2">
-            {current.title && <h4 className="text-sm font-bold text-foreground">{current.title}</h4>}
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 p-4">
+            {current.title && <h4 className="text-sm font-bold text-foreground mb-1">{current.title}</h4>}
             {current.content_text && <p className="text-xs text-muted-foreground leading-relaxed">{current.content_text}</p>}
             {current.link_url && (
-              <a href={current.link_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
+              <a href={current.link_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline mt-2">
                 المزيد →
               </a>
             )}
