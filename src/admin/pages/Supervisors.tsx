@@ -235,7 +235,7 @@ const Supervisors = () => {
               <SelectContent>
                 {availableUsers.map(u => (
                   <SelectItem key={u.id} value={u.id}>
-                    {u.name} — {u.email}
+                    <span className="font-mono font-bold">{u.userCode}</span> — {u.name}
                   </SelectItem>
                 ))}
               </SelectContent>
