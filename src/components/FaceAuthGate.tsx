@@ -90,6 +90,11 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
     return () => stopCamera();
   }, [modelsLoaded, hasProfile, savedDescriptor]);
 
+  // Ensure camera stops on unmount
+  useEffect(() => {
+    return () => stopCamera();
+  }, []);
+
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -208,6 +213,7 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
     else {
       setState("rejected");
       stopCamera();
+      // Camera is fully stopped here — password fallback has no camera
 
       const canvas = document.createElement("canvas");
       canvas.width = videoRef.current.videoWidth;
