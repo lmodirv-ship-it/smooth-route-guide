@@ -37,6 +37,7 @@ import GlobalNotificationListener from "@/components/GlobalNotificationListener"
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import RequireRole from "@/components/RequireRole";
 import FloatingCommunityButton from "@/components/FloatingCommunityButton";
+import FloatingChatButton from "@/components/FloatingChatButton";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const RideDriverLayout = () => {
         </div>
       </div>
       <div className="h-12" />
+      <FloatingChatButton />
       <FloatingCommunityButton />
     </>
   );
