@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Save, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Save, Loader2, Pencil, Mail, Phone } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -29,15 +30,31 @@ export default function VisibilitySettings() {
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
+  // Contact footer editing
+  const [editingContact, setEditingContact] = useState(false);
+  const [contactEmail, setContactEmail] = useState("lmodirv@gmail.com");
+  const [contactPhone, setContactPhone] = useState("+212 0668546358");
+  const [savingContact, setSavingContact] = useState(false);
+
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from("app_settings").select("key, value").eq("key", "ui_visibility").maybeSingle();
-      if (data?.value) {
-        setVisibility(data.value as Record<string, boolean>);
-      } else {
-        const defaults: Record<string, boolean> = {};
-        SECTIONS.forEach(s => { defaults[s.key] = true; });
-        setVisibility(defaults);
+      const { data } = await supabase.from("app_settings").select("key, value");
+      if (data) {
+        const visData = data.find(d => d.key === "ui_visibility");
+        if (visData?.value) {
+          setVisibility(visData.value as Record<string, boolean>);
+        } else {
+          const defaults: Record<string, boolean> = {};
+          SECTIONS.forEach(s => { defaults[s.key] = true; });
+          setVisibility(defaults);
+        }
+
+        const contactData = data.find(d => d.key === "contact_info");
+        if (contactData?.value) {
+          const c = contactData.value as Record<string, string>;
+          if (c.email) setContactEmail(c.email);
+          if (c.phone) setContactPhone(c.phone);
+        }
       }
       setLoaded(true);
     };
@@ -60,7 +77,33 @@ export default function VisibilitySettings() {
     } finally { setSaving(false); }
   };
 
+  const handleSaveContact = async () => {
+    const trimmedEmail = contactEmail.trim();
+    const trimmedPhone = contactPhone.trim();
+    if (!trimmedEmail || !trimmedPhone) {
+      toast({ title: "يرجى ملء جميع الحقول", variant: "destructive" });
+      return;
+    }
+    setSavingContact(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const value = { email: trimmedEmail, phone: trimmedPhone } as any;
+      const { data: existing } = await supabase.from("app_settings").select("id").eq("key", "contact_info").maybeSingle();
+      if (existing) {
+        await supabase.from("app_settings").update({ value, updated_at: new Date().toISOString(), updated_by: user?.id }).eq("key", "contact_info");
+      } else {
+        await supabase.from("app_settings").insert({ key: "contact_info", value, updated_by: user?.id });
+      }
+      toast({ title: "✅ تم حفظ معلومات التواصل" });
+      setEditingContact(false);
+    } catch (e: any) {
+      toast({ title: "خطأ", description: e.message, variant: "destructive" });
+    } finally { setSavingContact(false); }
+  };
+
   if (!loaded) return null;
+
+  const isFooterVisible = visibility.contact_footer !== false;
 
   return (
     <div className="glass-card rounded-xl p-6 space-y-4">
@@ -73,6 +116,88 @@ export default function VisibilitySettings() {
         </h3>
       </div>
       <p className="text-sm text-muted-foreground text-right">تحكم في ما يظهر وما يختفي في الصفحات الرئيسية</p>
+
+      {/* Contact Footer Special Controls */}
+      <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex gap-2">
+            {/* Green = Show */}
+            <Button
+              size="sm"
+              className="gap-1.5 bg-green-600 hover:bg-green-700 text-white"
+              onClick={() => {
+                setVisibility(prev => ({ ...prev, contact_footer: true }));
+                toast({ title: "✅ شريط التواصل: مُفعّل (اضغط حفظ)" });
+              }}
+            >
+              <Eye className="w-4 h-4" /> إظهار
+            </Button>
+            {/* Red = Hide */}
+            <Button
+              size="sm"
+              className="gap-1.5 bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => {
+                setVisibility(prev => ({ ...prev, contact_footer: false }));
+                toast({ title: "🚫 شريط التواصل: مُخفي (اضغط حفظ)" });
+              }}
+            >
+              <EyeOff className="w-4 h-4" /> إخفاء
+            </Button>
+            {/* Yellow = Edit */}
+            <Button
+              size="sm"
+              className="gap-1.5 bg-yellow-500 hover:bg-yellow-600 text-black"
+              onClick={() => setEditingContact(!editingContact)}
+            >
+              <Pencil className="w-4 h-4" /> تغيير
+            </Button>
+          </div>
+          <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+            {isFooterVisible
+              ? <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />
+              : <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />
+            }
+            📞 شريط التواصل
+          </div>
+        </div>
+
+        {/* Edit contact info form */}
+        {editingContact && (
+          <div className="space-y-3 pt-2 border-t border-border/50">
+            <div className="flex items-center gap-2">
+              <Input
+                value={contactEmail}
+                onChange={e => setContactEmail(e.target.value)}
+                placeholder="البريد الإلكتروني"
+                className="text-left"
+                dir="ltr"
+                maxLength={255}
+              />
+              <Mail className="w-5 h-5 text-muted-foreground shrink-0" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Input
+                value={contactPhone}
+                onChange={e => setContactPhone(e.target.value)}
+                placeholder="رقم الهاتف / واتساب"
+                className="text-left"
+                dir="ltr"
+                maxLength={30}
+              />
+              <Phone className="w-5 h-5 text-muted-foreground shrink-0" />
+            </div>
+            <Button
+              size="sm"
+              onClick={handleSaveContact}
+              disabled={savingContact}
+              className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground w-full"
+            >
+              {savingContact ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              حفظ معلومات التواصل
+            </Button>
+          </div>
+        )}
+      </div>
 
       {/* Master toggle buttons */}
       <div className="flex gap-3 justify-end">
