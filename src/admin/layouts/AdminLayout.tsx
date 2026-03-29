@@ -174,7 +174,14 @@ const AdminLayout = () => {
             </div>
             <div>
               <p className="text-sm font-semibold text-foreground">{t.admin.administrator}</p>
-              <p className="text-xs text-muted-foreground">{t.admin.systemAdmin}</p>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs text-muted-foreground">{t.admin.systemAdmin}</p>
+                {userCode && (
+                  <span className="font-mono text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/30">
+                    {userCode}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         )}
