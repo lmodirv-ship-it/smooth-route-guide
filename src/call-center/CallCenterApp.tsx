@@ -44,6 +44,8 @@ import AdminLiveMap from "@/admin/pages/LiveMap";
 import AdminAlerts from "@/admin/pages/Alerts";
 import CommunityChat from "@/pages/CommunityChat";
 
+import ThemeLoader from "@/components/ThemeLoader";
+
 const queryClient = new QueryClient();
 
 const CallCenterApp = () => (
@@ -52,6 +54,7 @@ const CallCenterApp = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <ThemeLoader />
         <BrowserRouter>
           <Routes>
             {/* Login */}
