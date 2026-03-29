@@ -1,7 +1,40 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Mail, Phone } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const GlobalContactFooter = () => {
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "ui_visibility")
+        .maybeSingle();
+      if (data?.value) {
+        const v = data.value as Record<string, boolean>;
+        if (v.contact_footer === false) setVisible(false);
+      }
+    };
+    load();
+
+    const channel = supabase
+      .channel("contact-footer-visibility")
+      .on("postgres_changes", { event: "*", schema: "public", table: "app_settings" }, (payload: any) => {
+        if (payload.new?.key === "ui_visibility") {
+          const v = payload.new.value as Record<string, boolean>;
+          setVisible(v.contact_footer !== false);
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  if (!visible) return null;
+
   return (
     <div className="w-full py-4 px-4 flex justify-center">
       <motion.div
