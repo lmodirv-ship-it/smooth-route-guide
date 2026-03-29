@@ -17,6 +17,7 @@ import { usePricingSettings } from "@/hooks/usePricingSettings";
 import { useI18n } from "@/i18n/context";
 import { useDriverSubscription } from "@/hooks/useDriverSubscription";
 import driverLogo from "@/assets/hn-driver-badge.png";
+import { useUserReference } from "@/hooks/useUserReference";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 const MAX_RADIUS_KM = 10;
@@ -70,6 +71,8 @@ const DriverPage = () => {
   const prevOrderCountRef = useRef(0);
   const initialLoadRef = useRef(true);
   const { isExpired: subscriptionExpired, daysLeft: subDaysLeft } = useDriverSubscription();
+  const { driverCode, userCode } = useUserReference();
+  const refCode = driverCode || userCode;
 
   // Fetch stats & check active ride
   useEffect(() => {
@@ -237,7 +240,10 @@ const DriverPage = () => {
               <img src={driverLogo} alt="HN" className="w-8 h-8 rounded-full shadow-lg border border-white/20" />
               <div>
                 <p className="text-white font-bold text-sm">{driverName}</p>
-                <p className="text-emerald-400 text-[11px]">{t.driver.connected}</p>
+                <p className="text-emerald-400 text-[11px]">
+                  {refCode && <span className="font-mono mr-1">[{refCode}]</span>}
+                  {t.driver.connected}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2">

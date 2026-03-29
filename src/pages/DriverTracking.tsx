@@ -54,6 +54,7 @@ const DriverTracking = () => {
   const [driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [clientName, setClientName] = useState("الزبون");
   const [clientPhone, setClientPhone] = useState<string | null>(null);
+  const [clientRefCode, setClientRefCode] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -130,12 +131,13 @@ const DriverTracking = () => {
         setRide(data as RideData);
         const { data: profile } = await supabase
           .from("profiles")
-          .select("name, phone")
+          .select("name, phone, user_code")
           .eq("id", data.user_id)
           .single();
         if (profile) {
           setClientName(profile.name || "الزبون");
           setClientPhone(profile.phone || null);
+          setClientRefCode(profile.user_code || null);
         }
       }
     } catch (err: any) {
@@ -366,7 +368,14 @@ const DriverTracking = () => {
                 {statusInfo.label}
               </div>
               <div className="text-right">
-                <p className="text-foreground font-bold text-lg">{clientName}</p>
+                <p className="text-foreground font-bold text-lg">
+                  {clientName}
+                  {clientRefCode && (
+                    <span className="font-mono text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded-md border border-primary/30 mr-2">
+                      {clientRefCode}
+                    </span>
+                  )}
+                </p>
                 <p className="text-muted-foreground text-sm">{clientPhone || "—"}</p>
               </div>
             </div>

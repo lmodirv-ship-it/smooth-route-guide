@@ -166,15 +166,7 @@ const AdminLayout = () => {
         {sidebarNavVisible && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
         {!sidebarCollapsed && (
-          <div className="p-4 border-b border-border flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center">
-              <Shield className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">{t.admin.administrator}</p>
-              <p className="text-xs text-muted-foreground">{t.admin.systemAdmin}</p>
-            </div>
-          </div>
+          <AdminRefBadge />
         )}
         <nav className="flex-1 p-2.5 space-y-1 overflow-auto scrollbar-thin">
           {navItems.map((item) => (
