@@ -114,7 +114,7 @@ export default function VisibilitySettings() {
           setVisibility(visData.value as Record<string, boolean>);
         } else {
           const defaults: Record<string, boolean> = {};
-          SECTIONS.forEach(s => { defaults[s.key] = true; });
+          ALL_SECTIONS.forEach(s => { defaults[s.key] = true; });
           setVisibility(defaults);
         }
 
