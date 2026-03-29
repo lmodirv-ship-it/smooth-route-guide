@@ -127,8 +127,8 @@ export default function VisibilitySettings() {
         {/* Glow accent line */}
         <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)' }} />
         
-        <div className="flex items-center justify-between">
-          <div className="flex gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-3">
             {/* Green = Show */}
             <button
               onClick={() => {
