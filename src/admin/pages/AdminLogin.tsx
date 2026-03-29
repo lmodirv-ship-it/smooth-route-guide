@@ -73,17 +73,23 @@ const AdminLogin = () => {
   const handleFaceVerified = async () => {
     setFaceCheckActive(false);
     setFaceVerified(true);
-    // If in face mode, try auto-login after face verified
-    if (loginMode === "face") {
-      // Face verified = trusted, but we still need credentials
-      // Auto-submit if password is filled
-      if (password) {
-        handleLoginWithCredentials();
-      } else {
-        toast({ title: "✅ تم التحقق من الوجه", description: "أدخل كلمة المرور للمتابعة" });
-        setLoginMode("password");
-      }
+    toast({ title: "✅ تم التحقق من الوجه بنجاح" });
+    // If in face mode and password is filled, auto-login
+    if (loginMode === "face" && password) {
+      handleLoginWithCredentials();
+    } else if (loginMode === "face") {
+      toast({ title: "أدخل كلمة المرور للمتابعة", variant: "default" });
     }
+  };
+
+  const handleFaceSkipped = () => {
+    setFaceCheckActive(false);
+    // Face didn't match or was skipped — fallback to password
+    if (loginMode === "face") {
+      toast({ title: "⚠️ لم يتم التحقق من الوجه", description: "يرجى إدخال كلمة المرور", variant: "destructive" });
+    }
+    // Don't set faceVerified — they can still login with password
+    setLoginMode("password");
   };
 
   const handleLoginWithCredentials = async () => {
@@ -129,11 +135,7 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // If face profile exists and not yet verified, require face first
-    if (hasFaceProfile && !faceVerified) {
-      setFaceCheckActive(true);
-      return;
-    }
+    // Password mode: just login with credentials (face is optional enhancement)
     handleLoginWithCredentials();
   };
 
@@ -411,7 +413,7 @@ const AdminLogin = () => {
         <FaceAuthGate
           email={email}
           onVerified={handleFaceVerified}
-          onSkip={() => { setFaceCheckActive(false); setFaceVerified(true); }}
+          onSkip={handleFaceSkipped}
         />
       )}
 
