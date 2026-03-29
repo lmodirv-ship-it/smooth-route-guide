@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { FileText, Car, DollarSign, Zap, MapPin, Clock, BatteryLow, Package, TrendingUp, TrendingDown, Users, ArrowUpRight } from "lucide-react";
+import { FileText, Car, DollarSign, Zap, MapPin, Clock, BatteryLow, Package, TrendingUp, TrendingDown, Users, ArrowUpRight, CreditCard, Crown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGeo } from "@/admin/contexts/AdminGeoContext";
@@ -17,6 +17,8 @@ interface DashboardStats {
   offlineDrivers: number;
   deliveryPending: number;
   deliveryActive: number;
+  activeDriverSubs: number;
+  activeCustomerSubs: number;
 }
 
 interface DashboardAlert {
@@ -134,6 +136,7 @@ const AdminDashboardPage = () => {
   const [stats, setStats] = useState<DashboardStats>({
     requestsToday: 0, activeDrivers: 0, ongoingRides: 0, incomeToday: 0,
     totalDrivers: 0, offlineDrivers: 0, deliveryPending: 0, deliveryActive: 0,
+    activeDriverSubs: 0, activeCustomerSubs: 0,
   });
   const [incomeRange, setIncomeRange] = useState<"daily" | "weekly" | "monthly">("weekly");
   const [recentTrips, setRecentTrips] = useState<any[]>([]);
@@ -153,7 +156,8 @@ const AdminDashboardPage = () => {
     if (geoCountry !== "all") deliveryQuery = deliveryQuery.eq("country", geoCountry);
     if (geoCity !== "all") deliveryQuery = deliveryQuery.eq("city", geoCity);
 
-    const [requestsRes, driversRes, activeTripsRes, recentTripsRes, earningsRes, deliveryOrdersRes, alertsRes] = await Promise.all([
+    const now = new Date().toISOString();
+    const [requestsRes, driversRes, activeTripsRes, recentTripsRes, earningsRes, deliveryOrdersRes, alertsRes, driverSubsRes, customerSubsRes] = await Promise.all([
       requestsQuery,
       supabase.from("drivers").select("id, user_id, status"),
       supabase.from("trips").select("id").eq("status", "in_progress"),
@@ -161,6 +165,8 @@ const AdminDashboardPage = () => {
       supabase.from("earnings").select("amount, date, created_at, driver_id").gte("date", sixMonthsAgo),
       deliveryQuery,
       supabase.from("alerts").select("*").order("created_at", { ascending: false }).limit(5),
+      supabase.from("driver_subscriptions").select("id", { count: "exact", head: true }).eq("status", "active").gte("expires_at", now),
+      supabase.from("customer_subscriptions").select("id", { count: "exact", head: true }).eq("status", "active").gte("expires_at", now),
     ]);
 
     const drivers = driversRes.data || [];
@@ -182,6 +188,8 @@ const AdminDashboardPage = () => {
       offlineDrivers: Math.max(drivers.length - activeDrivers, 0),
       deliveryPending: deliveryOrders.filter((o: any) => o.status === "pending").length,
       deliveryActive: deliveryOrders.filter((o: any) => activeDeliveryStatuses.has(o.status)).length,
+      activeDriverSubs: driverSubsRes.count || 0,
+      activeCustomerSubs: customerSubsRes.count || 0,
     });
 
     setRecentTrips(recentTripsRes.data || []);
@@ -259,6 +267,8 @@ const AdminDashboardPage = () => {
     { icon: Package, label: td.pendingDelivery, value: stats.deliveryPending, color: "text-accent", isCurrency: false },
     { icon: Package, label: td.activeDelivery, value: stats.deliveryActive, color: "text-info", isCurrency: false },
     { icon: DollarSign, label: td.todayEarnings, value: stats.incomeToday, color: "text-warning", isCurrency: true },
+    { icon: Crown, label: "اشتراكات السائقين", value: stats.activeDriverSubs, color: "text-primary", isCurrency: false },
+    { icon: CreditCard, label: "اشتراكات العملاء", value: stats.activeCustomerSubs, color: "text-info", isCurrency: false },
   ];
 
   return (

@@ -37,6 +37,7 @@ const CustomerPage = () => {
   const { name: pickupName, loading: pickupLoading } = useReverseGeocode(userLocation);
   const { name: destName, loading: destLoading } = useReverseGeocode(destCoords);
   const pricing = usePricingSettings();
+  const [mapExpanded, setMapExpanded] = useState(false);
 
   const calcPrice = useCallback((km: number) => {
     return Math.max(pricing.minFare, Math.round(pricing.baseFare + km * pricing.perKmRate));
@@ -309,7 +310,10 @@ const CustomerPage = () => {
       </div>
 
       {/* Map */}
-      <div className="mx-5 mt-4 rounded-2xl overflow-hidden border border-border relative z-10" style={{ height: destCoords ? "200px" : "280px" }}>
+      <div
+        className={`mx-5 mt-4 rounded-2xl overflow-hidden border border-border relative z-10 transition-all duration-300 ${mapExpanded ? "fixed inset-0 mx-0 mt-0 rounded-none z-[100]" : ""}`}
+        style={mapExpanded ? { height: "100vh" } : { height: destCoords ? "200px" : "280px" }}
+      >
         <LeafletMap
           center={userLocation || DEFAULT_LOCATION}
           zoom={14}
@@ -318,18 +322,25 @@ const CustomerPage = () => {
           nearbyDrivers={nearbyDrivers}
           route={mapRoute}
           onMapClick={handleMapClick}
+          onExpandChange={setMapExpanded}
         />
-        <div className="absolute top-3 right-3 z-[1000] glass-strong px-3 py-2 rounded-xl text-xs flex items-center gap-2 border border-border shadow-lg">
-          <Crosshair className="w-3.5 h-3.5 text-primary" />
-          <span className="text-foreground">اضغط لتحديد الوجهة</span>
-        </div>
-        {userLocation && (
-          <div className="absolute bottom-3 right-3 z-[1000] glass-strong px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 border border-border">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_6px_rgba(34,197,94,0.6)]" />
-            <span className="text-foreground">موقعك</span>
-          </div>
+        {!mapExpanded && (
+          <>
+            <div className="absolute top-3 right-3 z-[1000] glass-strong px-3 py-2 rounded-xl text-xs flex items-center gap-2 border border-border shadow-lg">
+              <Crosshair className="w-3.5 h-3.5 text-primary" />
+              <span className="text-foreground">اضغط لتحديد الوجهة</span>
+            </div>
+            {userLocation && (
+              <div className="absolute bottom-3 right-3 z-[1000] glass-strong px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 border border-border">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_6px_rgba(34,197,94,0.6)]" />
+                <span className="text-foreground">موقعك</span>
+              </div>
+            )}
+          </>
         )}
       </div>
+
+      {mapExpanded && <div style={{ height: "100vh" }} />}
 
       {/* Price card */}
       <div className="px-5 mt-4 relative z-10">

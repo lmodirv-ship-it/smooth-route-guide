@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { Maximize2, Minimize2, Palette } from "lucide-react";
 
 const DEFAULT_CENTER: [number, number] = [35.7595, -5.8340];
 
-// Fix default marker icons for Leaflet
 const defaultIcon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -51,6 +51,27 @@ const destinationIcon = L.divIcon({
   iconAnchor: [14, 14],
 });
 
+const TILE_THEMES = {
+  light: {
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    label: "فاتح",
+  },
+  dark: {
+    url: "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
+    label: "داكن",
+  },
+  satellite: {
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    label: "قمر صناعي",
+  },
+  terrain: {
+    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    label: "تضاريس",
+  },
+};
+
+type ThemeKey = keyof typeof TILE_THEMES;
+
 interface NearbyDriverMarker {
   id: string;
   lat: number;
@@ -72,6 +93,9 @@ interface LeafletMapProps {
   nearbyDrivers?: NearbyDriverMarker[];
   route?: RoutePoints | null;
   onMapClick?: (latlng: { lat: number; lng: number }) => void;
+  /** Allow parent to control expanded state */
+  expandable?: boolean;
+  onExpandChange?: (expanded: boolean) => void;
   children?: React.ReactNode;
 }
 
@@ -85,6 +109,8 @@ const LeafletMap = ({
   nearbyDrivers = [],
   route,
   onMapClick,
+  expandable = true,
+  onExpandChange,
   children,
 }: LeafletMapProps) => {
   const mapElementRef = useRef<HTMLDivElement | null>(null);
@@ -94,6 +120,10 @@ const LeafletMap = ({
   const staticMarkerRef = useRef<L.Marker | null>(null);
   const driverMarkerRef = useRef<L.Marker | null>(null);
   const routeLayerRef = useRef<L.LayerGroup | null>(null);
+
+  const [theme, setTheme] = useState<ThemeKey>("light");
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const mapCenter = useMemo((): [number, number] => {
     if (driverLocation) return [driverLocation.lat, driverLocation.lng];
@@ -106,6 +136,23 @@ const LeafletMap = ({
     return mapCenter;
   }, [markerPosition, mapCenter]);
 
+  // Switch tile theme
+  const switchTheme = useCallback((newTheme: ThemeKey) => {
+    setTheme(newTheme);
+    setShowThemeMenu(false);
+    if (tileLayerRef.current && mapInstanceRef.current) {
+      tileLayerRef.current.setUrl(TILE_THEMES[newTheme].url);
+    }
+  }, []);
+
+  const toggleExpand = useCallback(() => {
+    const next = !isExpanded;
+    setIsExpanded(next);
+    onExpandChange?.(next);
+    // Invalidate map size after transition
+    setTimeout(() => mapInstanceRef.current?.invalidateSize(), 350);
+  }, [isExpanded, onExpandChange]);
+
   useEffect(() => {
     if (!mapElementRef.current || mapInstanceRef.current) return;
 
@@ -114,7 +161,7 @@ const LeafletMap = ({
       attributionControl: false,
     }).setView(mapCenter, zoom);
 
-    const tileLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    const tileLayer = L.tileLayer(TILE_THEMES[theme].url, {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       maxZoom: 19,
     });
@@ -147,7 +194,6 @@ const LeafletMap = ({
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;
-
     if (showMarker && !driverLocation) {
       if (!staticMarkerRef.current) {
         staticMarkerRef.current = L.marker(markerPos, { icon: defaultIcon }).addTo(mapInstanceRef.current);
@@ -162,7 +208,6 @@ const LeafletMap = ({
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;
-
     if (driverLocation) {
       const position: L.LatLngExpression = [driverLocation.lat, driverLocation.lng];
       if (!driverMarkerRef.current) {
@@ -180,14 +225,12 @@ const LeafletMap = ({
   useEffect(() => {
     const layer = nearbyDriversLayerRef.current;
     if (!layer) return;
-
     layer.clearLayers();
     nearbyDrivers.forEach((driver) => {
       L.marker([driver.lat, driver.lng], { icon: carIcon }).addTo(layer);
     });
   }, [nearbyDrivers]);
 
-  // Route rendering with real OSRM road routing
   useEffect(() => {
     const layer = routeLayerRef.current;
     const map = mapInstanceRef.current;
@@ -203,7 +246,6 @@ const LeafletMap = ({
     L.marker(pickupLatLng, { icon: pickupIcon }).bindPopup("نقطة الانطلاق").addTo(layer);
     L.marker(destLatLng, { icon: destinationIcon }).bindPopup("الوجهة").addTo(layer);
 
-    // Fetch real road route from OSRM
     const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${pickup.lng},${pickup.lat};${destination.lng},${destination.lat}?overview=full&geometries=geojson`;
 
     fetch(osrmUrl)
@@ -213,22 +255,12 @@ const LeafletMap = ({
           const coords = data.routes[0].geometry.coordinates.map(
             (c: [number, number]) => [c[1], c[0]] as L.LatLngExpression
           );
-          L.polyline(coords, {
-            color: "#10b981",
-            weight: 5,
-            opacity: 0.9,
-          }).addTo(layer);
+          L.polyline(coords, { color: "#10b981", weight: 5, opacity: 0.9 }).addTo(layer);
           map.fitBounds(L.latLngBounds(coords as L.LatLngExpression[]).pad(0.2));
         }
       })
       .catch(() => {
-        // Fallback to straight line
-        L.polyline([pickupLatLng, destLatLng], {
-          color: "#10b981",
-          weight: 4,
-          opacity: 0.8,
-          dashArray: "10, 8",
-        }).addTo(layer);
+        L.polyline([pickupLatLng, destLatLng], { color: "#10b981", weight: 4, opacity: 0.8, dashArray: "10, 8" }).addTo(layer);
         map.fitBounds(L.latLngBounds([pickupLatLng, destLatLng]).pad(0.3));
       });
   }, [route]);
@@ -237,7 +269,49 @@ const LeafletMap = ({
     <div className={`${className} relative`}>
       <div ref={mapElementRef} className="h-full w-full" />
 
-      {/* OpenStreetMap badge */}
+      {/* Map controls */}
+      <div className="absolute top-2 left-2 z-[1000] flex flex-col gap-1.5">
+        {/* Theme toggle */}
+        <div className="relative">
+          <button
+            onClick={() => setShowThemeMenu(!showThemeMenu)}
+            className="w-9 h-9 rounded-xl glass-card border border-border/50 flex items-center justify-center shadow-lg hover:shadow-xl transition-all"
+            title="تغيير مظهر الخريطة"
+          >
+            <Palette className="w-4 h-4 text-foreground" />
+          </button>
+          {showThemeMenu && (
+            <div className="absolute top-10 left-0 glass-card rounded-xl border border-border/50 shadow-xl p-1.5 min-w-[100px] z-[1001]">
+              {(Object.keys(TILE_THEMES) as ThemeKey[]).map((key) => (
+                <button
+                  key={key}
+                  onClick={() => switchTheme(key)}
+                  className={`w-full text-right px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    theme === key
+                      ? "bg-primary/20 text-primary"
+                      : "text-foreground hover:bg-secondary/50"
+                  }`}
+                >
+                  {TILE_THEMES[key].label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Expand/Collapse */}
+        {expandable && (
+          <button
+            onClick={toggleExpand}
+            className="w-9 h-9 rounded-xl glass-card border border-border/50 flex items-center justify-center shadow-lg hover:shadow-xl transition-all"
+            title={isExpanded ? "تصغير" : "توسيع"}
+          >
+            {isExpanded ? <Minimize2 className="w-4 h-4 text-foreground" /> : <Maximize2 className="w-4 h-4 text-foreground" />}
+          </button>
+        )}
+      </div>
+
+      {/* OSM badge */}
       <div className="absolute bottom-1 left-1 z-[1000] rounded bg-background/70 px-1.5 py-0.5 text-[10px] text-muted-foreground backdrop-blur-sm">
         OSM
       </div>
