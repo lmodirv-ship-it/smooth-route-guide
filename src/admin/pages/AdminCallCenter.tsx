@@ -5,6 +5,7 @@ import {
   User, Search, Filter, RefreshCw, MessageSquare, ArrowUpDown,
   PhoneIncoming, PhoneOutgoing, XCircle, Loader2
 } from "lucide-react";
+import AgentStaffPanel from "@/admin/components/AgentStaffPanel";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -101,6 +102,8 @@ const AdminCallCenter = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5" dir="rtl">
+      {/* Agent Staff Panel */}
+      <AgentStaffPanel />
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
