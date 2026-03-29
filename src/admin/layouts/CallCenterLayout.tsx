@@ -15,6 +15,7 @@ import FloatingChatButton from "@/components/FloatingChatButton";
 import logo from "@/assets/hn-driver-badge.png";
 import SidebarNavButton from "@/admin/components/SidebarNavButton";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
+import AgentFacePresence from "@/call-center/components/AgentFacePresence";
 
 const CallCenterLayout = () => {
   const { t, dir } = useI18n();
@@ -175,6 +176,7 @@ const CallCenterLayout = () => {
         </div>
       </div>
     </div>
+    <AgentFacePresence />
     <FloatingChatButton />
     <GlobalContactFooter />
     </>
