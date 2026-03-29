@@ -191,7 +191,6 @@ const AdminDashboardPage = () => {
       activeDriverSubs: driverSubsRes.count || 0,
       activeCustomerSubs: customerSubsRes.count || 0,
     });
-    });
 
     setRecentTrips(recentTripsRes.data || []);
     setEarningsEntries(earnings);
