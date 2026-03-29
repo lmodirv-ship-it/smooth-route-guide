@@ -41,8 +41,16 @@ const GlobalContactFooter = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="contact-royal-box flex flex-col sm:flex-row items-center gap-3 sm:gap-6 px-6 py-4 rounded-2xl max-w-xl w-full"
+        className="contact-royal-box flex flex-col sm:flex-row items-center gap-3 sm:gap-6 px-6 py-4 rounded-2xl max-w-xl w-full relative"
       >
+        {/* Hide button */}
+        <button
+          onClick={() => setVisible(false)}
+          className="absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center bg-[hsl(45,60%,40%,0.3)] hover:bg-[hsl(0,70%,50%,0.5)] transition-colors text-[hsl(45,90%,70%)] hover:text-white text-xs font-bold"
+          title="إخفاء"
+        >
+          ✕
+        </button>
         {/* Email */}
         <a
           href="mailto:lmodirv@gmail.com"
