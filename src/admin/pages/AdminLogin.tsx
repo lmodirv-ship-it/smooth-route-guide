@@ -413,7 +413,7 @@ const AdminLogin = () => {
         <FaceAuthGate
           email={email}
           onVerified={handleFaceVerified}
-          onSkip={() => { setFaceCheckActive(false); setFaceVerified(true); }}
+          onSkip={handleFaceSkipped}
         />
       )}
 
