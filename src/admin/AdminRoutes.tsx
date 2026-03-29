@@ -37,6 +37,7 @@ import SupervisorDashboard from "@/admin/pages/supervisor/SupervisorDashboard";
 import SupervisorDrivers from "@/admin/pages/supervisor/SupervisorDrivers";
 import SupervisorDelivery from "@/admin/pages/supervisor/SupervisorDelivery";
 import SupervisorCallCenter from "@/admin/pages/supervisor/SupervisorCallCenter";
+import SupervisorAgentDetail from "@/admin/pages/supervisor/SupervisorAgentDetail";
 import SupervisorRestaurants from "@/admin/pages/supervisor/SupervisorRestaurants";
 
 // Call Center layout & pages
@@ -120,6 +121,7 @@ export const adminRouteElements = (
       <Route path="drivers" element={<SupervisorDrivers />} />
       <Route path="delivery" element={<SupervisorDelivery />} />
       <Route path="call-center" element={<SupervisorCallCenter />} />
+      <Route path="agent/:agentId" element={<SupervisorAgentDetail />} />
       <Route path="restaurants" element={<SupervisorRestaurants />} />
       <Route path="city-activation" element={<CityActivation />} />
       <Route path="messaging" element={<InternalMessaging />} />
