@@ -12,6 +12,7 @@ import DeliveryPricingSettings from "@/admin/components/settings/DeliveryPricing
 import PaymentSettings from "@/admin/components/settings/PaymentSettings";
 import LanguageManagement from "@/admin/components/LanguageManagement";
 import GeoSettings from "@/admin/components/settings/GeoSettings";
+import VisibilitySettings from "@/admin/components/settings/VisibilitySettings";
 
 const AdminSettings = () => {
   const { t } = useI18n();
