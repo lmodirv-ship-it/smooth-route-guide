@@ -93,15 +93,17 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 320, height: 240, facingMode: "user" },
+        video: { width: 480, height: 360, facingMode: "user" },
       });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
       }
+      // Start real-time landmark tracking
+      startLandmarkTracking();
       // Auto-scan after brief delay
-      setTimeout(() => scanFace(), 1500);
+      setTimeout(() => scanFace(), 2000);
     } catch {
       toast.error("لا يمكن الوصول إلى الكاميرا");
       onSkip();
