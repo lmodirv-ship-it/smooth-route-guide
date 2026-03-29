@@ -21,6 +21,8 @@ interface SupervisorRecord {
   phone: string;
   userCode: string;
   createdAt: string;
+  lastSeenAt: string | null;
+  isSuspended: boolean;
 }
 
 interface UserOption {
@@ -56,7 +58,7 @@ const Supervisors = () => {
     const userIds = roles.map(r => r.user_id);
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, name, email, phone, created_at, user_code")
+      .select("id, name, email, phone, created_at, user_code, last_seen_at, is_suspended")
       .in("id", userIds);
 
     const mapped: SupervisorRecord[] = (profiles || []).map(p => ({
@@ -67,6 +69,8 @@ const Supervisors = () => {
       phone: p.phone || "—",
       userCode: p.user_code || "—",
       createdAt: p.created_at,
+      lastSeenAt: (p as any).last_seen_at || null,
+      isSuspended: (p as any).is_suspended ?? false,
     }));
 
     setSupervisors(mapped);
@@ -192,7 +196,13 @@ const Supervisors = () => {
             ) : filtered.map(s => (
               <TableRow key={s.id}>
                 <TableCell className="text-center">
-                  <Badge variant="outline" className="font-mono text-xs font-bold">{s.userCode}</Badge>
+                  <Badge variant="outline" className={`font-mono text-xs font-bold ${
+                    s.isSuspended
+                      ? "bg-black text-white border-black"
+                      : s.lastSeenAt && (Date.now() - new Date(s.lastSeenAt).getTime()) < 5 * 60 * 1000
+                        ? "bg-green-500/15 text-green-600 border-green-500/50"
+                        : "bg-red-500/15 text-red-600 border-red-500/50"
+                  }`}>{s.userCode}</Badge>
                 </TableCell>
                 <TableCell className="font-medium text-right">{s.name}</TableCell>
                 <TableCell className="text-right text-muted-foreground text-sm">{s.email}</TableCell>

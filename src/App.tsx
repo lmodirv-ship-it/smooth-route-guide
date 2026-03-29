@@ -13,12 +13,25 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
 import { I18nProvider } from "@/i18n/context";
+import { usePresenceHeartbeat } from "@/hooks/usePresenceHeartbeat";
 
 // ─── Module route elements ───
 import { mainRouteElements } from "./app";
 import { adminRouteElements } from "./admin";
 
 const queryClient = new QueryClient();
+
+const AppInner = () => {
+  usePresenceHeartbeat();
+  return (
+    <BrowserRouter>
+      <Routes>
+        {mainRouteElements}
+        {adminRouteElements}
+      </Routes>
+    </BrowserRouter>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -27,15 +40,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <CartProvider>
-          <BrowserRouter>
-            <Routes>
-              {/* ═══ Main Application (Customer / Driver / Delivery) ═══ */}
-              {mainRouteElements}
-
-              {/* ═══ Admin Panel (Dashboard / Call Center) ═══ */}
-              {adminRouteElements}
-            </Routes>
-          </BrowserRouter>
+          <AppInner />
         </CartProvider>
       </TooltipProvider>
     </I18nProvider>
