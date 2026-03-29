@@ -73,6 +73,35 @@ export default function VisibilitySettings() {
         </h3>
       </div>
       <p className="text-sm text-muted-foreground text-right">تحكم في ما يظهر وما يختفي في الصفحات الرئيسية</p>
+
+      {/* Master toggle buttons */}
+      <div className="flex gap-3 justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+          onClick={() => {
+            const all: Record<string, boolean> = {};
+            SECTIONS.forEach(s => { all[s.key] = false; });
+            setVisibility(all);
+          }}
+        >
+          <EyeOff className="w-4 h-4" /> إخفاء الكل
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+          onClick={() => {
+            const all: Record<string, boolean> = {};
+            SECTIONS.forEach(s => { all[s.key] = true; });
+            setVisibility(all);
+          }}
+        >
+          <Eye className="w-4 h-4" /> إظهار الكل
+        </Button>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {SECTIONS.map(s => (
           <div key={s.key} className="flex items-center justify-between p-3 rounded-lg border border-border bg-secondary/30">
