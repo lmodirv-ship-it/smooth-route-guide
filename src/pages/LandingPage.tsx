@@ -17,6 +17,7 @@ import logo from "@/assets/hn-driver-badge.png";
 import iconVtcCar from "@/assets/icon-vtc-car.png";
 import iconDeliveryBike from "@/assets/icon-delivery-bike.png";
 import iconFleetMgmt from "@/assets/icon-fleet-mgmt.png";
+import iconClientApp from "@/assets/icon-client-app.png";
 import partnerHibaEco from "@/assets/partner-hiba-eco.png";
 import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
 import partnerTanjaPrint from "@/assets/partner-tanja-print.png";
@@ -422,8 +423,9 @@ export default function LandingPage() {
           </motion.div>
 
           {/* ═══ 3 Role Cards — Glowing glass with inner blue light ═══ */}
-          <div className="grid md:grid-cols-3 gap-4 mt-6 max-w-3xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 max-w-4xl mx-auto">
             {[
+              { img: iconClientApp, label: dir === "rtl" ? "العميل" : "Client", desc: dir === "rtl" ? "اطلب رحلة أو توصيل" : "Book a ride or delivery", route: "/login" },
               { img: iconVtcCar, label: "VTC Taxi", desc: dir === "rtl" ? "سائقون محترفون" : "Professional drivers", route: "/auth/driver" },
               { img: iconDeliveryBike, label: "Livraisons Express", desc: dir === "rtl" ? "توصيل سريع" : "Fast delivery", route: "/delivery" },
               { img: iconFleetMgmt, label: "Gestion Flotte", desc: dir === "rtl" ? "إدارة الأسطول" : "Fleet management", route: "/auth/client" },
