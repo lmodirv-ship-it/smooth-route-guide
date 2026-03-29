@@ -28,6 +28,10 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [savedDescriptor, setSavedDescriptor] = useState<number[] | null>(null);
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
+  const [fallbackPassword, setFallbackPassword] = useState("");
+  const [showFallbackPassword, setShowFallbackPassword] = useState(false);
+  const [fallbackLoading, setFallbackLoading] = useState(false);
+  const [showPasswordFallback, setShowPasswordFallback] = useState(false);
 
   // Load face-api models
   useEffect(() => {
