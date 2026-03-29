@@ -12,6 +12,7 @@ import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import { useReverseGeocode } from "@/hooks/useReverseGeocode";
 import { tangierLocations, locationCategories, TangierLocation } from "@/data/tangierLocations";
 import { usePricingSettings } from "@/hooks/usePricingSettings";
+import SubscriptionIndicator from "@/components/SubscriptionIndicator";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 
@@ -245,11 +246,12 @@ const CustomerPage = () => {
       </div>
 
       {/* Header */}
-      <div className="sticky top-0 z-50 px-5 py-4 flex items-center justify-between glass-strong border-b border-border">
-        <div className="flex items-center gap-1">
+      <div className="sticky top-0 z-50 px-5 py-3 flex items-center justify-between glass-strong border-b border-border">
+        <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground px-2 py-1 rounded-full glass border border-border">
             {nearbyDrivers.length > 0 ? `${nearbyDrivers.length} سائق متاح` : "جارٍ البحث..."}
           </span>
+          <SubscriptionIndicator />
         </div>
         <div className="flex items-center gap-2.5">
           <Sparkles className="w-5 h-5 text-primary" />

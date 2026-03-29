@@ -751,6 +751,119 @@ export type Database = {
           },
         ]
       }
+      customer_packages: {
+        Row: {
+          created_at: string
+          credits: number | null
+          description_ar: string | null
+          description_fr: string | null
+          duration_days: number
+          id: string
+          is_active: boolean
+          is_featured: boolean
+          name_ar: string
+          name_en: string
+          name_fr: string
+          original_price: number | null
+          package_type: string
+          price: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credits?: number | null
+          description_ar?: string | null
+          description_fr?: string | null
+          duration_days?: number
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          name_ar?: string
+          name_en?: string
+          name_fr?: string
+          original_price?: number | null
+          package_type?: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credits?: number | null
+          description_ar?: string | null
+          description_fr?: string | null
+          duration_days?: number
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          name_ar?: string
+          name_en?: string
+          name_fr?: string
+          original_price?: number | null
+          package_type?: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      customer_subscriptions: {
+        Row: {
+          amount_paid: number
+          created_at: string
+          credits_remaining: number
+          credits_total: number
+          expires_at: string
+          id: string
+          package_id: string | null
+          payment_method: string
+          starts_at: string
+          status: string
+          subscription_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_paid?: number
+          created_at?: string
+          credits_remaining?: number
+          credits_total?: number
+          expires_at: string
+          id?: string
+          package_id?: string | null
+          payment_method?: string
+          starts_at?: string
+          status?: string
+          subscription_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number
+          created_at?: string
+          credits_remaining?: number
+          credits_total?: number
+          expires_at?: string
+          id?: string
+          package_id?: string | null
+          payment_method?: string
+          starts_at?: string
+          status?: string
+          subscription_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_subscriptions_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "customer_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       delivery_orders: {
         Row: {
           accepted_at: string | null
