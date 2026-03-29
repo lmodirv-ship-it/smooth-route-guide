@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Trash2, Save, Monitor } from "lucide-react";
+import { Plus, Trash2, Save, Monitor, Calendar, Clock } from "lucide-react";
 
 interface Ad {
   id: string;
@@ -19,7 +19,14 @@ interface Ad {
   duration_seconds: number;
   is_active: boolean;
   sort_order: number;
+  start_date: string | null;
+  end_date: string | null;
 }
+
+const formatDateForInput = (d: string | null) => {
+  if (!d) return "";
+  try { return new Date(d).toISOString().slice(0, 16); } catch { return ""; }
+};
 
 const AdsManagement = () => {
   const [ads, setAds] = useState<Ad[]>([]);
@@ -34,6 +41,8 @@ const AdsManagement = () => {
   useEffect(() => { loadAds(); }, [loadAds]);
 
   const addAd = async () => {
+    const now = new Date();
+    const end = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     const { error } = await supabase.from("ads" as any).insert({
       slot_number: 1,
       title: "إعلان جديد",
@@ -44,6 +53,8 @@ const AdsManagement = () => {
       duration_seconds: 5,
       is_active: true,
       sort_order: ads.length,
+      start_date: now.toISOString(),
+      end_date: end.toISOString(),
     } as any);
     if (error) toast({ title: "خطأ", description: error.message, variant: "destructive" });
     else { toast({ title: "تمت الإضافة" }); loadAds(); }
@@ -77,7 +88,7 @@ const AdsManagement = () => {
       </div>
 
       <p className="text-sm text-muted-foreground">
-        4 شاشات إعلانية في أسفل الصفحة الرئيسية — يمكنك إضافة عدة إعلانات لكل شاشة مع التدوير التلقائي.
+        4 شاشات إعلانية في أسفل الصفحة الرئيسية — يمكنك إضافة عدة إعلانات لكل شاشة مع التدوير التلقائي والجدولة الزمنية.
       </p>
 
       {/* Slot overview */}
@@ -118,17 +129,31 @@ const AdRow = ({ ad, onUpdate, onDelete }: { ad: Ad; onUpdate: (id: string, u: P
   const [duration, setDuration] = useState(ad.duration_seconds);
   const [contentType, setContentType] = useState(ad.content_type);
   const [slotNumber, setSlotNumber] = useState(ad.slot_number);
+  const [startDate, setStartDate] = useState(formatDateForInput(ad.start_date));
+  const [endDate, setEndDate] = useState(formatDateForInput(ad.end_date));
 
-  const save = () => onUpdate(ad.id, { title, content_text: contentText, image_url: imageUrl, link_url: linkUrl, duration_seconds: duration, content_type: contentType, slot_number: slotNumber });
+  const save = () => onUpdate(ad.id, {
+    title, content_text: contentText, image_url: imageUrl, link_url: linkUrl,
+    duration_seconds: duration, content_type: contentType, slot_number: slotNumber,
+    start_date: startDate ? new Date(startDate).toISOString() : null,
+    end_date: endDate ? new Date(endDate).toISOString() : null,
+  });
+
+  const isScheduled = (() => {
+    const now = new Date();
+    if (startDate && new Date(startDate) > now) return "مجدول";
+    if (endDate && new Date(endDate) < now) return "منتهي";
+    return ad.is_active ? "نشط" : "معطل";
+  })();
+
+  const statusColor = isScheduled === "نشط" ? "text-green-400" : isScheduled === "مجدول" ? "text-yellow-400" : isScheduled === "منتهي" ? "text-red-400" : "text-muted-foreground";
 
   return (
     <div className="rounded-xl border border-border bg-card/60 p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Switch checked={ad.is_active} onCheckedChange={v => onUpdate(ad.id, { is_active: v })} />
-          <span className={`text-sm font-medium ${ad.is_active ? "text-green-400" : "text-muted-foreground"}`}>
-            {ad.is_active ? "نشط" : "معطل"}
-          </span>
+          <span className={`text-sm font-medium ${statusColor}`}>{isScheduled}</span>
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" onClick={save} className="gap-1"><Save className="w-3 h-3" /> حفظ</Button>
@@ -180,9 +205,21 @@ const AdRow = ({ ad, onUpdate, onDelete }: { ad: Ad; onUpdate: (id: string, u: P
             <Input value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://..." dir="ltr" />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">المدة (ثوان)</label>
+            <label className="text-xs text-muted-foreground mb-1 block flex items-center gap-1"><Clock className="w-3 h-3" /> المدة (ثوان)</label>
             <Input type="number" min={2} max={60} value={duration} onChange={e => setDuration(Number(e.target.value))} />
           </div>
+        </div>
+      </div>
+
+      {/* Scheduling */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 rounded-lg border border-border/50 bg-muted/20">
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> تاريخ البداية</label>
+          <Input type="datetime-local" value={startDate} onChange={e => setStartDate(e.target.value)} dir="ltr" />
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> تاريخ النهاية</label>
+          <Input type="datetime-local" value={endDate} onChange={e => setEndDate(e.target.value)} dir="ltr" />
         </div>
       </div>
     </div>
