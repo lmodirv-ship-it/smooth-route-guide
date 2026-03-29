@@ -27,6 +27,7 @@ interface UserOption {
   id: string;
   name: string;
   email: string;
+  userCode: string;
 }
 
 const Supervisors = () => {
@@ -76,10 +77,9 @@ const Supervisors = () => {
     // Get all profiles
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, name, email")
+      .select("id, name, email, user_code")
       .order("name");
 
-    // Get existing moderators
     const { data: existingRoles } = await supabase
       .from("user_roles")
       .select("user_id")
@@ -90,7 +90,7 @@ const Supervisors = () => {
     setAvailableUsers(
       (profiles || [])
         .filter(p => !existingIds.has(p.id))
-        .map(p => ({ id: p.id, name: p.name || "—", email: p.email || "—" }))
+        .map(p => ({ id: p.id, name: p.name || "—", email: p.email || "—", userCode: p.user_code || "—" }))
     );
   };
 
