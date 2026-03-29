@@ -93,6 +93,7 @@ const AdminLayout = () => {
     { path: "/admin/call-center", icon: Headphones, label: t.admin.callCenterMenu },
     { path: "/admin/restaurants", icon: UtensilsCrossed, label: t.admin.restaurantsMenu },
     { path: "/admin/zones", icon: MapPin, label: t.admin.zonesPricing },
+    { path: "/admin/city-activation", icon: Globe, label: "تنشيط المدن" },
     { path: "/admin/commission-rates", icon: Percent, label: t.admin.commissionRates },
     { path: "/admin/smart-assistant", icon: Bot, label: t.admin.smartAssistantPage },
     { path: "/admin/sub-assistants", icon: BrainCircuit, label: t.admin.subAssistants },

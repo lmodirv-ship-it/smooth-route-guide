@@ -3,7 +3,7 @@ import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck, Car, Send, Headphones, UtensilsCrossed,
-  Bell, Search, BarChart3, Menu, X, MessageSquare,
+  Bell, Search, BarChart3, Menu, X, MessageSquare, Globe,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import logo from "@/assets/hn-driver-badge.png";
@@ -28,6 +28,7 @@ const SupervisorLayout = () => {
     { path: "/supervisor/delivery", icon: Send, label: t.admin.deliveryDrivers },
     { path: "/supervisor/call-center", icon: Headphones, label: t.admin.callCenterMenu },
     { path: "/supervisor/restaurants", icon: UtensilsCrossed, label: t.admin.restaurantsMenu },
+    { path: "/supervisor/city-activation", icon: Globe, label: "تنشيط المدن" },
     { path: "/supervisor/messaging", icon: MessageSquare, label: "المحادثات" },
   ];
 

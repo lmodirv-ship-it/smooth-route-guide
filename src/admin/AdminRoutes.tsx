@@ -29,6 +29,7 @@ import SupervisorsPage from "@/admin/pages/Supervisors";
 import SetupAdmin from "@/admin/pages/SetupAdmin";
 import DriverPackages from "@/admin/pages/DriverPackages";
 import AdminCommunityChat from "@/admin/pages/AdminCommunityChat";
+import CityActivation from "@/admin/pages/CityActivation";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
@@ -81,6 +82,7 @@ export const adminRouteElements = (
       <Route path="call-center" element={<AdminCallCenter />} />
       <Route path="restaurants" element={<AdminRestaurants />} />
       <Route path="zones" element={<ZonesManagement />} />
+      <Route path="city-activation" element={<CityActivation />} />
       <Route path="commission-rates" element={<CommissionRatesPage />} />
       <Route path="smart-assistant" element={<SmartAssistantPage />} />
       <Route path="sub-assistants" element={<SubAssistantsPage />} />
@@ -119,6 +121,7 @@ export const adminRouteElements = (
       <Route path="delivery" element={<SupervisorDelivery />} />
       <Route path="call-center" element={<SupervisorCallCenter />} />
       <Route path="restaurants" element={<SupervisorRestaurants />} />
+      <Route path="city-activation" element={<CityActivation />} />
       <Route path="messaging" element={<InternalMessaging />} />
     </Route>
   </>
