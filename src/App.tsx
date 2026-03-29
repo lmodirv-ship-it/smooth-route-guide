@@ -13,6 +13,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
 import { I18nProvider } from "@/i18n/context";
+import { usePresenceHeartbeat } from "@/hooks/usePresenceHeartbeat";
 
 // ─── Module route elements ───
 import { mainRouteElements } from "./app";
