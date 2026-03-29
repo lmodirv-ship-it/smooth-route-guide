@@ -19,6 +19,7 @@ interface SupervisorRecord {
   name: string;
   email: string;
   phone: string;
+  userCode: string;
   createdAt: string;
 }
 
@@ -54,7 +55,7 @@ const Supervisors = () => {
     const userIds = roles.map(r => r.user_id);
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, name, email, phone, created_at")
+      .select("id, name, email, phone, created_at, user_code")
       .in("id", userIds);
 
     const mapped: SupervisorRecord[] = (profiles || []).map(p => ({
@@ -63,6 +64,7 @@ const Supervisors = () => {
       name: p.name || "—",
       email: p.email || "—",
       phone: p.phone || "—",
+      userCode: p.user_code || "—",
       createdAt: p.created_at,
     }));
 
@@ -97,7 +99,7 @@ const Supervisors = () => {
   const filtered = useMemo(() => {
     if (!search) return supervisors;
     return supervisors.filter(s =>
-      s.name.includes(search) || s.email.includes(search) || s.phone.includes(search)
+      s.name.includes(search) || s.email.includes(search) || s.phone.includes(search) || s.userCode.includes(search)
     );
   }, [supervisors, search]);
 
@@ -172,6 +174,7 @@ const Supervisors = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="text-center">الرمز</TableHead>
               <TableHead className="text-right">الاسم</TableHead>
               <TableHead className="text-right">البريد</TableHead>
               <TableHead className="text-right">الهاتف</TableHead>
@@ -182,12 +185,15 @@ const Supervisors = () => {
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
                   لا يوجد مشرفون
                 </TableCell>
               </TableRow>
             ) : filtered.map(s => (
               <TableRow key={s.id}>
+                <TableCell className="text-center">
+                  <Badge variant="outline" className="font-mono text-xs font-bold">{s.userCode}</Badge>
+                </TableCell>
                 <TableCell className="font-medium text-right">{s.name}</TableCell>
                 <TableCell className="text-right text-muted-foreground text-sm">{s.email}</TableCell>
                 <TableCell className="text-right text-muted-foreground text-sm">{s.phone}</TableCell>
