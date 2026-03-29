@@ -30,6 +30,7 @@ import DriverSupport from "@/pages/driver/DriverSupport";
 import DriverStatus from "@/pages/driver/DriverStatus";
 import DriverEarnings from "@/pages/driver/DriverEarnings";
 import DriverSubscription from "@/pages/driver/DriverSubscription";
+import CommunityChat from "@/pages/CommunityChat";
 
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
@@ -93,6 +94,7 @@ const DriverRideApp = () => (
             <Route path="/driver/status" element={<RequireRole allowed={["driver"]}><><RideDriverLayout /><DriverStatus /></></RequireRole>} />
             <Route path="/driver/earnings" element={<RequireRole allowed={["driver"]}><><RideDriverLayout /><DriverEarnings /></></RequireRole>} />
             <Route path="/driver/subscription" element={<RequireRole allowed={["driver"]}><><RideDriverLayout /><DriverSubscription /></></RequireRole>} />
+            <Route path="/community" element={<RequireRole allowed={["driver"]}><><RideDriverLayout /><CommunityChat /></></RequireRole>} />
 
             {/* Redirects */}
             <Route path="/" element={<Navigate to="/driver" replace />} />

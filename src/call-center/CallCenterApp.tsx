@@ -42,6 +42,7 @@ import AssistantKnowledge from "@/admin/pages/callcenter/AssistantKnowledge";
 import InternalMessaging from "@/admin/pages/callcenter/InternalMessaging";
 import AdminLiveMap from "@/admin/pages/LiveMap";
 import AdminAlerts from "@/admin/pages/Alerts";
+import CommunityChat from "@/pages/CommunityChat";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +78,7 @@ const CallCenterApp = () => (
               <Route path="alerts" element={<AdminAlerts />} />
               <Route path="knowledge" element={<AssistantKnowledge />} />
               <Route path="messaging" element={<InternalMessaging />} />
+              <Route path="community" element={<CommunityChat />} />
             </Route>
 
             {/* Redirects */}
