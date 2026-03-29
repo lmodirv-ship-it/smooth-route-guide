@@ -14,6 +14,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
 import { I18nProvider } from "@/i18n/context";
 import { usePresenceHeartbeat } from "@/hooks/usePresenceHeartbeat";
+import { useTheme } from "@/hooks/useTheme";
 
 // ─── Module route elements ───
 import { mainRouteElements } from "./app";
@@ -23,6 +24,7 @@ const queryClient = new QueryClient();
 
 const AppInner = () => {
   usePresenceHeartbeat();
+  useTheme(); // Load and apply active theme from DB
   return (
     <BrowserRouter>
       <Routes>
