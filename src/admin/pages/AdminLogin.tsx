@@ -135,11 +135,7 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // If face profile exists and not yet verified, require face first
-    if (hasFaceProfile && !faceVerified) {
-      setFaceCheckActive(true);
-      return;
-    }
+    // Password mode: just login with credentials (face is optional enhancement)
     handleLoginWithCredentials();
   };
 
