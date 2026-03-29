@@ -5,27 +5,42 @@ import { supabase } from "@/integrations/supabase/client";
 
 const GlobalContactFooter = () => {
   const [visible, setVisible] = useState(true);
+  const [email, setEmail] = useState("lmodirv@gmail.com");
+  const [phone, setPhone] = useState("+212 0668546358");
 
   useEffect(() => {
     const load = async () => {
       const { data } = await supabase
         .from("app_settings")
-        .select("value")
-        .eq("key", "ui_visibility")
-        .maybeSingle();
-      if (data?.value) {
-        const v = data.value as Record<string, boolean>;
-        if (v.contact_footer === false) setVisible(false);
+        .select("key, value")
+        .in("key", ["ui_visibility", "contact_info"]);
+      if (data) {
+        const vis = data.find(d => d.key === "ui_visibility");
+        if (vis?.value) {
+          const v = vis.value as Record<string, boolean>;
+          if (v.contact_footer === false) setVisible(false);
+        }
+        const contact = data.find(d => d.key === "contact_info");
+        if (contact?.value) {
+          const c = contact.value as Record<string, string>;
+          if (c.email) setEmail(c.email);
+          if (c.phone) setPhone(c.phone);
+        }
       }
     };
     load();
 
     const channel = supabase
-      .channel("contact-footer-visibility")
+      .channel("contact-footer-settings")
       .on("postgres_changes", { event: "*", schema: "public", table: "app_settings" }, (payload: any) => {
         if (payload.new?.key === "ui_visibility") {
           const v = payload.new.value as Record<string, boolean>;
           setVisible(v.contact_footer !== false);
+        }
+        if (payload.new?.key === "contact_info") {
+          const c = payload.new.value as Record<string, string>;
+          if (c.email) setEmail(c.email);
+          if (c.phone) setPhone(c.phone);
         }
       })
       .subscribe();
@@ -34,6 +49,8 @@ const GlobalContactFooter = () => {
   }, []);
 
   if (!visible) return null;
+
+  const whatsappNumber = phone.replace(/[\s+\-()]/g, "");
 
   return (
     <div className="w-full py-4 px-4 flex justify-center">
@@ -51,16 +68,17 @@ const GlobalContactFooter = () => {
         >
           ✕
         </button>
+
         {/* Email */}
         <a
-          href="mailto:lmodirv@gmail.com"
+          href={`mailto:${encodeURIComponent(email)}`}
           className="flex items-center gap-2 text-sm font-semibold tracking-wide group transition-all duration-300"
         >
           <div className="w-9 h-9 rounded-lg flex items-center justify-center contact-royal-icon-box">
             <Mail className="w-4 h-4 text-[hsl(45,90%,65%)]" />
           </div>
           <span className="text-[hsl(45,90%,70%)] group-hover:text-[hsl(45,95%,80%)] transition-colors">
-            lmodirv@gmail.com
+            {email}
           </span>
         </a>
 
@@ -70,7 +88,7 @@ const GlobalContactFooter = () => {
 
         {/* WhatsApp */}
         <a
-          href="https://wa.me/2120668546358"
+          href={`https://wa.me/${whatsappNumber}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 text-sm font-semibold tracking-wide group transition-all duration-300"
@@ -79,7 +97,7 @@ const GlobalContactFooter = () => {
             <Phone className="w-4 h-4 text-[hsl(45,90%,65%)]" />
           </div>
           <span className="text-[hsl(45,90%,70%)] group-hover:text-[hsl(45,95%,80%)] transition-colors" dir="ltr">
-            +212 0668546358
+            {phone}
           </span>
         </a>
       </motion.div>
