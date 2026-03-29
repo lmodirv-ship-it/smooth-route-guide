@@ -689,6 +689,7 @@ export type Database = {
           agent_id: string | null
           agent_notes: string | null
           category: string
+          complaint_code: string | null
           created_at: string
           description: string
           driver_id: string | null
@@ -703,6 +704,7 @@ export type Database = {
           agent_id?: string | null
           agent_notes?: string | null
           category?: string
+          complaint_code?: string | null
           created_at?: string
           description?: string
           driver_id?: string | null
@@ -717,6 +719,7 @@ export type Database = {
           agent_id?: string | null
           agent_notes?: string | null
           category?: string
+          complaint_code?: string | null
           created_at?: string
           description?: string
           driver_id?: string | null
@@ -884,6 +887,7 @@ export type Database = {
           id: string
           items: Json | null
           notes: string | null
+          order_code: string | null
           picked_up_at: string | null
           pickup_address: string | null
           pickup_lat: number | null
@@ -916,6 +920,7 @@ export type Database = {
           id?: string
           items?: Json | null
           notes?: string | null
+          order_code?: string | null
           picked_up_at?: string | null
           pickup_address?: string | null
           pickup_lat?: number | null
@@ -948,6 +953,7 @@ export type Database = {
           id?: string
           items?: Json | null
           notes?: string | null
+          order_code?: string | null
           picked_up_at?: string | null
           pickup_address?: string | null
           pickup_lat?: number | null
@@ -1818,6 +1824,7 @@ export type Database = {
           created_at: string
           id: string
           method: string
+          payment_code: string | null
           status: string
           trip_id: string
         }
@@ -1826,6 +1833,7 @@ export type Database = {
           created_at?: string
           id?: string
           method?: string
+          payment_code?: string | null
           status?: string
           trip_id: string
         }
@@ -1834,6 +1842,7 @@ export type Database = {
           created_at?: string
           id?: string
           method?: string
+          payment_code?: string | null
           status?: string
           trip_id?: string
         }
@@ -2552,6 +2561,7 @@ export type Database = {
           start_location: string | null
           started_at: string | null
           status: string
+          trip_code: string | null
           user_id: string
         }
         Insert: {
@@ -2565,6 +2575,7 @@ export type Database = {
           start_location?: string | null
           started_at?: string | null
           status?: string
+          trip_code?: string | null
           user_id: string
         }
         Update: {
@@ -2578,6 +2589,7 @@ export type Database = {
           start_location?: string | null
           started_at?: string | null
           status?: string
+          trip_code?: string | null
           user_id?: string
         }
         Relationships: [
@@ -2624,6 +2636,7 @@ export type Database = {
           id: string
           model: string
           plate_no: string
+          vehicle_code: string | null
         }
         Insert: {
           brand?: string
@@ -2633,6 +2646,7 @@ export type Database = {
           id?: string
           model?: string
           plate_no?: string
+          vehicle_code?: string | null
         }
         Update: {
           brand?: string
@@ -2642,6 +2656,7 @@ export type Database = {
           id?: string
           model?: string
           plate_no?: string
+          vehicle_code?: string | null
         }
         Relationships: [
           {
@@ -2829,6 +2844,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      generate_entity_code: { Args: { prefix: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
