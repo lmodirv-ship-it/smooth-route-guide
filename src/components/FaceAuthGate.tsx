@@ -208,6 +208,7 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
     else {
       setState("rejected");
       stopCamera();
+      // Camera is fully stopped here — password fallback has no camera
 
       const canvas = document.createElement("canvas");
       canvas.width = videoRef.current.videoWidth;
