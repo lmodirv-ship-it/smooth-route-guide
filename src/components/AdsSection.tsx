@@ -53,7 +53,7 @@ const AdSlot = ({ ads, slotNumber }: { ads: Ad[]; slotNumber: number }) => {
         {current.content_type === "image" && current.image_url ? (
           current.link_url ? (
             <a href={current.link_url} target="_blank" rel="noopener noreferrer" className="w-full h-full">
-              <img src={current.image_url} alt={current.title} className="w-full h-full object-cover rounded-lg" />
+              <img src={current.image_url} alt={current.title} className="w-full h-full object-cover" />
             </a>
           ) : (
             <img src={current.image_url} alt={current.title} className="w-full h-full object-cover rounded-lg" />
