@@ -16,6 +16,7 @@ interface Contact {
   name: string;
   phone: string | null;
   avatar_url: string | null;
+  user_code: string | null;
   role?: string;
 }
 
@@ -37,7 +38,7 @@ const FloatingChatButton = () => {
 
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, name, phone, avatar_url")
+        .select("id, name, phone, avatar_url, user_code")
         .order("name");
 
       if (profiles) {
@@ -101,7 +102,7 @@ const FloatingChatButton = () => {
   const startInternalCall = async (contact: Contact) => {
     await inAppCall.startCall({
       id: contact.id,
-      name: contact.name || "بدون اسم",
+      name: contact.user_code || contact.name || "بدون اسم",
       avatarUrl: contact.avatar_url,
     });
   };
@@ -165,12 +166,12 @@ const FloatingChatButton = () => {
                     <Avatar className="w-9 h-9">
                       <AvatarImage src={contact.avatar_url || undefined} />
                       <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
-                        {contact.name?.charAt(0)?.toUpperCase() || "?"}
+                        {(contact.user_code || contact.name)?.charAt(0)?.toUpperCase() || "?"}
                       </AvatarFallback>
                     </Avatar>
 
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{contact.name || "بدون اسم"}</p>
+                      <p className="text-sm font-medium text-foreground truncate font-mono">{contact.user_code || contact.name || "بدون اسم"}</p>
                       <div className="flex items-center gap-1.5">
                         <Badge variant="outline" className={`text-[10px] px-1.5 py-0 h-4 ${roleColor(contact.role || "user")}`}>
                           {roleLabel(contact.role || "user")}
