@@ -25,6 +25,7 @@ import DriverWallet from "@/pages/driver/DriverWallet";
 import DriverSupport from "@/pages/driver/DriverSupport";
 import DriverEarnings from "@/pages/driver/DriverEarnings";
 import DriverSubscription from "@/pages/driver/DriverSubscription";
+import CommunityChat from "@/pages/CommunityChat";
 
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
@@ -83,6 +84,7 @@ const DriverDeliveryApp = () => (
             <Route path="/delivery/support" element={<RequireRole allowed={["delivery"]}><><DeliveryDriverLayout /><DriverSupport /></></RequireRole>} />
             <Route path="/delivery/earnings" element={<RequireRole allowed={["delivery"]}><><DeliveryDriverLayout /><DriverEarnings /></></RequireRole>} />
             <Route path="/delivery/subscription" element={<RequireRole allowed={["delivery"]}><><DeliveryDriverLayout /><DriverSubscription /></></RequireRole>} />
+            <Route path="/community" element={<RequireRole allowed={["delivery"]}><><DeliveryDriverLayout /><CommunityChat /></></RequireRole>} />
 
             {/* Redirects */}
             <Route path="/" element={<Navigate to="/delivery" replace />} />

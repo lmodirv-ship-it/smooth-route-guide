@@ -23,6 +23,7 @@ import SupervisorCallCenter from "@/admin/pages/supervisor/SupervisorCallCenter"
 import SupervisorAgentDetail from "@/admin/pages/supervisor/SupervisorAgentDetail";
 import SupervisorRestaurants from "@/admin/pages/supervisor/SupervisorRestaurants";
 import InternalMessaging from "@/admin/pages/callcenter/InternalMessaging";
+import CommunityChat from "@/pages/CommunityChat";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const SupervisorApp = () => (
               <Route path="agent/:agentId" element={<SupervisorAgentDetail />} />
               <Route path="restaurants" element={<SupervisorRestaurants />} />
               <Route path="messaging" element={<InternalMessaging />} />
+              <Route path="community" element={<CommunityChat />} />
             </Route>
 
             {/* Redirects */}
