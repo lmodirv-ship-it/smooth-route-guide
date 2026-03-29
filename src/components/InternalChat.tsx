@@ -12,7 +12,7 @@ interface Chat {
   id: string;
   last_message_text: string;
   last_message_at: string;
-  members: { user_id: string; role: string; unread_count: number; profile?: { name: string; email: string } }[];
+  members: { user_id: string; role: string; unread_count: number; profile?: { name: string; email: string; user_code: string | null } }[];
 }
 
 interface Message {
@@ -29,6 +29,7 @@ interface Contact {
   id: string;
   name: string;
   email: string;
+  user_code: string | null;
   roles: string[];
   online?: boolean;
 }
@@ -89,7 +90,7 @@ const InternalChat = () => {
     const memberUserIds = [...new Set((allMembers || []).map((m: any) => m.user_id))];
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, name, email")
+      .select("id, name, email, user_code")
       .in("id", memberUserIds);
 
     const profileMap = new Map((profiles || []).map(p => [p.id, p]));
@@ -121,15 +122,15 @@ const InternalChat = () => {
 
       if (!data) return;
 
-      // Get sender names
+      // Get sender references
       const senderIds = [...new Set(data.map((m: any) => m.sender_id))];
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, name")
+        .select("id, name, user_code")
         .in("id", senderIds);
-      const nameMap = new Map((profiles || []).map(p => [p.id, p.name]));
+      const refMap = new Map((profiles || []).map(p => [p.id, p.user_code || p.name || "مجهول"]));
 
-      setMessages(data.map((m: any) => ({ ...m, sender_name: nameMap.get(m.sender_id) || "مجهول" })));
+      setMessages(data.map((m: any) => ({ ...m, sender_name: refMap.get(m.sender_id) || "مجهول" })));
 
       // Mark as read
       await supabase
@@ -152,11 +153,11 @@ const InternalChat = () => {
       }, async (payload: any) => {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("name")
+          .select("name, user_code")
           .eq("id", payload.new.sender_id)
           .maybeSingle();
         
-        setMessages(prev => [...prev, { ...payload.new, sender_name: profile?.name || "مجهول" }]);
+        setMessages(prev => [...prev, { ...payload.new, sender_name: profile?.user_code || profile?.name || "مجهول" }]);
       })
       .subscribe();
 
@@ -192,7 +193,7 @@ const InternalChat = () => {
     const userIds = [...new Set(allRoles.map(r => r.user_id))].filter(id => id !== currentUserId);
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, name, email")
+      .select("id, name, email, user_code")
       .in("id", userIds);
 
     const roleMap = new Map<string, string[]>();
@@ -207,6 +208,7 @@ const InternalChat = () => {
         id: p.id,
         name: p.name || p.email || "بدون اسم",
         email: p.email || "",
+        user_code: p.user_code,
         roles: roleMap.get(p.id) || [],
       }))
     );
@@ -292,7 +294,7 @@ const InternalChat = () => {
 
   const getOtherMember = (chat: Chat) => {
     const other = chat.members.find(m => m.user_id !== currentUserId);
-    return other?.profile?.name || "محادثة";
+    return other?.profile?.user_code || other?.profile?.name || "محادثة";
   };
 
   const getTotalUnread = (chat: Chat) => {
@@ -342,7 +344,7 @@ const InternalChat = () => {
                   <div className="flex items-center justify-between gap-2">
                     <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
                     <div className="flex-1 text-right">
-                      <p className="text-sm font-medium">{contact.name}</p>
+                      <p className="text-sm font-medium font-mono">{contact.user_code || contact.name}</p>
                       <div className="flex gap-1 justify-end mt-1 flex-wrap">
                         {contact.roles.map(r => (
                           <span key={r} className={`text-[10px] px-1.5 py-0.5 rounded-full ${roleBadge[r]?.color || "bg-gray-500/20 text-gray-400"}`}>
@@ -352,7 +354,7 @@ const InternalChat = () => {
                       </div>
                     </div>
                     <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
-                      {contact.name.charAt(0)}
+                      {(contact.user_code || contact.name).charAt(0)}
                     </div>
                   </div>
                 </button>
