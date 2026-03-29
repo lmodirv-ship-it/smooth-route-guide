@@ -195,6 +195,15 @@ const CommunityChat = () => {
             <span className="font-bold text-foreground">مجتمع HN</span>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="border-destructive/40 text-destructive hover:bg-destructive/10 gap-1 text-xs"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              خروج
+            </Button>
             <Badge variant="outline" className="border-primary/30 text-primary text-xs">
               <Users className="w-3 h-3 ml-1" />
               {onlineUsers.length} متصل
