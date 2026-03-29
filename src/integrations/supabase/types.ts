@@ -1996,6 +1996,8 @@ export type Database = {
           email: string | null
           id: string
           is_confirmed: boolean
+          is_suspended: boolean
+          last_seen_at: string | null
           name: string
           phone: string | null
           user_code: string | null
@@ -2006,6 +2008,8 @@ export type Database = {
           email?: string | null
           id: string
           is_confirmed?: boolean
+          is_suspended?: boolean
+          last_seen_at?: string | null
           name?: string
           phone?: string | null
           user_code?: string | null
@@ -2016,6 +2020,8 @@ export type Database = {
           email?: string | null
           id?: string
           is_confirmed?: boolean
+          is_suspended?: boolean
+          last_seen_at?: string | null
           name?: string
           phone?: string | null
           user_code?: string | null
