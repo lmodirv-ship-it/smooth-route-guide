@@ -105,19 +105,20 @@ const AdsSection = () => {
   }, [loadAds]);
 
   return (
-    <section className="py-16 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-card/10 to-background" />
+    <section className="py-20 relative overflow-hidden" id="ads-section">
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-card/20 to-background" />
       <div className="container mx-auto px-4 relative z-10">
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-8">
+        <div className="text-center mb-10">
           <h2 className="text-2xl md:text-3xl font-bold font-display">
-            <span className="text-gradient-primary glow-text">شاشات إعلانية</span>
+            <span className="text-gradient-primary glow-text">📺 شاشات إعلانية</span>
           </h2>
-        </motion.div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
+          <p className="text-muted-foreground mt-2">Advertising Screens</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
           {[1, 2, 3, 4].map(slot => (
-            <motion.div key={slot} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: slot * 0.1 }}>
+            <div key={slot}>
               <AdSlot ads={ads} slotNumber={slot} />
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
