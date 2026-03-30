@@ -1,5 +1,6 @@
 import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import VisitorCounter from "@/components/VisitorCounter";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -187,6 +188,7 @@ export default function LandingPage() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
+            <VisitorCounter />
             <LanguageSwitcher variant="ghost" />
             <Button variant="outline" onClick={() => navigate("/login")} className="min-h-0 h-11 px-5 font-medium">
               {t.common.login}
