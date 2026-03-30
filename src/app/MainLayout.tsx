@@ -37,6 +37,8 @@ const MainLayout = () => {
         <div className="flex items-center gap-2 px-3 shrink-0">
           <img src={logo} alt="HN" className="w-8 h-8 rounded-full shadow-md" />
           <div className="w-px h-5 bg-border/40" />
+          <VisitorCounter />
+          <div className="w-px h-5 bg-border/40" />
           {isVisible("logout_btn") && <GlobalLogoutButton />}
           {isVisible("language_switcher") && <LanguageSwitcher />}
         </div>
