@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import CinematicParticles from "@/components/CinematicParticles";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
 import AdsSection from "@/components/AdsSection";
+import VisitorCounter from "@/components/VisitorCounter";
 import logo from "@/assets/hn-driver-badge.png";
 import iconVtcCar from "@/assets/icon-vtc-car.png";
 import iconDeliveryBike from "@/assets/icon-delivery-bike.png";
@@ -146,6 +147,8 @@ export default function LandingPage() {
 
   return (
     <div dir={dir} className="min-h-screen bg-background text-foreground overflow-x-hidden relative">
+      {/* Visitor Counter */}
+      <VisitorCounter />
       {/* Cinematic Particles Background */}
       <CinematicParticles />
       {/* ─── Professional Navbar ─── */}

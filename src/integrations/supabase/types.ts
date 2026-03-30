@@ -2255,6 +2255,60 @@ export type Database = {
           },
         ]
       }
+      site_visit_counter: {
+        Row: {
+          id: number
+          today_date: string
+          today_visits: number
+          total_visits: number
+          unique_visitors: number
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          today_date?: string
+          today_visits?: number
+          total_visits?: number
+          unique_visitors?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          today_date?: string
+          today_visits?: number
+          total_visits?: number
+          unique_visitors?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_visits: {
+        Row: {
+          created_at: string
+          id: string
+          page_path: string
+          session_id: string | null
+          user_agent: string | null
+          visitor_ip: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          page_path?: string
+          session_id?: string | null
+          user_agent?: string | null
+          visitor_ip?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          page_path?: string
+          session_id?: string | null
+          user_agent?: string | null
+          visitor_ip?: string | null
+        }
+        Relationships: []
+      }
       smart_assistant_commands: {
         Row: {
           accepted_at: string | null
@@ -2963,6 +3017,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      record_visit: {
+        Args: { p_page_path?: string; p_session_id: string }
+        Returns: Json
       }
     }
     Enums: {
