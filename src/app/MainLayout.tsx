@@ -12,6 +12,7 @@ import VoiceOrderButton from "@/components/VoiceOrderButton";
 import FloatingCommunityButton from "@/components/FloatingCommunityButton";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
 import { useVisibility } from "@/hooks/useVisibility";
+import VisitorCounter from "@/components/VisitorCounter";
 import logo from "@/assets/hn-driver-badge.png";
 import partnerHibaEco from "@/assets/partner-hiba-eco.png";
 import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
@@ -35,6 +36,8 @@ const MainLayout = () => {
         {/* Left: Logo + Logout + Language */}
         <div className="flex items-center gap-2 px-3 shrink-0">
           <img src={logo} alt="HN" className="w-8 h-8 rounded-full shadow-md" />
+          <div className="w-px h-5 bg-border/40" />
+          <VisitorCounter />
           <div className="w-px h-5 bg-border/40" />
           {isVisible("logout_btn") && <GlobalLogoutButton />}
           {isVisible("language_switcher") && <LanguageSwitcher />}
