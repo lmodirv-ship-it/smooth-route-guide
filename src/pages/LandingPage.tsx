@@ -147,6 +147,8 @@ export default function LandingPage() {
 
   return (
     <div dir={dir} className="min-h-screen bg-background text-foreground overflow-x-hidden relative">
+      {/* Visitor Counter */}
+      <VisitorCounter />
       {/* Cinematic Particles Background */}
       <CinematicParticles />
       {/* ─── Professional Navbar ─── */}
