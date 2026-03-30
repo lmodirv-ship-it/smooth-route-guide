@@ -12,6 +12,14 @@ const generateSessionId = (): string => {
   return sid;
 };
 
+const detectDevice = () => {
+  const ua = navigator.userAgent;
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
+  const browser = /Chrome/i.test(ua) ? "Chrome" : /Firefox/i.test(ua) ? "Firefox" : /Safari/i.test(ua) ? "Safari" : /Edge/i.test(ua) ? "Edge" : "Other";
+  const os = /Windows/i.test(ua) ? "Windows" : /Mac/i.test(ua) ? "macOS" : /Linux/i.test(ua) ? "Linux" : /Android/i.test(ua) ? "Android" : /iPhone|iPad/i.test(ua) ? "iOS" : "Other";
+  return { device_type: isMobile ? "mobile" : "desktop", browser, os };
+};
+
 interface Stats {
   total_visits: number;
   unique_visitors: number;
@@ -23,11 +31,19 @@ const VisitorCounter = () => {
 
   useEffect(() => {
     const sessionId = generateSessionId();
+    const { device_type, browser, os } = detectDevice();
 
     const recordVisit = async () => {
       const { data, error } = await supabase.rpc("record_visit", {
         p_session_id: sessionId,
         p_page_path: window.location.pathname,
+        p_country: "",
+        p_city: "",
+        p_device_type: device_type,
+        p_browser: browser,
+        p_os: os,
+        p_referrer: document.referrer || "",
+        p_language: navigator.language || "",
       });
 
       if (!error && data) {

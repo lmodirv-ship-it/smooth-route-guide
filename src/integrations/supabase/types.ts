@@ -2255,6 +2255,48 @@ export type Database = {
           },
         ]
       }
+      site_analytics_daily: {
+        Row: {
+          city: string
+          country: string
+          created_at: string
+          date: string
+          desktop_visits: number
+          id: string
+          mobile_visits: number
+          top_pages: Json | null
+          top_referrers: Json | null
+          total_visits: number
+          unique_visitors: number
+        }
+        Insert: {
+          city?: string
+          country?: string
+          created_at?: string
+          date?: string
+          desktop_visits?: number
+          id?: string
+          mobile_visits?: number
+          top_pages?: Json | null
+          top_referrers?: Json | null
+          total_visits?: number
+          unique_visitors?: number
+        }
+        Update: {
+          city?: string
+          country?: string
+          created_at?: string
+          date?: string
+          desktop_visits?: number
+          id?: string
+          mobile_visits?: number
+          top_pages?: Json | null
+          top_referrers?: Json | null
+          total_visits?: number
+          unique_visitors?: number
+        }
+        Relationships: []
+      }
       site_visit_counter: {
         Row: {
           id: number
@@ -2284,27 +2326,51 @@ export type Database = {
       }
       site_visits: {
         Row: {
+          browser: string | null
+          city: string | null
+          country: string | null
           created_at: string
+          device_type: string | null
           id: string
+          language: string | null
+          os: string | null
           page_path: string
+          referrer: string | null
           session_id: string | null
           user_agent: string | null
+          user_id: string | null
           visitor_ip: string | null
         }
         Insert: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
+          device_type?: string | null
           id?: string
+          language?: string | null
+          os?: string | null
           page_path?: string
+          referrer?: string | null
           session_id?: string | null
           user_agent?: string | null
+          user_id?: string | null
           visitor_ip?: string | null
         }
         Update: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
+          device_type?: string | null
           id?: string
+          language?: string | null
+          os?: string | null
           page_path?: string
+          referrer?: string | null
           session_id?: string | null
           user_agent?: string | null
+          user_id?: string | null
           visitor_ip?: string | null
         }
         Relationships: []
@@ -3018,10 +3084,25 @@ export type Database = {
           read_ct: number
         }[]
       }
-      record_visit: {
-        Args: { p_page_path?: string; p_session_id: string }
-        Returns: Json
-      }
+      record_visit:
+        | {
+            Args: { p_page_path?: string; p_session_id: string }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_browser?: string
+              p_city?: string
+              p_country?: string
+              p_device_type?: string
+              p_language?: string
+              p_os?: string
+              p_page_path?: string
+              p_referrer?: string
+              p_session_id: string
+            }
+            Returns: Json
+          }
     }
     Enums: {
       app_role:
