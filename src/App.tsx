@@ -17,8 +17,8 @@ import { usePresenceHeartbeat } from "@/hooks/usePresenceHeartbeat";
 import { useTheme } from "@/hooks/useTheme";
 
 // ─── Module route elements ───
-import { mainRouteElements } from "./app";
-import { adminRouteElements } from "./admin";
+import { mainRouteElements } from "./app/index";
+import { adminRouteElements } from "./admin/index";
 
 const queryClient = new QueryClient();
 
