@@ -3,7 +3,7 @@ import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck, Car, Send, Headphones, UtensilsCrossed,
-  Bell, Search, BarChart3, Menu, X, MessageSquare, Globe, Users,
+  Bell, Search, BarChart3, Menu, X, MessageSquare, Globe, Users, TrendingUp,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import logo from "@/assets/hn-driver-badge.png";
