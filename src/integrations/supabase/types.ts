@@ -2008,6 +2008,57 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_versions: {
+        Row: {
+          build_size_kb: number | null
+          change_type: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          modules_updated: string[] | null
+          published_at: string | null
+          release_notes: string | null
+          status: string
+          total_files_changed: number | null
+          updated_at: string
+          version_code: string
+          version_name: string
+        }
+        Insert: {
+          build_size_kb?: number | null
+          change_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          modules_updated?: string[] | null
+          published_at?: string | null
+          release_notes?: string | null
+          status?: string
+          total_files_changed?: number | null
+          updated_at?: string
+          version_code: string
+          version_name?: string
+        }
+        Update: {
+          build_size_kb?: number | null
+          change_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          modules_updated?: string[] | null
+          published_at?: string | null
+          release_notes?: string | null
+          status?: string
+          total_files_changed?: number | null
+          updated_at?: string
+          version_code?: string
+          version_name?: string
+        }
+        Relationships: []
+      }
       product_images: {
         Row: {
           created_at: string

@@ -33,6 +33,7 @@ import CityActivation from "@/admin/pages/CityActivation";
 import ThemesPage from "@/admin/pages/Themes";
 import AdsManagement from "@/admin/pages/AdsManagement";
 import VisitorAnalytics from "@/admin/pages/VisitorAnalytics";
+import VersionManager from "@/admin/pages/VersionManager";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
@@ -95,6 +96,7 @@ export const adminRouteElements = (
       <Route path="themes" element={<ThemesPage />} />
       <Route path="ads" element={<AdsManagement />} />
       <Route path="analytics" element={<VisitorAnalytics />} />
+      <Route path="versions" element={<VersionManager />} />
       <Route path="settings" element={<AdminSettings />} />
       <Route path="messaging" element={<InternalMessaging />} />
       <Route path="community-chat" element={<AdminCommunityChat />} />
