@@ -84,6 +84,8 @@ const createActivationWindow = () => {
   return win;
 };
 
+const LIVE_URL = "https://smooth-route-guide.lovable.app";
+
 const createMainWindow = () => {
   const win = new BrowserWindow({
     width: 1440, height: 920, minWidth: 1100, minHeight: 700,
@@ -91,14 +93,9 @@ const createMainWindow = () => {
     webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true }
   });
   win.webContents.setWindowOpenHandler(({ url }) => { shell.openExternal(url); return { action: "deny" }; });
-  
-  const htmlPath = path.join(__dirname, "..", "dist-admin", "admin.html");
-  if (fs.existsSync(htmlPath)) {
-    win.loadFile(htmlPath);
-  } else {
-    // Fallback: look next to the exe
-    win.loadFile(path.join(__dirname, "admin.html"));
-  }
+
+  // Load the live Lovable deployment so desktop always matches the web version
+  win.loadURL(LIVE_URL);
 };
 
 app.whenReady().then(() => {
