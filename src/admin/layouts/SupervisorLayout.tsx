@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import logo from "@/assets/hn-driver-badge.png";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import VisitorCounter from "@/components/VisitorCounter";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import FloatingCommunityButton from "@/components/FloatingCommunityButton";
@@ -130,6 +131,7 @@ const SupervisorLayout = () => {
           </div>
           <div className="flex items-center gap-1.5 md:gap-3">
             <GlobalLogoutButton />
+            <VisitorCounter />
             <LanguageSwitcher />
             <button className="p-2 relative hover:bg-secondary rounded-lg transition-colors">
               <Bell className="w-5 h-5 text-muted-foreground" />

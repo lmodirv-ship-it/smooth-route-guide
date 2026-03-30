@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { sanitizePlainText } from "@/lib/inputSecurity";
 import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import VisitorCounter from "@/components/VisitorCounter";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import { AdminGeoProvider } from "@/admin/contexts/AdminGeoContext";
 import AdminGeoFilter from "@/admin/components/AdminGeoFilter";
@@ -342,6 +343,7 @@ const AdminLayout = () => {
             )}
             <FaceGuard onLock={handleFaceLock} />
             <GlobalLogoutButton />
+            <VisitorCounter />
             <LanguageSwitcher />
             <button className="p-2 relative hover:bg-secondary rounded-lg transition-colors">
               <Bell className="w-5 h-5 text-muted-foreground" />

@@ -9,6 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import VisitorCounter from "@/components/VisitorCounter";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import FloatingChatButton from "@/components/FloatingChatButton";
@@ -159,6 +160,7 @@ const CallCenterLayout = () => {
           </div>
           <div className="flex items-center gap-2">
             <GlobalLogoutButton />
+            <VisitorCounter />
             <LanguageSwitcher />
             <div className="hidden md:flex items-center gap-1.5 bg-success/10 text-success px-3 py-1 rounded-full text-xs">
               <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
