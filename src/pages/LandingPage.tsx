@@ -1,5 +1,6 @@
 import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import VisitorCounter from "@/components/VisitorCounter";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -15,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import CinematicParticles from "@/components/CinematicParticles";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
 import AdsSection from "@/components/AdsSection";
-import VisitorCounter from "@/components/VisitorCounter";
+// VisitorCounter already imported above
 import logo from "@/assets/hn-driver-badge.png";
 import iconVtcCar from "@/assets/icon-vtc-car.png";
 import iconDeliveryBike from "@/assets/icon-delivery-bike.png";
@@ -187,6 +188,7 @@ export default function LandingPage() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
+            <VisitorCounter />
             <LanguageSwitcher variant="ghost" />
             <Button variant="outline" onClick={() => navigate("/login")} className="min-h-0 h-11 px-5 font-medium">
               {t.common.login}
