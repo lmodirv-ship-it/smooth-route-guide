@@ -44,6 +44,7 @@ const CallCenterLayout = () => {
     { path: "/call-center/reports", icon: BarChart, label: t.callCenter.reports },
     { path: "/call-center/messaging", icon: MessageSquare, label: "المحادثات" },
     { path: "/call-center/community", icon: Users, label: "مجتمع HN" },
+    { path: "/call-center/analytics", icon: BarChart, label: "تحليلات الزوار" },
   ];
 
   const adminOnlyNavItems = [
