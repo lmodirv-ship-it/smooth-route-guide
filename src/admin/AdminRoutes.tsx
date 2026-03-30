@@ -32,6 +32,7 @@ import AdminCommunityChat from "@/admin/pages/AdminCommunityChat";
 import CityActivation from "@/admin/pages/CityActivation";
 import ThemesPage from "@/admin/pages/Themes";
 import AdsManagement from "@/admin/pages/AdsManagement";
+import VisitorAnalytics from "@/admin/pages/VisitorAnalytics";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
@@ -93,6 +94,7 @@ export const adminRouteElements = (
       <Route path="driver-packages" element={<DriverPackages />} />
       <Route path="themes" element={<ThemesPage />} />
       <Route path="ads" element={<AdsManagement />} />
+      <Route path="analytics" element={<VisitorAnalytics />} />
       <Route path="settings" element={<AdminSettings />} />
       <Route path="messaging" element={<InternalMessaging />} />
       <Route path="community-chat" element={<AdminCommunityChat />} />
@@ -119,6 +121,7 @@ export const adminRouteElements = (
       <Route path="knowledge" element={<AssistantKnowledge />} />
       <Route path="messaging" element={<InternalMessaging />} />
       <Route path="community" element={<CommunityChat />} />
+      <Route path="analytics" element={<VisitorAnalytics />} />
     </Route>
 
     {/* ═══ Supervisor Panel ═══ */}
@@ -132,6 +135,7 @@ export const adminRouteElements = (
       <Route path="city-activation" element={<CityActivation />} />
       <Route path="messaging" element={<InternalMessaging />} />
       <Route path="community" element={<CommunityChat />} />
+      <Route path="analytics" element={<VisitorAnalytics />} />
     </Route>
   </>
 );
