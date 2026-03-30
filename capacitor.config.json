@@ -1,5 +1,1 @@
-{
-  "appId": "com.hndriver.app",
-  "appName": "HN Driver",
-  "webDir": "dist"
-}
+{"appId":"com.hndriver.app","appName":"HN Driver","webDir":"dist"}
