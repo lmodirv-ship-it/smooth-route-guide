@@ -31,7 +31,11 @@ git reset --hard origin/main
 
 # 2. Install dependencies
 log "[2/5] Installing dependencies..."
-npm ci --production=false 2>&1 | tail -3
+npm install --legacy-peer-deps 2>&1 | tail -5
+if [ $? -ne 0 ]; then
+  log "❌ npm install failed! Aborting deploy."
+  exit 1
+fi
 
 # 3. Build all modules
 log "[3/5] Building modules..."
