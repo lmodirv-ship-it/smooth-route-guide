@@ -72,13 +72,16 @@ sudo systemctl start hn-webhook
 # 6. Setup Nginx
 echo "[6/6] Configuring Nginx..."
 sudo tee /etc/nginx/sites-available/hn-driver > /dev/null << 'NGINX'
-# ─── Main App: hn-driver.net ───
+# ═══════════════════════════════════════════════════════════
+# Supports BOTH hn-driver.com AND hn-driver.net
+# ═══════════════════════════════════════════════════════════
+
+# ─── Main App ───
 server {
     listen 80;
-    server_name hn-driver.net www.hn-driver.net;
+    server_name hn-driver.com www.hn-driver.com hn-driver.net www.hn-driver.net;
     root /var/www/html;
     index index.html;
-
     location / { try_files $uri $uri/ /index.html; }
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2|woff|ttf)$ {
         expires 1y; add_header Cache-Control "public, immutable";
@@ -90,7 +93,7 @@ server {
 # ─── Admin Panel ───
 server {
     listen 80;
-    server_name admin.hn-driver.net;
+    server_name admin.hn-driver.com admin.hn-driver.net;
     root /var/www/admin;
     index admin.html;
     location / { try_files $uri $uri/ /admin.html; }
@@ -104,7 +107,7 @@ server {
 # ─── Call Center ───
 server {
     listen 80;
-    server_name call.hn-driver.net;
+    server_name call.hn-driver.com call.hn-driver.net;
     root /var/www/call-center;
     index call-center.html;
     location / { try_files $uri $uri/ /call-center.html; }
@@ -118,7 +121,7 @@ server {
 # ─── Supervisor ───
 server {
     listen 80;
-    server_name supervisor.hn-driver.net;
+    server_name supervisor.hn-driver.com supervisor.hn-driver.net;
     root /var/www/supervisor;
     index supervisor.html;
     location / { try_files $uri $uri/ /supervisor.html; }
