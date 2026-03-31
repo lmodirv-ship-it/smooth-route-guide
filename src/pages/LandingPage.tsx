@@ -2,6 +2,8 @@ import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import VisitorCounter from "@/components/VisitorCounter";
 import { useNavigate } from "react-router-dom";
+import { dashboardForRole } from "@/lib/routes";
+import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import {
@@ -80,6 +82,20 @@ export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [storeDialogOpen, setStoreDialogOpen] = useState(false);
   const lt = t.landing;
+
+  // Auto-redirect logged-in users to their dashboard
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
+      const firstRole = (roles || [])[0]?.role;
+      if (firstRole) {
+        navigate(dashboardForRole(firstRole), { replace: true });
+      }
+    };
+    checkAuth();
+  }, [navigate]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
