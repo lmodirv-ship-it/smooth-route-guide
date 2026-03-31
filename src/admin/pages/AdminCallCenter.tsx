@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Headphones, Phone, PhoneOff, Clock, CheckCircle, AlertCircle,
   User, Search, Filter, RefreshCw, MessageSquare, ArrowUpDown,
-  PhoneIncoming, PhoneOutgoing, XCircle, Loader2
+  PhoneIncoming, PhoneOutgoing, XCircle, Loader2, Hash
 } from "lucide-react";
 import AgentStaffPanel from "@/admin/components/AgentStaffPanel";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useCallCenterCtx } from "@/admin/layouts/CallCenterLayout";
 
 interface Ticket {
   id: string;
