@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
@@ -18,6 +18,12 @@ import logo from "@/assets/hn-driver-badge.png";
 import SidebarNavButton from "@/admin/components/SidebarNavButton";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
 import AgentFacePresence from "@/call-center/components/AgentFacePresence";
+import CallCenterModal from "@/components/calls/CallCenterModal";
+import { useCallCenter } from "@/hooks/useCallCenter";
+
+// Context to share call center engine across pages
+const CallCenterContext = createContext<ReturnType<typeof useCallCenter> | null>(null);
+export const useCallCenterCtx = () => useContext(CallCenterContext);
 
 const CallCenterLayout = () => {
   const { t, dir } = useI18n();
