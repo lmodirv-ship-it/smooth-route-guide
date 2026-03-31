@@ -34,6 +34,7 @@ const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; co
 };
 
 const AdminCallCenter = () => {
+  const callCenter = useCallCenterCtx();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [activeCall, setActiveCall] = useState(false);
