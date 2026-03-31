@@ -28,6 +28,7 @@ import ZonesManagement from "./pages/ZonesManagement";
 import AdminSettings from "./pages/Settings";
 import SetupAdmin from "./pages/SetupAdmin";
 import AdsManagement from "./pages/AdsManagement";
+import PageManagement from "./pages/PageManagement";
 
 // Call Center layout & pages
 import CallCenterLayout from "./layouts/CallCenterLayout";
@@ -85,6 +86,7 @@ const AdminApp = () => (
               <Route path="zones" element={<ZonesManagement />} />
               <Route path="ads" element={<AdsManagement />} />
               <Route path="settings" element={<AdminSettings />} />
+              <Route path="pages" element={<PageManagement />} />
             </Route>
 
             {/* Redirect /admin/* to root (standalone mode) */}

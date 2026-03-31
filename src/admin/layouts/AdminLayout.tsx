@@ -106,6 +106,7 @@ const AdminLayout = () => {
     { path: "/admin/analytics", icon: BarChart3, label: "تحليلات الزوار" },
     { path: "/admin/versions", icon: GitBranch, label: "إدارة الإصدارات" },
     { path: "/admin/settings", icon: Settings, label: t.admin.settingsMenu },
+    { path: "/admin/pages", icon: FileText, label: "إدارة الصفحات" },
   ];
 
   useEffect(() => {

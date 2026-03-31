@@ -1907,6 +1907,42 @@ export type Database = {
           },
         ]
       }
+      page_customizations: {
+        Row: {
+          created_at: string
+          id: string
+          is_visible: boolean
+          page_slug: string
+          properties: Json
+          section_id: string
+          sort_order: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          page_slug: string
+          properties?: Json
+          section_id: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          page_slug?: string
+          properties?: Json
+          section_id?: string
+          sort_order?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
