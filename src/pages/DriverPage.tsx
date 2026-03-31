@@ -190,12 +190,17 @@ const DriverPage = () => {
     }
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { toast({ title: t.driver.mustLogin, variant: "destructive" }); return; }
+    
+    // Get driver record ID (drivers.id != auth user id)
+    const { data: driverRecord } = await supabase.from("drivers").select("id").eq("user_id", user.id).single();
+    if (!driverRecord) { toast({ title: "لم يتم العثور على حساب السائق", variant: "destructive" }); return; }
+    
     setAccepting(orderId);
     try {
       const order = nearbyOrders.find(o => o.id === orderId);
       const totalPrice = order ? order.totalPrice : 0;
       const { error } = await supabase.from("ride_requests")
-        .update({ status: "accepted", driver_id: user.id, accepted_at: new Date().toISOString(), price: totalPrice })
+        .update({ status: "accepted", driver_id: driverRecord.id, accepted_at: new Date().toISOString(), price: totalPrice })
         .eq("id", orderId).eq("status", "pending");
       if (error) throw error;
       setActiveRideId(orderId);
