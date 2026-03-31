@@ -2014,6 +2014,66 @@ export type Database = {
           },
         ]
       }
+      permission_audit_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          target_id: string | null
+          target_type: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_id?: string | null
+          target_type: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_id?: string | null
+          target_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      permission_roles: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_name: string
+          id: string
+          is_system: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_name: string
+          id?: string
+          is_system?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_name?: string
+          id?: string
+          is_system?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       platform_languages: {
         Row: {
           code: string
@@ -2371,6 +2431,41 @@ export type Database = {
             columns: ["zone_id"]
             isOneToOne: false
             referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      role_permissions: {
+        Row: {
+          allowed: boolean | null
+          created_at: string | null
+          id: string
+          module: string
+          operation: string
+          role_id: string
+        }
+        Insert: {
+          allowed?: boolean | null
+          created_at?: string | null
+          id?: string
+          module: string
+          operation: string
+          role_id: string
+        }
+        Update: {
+          allowed?: boolean | null
+          created_at?: string | null
+          id?: string
+          module?: string
+          operation?: string
+          role_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "permission_roles"
             referencedColumns: ["id"]
           },
         ]
@@ -2940,6 +3035,38 @@ export type Database = {
             columns: ["driver_id"]
             isOneToOne: false
             referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_permission_roles: {
+        Row: {
+          assigned_by: string | null
+          created_at: string | null
+          id: string
+          permission_role_id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          created_at?: string | null
+          id?: string
+          permission_role_id: string
+          user_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          created_at?: string | null
+          id?: string
+          permission_role_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_permission_roles_permission_role_id_fkey"
+            columns: ["permission_role_id"]
+            isOneToOne: false
+            referencedRelation: "permission_roles"
             referencedColumns: ["id"]
           },
         ]
