@@ -99,6 +99,7 @@ export const adminRouteElements = (
       <Route path="analytics" element={<VisitorAnalytics />} />
       <Route path="versions" element={<VersionManager />} />
       <Route path="settings" element={<AdminSettings />} />
+      <Route path="pages" element={<PageManagement />} />
       <Route path="messaging" element={<InternalMessaging />} />
       <Route path="community-chat" element={<AdminCommunityChat />} />
     </Route>
