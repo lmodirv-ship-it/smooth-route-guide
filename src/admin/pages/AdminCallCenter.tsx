@@ -246,13 +246,20 @@ const AdminCallCenter = () => {
 
                 {/* Active Call Banner */}
                 <AnimatePresence>
-                  {activeCall && (
+                  {callCenter?.isInCall && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden">
                       <div className="bg-primary/10 border-b border-primary/20 px-5 py-3 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <PhoneOutgoing className="w-4 h-4 text-primary" />
-                          <span className="text-sm font-medium text-primary">مكالمة جارية مع {selectedTicket.userName}</span>
+                          <span className="text-sm font-medium text-primary">
+                            مكالمة WebRTC جارية مع {callCenter.activeCall?.party.name}
+                          </span>
+                          {callCenter.activeCall?.party.reference && (
+                            <span className="text-xs font-mono bg-primary/10 px-2 py-0.5 rounded text-primary">
+                              {callCenter.activeCall.party.reference}
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
