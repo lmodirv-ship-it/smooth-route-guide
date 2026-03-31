@@ -1,0 +1,32 @@
+[
+  {
+    "id": "deploy",
+    "execute-command": "/var/www/hn-driver/scripts/server/auto-deploy.sh",
+    "command-working-directory": "/var/www/hn-driver",
+    "response-message": "Deploy triggered",
+    "trigger-rule": {
+      "and": [
+        {
+          "match": {
+            "type": "payload-hmac-sha256",
+            "secret": "YOUR_WEBHOOK_SECRET_HERE",
+            "parameter": {
+              "source": "header",
+              "name": "X-Hub-Signature-256"
+            }
+          }
+        },
+        {
+          "match": {
+            "type": "value",
+            "value": "refs/heads/main",
+            "parameter": {
+              "source": "payload",
+              "name": "ref"
+            }
+          }
+        }
+      ]
+    }
+  }
+]
