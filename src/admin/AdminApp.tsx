@@ -88,6 +88,7 @@ const AdminApp = () => (
               <Route path="ads" element={<AdsManagement />} />
               <Route path="settings" element={<AdminSettings />} />
               <Route path="pages" element={<PageManagement />} />
+              <Route path="database" element={<DatabaseManager />} />
             </Route>
 
             {/* Redirect /admin/* to root (standalone mode) */}
