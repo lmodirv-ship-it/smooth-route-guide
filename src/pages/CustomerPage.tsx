@@ -241,42 +241,36 @@ const CustomerPage = () => {
   );
 
   return (
-    <div className="min-h-screen gradient-dark pb-8 relative overflow-hidden" dir="rtl">
-      {/* Background effects */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-primary/3 blur-[150px]" />
-        <div className="absolute bottom-1/3 left-0 w-[300px] h-[300px] rounded-full bg-info/3 blur-[100px]" />
-      </div>
-
+    <div className="h-screen flex flex-col gradient-dark relative overflow-hidden" dir="rtl">
       {/* Header */}
-      <div className="sticky top-0 z-50 px-5 py-3 flex items-center justify-between glass-strong border-b border-border">
+      <div className="shrink-0 z-50 px-4 py-2.5 flex items-center justify-between glass-strong border-b border-border">
         <div className="flex items-center gap-1.5">
           {userCode && (
-            <span className="text-xs font-mono font-bold text-primary px-2 py-1 rounded-full glass border border-primary/30 bg-primary/10">
+            <span className="text-[11px] font-mono font-bold text-primary px-2 py-0.5 rounded-full glass border border-primary/30 bg-primary/10">
               {userCode}
             </span>
           )}
-          <span className="text-xs text-muted-foreground px-2 py-1 rounded-full glass border border-border">
+          <span className="text-[11px] text-muted-foreground px-2 py-0.5 rounded-full glass border border-border">
             {nearbyDrivers.length > 0 ? `${nearbyDrivers.length} سائق متاح` : "جارٍ البحث..."}
           </span>
           <SubscriptionIndicator />
         </div>
         <div className="flex items-center gap-2.5">
           <Sparkles className="w-5 h-5 text-primary" />
-          <span className="font-bold text-xl text-gradient-primary font-display">طلب رحلة</span>
+          <span className="font-bold text-lg text-gradient-primary font-display">طلب رحلة</span>
         </div>
       </div>
 
       {/* Location selectors */}
-      <div className="px-5 mt-5 relative z-10">
-        <div className="glass-card rounded-2xl p-4 space-y-3">
+      <div className="shrink-0 px-4 mt-3 relative z-10">
+        <div className="glass-card rounded-2xl p-3 space-y-2">
           {/* Pickup */}
           <button
             onClick={() => { setShowPickupPicker(true); setShowDestPicker(false); }}
-            className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-all duration-200 group"
+            className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-all duration-200 group"
           >
             <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
+              <div className="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
                 <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
               </div>
             </div>
@@ -290,9 +284,9 @@ const CustomerPage = () => {
           </button>
 
           {/* Divider with line */}
-          <div className="flex items-center gap-3 px-3">
-            <div className="w-10 flex justify-center">
-              <div className="w-0.5 h-6 bg-gradient-to-b from-green-500/50 to-primary/50 rounded-full" />
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-9 flex justify-center">
+              <div className="w-0.5 h-4 bg-gradient-to-b from-green-500/50 to-primary/50 rounded-full" />
             </div>
             <div className="flex-1 border-t border-dashed border-border" />
           </div>
@@ -300,9 +294,9 @@ const CustomerPage = () => {
           {/* Destination */}
           <button
             onClick={() => { setShowDestPicker(true); setShowPickupPicker(false); }}
-            className="w-full flex items-center gap-3 p-3.5 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-all duration-200 group"
+            className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-all duration-200 group"
           >
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
               <div className="w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary)/0.5)]" />
             </div>
             <div className="flex-1 text-right min-w-0">
@@ -318,8 +312,8 @@ const CustomerPage = () => {
 
       {/* Map */}
       <div
-        className={`mx-5 mt-4 rounded-2xl overflow-hidden border border-border relative z-10 transition-all duration-300 ${mapExpanded ? "fixed inset-0 mx-0 mt-0 rounded-none z-[100]" : ""}`}
-        style={mapExpanded ? { height: "100vh" } : { height: destCoords ? "200px" : "280px" }}
+        className={`relative z-10 transition-all duration-300 ${mapExpanded ? "fixed inset-0 z-[100]" : "flex-1 min-h-0 mx-4 mt-3 rounded-2xl overflow-hidden border border-border"}`}
+        style={mapExpanded ? { height: "100vh" } : undefined}
       >
         <LeafletMap
           center={userLocation || DEFAULT_LOCATION}
@@ -350,7 +344,7 @@ const CustomerPage = () => {
       {mapExpanded && <div style={{ height: "100vh" }} />}
 
       {/* Price card */}
-      <div className="px-5 mt-4 relative z-10">
+      <div className="shrink-0 px-4 py-3 relative z-10 max-h-[40vh] overflow-y-auto">
         <AnimatePresence mode="wait">
           {destCoords && rideDistance !== null && price !== null && (
             <motion.div
@@ -362,16 +356,16 @@ const CustomerPage = () => {
               className="space-y-4"
             >
               {/* Trip details */}
-              <div className="glass-strong rounded-2xl border border-border overflow-hidden">
+              <div className="glass-strong rounded-xl border border-border overflow-hidden">
                 {/* Route visualization */}
-                <div className="p-5 space-y-3">
+                <div className="p-4 space-y-2">
                   <div className="flex items-center gap-3">
                     <div className="flex flex-col items-center gap-1">
                       <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                      <div className="w-0.5 h-8 bg-gradient-to-b from-green-500/50 to-primary/50 rounded-full" />
+                      <div className="w-0.5 h-6 bg-gradient-to-b from-green-500/50 to-primary/50 rounded-full" />
                       <div className="w-3 h-3 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.5)]" />
                     </div>
-                    <div className="flex-1 space-y-5">
+                    <div className="flex-1 space-y-3">
                       <div>
                         <p className="text-[11px] text-muted-foreground">الانطلاق</p>
                         <p className="text-sm font-medium text-foreground truncate">{selectedPickupName || pickupName || "موقعك الحالي"}</p>
@@ -419,18 +413,18 @@ const CustomerPage = () => {
               </div>
 
               {/* Action buttons */}
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <Button
                   variant="outline"
                   onClick={() => { setDestCoords(null); setSelectedDestName(null); }}
-                  className="flex-1 h-12 rounded-2xl glass border-border text-muted-foreground hover:text-foreground"
+                  className="flex-1 h-11 rounded-xl glass border-border text-muted-foreground hover:text-foreground"
                 >
                   إعادة تحديد
                 </Button>
                 <Button
                   onClick={handleCreateRequest}
                   disabled={submitting}
-                  className="flex-[2] h-14 rounded-2xl gradient-primary text-primary-foreground font-bold text-base glow-primary shadow-xl"
+                  className="flex-[2] h-12 rounded-xl gradient-primary text-primary-foreground font-bold text-base glow-primary shadow-xl"
                 >
                   {submitting ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -448,17 +442,12 @@ const CustomerPage = () => {
 
         {/* Empty state hint */}
         {!destCoords && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-center py-6"
-          >
-            <div className="inline-flex items-center gap-2 glass rounded-2xl px-5 py-3 border border-border">
+          <div className="text-center py-3">
+            <div className="inline-flex items-center gap-2 glass rounded-xl px-4 py-2.5 border border-border">
               <MapPin className="w-4 h-4 text-primary" />
               <p className="text-sm text-muted-foreground">اختر وجهتك من القائمة أو اضغط على الخريطة</p>
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
 
