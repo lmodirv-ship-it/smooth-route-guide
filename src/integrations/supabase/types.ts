@@ -107,6 +107,7 @@ export type Database = {
         Row: {
           actions_count: number
           agent_code: string
+          agent_status: string | null
           created_at: string
           id: string
           ip_address: string | null
@@ -119,6 +120,7 @@ export type Database = {
         Insert: {
           actions_count?: number
           agent_code?: string
+          agent_status?: string | null
           created_at?: string
           id?: string
           ip_address?: string | null
@@ -131,6 +133,7 @@ export type Database = {
         Update: {
           actions_count?: number
           agent_code?: string
+          agent_status?: string | null
           created_at?: string
           id?: string
           ip_address?: string | null
@@ -532,6 +535,8 @@ export type Database = {
       call_logs: {
         Row: {
           agent_id: string | null
+          call_reference: string | null
+          call_session_id: string | null
           call_type: string
           caller_name: string
           caller_phone: string
@@ -539,12 +544,17 @@ export type Database = {
           duration: number | null
           id: string
           notes: string | null
+          order_id: string | null
+          party_reference: string | null
+          party_type: string | null
           reason: string
           status: string
           user_id: string | null
         }
         Insert: {
           agent_id?: string | null
+          call_reference?: string | null
+          call_session_id?: string | null
           call_type?: string
           caller_name?: string
           caller_phone?: string
@@ -552,12 +562,17 @@ export type Database = {
           duration?: number | null
           id?: string
           notes?: string | null
+          order_id?: string | null
+          party_reference?: string | null
+          party_type?: string | null
           reason?: string
           status?: string
           user_id?: string | null
         }
         Update: {
           agent_id?: string | null
+          call_reference?: string | null
+          call_session_id?: string | null
           call_type?: string
           caller_name?: string
           caller_phone?: string
@@ -565,14 +580,68 @@ export type Database = {
           duration?: number | null
           id?: string
           notes?: string | null
+          order_id?: string | null
+          party_reference?: string | null
+          party_type?: string | null
           reason?: string
           status?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "call_logs_call_session_id_fkey"
+            columns: ["call_session_id"]
+            isOneToOne: false
+            referencedRelation: "call_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      call_notes: {
+        Row: {
+          agent_id: string
+          call_log_id: string | null
+          call_session_id: string | null
+          content: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          agent_id: string
+          call_log_id?: string | null
+          call_session_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          agent_id?: string
+          call_log_id?: string | null
+          call_session_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_notes_call_log_id_fkey"
+            columns: ["call_log_id"]
+            isOneToOne: false
+            referencedRelation: "call_logs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_notes_call_session_id_fkey"
+            columns: ["call_session_id"]
+            isOneToOne: false
+            referencedRelation: "call_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       call_sessions: {
         Row: {
+          call_reference: string | null
           callee_id: string
           caller_id: string
           created_at: string
@@ -580,11 +649,16 @@ export type Database = {
           ended_at: string | null
           id: string
           metadata: Json
+          notes: string | null
+          order_id: string | null
+          party_reference: string | null
+          party_type: string | null
           started_at: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          call_reference?: string | null
           callee_id: string
           caller_id: string
           created_at?: string
@@ -592,11 +666,16 @@ export type Database = {
           ended_at?: string | null
           id?: string
           metadata?: Json
+          notes?: string | null
+          order_id?: string | null
+          party_reference?: string | null
+          party_type?: string | null
           started_at?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          call_reference?: string | null
           callee_id?: string
           caller_id?: string
           created_at?: string
@@ -604,6 +683,10 @@ export type Database = {
           ended_at?: string | null
           id?: string
           metadata?: Json
+          notes?: string | null
+          order_id?: string | null
+          party_reference?: string | null
+          party_type?: string | null
           started_at?: string | null
           status?: string
           updated_at?: string
