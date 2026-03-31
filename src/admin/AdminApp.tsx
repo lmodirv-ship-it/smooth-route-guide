@@ -28,6 +28,7 @@ import ZonesManagement from "./pages/ZonesManagement";
 import AdminSettings from "./pages/Settings";
 import SetupAdmin from "./pages/SetupAdmin";
 import AdsManagement from "./pages/AdsManagement";
+import PageManagement from "./pages/PageManagement";
 
 // Call Center layout & pages
 import CallCenterLayout from "./layouts/CallCenterLayout";
