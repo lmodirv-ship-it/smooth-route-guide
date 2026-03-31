@@ -72,11 +72,18 @@ export function useIncomingRideRequests(isOnline: boolean) {
       return;
     }
 
+    // Get driver record ID (drivers.id != auth user id)
+    const { data: driverRecord } = await supabase.from('drivers').select('id').eq('user_id', user.id).single();
+    if (!driverRecord) {
+      toast({ title: 'لم يتم العثور على حساب السائق', variant: 'destructive' });
+      return;
+    }
+
     setAccepting(request.id);
     try {
       const { error } = await supabase
         .from('ride_requests')
-        .update({ status: 'accepted', driver_id: user.id, accepted_at: new Date().toISOString() })
+        .update({ status: 'accepted', driver_id: driverRecord.id, accepted_at: new Date().toISOString() })
         .eq('id', request.id)
         .eq('status', 'pending');
 
