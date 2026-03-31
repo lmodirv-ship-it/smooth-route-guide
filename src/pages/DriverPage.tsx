@@ -284,6 +284,19 @@ const DriverPage = () => {
         </div>
       </div>
 
+      {/* Subscription expired banner */}
+      {subscriptionExpired && (
+        <div className="shrink-0 bg-destructive/10 border-t border-destructive/30 px-4 py-2">
+          <button onClick={() => navigate("/driver/subscription")} className="w-full flex items-center justify-between">
+            <Crown className="w-5 h-5 text-destructive" />
+            <div className="text-right">
+              <p className="text-destructive font-bold text-sm">⚠️ اشتراكك منتهي</p>
+              <p className="text-muted-foreground text-xs">اضغط لتجديد الاشتراك</p>
+            </div>
+          </button>
+        </div>
+      )}
+
       {/* Active ride banner */}
       {activeRideId && (
         <div className="shrink-0 bg-emerald-500/10 border-t border-emerald-500/30 px-4 py-3">
@@ -298,8 +311,34 @@ const DriverPage = () => {
         </div>
       )}
 
+      {/* Stats bar */}
+      <div className="shrink-0 bg-card border-t border-border px-3 py-2">
+        <div className="grid grid-cols-4 gap-2">
+          <button onClick={() => navigate("/driver/earnings")} className="flex flex-col items-center gap-0.5 p-2 rounded-lg hover:bg-secondary/50 transition-colors">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            <span className="text-xs font-bold text-foreground">{todayStats.earnings} DH</span>
+            <span className="text-[10px] text-muted-foreground">الأرباح</span>
+          </button>
+          <button onClick={() => navigate("/driver/history")} className="flex flex-col items-center gap-0.5 p-2 rounded-lg hover:bg-secondary/50 transition-colors">
+            <Route className="w-4 h-4 text-primary" />
+            <span className="text-xs font-bold text-foreground">{todayStats.trips}</span>
+            <span className="text-[10px] text-muted-foreground">الرحلات</span>
+          </button>
+          <button onClick={() => navigate("/driver/wallet")} className="flex flex-col items-center gap-0.5 p-2 rounded-lg hover:bg-secondary/50 transition-colors">
+            <Wallet className="w-4 h-4 text-primary" />
+            <span className="text-xs font-bold text-foreground">المحفظة</span>
+            <span className="text-[10px] text-muted-foreground">الرصيد</span>
+          </button>
+          <button onClick={() => navigate("/driver/profile")} className="flex flex-col items-center gap-0.5 p-2 rounded-lg hover:bg-secondary/50 transition-colors">
+            <Star className="w-4 h-4 text-amber-400" />
+            <span className="text-xs font-bold text-foreground">{todayStats.rating || "—"}</span>
+            <span className="text-[10px] text-muted-foreground">التقييم</span>
+          </button>
+        </div>
+      </div>
+
       {/* Incoming Ride Requests */}
-      <div className="shrink-0 max-h-[45vh] overflow-y-auto bg-background border-t border-border">
+      <div className="shrink-0 max-h-[40vh] overflow-y-auto bg-background border-t border-border">
         {nearbyOrders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Radar className="w-10 h-10 text-muted-foreground/30 mb-2 animate-pulse" />
