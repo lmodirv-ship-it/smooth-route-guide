@@ -31,12 +31,35 @@ export interface ActiveCallState {
   orderId?: string;
 }
 
-const rtcConfig: RTCConfiguration = {
-  iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun.cloudflare.com:3478" },
-  ],
+const buildIceServers = (): RTCIceServer[] => {
+  const servers: RTCIceServer[] = [];
+
+  // STUN
+  const stunUrl = import.meta.env.VITE_STUN_URL;
+  servers.push({ urls: stunUrl || "stun:stun.l.google.com:19302" });
+  if (!stunUrl) servers.push({ urls: "stun:stun.cloudflare.com:3478" });
+
+  // TURN (UDP/TCP)
+  const turnUrl = import.meta.env.VITE_TURN_URL as string | undefined;
+  const turnsUrl = import.meta.env.VITE_TURNS_URL as string | undefined;
+  const turnUser = import.meta.env.VITE_TURN_USERNAME as string | undefined;
+  const turnPass = import.meta.env.VITE_TURN_PASSWORD as string | undefined;
+
+  if (turnUrl && turnUser && turnPass) {
+    servers.push({ urls: turnUrl, username: turnUser, credential: turnPass });
+  }
+  if (turnsUrl && turnUser && turnPass) {
+    servers.push({ urls: turnsUrl, username: turnUser, credential: turnPass });
+  }
+
+  if (import.meta.env.DEV) {
+    console.log("[WebRTC] iceServers:", servers.map(s => ({ urls: s.urls, hasCred: !!s.credential })));
+  }
+
+  return servers;
 };
+
+const rtcConfig: RTCConfiguration = { iceServers: buildIceServers() };
 
 export function useCallCenter() {
   const { userId } = useCurrentUser();
