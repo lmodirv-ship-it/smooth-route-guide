@@ -103,6 +103,7 @@ export const adminRouteElements = (
       <Route path="settings" element={<AdminSettings />} />
       <Route path="pages" element={<PageManagement />} />
       <Route path="database" element={<DatabaseManager />} />
+      <Route path="permissions" element={<PermissionsManagement />} />
       <Route path="messaging" element={<InternalMessaging />} />
       <Route path="community-chat" element={<AdminCommunityChat />} />
     </Route>

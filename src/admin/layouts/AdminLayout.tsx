@@ -108,6 +108,7 @@ const AdminLayout = () => {
     { path: "/admin/settings", icon: Settings, label: t.admin.settingsMenu },
     { path: "/admin/pages", icon: FileText, label: "إدارة الصفحات" },
     { path: "/admin/database", icon: Database, label: "إدارة قاعدة البيانات" },
+    { path: "/admin/permissions", icon: Shield, label: "إدارة الصلاحيات" },
   ];
 
   useEffect(() => {
