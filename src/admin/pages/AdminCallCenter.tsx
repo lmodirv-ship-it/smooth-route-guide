@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Headphones, Phone, PhoneOff, Clock, CheckCircle, AlertCircle,
   User, Search, Filter, RefreshCw, MessageSquare, ArrowUpDown,
-  PhoneIncoming, PhoneOutgoing, XCircle, Loader2
+  PhoneIncoming, PhoneOutgoing, XCircle, Loader2, Hash
 } from "lucide-react";
 import AgentStaffPanel from "@/admin/components/AgentStaffPanel";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useCallCenterCtx } from "@/admin/layouts/CallCenterLayout";
 
 interface Ticket {
   id: string;
@@ -33,9 +34,9 @@ const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; co
 };
 
 const AdminCallCenter = () => {
+  const callCenter = useCallCenterCtx();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-  const [activeCall, setActiveCall] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -208,9 +209,25 @@ const AdminCallCenter = () => {
                 <div className="p-5 border-b border-border bg-muted/20">
                   <div className="flex items-start justify-between">
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={() => setActiveCall(!activeCall)}
-                        className={activeCall ? "bg-destructive hover:bg-destructive/90" : "bg-primary hover:bg-primary/90"}>
-                        {activeCall ? <><PhoneOff className="w-4 h-4 ml-1.5" />إنهاء المكالمة</> : <><Phone className="w-4 h-4 ml-1.5" />بدء اتصال</>}
+                      <Button size="sm" 
+                        onClick={async () => {
+                          if (!callCenter) return;
+                          // Start real WebRTC call to this user
+                          const { data: profile } = await supabase.from("profiles").select("id, name, phone, avatar_url, user_code").eq("id", selectedTicket.user_id).maybeSingle();
+                          if (profile) {
+                            await callCenter.startCallToParty({
+                              id: profile.id,
+                              name: profile.name || "مستخدم",
+                              reference: profile.user_code || "A000000",
+                              phone: profile.phone || "",
+                              avatarUrl: profile.avatar_url,
+                              partyType: "client",
+                            });
+                          }
+                        }}
+                        disabled={callCenter?.isInCall || callCenter?.busy}
+                        className={callCenter?.isInCall ? "bg-destructive hover:bg-destructive/90" : "bg-primary hover:bg-primary/90"}>
+                        {callCenter?.isInCall ? <><PhoneOff className="w-4 h-4 ml-1.5" />مكالمة جارية</> : <><Phone className="w-4 h-4 ml-1.5" />اتصال مباشر</>}
                       </Button>
                     </div>
                     <div className="text-right">
@@ -228,13 +245,20 @@ const AdminCallCenter = () => {
 
                 {/* Active Call Banner */}
                 <AnimatePresence>
-                  {activeCall && (
+                  {callCenter?.isInCall && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden">
                       <div className="bg-primary/10 border-b border-primary/20 px-5 py-3 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <PhoneOutgoing className="w-4 h-4 text-primary" />
-                          <span className="text-sm font-medium text-primary">مكالمة جارية مع {selectedTicket.userName}</span>
+                          <span className="text-sm font-medium text-primary">
+                            مكالمة WebRTC جارية مع {callCenter.activeCall?.party.name}
+                          </span>
+                          {callCenter.activeCall?.party.reference && (
+                            <span className="text-xs font-mono bg-primary/10 px-2 py-0.5 rounded text-primary">
+                              {callCenter.activeCall.party.reference}
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />

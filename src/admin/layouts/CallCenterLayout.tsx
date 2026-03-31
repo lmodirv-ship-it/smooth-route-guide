@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
@@ -18,6 +18,12 @@ import logo from "@/assets/hn-driver-badge.png";
 import SidebarNavButton from "@/admin/components/SidebarNavButton";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
 import AgentFacePresence from "@/call-center/components/AgentFacePresence";
+import CallCenterModal from "@/components/calls/CallCenterModal";
+import { useCallCenter } from "@/hooks/useCallCenter";
+
+// Context to share call center engine across pages
+const CallCenterContext = createContext<ReturnType<typeof useCallCenter> | null>(null);
+export const useCallCenterCtx = () => useContext(CallCenterContext);
 
 const CallCenterLayout = () => {
   const { t, dir } = useI18n();
@@ -123,7 +129,16 @@ const CallCenterLayout = () => {
     </>
   );
 
+  const callCenter = useCallCenter();
+
+  // Agent status indicator
+  const agentStatusColor = callCenter.agentStatus === "available" ? "bg-success" :
+    callCenter.agentStatus === "in_call" ? "bg-primary animate-pulse" :
+    callCenter.agentStatus === "busy" ? "bg-warning" :
+    callCenter.agentStatus === "break" ? "bg-info" : "bg-muted-foreground";
+
   return (
+    <CallCenterContext.Provider value={callCenter}>
     <>
     <GlobalNotificationListener />
     <div className="min-h-screen gradient-dark flex" dir={dir}>
@@ -132,6 +147,24 @@ const CallCenterLayout = () => {
         className={`${collapsed ? "w-16" : "w-64"} glass-strong border-l border-border hidden lg:flex flex-col transition-all duration-300`}
       >
         <SidebarContent />
+        {/* Agent Status Switcher */}
+        {!collapsed && (
+          <div className="p-2 border-t border-border">
+            <div className="flex items-center gap-2 px-2 py-1.5">
+              <div className={`w-2 h-2 rounded-full ${agentStatusColor}`} />
+              <select
+                value={callCenter.agentStatus}
+                onChange={e => callCenter.updateAgentStatus(e.target.value as any)}
+                className="text-[10px] bg-transparent text-muted-foreground border-0 outline-none flex-1 cursor-pointer"
+              >
+                <option value="available">متاح</option>
+                <option value="busy">مشغول</option>
+                <option value="break">استراحة</option>
+                <option value="offline">غير متصل</option>
+              </select>
+            </div>
+          </div>
+        )}
       </aside>
 
       {/* Mobile Sidebar */}
@@ -164,8 +197,11 @@ const CallCenterLayout = () => {
             <VisitorCounter />
             <LanguageSwitcher />
             <div className="hidden md:flex items-center gap-1.5 bg-success/10 text-success px-3 py-1 rounded-full text-xs">
-              <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-              {t.common.connected}
+              <div className={`w-1.5 h-1.5 rounded-full ${agentStatusColor}`} />
+              {callCenter.agentStatus === "available" ? t.common.connected :
+               callCenter.agentStatus === "in_call" ? "في مكالمة" :
+               callCenter.agentStatus === "busy" ? "مشغول" :
+               callCenter.agentStatus === "break" ? "استراحة" : "غير متصل"}
             </div>
             <button className="p-2 relative hover:bg-secondary rounded-lg transition-colors">
               <Bell className="w-5 h-5 text-muted-foreground" />
@@ -181,11 +217,23 @@ const CallCenterLayout = () => {
         </div>
       </div>
     </div>
+
+    {/* Global Call Modal */}
+    <CallCenterModal
+      activeCall={callCenter.activeCall}
+      isMuted={callCenter.isMuted}
+      remoteStream={callCenter.remoteStream}
+      onEndCall={callCenter.endCall}
+      onToggleMute={callCenter.toggleMute}
+      onAddNote={callCenter.addCallNote}
+    />
+
     <AgentFacePresence />
     <FloatingChatButton />
     <FloatingCommunityButton communityPath="/call-center/community" />
     <GlobalContactFooter />
     </>
+    </CallCenterContext.Provider>
   );
 };
 
