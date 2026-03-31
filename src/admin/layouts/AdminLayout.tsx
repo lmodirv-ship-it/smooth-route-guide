@@ -107,6 +107,7 @@ const AdminLayout = () => {
     { path: "/admin/versions", icon: GitBranch, label: "إدارة الإصدارات" },
     { path: "/admin/settings", icon: Settings, label: t.admin.settingsMenu },
     { path: "/admin/pages", icon: FileText, label: "إدارة الصفحات" },
+    { path: "/admin/database", icon: Database, label: "إدارة قاعدة البيانات" },
   ];
 
   useEffect(() => {
