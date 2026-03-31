@@ -165,7 +165,7 @@ const DriverDelivery = () => {
   const currentStepIdx = activeOrder ? STATUS_FLOW.findIndex(s => s.key === activeOrder.status) : -1;
 
   return (
-    <div className="h-screen flex flex-col bg-background" dir="rtl" onClick={() => unlockAudio()}>
+    <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background" dir="rtl" onClick={() => unlockAudio()}>
       {/* Map Section */}
       <div className={`relative shrink-0 transition-all duration-500 ${mapExpanded ? "h-[55vh]" : "h-[30vh] min-h-[200px]"}`}>
         <LiveOrderMap

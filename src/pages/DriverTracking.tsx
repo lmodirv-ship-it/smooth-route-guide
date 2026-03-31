@@ -272,7 +272,7 @@ const DriverTracking = () => {
   const isFinished = ride.status === "completed" || ride.status === "cancelled";
 
   return (
-    <div className="h-screen flex flex-col bg-background" dir="rtl">
+    <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background" dir="rtl">
       {/* ─── Full-screen Navigation Mode ─── */}
       {navMode && (
         <div className="absolute inset-0 z-[100] flex flex-col bg-background">
