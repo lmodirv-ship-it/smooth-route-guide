@@ -37,7 +37,6 @@ const AdminCallCenter = () => {
   const callCenter = useCallCenterCtx();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-  const [activeCall, setActiveCall] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
