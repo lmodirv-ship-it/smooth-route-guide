@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
@@ -42,6 +43,7 @@ function detectCity(loc: { lat: number; lng: number }): string {
 
 interface RideRow {
   id: string;
+  user_id: string;
   pickup: string;
   destination: string;
   pickup_lat: number | null;
@@ -52,6 +54,8 @@ interface RideRow {
   price: number | null;
   status: string;
   created_at: string;
+  passenger_name?: string;
+  passenger_reference?: string;
 }
 
 const DriverPage = () => {
@@ -137,11 +141,37 @@ const DriverPage = () => {
     const { data, error } = await supabase.from("ride_requests").select("*").eq("status", "pending")
       .order("created_at", { ascending: false });
     if (!error && data) {
+      const riderIds = Array.from(new Set(data.map((order: any) => order.user_id).filter(Boolean)));
+      let riderMap = new Map<string, { name: string | null; user_code: string | null }>();
+
+      if (riderIds.length > 0) {
+        const { data: riders } = await supabase
+          .from("profiles")
+          .select("id, name, user_code")
+          .in("id", riderIds);
+
+        riderMap = new Map(
+          (riders || []).map((rider) => [
+            rider.id,
+            { name: rider.name, user_code: (rider as any).user_code || null },
+          ])
+        );
+      }
+
+      const enrichedOrders: RideRow[] = data.map((order: any) => {
+        const rider = riderMap.get(order.user_id);
+        return {
+          ...order,
+          passenger_name: rider?.name?.trim() || "زبون",
+          passenger_reference: rider?.user_code || `#${order.id.slice(0, 6).toUpperCase()}`,
+        };
+      });
+
       const newCount = data.length;
       if (!initialLoadRef.current && newCount > prevOrderCountRef.current && soundEnabled) notifyNewOrder();
       initialLoadRef.current = false;
       prevOrderCountRef.current = newCount;
-      setOrders(data as RideRow[]);
+      setOrders(enrichedOrders);
     }
   }, [soundEnabled]);
 
@@ -166,7 +196,8 @@ const DriverPage = () => {
         rideDistance = parseFloat(haversineKm({ lat: order.pickup_lat, lng: order.pickup_lng }, { lat: order.destination_lat, lng: order.destination_lng }).toFixed(2));
       }
       const totalDistance = (distToPickup || 0) + (rideDistance || 0);
-      const totalPrice = totalDistance > 0 ? Math.max(pricing.minFare, Math.round(pricing.baseFare + totalDistance * pricing.perKmRate)) : (order.price || 0);
+      const estimatedPrice = totalDistance > 0 ? Math.max(pricing.minFare, Math.round(pricing.baseFare + totalDistance * pricing.perKmRate)) : 0;
+      const totalPrice = Number(order.price) > 0 ? Number(order.price) : estimatedPrice;
       return { ...order, distToPickup, eta, totalDistance: parseFloat(totalDistance.toFixed(1)), totalPrice, rideDistance };
     })
     .filter((o) => o.distToPickup === null || o.distToPickup <= MAX_RADIUS_KM)
@@ -343,7 +374,7 @@ const DriverPage = () => {
       </div>
 
       {/* Incoming Ride Requests */}
-      <div className="shrink-0 max-h-[40vh] overflow-y-auto bg-background border-t border-border">
+      <div className="shrink-0 bg-background border-t border-border">
         {nearbyOrders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Radar className="w-10 h-10 text-muted-foreground/30 mb-2 animate-pulse" />
@@ -361,85 +392,57 @@ const DriverPage = () => {
                 طلبات جديدة
               </h3>
             </div>
-            <AnimatePresence mode="popLayout">
-              {nearbyOrders.map((order) => (
-                <motion.div
-                  key={order.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className={`rounded-xl border p-3 mb-2 transition-all ${selectedOrderId === order.id ? "border-primary bg-primary/5" : "border-border bg-card"}`}
-                  onClick={() => setSelectedOrderId(order.id === selectedOrderId ? null : order.id)}
-                >
-                  {/* Order header */}
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1.5">
-                      {order.eta && (
-                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <Clock className="w-3 h-3" />{order.eta} د
-                        </span>
-                      )}
-                      {order.distToPickup != null && (
-                        <span className="text-xs bg-secondary text-muted-foreground px-2 py-0.5 rounded-full">
-                          {order.distToPickup} كم
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-primary font-bold text-lg">{order.totalPrice} DH</span>
-                  </div>
+            <div className="max-h-[28vh] overflow-y-auto rounded-xl border border-border bg-card">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-right text-xs font-bold">Reference</TableHead>
+                    <TableHead className="text-right text-xs font-bold">الزبون</TableHead>
+                    <TableHead className="text-right text-xs font-bold">الثمن</TableHead>
+                    <TableHead className="text-center text-xs font-bold">قبول</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {nearbyOrders.map((order) => {
+                    const isSelected = selectedOrderId === order.id;
 
-                  {/* Pickup & Destination */}
-                  <div className="space-y-1.5 mb-3">
-                    <div className="flex items-center gap-2 justify-end">
-                      <span className="text-sm text-foreground truncate flex-1 text-right">{order.pickup || "نقطة الالتقاط"}</span>
-                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0" />
-                    </div>
-                    <div className="flex items-center gap-2 justify-end">
-                      <span className="text-sm text-foreground truncate flex-1 text-right">{order.destination || "الوجهة"}</span>
-                      <div className="w-2.5 h-2.5 rounded-full bg-destructive shrink-0" />
-                    </div>
-                  </div>
-
-                  {/* Distance info */}
-                  {order.rideDistance && (
-                    <div className="flex items-center gap-3 justify-end mb-3 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><Route className="w-3 h-3" />{order.rideDistance} كم</span>
-                    </div>
-                  )}
-
-                  {/* Accept / Reject buttons */}
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/10"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setOrders(prev => prev.filter(o => o.id !== order.id));
-                      }}
-                      disabled={accepting === order.id}
-                    >
-                      ✕ رفض
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:opacity-90"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAccept(order.id);
-                      }}
-                      disabled={accepting === order.id}
-                    >
-                      {accepting === order.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <>✓ قبول</>
-                      )}
-                    </Button>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                    return (
+                      <TableRow
+                        key={order.id}
+                        className={`cursor-pointer transition-colors ${isSelected ? "bg-muted/50" : ""}`}
+                        onClick={() => setSelectedOrderId(order.id === selectedOrderId ? null : order.id)}
+                      >
+                        <TableCell className="font-mono text-xs font-semibold text-primary">
+                          {order.passenger_reference || "—"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-foreground">{order.passenger_name || "زبون"}</span>
+                            <span className="text-[11px] text-muted-foreground truncate">{order.pickup || "نقطة الالتقاط"}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right text-sm font-bold text-foreground">
+                          {order.totalPrice} DH
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Button
+                            size="sm"
+                            className="h-8 min-w-20"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAccept(order.id);
+                            }}
+                            disabled={accepting === order.id}
+                          >
+                            {accepting === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "قبول"}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
       </div>
