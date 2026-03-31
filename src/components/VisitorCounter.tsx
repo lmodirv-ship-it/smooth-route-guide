@@ -56,21 +56,20 @@ const VisitorCounter = () => {
 
     recordVisit();
 
-    const channel = supabase
-      .channel("visitor-counter")
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "site_visit_counter" },
-        (payload) => {
-          const row = payload.new as any;
-          setStats({
-            total_visits: row.total_visits,
-            unique_visitors: row.unique_visitors,
-            today_visits: row.today_visits,
-          });
-        }
-      )
-      .subscribe();
+    const channel = supabase.channel("visitor-counter-changes");
+    channel.on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "site_visit_counter" },
+      (payload) => {
+        const row = payload.new as any;
+        setStats({
+          total_visits: row.total_visits,
+          unique_visitors: row.unique_visitors,
+          today_visits: row.today_visits,
+        });
+      }
+    );
+    channel.subscribe();
 
     return () => {
       supabase.removeChannel(channel);
