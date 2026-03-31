@@ -163,13 +163,14 @@ const CustomerTracking = () => {
   if (!ride) {
     return (
       <div className="h-screen bg-[#0a0f1a] flex items-center justify-center" dir="rtl">
+
         <div className="text-blue-300 animate-pulse text-lg">جارٍ التحميل...</div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex flex-col bg-[#0a0f1a] overflow-hidden" dir="rtl">
+    <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-[#0a0f1a] overflow-hidden" dir="rtl">
       {/* ─── Header ─── */}
       <div className="shrink-0 bg-[#0a0f1a]/90 backdrop-blur-sm border-b border-white/5 px-4 py-2.5 flex items-center justify-between z-50">
         <button onClick={() => navigate("/customer")} className="p-2 rounded-full hover:bg-white/5">

@@ -241,7 +241,7 @@ const CustomerPage = () => {
   );
 
   return (
-    <div className="h-screen flex flex-col gradient-dark relative overflow-hidden" dir="rtl">
+    <div className="h-[calc(100dvh-2.75rem)] flex flex-col gradient-dark relative overflow-hidden" dir="rtl">
       {/* Header */}
       <div className="shrink-0 z-50 px-4 py-2.5 flex items-center justify-between glass-strong border-b border-border">
         <div className="flex items-center gap-1.5">
