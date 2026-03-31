@@ -32,24 +32,24 @@ const GlobalNotificationListener = () => {
   }, []);
 
   useEffect(() => {
+    let disposed = false;
+    let setupVersion = 0;
     let channels: ReturnType<typeof supabase.channel>[] = [];
 
-    const setup = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      userIdRef.current = user.id;
+    const removeChannels = async (targetChannels: ReturnType<typeof supabase.channel>[] = channels) => {
+      const uniqueChannels = Array.from(new Set(targetChannels));
+      await Promise.all(uniqueChannels.map((channel) => supabase.removeChannel(channel)));
+      if (targetChannels === channels) {
+        channels = [];
+      }
+    };
 
-      // Get user roles
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
+    const buildChannels = async (userId: string, userRoles: string[], version: number) => {
+      const suffix = `${userId}-${version}-${Date.now()}`;
+      const nextChannels: ReturnType<typeof supabase.channel>[] = [];
 
-      const userRoles = (roles || []).map(r => r.role);
-
-      // 1. Listen to notifications table (all users)
       const notifChannel = supabase
-        .channel("global-notifications")
+        .channel(`global-notifications-${suffix}`)
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "notifications" },
@@ -65,12 +65,11 @@ const GlobalNotificationListener = () => {
           }
         )
         .subscribe();
-      channels.push(notifChannel);
+      nextChannels.push(notifChannel);
 
-      // 2. Driver-specific: ride_requests changes
       if (userRoles.includes("driver")) {
         const rideChannel = supabase
-          .channel("global-ride-notif")
+          .channel(`global-ride-notif-${suffix}`)
           .on(
             "postgres_changes",
             { event: "INSERT", schema: "public", table: "ride_requests", filter: "status=eq.pending" },
@@ -80,13 +79,12 @@ const GlobalNotificationListener = () => {
             }
           )
           .subscribe();
-        channels.push(rideChannel);
+        nextChannels.push(rideChannel);
       }
 
-      // 3. Client-specific: ride status updates + delivery order updates
       if (userRoles.includes("user")) {
         const clientRideChannel = supabase
-          .channel("global-client-ride")
+          .channel(`global-client-ride-${suffix}`)
           .on(
             "postgres_changes",
             { event: "UPDATE", schema: "public", table: "ride_requests" },
@@ -116,13 +114,12 @@ const GlobalNotificationListener = () => {
             }
           )
           .subscribe();
-        channels.push(clientRideChannel);
+        nextChannels.push(clientRideChannel);
       }
 
-      // 4. Admin/Agent: new complaints & tickets
       if (userRoles.includes("admin") || userRoles.includes("agent")) {
         const adminChannel = supabase
-          .channel("global-admin-notif")
+          .channel(`global-admin-notif-${suffix}`)
           .on("postgres_changes", { event: "INSERT", schema: "public", table: "complaints" }, () => {
             notifyNewOrder();
             toast({ title: "⚠️ شكوى جديدة", description: "تم استلام شكوى جديدة" });
@@ -136,42 +133,54 @@ const GlobalNotificationListener = () => {
             toast({ title: "📦 طلب توصيل جديد", description: "تم استلام طلب توصيل جديد" });
           })
           .subscribe();
-        channels.push(adminChannel);
+        nextChannels.push(adminChannel);
       }
+
+      if (disposed || version !== setupVersion) {
+        await removeChannels(nextChannels);
+        return;
+      }
+
+      channels = nextChannels;
     };
 
-    let setupId = 0;
+    const setup = async () => {
+      const version = ++setupVersion;
+      await removeChannels();
 
-    const safeSetup = () => {
-      setupId++;
-      const currentId = setupId;
-      // Remove old channels first, then setup new ones
-      const oldChannels = [...channels];
-      channels = [];
-      oldChannels.forEach(ch => supabase.removeChannel(ch));
-      // Small delay to ensure channels are fully removed
-      setTimeout(() => {
-        if (currentId === setupId) {
-          setup();
-        }
-      }, 100);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (disposed || version !== setupVersion) return;
+
+      if (!user) {
+        userIdRef.current = null;
+        return;
+      }
+
+      userIdRef.current = user.id;
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+
+      if (disposed || version !== setupVersion) return;
+
+      const userRoles = (roles || []).map((roleRow) => roleRow.role);
+      await buildChannels(user.id, userRoles, version);
     };
 
-    safeSetup();
+    void setup();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        safeSetup();
-      } else {
-        channels.forEach(ch => supabase.removeChannel(ch));
-        channels = [];
-      }
+      userIdRef.current = session?.user?.id ?? null;
+      void setup();
     });
 
     return () => {
-      setupId++;
-      channels.forEach(ch => supabase.removeChannel(ch));
+      disposed = true;
+      setupVersion += 1;
       subscription.unsubscribe();
+      void removeChannels();
     };
   }, []);
 
