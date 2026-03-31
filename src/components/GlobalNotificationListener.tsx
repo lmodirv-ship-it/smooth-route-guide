@@ -140,18 +140,36 @@ const GlobalNotificationListener = () => {
       }
     };
 
-    setup();
+    let setupId = 0;
+
+    const safeSetup = () => {
+      setupId++;
+      const currentId = setupId;
+      // Remove old channels first, then setup new ones
+      const oldChannels = [...channels];
+      channels = [];
+      oldChannels.forEach(ch => supabase.removeChannel(ch));
+      // Small delay to ensure channels are fully removed
+      setTimeout(() => {
+        if (currentId === setupId) {
+          setup();
+        }
+      }, 100);
+    };
+
+    safeSetup();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      // Cleanup old channels and re-setup
-      channels.forEach(ch => supabase.removeChannel(ch));
-      channels = [];
       if (session) {
-        setup();
+        safeSetup();
+      } else {
+        channels.forEach(ch => supabase.removeChannel(ch));
+        channels = [];
       }
     });
 
     return () => {
+      setupId++;
       channels.forEach(ch => supabase.removeChannel(ch));
       subscription.unsubscribe();
     };
