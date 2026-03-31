@@ -210,9 +210,25 @@ const AdminCallCenter = () => {
                 <div className="p-5 border-b border-border bg-muted/20">
                   <div className="flex items-start justify-between">
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={() => setActiveCall(!activeCall)}
-                        className={activeCall ? "bg-destructive hover:bg-destructive/90" : "bg-primary hover:bg-primary/90"}>
-                        {activeCall ? <><PhoneOff className="w-4 h-4 ml-1.5" />إنهاء المكالمة</> : <><Phone className="w-4 h-4 ml-1.5" />بدء اتصال</>}
+                      <Button size="sm" 
+                        onClick={async () => {
+                          if (!callCenter) return;
+                          // Start real WebRTC call to this user
+                          const { data: profile } = await supabase.from("profiles").select("id, name, phone, avatar_url, user_code").eq("id", selectedTicket.user_id).maybeSingle();
+                          if (profile) {
+                            await callCenter.startCallToParty({
+                              id: profile.id,
+                              name: profile.name || "مستخدم",
+                              reference: profile.user_code || "A000000",
+                              phone: profile.phone || "",
+                              avatarUrl: profile.avatar_url,
+                              partyType: "client",
+                            });
+                          }
+                        }}
+                        disabled={callCenter?.isInCall || callCenter?.busy}
+                        className={callCenter?.isInCall ? "bg-destructive hover:bg-destructive/90" : "bg-primary hover:bg-primary/90"}>
+                        {callCenter?.isInCall ? <><PhoneOff className="w-4 h-4 ml-1.5" />مكالمة جارية</> : <><Phone className="w-4 h-4 ml-1.5" />اتصال مباشر</>}
                       </Button>
                     </div>
                     <div className="text-right">
