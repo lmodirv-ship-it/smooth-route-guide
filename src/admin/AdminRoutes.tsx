@@ -101,6 +101,7 @@ export const adminRouteElements = (
       <Route path="versions" element={<VersionManager />} />
       <Route path="settings" element={<AdminSettings />} />
       <Route path="pages" element={<PageManagement />} />
+      <Route path="database" element={<DatabaseManager />} />
       <Route path="messaging" element={<InternalMessaging />} />
       <Route path="community-chat" element={<AdminCommunityChat />} />
     </Route>
