@@ -30,6 +30,7 @@ import SetupAdmin from "./pages/SetupAdmin";
 import AdsManagement from "./pages/AdsManagement";
 import PageManagement from "./pages/PageManagement";
 import DatabaseManager from "./pages/DatabaseManager";
+import PermissionsManagement from "./pages/PermissionsManagement";
 
 // Call Center layout & pages
 import CallCenterLayout from "./layouts/CallCenterLayout";
@@ -89,6 +90,7 @@ const AdminApp = () => (
               <Route path="settings" element={<AdminSettings />} />
               <Route path="pages" element={<PageManagement />} />
               <Route path="database" element={<DatabaseManager />} />
+              <Route path="permissions" element={<PermissionsManagement />} />
             </Route>
 
             {/* Redirect /admin/* to root (standalone mode) */}
