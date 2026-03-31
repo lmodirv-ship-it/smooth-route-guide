@@ -2,12 +2,22 @@
  * Main Application Routes — customer, driver, delivery, and public pages.
  * Separated from Admin routes (src/admin/AdminRoutes.tsx).
  * Shares the same Supabase database.
+ *
+ * Heavy pages use React.lazy for code-splitting.
  */
 import { Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import RequireRole from "@/components/RequireRole";
 import MainLayout from "./MainLayout";
 
-// ─── Core (public) pages ───
+// ─── Lazy loading wrapper ───
+const LazyPage = ({ component: Component }: { component: React.LazyExoticComponent<any> }) => (
+  <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>}>
+    <Component />
+  </Suspense>
+);
+
+// ─── Core (public) pages — eagerly loaded ───
 import LandingPage from "@/pages/LandingPage";
 import Splash from "@/pages/Splash";
 import Welcome from "@/pages/Welcome";
@@ -17,14 +27,27 @@ import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import NotFound from "@/pages/NotFound";
 
-// ─── Driver pages ───
+// ─── Heavy pages — lazy loaded ───
+const CustomerTracking = lazy(() => import("@/pages/CustomerTracking"));
+const DriverTracking = lazy(() => import("@/pages/DriverTracking"));
+const ActiveTrip = lazy(() => import("@/pages/ActiveTrip"));
+const RestaurantsList = lazy(() => import("@/pages/delivery/RestaurantsList"));
+const RestaurantMenu = lazy(() => import("@/pages/delivery/RestaurantMenu"));
+const StoreDetail = lazy(() => import("@/pages/delivery/StoreDetail"));
+const DeliveryTracking = lazy(() => import("@/pages/delivery/DeliveryTracking"));
+const OrderTracking = lazy(() => import("@/pages/delivery/OrderTracking"));
+const CourierTrack = lazy(() => import("@/pages/delivery/CourierTrack"));
+const AgentHub = lazy(() => import("@/pages/ai/AgentHub"));
+const AIAssistant = lazy(() => import("@/pages/AIAssistant"));
+const CommunityChat = lazy(() => import("@/pages/CommunityChat"));
+const MyStore = lazy(() => import("@/pages/delivery/MyStore"));
+
+// ─── Regular pages — eagerly loaded ───
 import DriverPage from "@/pages/DriverPage";
-import DriverTracking from "@/pages/DriverTracking";
 import DriverHistory from "@/pages/DriverHistory";
 import DriverNotifications from "@/pages/DriverNotifications";
 import DriverSettings from "@/pages/DriverSettings";
 import DocumentUpload from "@/pages/DocumentUpload";
-import ActiveTrip from "@/pages/ActiveTrip";
 import DriverProfile from "@/pages/driver/DriverProfile";
 import DriverWallet from "@/pages/driver/DriverWallet";
 import CarInfo from "@/pages/driver/CarInfo";
@@ -35,10 +58,8 @@ import DriverEarnings from "@/pages/driver/DriverEarnings";
 import DriverDelivery from "@/pages/driver/DriverDelivery";
 import DriverSubscription from "@/pages/driver/DriverSubscription";
 
-// ─── Client pages ───
 import CustomerHub from "@/pages/CustomerHub";
 import CustomerPage from "@/pages/CustomerPage";
-import CustomerTracking from "@/pages/CustomerTracking";
 import ClientBooking from "@/pages/client/ClientBooking";
 import ClientPayment from "@/pages/client/ClientPayment";
 import ClientWallet from "@/pages/client/ClientWallet";
@@ -46,29 +67,15 @@ import ClientHistory from "@/pages/client/ClientHistory";
 import ClientProfile from "@/pages/client/ClientProfile";
 import ClientSupport from "@/pages/client/ClientSupport";
 
-// ─── Delivery pages ───
 import DeliveryHome from "@/pages/delivery/DeliveryHome";
 import DeliveryCategory from "@/pages/delivery/DeliveryCategory";
-import DeliveryTracking from "@/pages/delivery/DeliveryTracking";
 import DeliveryHistory from "@/pages/delivery/DeliveryHistory";
 import CourierSend from "@/pages/delivery/CourierSend";
 import CourierAddress from "@/pages/delivery/CourierAddress";
-import CourierTrack from "@/pages/delivery/CourierTrack";
 import DeliverySupport from "@/pages/delivery/DeliverySupport";
-import RestaurantsList from "@/pages/delivery/RestaurantsList";
-import RestaurantMenu from "@/pages/delivery/RestaurantMenu";
 import Cart from "@/pages/delivery/Cart";
-import OrderTracking from "@/pages/delivery/OrderTracking";
-import StoreDetail from "@/pages/delivery/StoreDetail";
-import MyStore from "@/pages/delivery/MyStore";
 
-// ─── AI ───
-import AgentHub from "@/pages/ai/AgentHub";
-import AIAssistant from "@/pages/AIAssistant";
 import DynamicPage from "@/pages/DynamicPage";
-
-// ─── Community ───
-import CommunityChat from "@/pages/CommunityChat";
 
 export const mainRouteElements = (
   <>
@@ -81,7 +88,7 @@ export const mainRouteElements = (
     <Route path="/complete-profile" element={<RequireRole><CompleteProfile /></RequireRole>} />
     <Route path="/forgot-password" element={<ForgotPassword />} />
     <Route path="/reset-password" element={<ResetPassword />} />
-    <Route path="/community" element={<RequireRole><CommunityChat /></RequireRole>} />
+    <Route path="/community" element={<RequireRole><LazyPage component={CommunityChat} /></RequireRole>} />
 
     {/* ═══════════════════════════════════════════
         MAIN APP — wrapped in MainLayout
@@ -91,7 +98,7 @@ export const mainRouteElements = (
       {/* ─── Customer /customer/* ─── */}
       <Route path="/customer" element={<RequireRole allowed={["client"]}><CustomerHub /></RequireRole>} />
       <Route path="/customer/ride" element={<RequireRole allowed={["client"]}><CustomerPage /></RequireRole>} />
-      <Route path="/customer/tracking" element={<RequireRole allowed={["client"]}><CustomerTracking /></RequireRole>} />
+      <Route path="/customer/tracking" element={<RequireRole allowed={["client"]}><LazyPage component={CustomerTracking} /></RequireRole>} />
       <Route path="/customer/booking" element={<RequireRole allowed={["client"]}><ClientBooking /></RequireRole>} />
       <Route path="/customer/payment" element={<RequireRole allowed={["client"]}><ClientPayment /></RequireRole>} />
       <Route path="/customer/wallet" element={<RequireRole allowed={["client"]}><ClientWallet /></RequireRole>} />
@@ -101,12 +108,12 @@ export const mainRouteElements = (
 
       {/* ─── Driver /driver/* ─── */}
       <Route path="/driver" element={<RequireRole allowed={["driver"]}><DriverPage /></RequireRole>} />
-      <Route path="/driver/tracking" element={<RequireRole allowed={["driver"]}><DriverTracking /></RequireRole>} />
+      <Route path="/driver/tracking" element={<RequireRole allowed={["driver"]}><LazyPage component={DriverTracking} /></RequireRole>} />
       <Route path="/driver/history" element={<RequireRole allowed={["driver"]}><DriverHistory /></RequireRole>} />
       <Route path="/driver/notifications" element={<RequireRole allowed={["driver"]}><DriverNotifications /></RequireRole>} />
       <Route path="/driver/settings" element={<RequireRole allowed={["driver"]}><DriverSettings /></RequireRole>} />
       <Route path="/driver/documents" element={<RequireRole allowed={["driver"]}><DocumentUpload /></RequireRole>} />
-      <Route path="/driver/trip" element={<RequireRole allowed={["driver"]}><ActiveTrip /></RequireRole>} />
+      <Route path="/driver/trip" element={<RequireRole allowed={["driver"]}><LazyPage component={ActiveTrip} /></RequireRole>} />
       <Route path="/driver/profile" element={<RequireRole allowed={["driver"]}><DriverProfile /></RequireRole>} />
       <Route path="/driver/wallet" element={<RequireRole allowed={["driver"]}><DriverWallet /></RequireRole>} />
       <Route path="/driver/car-info" element={<RequireRole allowed={["driver"]}><CarInfo /></RequireRole>} />
@@ -119,24 +126,24 @@ export const mainRouteElements = (
 
       {/* ─── Delivery /delivery/* ─── */}
       <Route path="/delivery" element={<RequireRole allowed={["client"]}><DeliveryHome /></RequireRole>} />
-      <Route path="/delivery/tracking" element={<RequireRole allowed={["client"]}><DeliveryTracking /></RequireRole>} />
+      <Route path="/delivery/tracking" element={<RequireRole allowed={["client"]}><LazyPage component={DeliveryTracking} /></RequireRole>} />
       <Route path="/delivery/history" element={<RequireRole allowed={["client"]}><DeliveryHistory /></RequireRole>} />
       <Route path="/delivery/courier/send" element={<RequireRole allowed={["client"]}><CourierSend /></RequireRole>} />
       <Route path="/delivery/courier/address" element={<RequireRole allowed={["client"]}><CourierAddress /></RequireRole>} />
-      <Route path="/delivery/courier/track" element={<RequireRole allowed={["client"]}><CourierTrack /></RequireRole>} />
+      <Route path="/delivery/courier/track" element={<RequireRole allowed={["client"]}><LazyPage component={CourierTrack} /></RequireRole>} />
       <Route path="/delivery/support" element={<RequireRole allowed={["client"]}><DeliverySupport /></RequireRole>} />
-      <Route path="/delivery/restaurants" element={<RequireRole allowed={["client"]}><RestaurantsList /></RequireRole>} />
-      <Route path="/delivery/restaurant/:id" element={<RequireRole allowed={["client"]}><RestaurantMenu /></RequireRole>} />
+      <Route path="/delivery/restaurants" element={<RequireRole allowed={["client"]}><LazyPage component={RestaurantsList} /></RequireRole>} />
+      <Route path="/delivery/restaurant/:id" element={<RequireRole allowed={["client"]}><LazyPage component={RestaurantMenu} /></RequireRole>} />
       <Route path="/delivery/cart" element={<RequireRole allowed={["client"]}><Cart /></RequireRole>} />
-      <Route path="/delivery/store/:id" element={<RequireRole allowed={["client"]}><StoreDetail /></RequireRole>} />
-      <Route path="/delivery/my-store" element={<RequireRole allowed={["store_owner"]}><MyStore /></RequireRole>} />
-      <Route path="/delivery/order/:id" element={<RequireRole allowed={["client"]}><OrderTracking /></RequireRole>} />
-      <Route path="/delivery/order" element={<RequireRole allowed={["client"]}><OrderTracking /></RequireRole>} />
+      <Route path="/delivery/store/:id" element={<RequireRole allowed={["client"]}><LazyPage component={StoreDetail} /></RequireRole>} />
+      <Route path="/delivery/my-store" element={<RequireRole allowed={["store_owner"]}><LazyPage component={MyStore} /></RequireRole>} />
+      <Route path="/delivery/order/:id" element={<RequireRole allowed={["client"]}><LazyPage component={OrderTracking} /></RequireRole>} />
+      <Route path="/delivery/order" element={<RequireRole allowed={["client"]}><LazyPage component={OrderTracking} /></RequireRole>} />
       <Route path="/delivery/:category" element={<RequireRole allowed={["client"]}><DeliveryCategory /></RequireRole>} />
 
       {/* ─── AI ─── */}
-      <Route path="/ai" element={<RequireRole><AgentHub /></RequireRole>} />
-      <Route path="/assistant" element={<RequireRole><AIAssistant /></RequireRole>} />
+      <Route path="/ai" element={<RequireRole><LazyPage component={AgentHub} /></RequireRole>} />
+      <Route path="/assistant" element={<RequireRole><LazyPage component={AIAssistant} /></RequireRole>} />
     </Route>
 
     {/* ─── Dynamic CMS Pages ─── */}
