@@ -19,7 +19,7 @@ export const nativeDownloads: NativeDownload[] = [
     desc: "نسخة Android حقيقية بدون شريط متصفح، جاهزة للتحميل فور وضع ملف APK النهائي داخل مجلد التنزيلات.",
     badge: "APK",
     href: "/downloads/hn-driver-android.apk",
-    fileName: "hn-driver-android.apk",
+    fileName: "HN-DRIVER.apk",
     buildCommand: "npm run native:android:apk",
     platform: "mobile",
     version: "v1.0.0",
