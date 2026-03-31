@@ -1,23 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Phone,
-  PhoneOff,
-  PhoneIncoming,
-  Clock,
-  User,
-  Mic,
-  MicOff,
-  Pause,
-  Play,
-  MessageCircle,
-  FileText,
-  Loader2,
+  Phone, PhoneOff, PhoneIncoming, Clock, User, Mic, MicOff,
+  Pause, Play, MessageCircle, FileText, Loader2, Hash, Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useCallCenterCtx } from "@/admin/layouts/CallCenterLayout";
 
 const formatTimer = (value: number) => {
   const minutes = Math.floor(value / 60).toString().padStart(2, "0");
@@ -31,55 +23,45 @@ const formatWait = (value?: string) => {
   return formatTimer(diffSeconds);
 };
 
+const PARTY_LABELS: Record<string, string> = {
+  client: "عميل", driver: "سائق", delivery: "توصيل", restaurant: "مطعم", store: "متجر",
+};
+
 const IncomingCalls = () => {
+  const callCenter = useCallCenterCtx();
   const [calls, setCalls] = useState<any[]>([]);
-  const [activeCall, setActiveCall] = useState<string | null>(null);
-  const [muted, setMuted] = useState(false);
-  const [onHold, setOnHold] = useState(false);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [activeCallId, setActiveCallId] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(true);
   const [ending, setEnding] = useState(false);
+  const [referenceInput, setReferenceInput] = useState("");
 
   const fetchCalls = useCallback(async () => {
     const { data } = await supabase.from("call_logs").select("*").order("created_at", { ascending: false }).limit(50);
     const nextCalls = data || [];
     setCalls(nextCalls);
-    setActiveCall((current) => (current && nextCalls.some((call) => call.id === current) ? current : nextCalls[0]?.id || null));
+    setActiveCallId((current) => (current && nextCalls.some((call) => call.id === current) ? current : nextCalls[0]?.id || null));
     setLoading(false);
   }, []);
 
   useEffect(() => {
     void fetchCalls();
     const channel = supabase
-      .channel("incoming-calls-rt")
+      .channel(`incoming-calls-rt-${Math.random().toString(36).slice(2,8)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "call_logs" }, fetchCalls)
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [fetchCalls]);
 
-  const currentCall = useMemo(() => calls.find((call) => call.id === activeCall) || null, [activeCall, calls]);
+  const currentCall = useMemo(() => calls.find((call) => call.id === activeCallId) || null, [activeCallId, calls]);
 
   useEffect(() => {
     setNotes(currentCall?.notes || "");
-    setElapsedSeconds(Number(currentCall?.duration || 0));
-    setMuted(false);
-    setOnHold(false);
   }, [currentCall?.id]);
 
-  useEffect(() => {
-    if (!currentCall || onHold) return;
-    const timer = window.setInterval(() => {
-      setElapsedSeconds((value) => value + 1);
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [currentCall, onHold]);
-
   const handleSelectCall = async (call: any) => {
-    setActiveCall(call.id);
+    setActiveCallId(call.id);
     if (call.status === "pending") {
       await supabase.from("call_logs").update({ status: "answered" }).eq("id", call.id);
       await fetchCalls();
@@ -91,13 +73,25 @@ const IncomingCalls = () => {
     setEnding(true);
     await supabase.from("call_logs").update({
       status: "answered",
-      duration: elapsedSeconds,
       notes: notes.trim(),
     }).eq("id", currentCall.id);
     toast({ title: "تم حفظ بيانات المكالمة" });
     setEnding(false);
-    setActiveCall(null);
+    setActiveCallId(null);
     await fetchCalls();
+  };
+
+  // Start real WebRTC call via reference
+  const handleCallByReference = async (ref: string) => {
+    if (!callCenter || !ref) return;
+    await callCenter.startCallByReference(ref, currentCall?.order_id);
+  };
+
+  // Quick call from reference input
+  const handleQuickCall = async () => {
+    if (!referenceInput.trim()) return;
+    await handleCallByReference(referenceInput.trim());
+    setReferenceInput("");
   };
 
   if (loading) {
@@ -113,6 +107,21 @@ const IncomingCalls = () => {
         <h1 className="text-xl font-bold text-foreground">المكالمات الواردة</h1>
       </div>
 
+      {/* Quick call by reference */}
+      <div className="glass-card rounded-xl p-3 mb-4 flex items-center gap-2" dir="rtl">
+        <Phone className="w-4 h-4 text-primary" />
+        <Input
+          value={referenceInput}
+          onChange={e => setReferenceInput(e.target.value)}
+          placeholder="اتصال سريع بالمرجع (مثال: A123456، S123456)"
+          className="flex-1 h-9 text-sm"
+          onKeyDown={e => e.key === "Enter" && handleQuickCall()}
+        />
+        <Button size="sm" onClick={handleQuickCall} disabled={!referenceInput.trim() || callCenter?.busy}>
+          <Phone className="w-4 h-4 ml-1" /> اتصال
+        </Button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-1 space-y-2">
           <h2 className="text-foreground font-bold text-sm mb-2">قائمة الانتظار</h2>
@@ -121,7 +130,7 @@ const IncomingCalls = () => {
               key={call.id}
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
-              className={`gradient-card rounded-xl p-3 border transition-all cursor-pointer ${activeCall === call.id ? "border-primary glow-ring-orange" : "border-border hover:border-primary/20"}`}
+              className={`gradient-card rounded-xl p-3 border transition-all cursor-pointer ${activeCallId === call.id ? "border-primary glow-ring-orange" : "border-border hover:border-primary/20"}`}
               onClick={() => void handleSelectCall(call)}
             >
               <div className="flex items-center justify-between mb-2">
@@ -129,14 +138,26 @@ const IncomingCalls = () => {
                   call.reason === "emergency" || call.status === "urgent" ? "bg-destructive/10 text-destructive animate-pulse" : call.status === "pending" ? "bg-warning/10 text-warning" : "bg-info/10 text-info"
                 }`}>{call.status || "pending"}</span>
                 <div className="flex items-center gap-2">
+                  {call.party_reference && (
+                    <span className="text-[10px] font-mono bg-secondary px-1.5 py-0.5 rounded text-muted-foreground">{call.party_reference}</span>
+                  )}
                   <PhoneIncoming className={`w-3.5 h-3.5 ${call.status === "pending" ? "text-primary" : "text-info"}`} />
                   <span className="text-foreground font-medium text-sm">{call.caller_name || "متصل"}</span>
                 </div>
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground gap-2">
                 <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatWait(call.created_at)}</span>
-                <span className="truncate">{call.reason || "استفسار"} • {call.caller_phone}</span>
+                <span className="truncate">
+                  {call.party_type && <span className="text-primary">{PARTY_LABELS[call.party_type] || call.party_type}</span>}
+                  {" • "}{call.reason || "استفسار"} • {call.caller_phone}
+                </span>
               </div>
+              {call.call_reference && (
+                <div className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <Hash className="w-3 h-3" />
+                  <span className="font-mono">{call.call_reference}</span>
+                </div>
+              )}
             </motion.div>
           ))}
         </div>
@@ -149,24 +170,52 @@ const IncomingCalls = () => {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-primary-foreground animate-pulse" />
-                      <span className="text-primary-foreground text-sm font-medium">مكالمة جارية • {formatTimer(elapsedSeconds)}</span>
+                      <span className="text-primary-foreground text-sm font-medium">
+                        {callCenter?.isInCall ? "مكالمة WebRTC جارية" : "معلومات المكالمة"}
+                      </span>
                     </div>
                     <div className="text-right text-primary-foreground">
                       <p className="font-bold text-lg">{currentCall.caller_name || "متصل"}</p>
                       <p className="text-sm opacity-70">{currentCall.caller_phone}</p>
+                      {currentCall.party_reference && (
+                        <p className="text-xs opacity-80 font-mono">{currentCall.party_reference}</p>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-2 flex-wrap">
-                    <Button size="sm" className="bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/30 rounded-lg" onClick={() => setMuted(!muted)}>
-                      {muted ? <MicOff className="w-4 h-4 ml-1" /> : <Mic className="w-4 h-4 ml-1" />}
-                      {muted ? "إلغاء الكتم" : "كتم"}
-                    </Button>
-                    <Button size="sm" className="bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/30 rounded-lg" onClick={() => setOnHold(!onHold)}>
-                      {onHold ? <Play className="w-4 h-4 ml-1" /> : <Pause className="w-4 h-4 ml-1" />}
-                      {onHold ? "استئناف" : "انتظار"}
-                    </Button>
+                    {/* Real WebRTC call button */}
+                    {currentCall.party_reference && !callCenter?.isInCall && (
+                      <Button size="sm" className="bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/30 rounded-lg"
+                        onClick={() => handleCallByReference(currentCall.party_reference)}
+                        disabled={callCenter?.busy}
+                      >
+                        <Phone className="w-4 h-4 ml-1" /> اتصال مباشر
+                      </Button>
+                    )}
+                    {/* User ID based call */}
+                    {currentCall.user_id && !callCenter?.isInCall && (
+                      <Button size="sm" className="bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/30 rounded-lg"
+                        onClick={async () => {
+                          if (!callCenter) return;
+                          const { data: profile } = await supabase.from("profiles").select("id, name, phone, avatar_url, user_code").eq("id", currentCall.user_id).maybeSingle();
+                          if (profile) {
+                            await callCenter.startCallToParty({
+                              id: profile.id,
+                              name: profile.name || "مستخدم",
+                              reference: profile.user_code || "A000000",
+                              phone: profile.phone || "",
+                              avatarUrl: profile.avatar_url,
+                              partyType: (currentCall.party_type as any) || "client",
+                            }, currentCall.order_id);
+                          }
+                        }}
+                        disabled={callCenter?.busy}
+                      >
+                        <Phone className="w-4 h-4 ml-1" /> اتصال بالمستخدم
+                      </Button>
+                    )}
                     <Button size="sm" className="bg-destructive text-destructive-foreground rounded-lg" onClick={() => void handleEndCall()} disabled={ending}>
-                      <PhoneOff className="w-4 h-4 ml-1" /> إنهاء
+                      <PhoneOff className="w-4 h-4 ml-1" /> حفظ وإغلاق
                     </Button>
                   </div>
                 </div>
@@ -179,8 +228,8 @@ const IncomingCalls = () => {
                       { label: "الهاتف", value: currentCall.caller_phone || "—" },
                       { label: "نوع الطلب", value: currentCall.reason || "—" },
                       { label: "الحالة", value: currentCall.status || "—" },
-                      { label: "النوع", value: currentCall.call_type || "incoming" },
-                      { label: "المدة", value: formatTimer(elapsedSeconds) },
+                      { label: "النوع", value: PARTY_LABELS[currentCall.party_type] || currentCall.call_type || "incoming" },
+                      { label: "المرجع", value: currentCall.call_reference || currentCall.party_reference || "—" },
                     ].map((item, index) => (
                       <div key={index} className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">{item.value}</span>
@@ -218,7 +267,7 @@ const IncomingCalls = () => {
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-card rounded-2xl p-12 text-center">
                 <PhoneIncoming className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
                 <p className="text-foreground font-bold">اختر مكالمة للرد عليها</p>
-                <p className="text-sm text-muted-foreground mt-1">ستظهر بيانات المكالمات الحقيقية هنا.</p>
+                <p className="text-sm text-muted-foreground mt-1">أو استخدم البحث بالمرجع للاتصال المباشر</p>
               </motion.div>
             )}
           </AnimatePresence>
