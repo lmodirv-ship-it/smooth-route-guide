@@ -29,6 +29,7 @@ import AdminSettings from "./pages/Settings";
 import SetupAdmin from "./pages/SetupAdmin";
 import AdsManagement from "./pages/AdsManagement";
 import PageManagement from "./pages/PageManagement";
+import DatabaseManager from "./pages/DatabaseManager";
 
 // Call Center layout & pages
 import CallCenterLayout from "./layouts/CallCenterLayout";
