@@ -2,6 +2,7 @@ import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import VisitorCounter from "@/components/VisitorCounter";
 import { useNavigate } from "react-router-dom";
+import { dashboardForRole } from "@/lib/routes";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import {
