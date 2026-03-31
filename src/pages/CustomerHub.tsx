@@ -20,8 +20,6 @@ const CustomerHub = () => {
       {/* Header */}
       <div className="sticky top-0 z-50 px-5 py-3 flex items-center justify-between glass-strong border-b border-border">
         <div className="flex items-center gap-2">
-          <VisitorCounter />
-          <LanguageSwitcher />
           <SubscriptionIndicator />
         </div>
         <div className="flex items-center gap-2.5">
