@@ -30,6 +30,7 @@ import SetupAdmin from "./pages/SetupAdmin";
 import AdsManagement from "./pages/AdsManagement";
 import PageManagement from "./pages/PageManagement";
 import DatabaseManager from "./pages/DatabaseManager";
+import PermissionsManagement from "./pages/PermissionsManagement";
 
 // Call Center layout & pages
 import CallCenterLayout from "./layouts/CallCenterLayout";
