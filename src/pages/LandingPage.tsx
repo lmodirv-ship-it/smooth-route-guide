@@ -212,6 +212,9 @@ export default function LandingPage() {
                 {link.label}
               </button>
             ))}
+            <div className="flex items-center justify-center py-1">
+              <VisitorCounter />
+            </div>
             <div className="h-px bg-border my-2" />
             <LanguageSwitcher variant="outline" />
             <Button variant="outline" onClick={() => { navigate("/login"); setMenuOpen(false); }}>{t.common.login}</Button>
