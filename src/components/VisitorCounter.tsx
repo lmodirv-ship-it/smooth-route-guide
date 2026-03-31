@@ -28,6 +28,7 @@ interface Stats {
 
 const VisitorCounter = () => {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const sessionId = generateSessionId();
@@ -49,6 +50,8 @@ const VisitorCounter = () => {
       if (!error && data) {
         setStats(data as unknown as Stats);
       }
+
+      setIsLoading(false);
     };
 
     recordVisit();
@@ -74,12 +77,12 @@ const VisitorCounter = () => {
     };
   }, []);
 
-  if (!stats) return null;
+  if (!stats && !isLoading) return null;
 
   const items = [
-    { icon: Eye, value: stats.total_visits, color: "text-primary" },
-    { icon: Users, value: stats.unique_visitors, color: "text-emerald-400" },
-    { icon: TrendingUp, value: stats.today_visits, color: "text-amber-400" },
+    { icon: Eye, value: stats?.total_visits ?? 0, color: "text-primary" },
+    { icon: Users, value: stats?.unique_visitors ?? 0, color: "text-success" },
+    { icon: TrendingUp, value: stats?.today_visits ?? 0, color: "text-warning" },
   ];
 
   return (
@@ -90,10 +93,10 @@ const VisitorCounter = () => {
           className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/60 border border-border/40 text-xs font-semibold tabular-nums"
         >
           <item.icon className={`w-3 h-3 ${item.color}`} />
-          <span className={item.color}>{item.value.toLocaleString()}</span>
+          <span className={item.color}>{isLoading ? "..." : item.value.toLocaleString()}</span>
         </div>
       ))}
-      <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+      <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
     </div>
   );
 };

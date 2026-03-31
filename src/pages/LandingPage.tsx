@@ -198,10 +198,15 @@ export default function LandingPage() {
             </Button>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button className="md:hidden text-foreground p-2" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Mobile Actions */}
+          <div className="md:hidden flex items-center gap-2">
+            <div className="max-w-[58vw] overflow-hidden">
+              <VisitorCounter />
+            </div>
+            <button className="text-foreground p-2 shrink-0" onClick={() => setMenuOpen(!menuOpen)}>
+              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -212,7 +217,7 @@ export default function LandingPage() {
                 {link.label}
               </button>
             ))}
-            <div className="flex items-center justify-center py-1">
+            <div className="flex items-center justify-center py-1 md:hidden">
               <VisitorCounter />
             </div>
             <div className="h-px bg-border my-2" />
