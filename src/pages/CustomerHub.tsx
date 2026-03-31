@@ -3,9 +3,7 @@ import { motion } from "framer-motion";
 import { Car, ShoppingBag, Sparkles, UtensilsCrossed, Package } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { useI18n } from "@/i18n/context";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import SubscriptionIndicator from "@/components/SubscriptionIndicator";
-import VisitorCounter from "@/components/VisitorCounter";
 
 const CustomerHub = () => {
   const navigate = useNavigate();
@@ -22,8 +20,6 @@ const CustomerHub = () => {
       {/* Header */}
       <div className="sticky top-0 z-50 px-5 py-3 flex items-center justify-between glass-strong border-b border-border">
         <div className="flex items-center gap-2">
-          <VisitorCounter />
-          <LanguageSwitcher />
           <SubscriptionIndicator />
         </div>
         <div className="flex items-center gap-2.5">
