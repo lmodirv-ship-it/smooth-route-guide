@@ -9,7 +9,17 @@ export const OFFICIAL_DOMAIN = "hn-driver.com";
 export const OFFICIAL_URL = "https://www.hn-driver.com";
 export const ADMIN_URL = "https://admin.hn-driver.com";
 
-/** All official subdomains */
+/** Legacy .net domain — kept for backward compatibility */
+export const LEGACY_DOMAIN = "hn-driver.net";
+export const LEGACY_URL = "https://www.hn-driver.net";
+export const LEGACY_ADMIN_URL = "https://admin.hn-driver.net";
+
+/** Server IPs */
+export const SERVERS = {
+  primary: "213.156.132.166",
+} as const;
+
+/** All official subdomains (.com — primary) */
 export const OFFICIAL_SUBDOMAINS = {
   main: "https://www.hn-driver.com",
   admin: "https://admin.hn-driver.com",
@@ -18,6 +28,19 @@ export const OFFICIAL_SUBDOMAINS = {
   delivery: "https://delivery.hn-driver.com",
   callcenter: "https://call.hn-driver.com",
 } as const;
+
+/** Legacy subdomains (.net — kept for backward compatibility) */
+export const LEGACY_SUBDOMAINS = {
+  main: "https://www.hn-driver.net",
+  admin: "https://admin.hn-driver.net",
+  driver: "https://driver.hn-driver.net",
+  client: "https://client.hn-driver.net",
+  delivery: "https://delivery.hn-driver.net",
+  callcenter: "https://call.hn-driver.net",
+} as const;
+
+/** All supported domains for CORS / auth redirect checks */
+export const ALL_DOMAINS = ["hn-driver.com", "hn-driver.net"] as const;
 
 /** Main pages with their full URLs — useful for sitemaps, sharing, etc. */
 export const MAIN_PAGES = {

@@ -35,11 +35,17 @@ export function detectSubdomain(): SubdomainApp {
     return "main";
   }
 
+  // Supported root domains
+  const SUPPORTED_DOMAINS = ["hn-driver.com", "hn-driver.net"];
+
   // Extract first part of hostname
   const parts = hostname.split(".");
   if (parts.length >= 3) {
-    const sub = parts[0].toLowerCase();
-    return SUBDOMAIN_MAP[sub] || "main";
+    const rootDomain = parts.slice(-2).join(".");
+    if (SUPPORTED_DOMAINS.includes(rootDomain)) {
+      const sub = parts[0].toLowerCase();
+      return SUBDOMAIN_MAP[sub] || "main";
+    }
   }
 
   return "main";
