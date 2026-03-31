@@ -5,7 +5,7 @@ import {
   BarChart3, FileText, Car, Users, TrendingUp, MapPin,
   AlertTriangle, FileCheck, Headphones, Settings, Shield,
   Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog, Percent,
-  ShieldCheck, ShieldOff, Globe, RefreshCw, BrainCircuit, Menu, MessageSquare, MessagesSquare, Package, Palette, Monitor, GitBranch
+  ShieldCheck, ShieldOff, Globe, RefreshCw, BrainCircuit, Menu, MessageSquare, MessagesSquare, Package, Palette, Monitor, GitBranch, Database
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -107,6 +107,7 @@ const AdminLayout = () => {
     { path: "/admin/versions", icon: GitBranch, label: "إدارة الإصدارات" },
     { path: "/admin/settings", icon: Settings, label: t.admin.settingsMenu },
     { path: "/admin/pages", icon: FileText, label: "إدارة الصفحات" },
+    { path: "/admin/database", icon: Database, label: "إدارة قاعدة البيانات" },
   ];
 
   useEffect(() => {

@@ -35,6 +35,7 @@ import AdsManagement from "@/admin/pages/AdsManagement";
 import VisitorAnalytics from "@/admin/pages/VisitorAnalytics";
 import VersionManager from "@/admin/pages/VersionManager";
 import PageManagement from "@/admin/pages/PageManagement";
+import DatabaseManager from "@/admin/pages/DatabaseManager";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
@@ -100,6 +101,7 @@ export const adminRouteElements = (
       <Route path="versions" element={<VersionManager />} />
       <Route path="settings" element={<AdminSettings />} />
       <Route path="pages" element={<PageManagement />} />
+      <Route path="database" element={<DatabaseManager />} />
       <Route path="messaging" element={<InternalMessaging />} />
       <Route path="community-chat" element={<AdminCommunityChat />} />
     </Route>

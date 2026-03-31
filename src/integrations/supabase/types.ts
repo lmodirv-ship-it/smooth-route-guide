@@ -956,6 +956,39 @@ export type Database = {
           },
         ]
       }
+      db_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string | null
+          table_name: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       delivery_orders: {
         Row: {
           accepted_at: string | null
@@ -3147,6 +3180,16 @@ export type Database = {
         Returns: number
       }
       generate_entity_code: { Args: { prefix: string }; Returns: string }
+      get_public_tables: { Args: never; Returns: string[] }
+      get_table_columns: {
+        Args: { p_table: string }
+        Returns: {
+          column_default: string
+          column_name: string
+          data_type: string
+          is_nullable: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
