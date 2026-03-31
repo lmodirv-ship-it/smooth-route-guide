@@ -189,7 +189,12 @@ export function useCallCenter() {
     stream.getTracks().forEach(t => pc.addTrack(t, stream));
 
     pc.onicecandidate = (e) => {
-      if (e.candidate) void sendSignal(callId, peerId, "ice", e.candidate.toJSON() as Record<string, unknown>);
+      if (e.candidate) {
+        if (import.meta.env.DEV && e.candidate.candidate.includes("relay")) {
+          console.log("[WebRTC] ✅ RELAY candidate found:", e.candidate.candidate);
+        }
+        void sendSignal(callId, peerId, "ice", e.candidate.toJSON() as Record<string, unknown>);
+      }
     };
     pc.ontrack = (e) => { if (e.streams[0]) setRemoteStream(e.streams[0]); };
     pc.onconnectionstatechange = () => {
