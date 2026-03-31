@@ -3180,6 +3180,16 @@ export type Database = {
         Returns: number
       }
       generate_entity_code: { Args: { prefix: string }; Returns: string }
+      get_public_tables: { Args: never; Returns: string[] }
+      get_table_columns: {
+        Args: { p_table: string }
+        Returns: {
+          column_default: string
+          column_name: string
+          data_type: string
+          is_nullable: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
