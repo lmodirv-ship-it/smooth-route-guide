@@ -284,16 +284,120 @@ const DriverPage = () => {
         </div>
       </div>
 
-      {/* Progress Bar - minimal */}
-      <div className="shrink-0 bg-zinc-950 px-4 py-1 border-t border-white/5">
-        <div className="h-2 rounded-full bg-zinc-800/80 overflow-hidden border border-white/5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
-          <motion.div
-            className={`h-full rounded-full ${progressColor} shadow-lg`}
-            initial={{ width: 0 }}
-            animate={{ width: `${Math.max(tripProgress * 100, 2)}%` }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          />
+      {/* Active ride banner */}
+      {activeRideId && (
+        <div className="shrink-0 bg-emerald-500/10 border-t border-emerald-500/30 px-4 py-3">
+          <button onClick={() => navigate(`/driver/tracking?id=${activeRideId}`)}
+            className="w-full flex items-center justify-between">
+            <Navigation className="w-5 h-5 text-emerald-400" />
+            <div className="text-right">
+              <p className="text-emerald-400 font-bold text-sm">🚗 رحلة نشطة</p>
+              <p className="text-muted-foreground text-xs">اضغط للعودة للتتبع</p>
+            </div>
+          </button>
         </div>
+      )}
+
+      {/* Incoming Ride Requests */}
+      <div className="shrink-0 max-h-[45vh] overflow-y-auto bg-background border-t border-border">
+        {nearbyOrders.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <Radar className="w-10 h-10 text-muted-foreground/30 mb-2 animate-pulse" />
+            <p className="text-muted-foreground text-sm font-medium">جارٍ البحث عن طلبات...</p>
+            <p className="text-muted-foreground/60 text-xs mt-1">نطاق البحث: {MAX_RADIUS_KM} كم</p>
+          </div>
+        ) : (
+          <div className="px-3 py-2">
+            <div className="flex items-center justify-between mb-2 px-1">
+              <span className="text-xs text-destructive bg-destructive/10 px-2 py-0.5 rounded-full font-bold">
+                {nearbyOrders.length} طلب
+              </span>
+              <h3 className="font-bold text-foreground text-sm flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                طلبات جديدة
+              </h3>
+            </div>
+            <AnimatePresence mode="popLayout">
+              {nearbyOrders.map((order) => (
+                <motion.div
+                  key={order.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className={`rounded-xl border p-3 mb-2 transition-all ${selectedOrderId === order.id ? "border-primary bg-primary/5" : "border-border bg-card"}`}
+                  onClick={() => setSelectedOrderId(order.id === selectedOrderId ? null : order.id)}
+                >
+                  {/* Order header */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5">
+                      {order.eta && (
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <Clock className="w-3 h-3" />{order.eta} د
+                        </span>
+                      )}
+                      {order.distToPickup != null && (
+                        <span className="text-xs bg-secondary text-muted-foreground px-2 py-0.5 rounded-full">
+                          {order.distToPickup} كم
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-primary font-bold text-lg">{order.totalPrice} DH</span>
+                  </div>
+
+                  {/* Pickup & Destination */}
+                  <div className="space-y-1.5 mb-3">
+                    <div className="flex items-center gap-2 justify-end">
+                      <span className="text-sm text-foreground truncate flex-1 text-right">{order.pickup || "نقطة الالتقاط"}</span>
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0" />
+                    </div>
+                    <div className="flex items-center gap-2 justify-end">
+                      <span className="text-sm text-foreground truncate flex-1 text-right">{order.destination || "الوجهة"}</span>
+                      <div className="w-2.5 h-2.5 rounded-full bg-destructive shrink-0" />
+                    </div>
+                  </div>
+
+                  {/* Distance info */}
+                  {order.rideDistance && (
+                    <div className="flex items-center gap-3 justify-end mb-3 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1"><Route className="w-3 h-3" />{order.rideDistance} كم</span>
+                    </div>
+                  )}
+
+                  {/* Accept / Reject buttons */}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/10"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOrders(prev => prev.filter(o => o.id !== order.id));
+                      }}
+                      disabled={accepting === order.id}
+                    >
+                      ✕ رفض
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:opacity-90"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAccept(order.id);
+                      }}
+                      disabled={accepting === order.id}
+                    >
+                      {accepting === order.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>✓ قبول</>
+                      )}
+                    </Button>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       <BottomNav role="driver" />
