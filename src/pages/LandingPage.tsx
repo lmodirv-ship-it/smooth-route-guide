@@ -82,6 +82,20 @@ export default function LandingPage() {
   const [storeDialogOpen, setStoreDialogOpen] = useState(false);
   const lt = t.landing;
 
+  // Auto-redirect logged-in users to their dashboard
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
+      const firstRole = (roles || [])[0]?.role;
+      if (firstRole) {
+        navigate(dashboardForRole(firstRole), { replace: true });
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll, { passive: true });
