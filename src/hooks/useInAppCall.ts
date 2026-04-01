@@ -266,7 +266,7 @@ export function useInAppCall() {
         setBusy(false);
       }
     },
-    [busy, clearCallState, createPeerConnection, ensureAudioStream, sendSignal, userId],
+    [busy, clearCallState, createPeerConnection, ensureMediaStream, sendSignal, userId],
   );
 
   const acceptCall = useCallback(async () => {
