@@ -104,6 +104,22 @@ export default function CallCenterModal({
     <>
       <audio ref={audioRef} autoPlay playsInline />
 
+      {/* Video overlay when video is enabled */}
+      <AnimatePresence>
+        {isVideoEnabled && (
+          <VideoCallOverlay
+            localStream={localStream}
+            remoteStream={remoteStream}
+            peerName={party.name}
+            isMuted={isMuted}
+            isVideoEnabled={isVideoEnabled}
+            onToggleMute={onToggleMute}
+            onToggleVideo={onToggleVideo}
+            onEndCall={onEndCall}
+          />
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         <motion.div
           initial={{ opacity: 0, y: 40, scale: 0.95 }}
