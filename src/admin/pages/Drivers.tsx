@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import DriversLiveMapCard from "@/admin/components/DriversLiveMapCard";
+import DriverRequestsTable from "@/admin/components/DriverRequestsTable";
 
 interface Driver {
   id: string; user_id: string; license_no: string; rating: number | null;
@@ -80,6 +82,10 @@ const AdminDrivers = () => {
           <Car className="w-6 h-6 text-primary" />
         </div>
       </div>
+
+      <DriversLiveMapCard />
+
+      <DriverRequestsTable />
 
       <div className="rounded-xl border border-border overflow-hidden">
         <table className="w-full caption-bottom text-sm">
