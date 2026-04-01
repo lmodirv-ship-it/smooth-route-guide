@@ -230,7 +230,7 @@ export function useInAppCall() {
 
       try {
         setBusy(true);
-        const stream = await ensureAudioStream();
+        const stream = await ensureMediaStream();
 
         const callResponse: any = await supabase
           .from("call_sessions" as any)
