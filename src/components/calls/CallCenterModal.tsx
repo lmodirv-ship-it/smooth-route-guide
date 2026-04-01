@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import VideoCallOverlay from "@/components/calls/VideoCallOverlay";
 import type { ActiveCallState, PartyType } from "@/hooks/useCallCenter";
 
 const PARTY_LABELS: Record<PartyType, string> = {
