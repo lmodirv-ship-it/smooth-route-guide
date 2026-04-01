@@ -421,7 +421,7 @@ async function runSingleCheck(id: string, update: (id: string, u: Partial<Health
       const tables = ["profiles", "trips", "delivery_orders", "drivers", "ride_requests"];
       const sizes: string[] = [];
       for (const t of tables) {
-        const { count } = await supabase.from(t).select("id", { count: "exact", head: true });
+        const { count } = await supabase.from(t as any).select("id", { count: "exact", head: true });
         sizes.push(`${t}: ${count || 0}`);
       }
       update(id, { status: "pass", message: `تم فحص ${tables.length} جداول`, details: sizes.join(" | ") });
