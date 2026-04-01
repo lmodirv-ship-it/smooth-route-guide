@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Mic, MicOff, PhoneOff, Phone, Radio, StickyNote,
-  Forward, RotateCcw, Clock, User, Hash,
+  Forward, RotateCcw, Clock, User, Hash, Video, VideoOff,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
