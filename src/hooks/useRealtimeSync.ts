@@ -63,10 +63,17 @@ export function useRealtimeSync<T = unknown>(opts: UseRealtimeSyncOptions) {
 
     fetchData();
 
+    // Debounce realtime refetches to avoid flooding
+    const debounceRef = { timer: null as ReturnType<typeof setTimeout> | null };
+    const debouncedFetch = () => {
+      if (debounceRef.timer) clearTimeout(debounceRef.timer);
+      debounceRef.timer = setTimeout(() => fetchData(), 300);
+    };
+
     const channel: RealtimeChannel = api.subscribe({
       table,
       event,
-      onData: () => fetchData(),
+      onData: () => debouncedFetch(),
     });
 
     return () => {

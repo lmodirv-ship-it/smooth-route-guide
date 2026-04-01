@@ -21,7 +21,16 @@ import SmartErrorBoundary from "@/components/SmartErrorBoundary";
 import { mainRouteElements } from "./app/index";
 import { adminRouteElements } from "./admin/index";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,      // 5 min — avoid refetching fresh data
+      gcTime: 10 * 60 * 1000,         // 10 min cache
+      refetchOnWindowFocus: false,    // prevent redundant fetches on tab switch
+      retry: 2,
+    },
+  },
+});
 
 const AppInner = () => {
   usePresenceHeartbeat();
