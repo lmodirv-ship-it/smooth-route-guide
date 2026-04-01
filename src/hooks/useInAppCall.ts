@@ -354,6 +354,29 @@ export function useInAppCall() {
     });
   }, [localStream]);
 
+  const toggleVideo = useCallback(async () => {
+    if (!localStream) return;
+    const videoTracks = localStream.getVideoTracks();
+    if (videoTracks.length > 0) {
+      // Toggle existing video tracks
+      const newEnabled = !videoTracks[0].enabled;
+      videoTracks.forEach(t => { t.enabled = newEnabled; });
+      setIsVideoEnabled(newEnabled);
+    } else {
+      // Add video track
+      try {
+        const videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 320, height: 240 } });
+        videoStream.getVideoTracks().forEach(t => {
+          localStream.addTrack(t);
+          pcRef.current?.addTrack(t, localStream);
+        });
+        setIsVideoEnabled(true);
+      } catch {
+        toast.error("تعذر تشغيل الكاميرا");
+      }
+    }
+  }, [localStream]);
+
   useEffect(() => {
     if (!userId) return;
 
