@@ -32,6 +32,7 @@ const SupervisorLayout = () => {
     { path: "/supervisor/restaurants", icon: UtensilsCrossed, label: t.admin.restaurantsMenu },
     { path: "/supervisor/city-activation", icon: Globe, label: "تنشيط المدن" },
     { path: "/supervisor/messaging", icon: MessageSquare, label: "المحادثات" },
+    { path: "/supervisor/wallet-recharge", icon: Wallet, label: "شحن المحفظة" },
     { path: "/supervisor/community", icon: Users, label: "مجتمع HN" },
     { path: "/supervisor/analytics", icon: TrendingUp, label: "تحليلات الزوار" },
   ];
