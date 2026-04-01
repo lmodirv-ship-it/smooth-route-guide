@@ -12,7 +12,7 @@
  * keeping ALL 6 apps in sync without manual refresh.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api, type RealtimeEvent } from "@/services/api";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
