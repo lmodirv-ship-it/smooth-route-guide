@@ -42,40 +42,40 @@ const AIAssistant = lazy(() => import("@/pages/AIAssistant"));
 const CommunityChat = lazy(() => import("@/pages/CommunityChat"));
 const MyStore = lazy(() => import("@/pages/delivery/MyStore"));
 
-// ─── Regular pages — eagerly loaded ───
-import DriverPage from "@/pages/DriverPage";
-import DriverHistory from "@/pages/DriverHistory";
-import DriverNotifications from "@/pages/DriverNotifications";
-import DriverSettings from "@/pages/DriverSettings";
-import DocumentUpload from "@/pages/DocumentUpload";
-import DriverProfile from "@/pages/driver/DriverProfile";
-import DriverWallet from "@/pages/driver/DriverWallet";
-import CarInfo from "@/pages/driver/CarInfo";
-import DriverPromotions from "@/pages/driver/DriverPromotions";
-import DriverSupport from "@/pages/driver/DriverSupport";
-import DriverStatus from "@/pages/driver/DriverStatus";
-import DriverEarnings from "@/pages/driver/DriverEarnings";
-import DriverDelivery from "@/pages/driver/DriverDelivery";
-import DriverSubscription from "@/pages/driver/DriverSubscription";
+// ─── All other pages — lazy loaded for performance ───
+const DriverPage = lazy(() => import("@/pages/DriverPage"));
+const DriverHistory = lazy(() => import("@/pages/DriverHistory"));
+const DriverNotifications = lazy(() => import("@/pages/DriverNotifications"));
+const DriverSettings = lazy(() => import("@/pages/DriverSettings"));
+const DocumentUpload = lazy(() => import("@/pages/DocumentUpload"));
+const DriverProfile = lazy(() => import("@/pages/driver/DriverProfile"));
+const DriverWallet = lazy(() => import("@/pages/driver/DriverWallet"));
+const CarInfo = lazy(() => import("@/pages/driver/CarInfo"));
+const DriverPromotions = lazy(() => import("@/pages/driver/DriverPromotions"));
+const DriverSupport = lazy(() => import("@/pages/driver/DriverSupport"));
+const DriverStatus = lazy(() => import("@/pages/driver/DriverStatus"));
+const DriverEarnings = lazy(() => import("@/pages/driver/DriverEarnings"));
+const DriverDelivery = lazy(() => import("@/pages/driver/DriverDelivery"));
+const DriverSubscription = lazy(() => import("@/pages/driver/DriverSubscription"));
 
-import CustomerHub from "@/pages/CustomerHub";
-import CustomerPage from "@/pages/CustomerPage";
-import ClientBooking from "@/pages/client/ClientBooking";
-import ClientPayment from "@/pages/client/ClientPayment";
-import ClientWallet from "@/pages/client/ClientWallet";
-import ClientHistory from "@/pages/client/ClientHistory";
-import ClientProfile from "@/pages/client/ClientProfile";
-import ClientSupport from "@/pages/client/ClientSupport";
+const CustomerHub = lazy(() => import("@/pages/CustomerHub"));
+const CustomerPage = lazy(() => import("@/pages/CustomerPage"));
+const ClientBooking = lazy(() => import("@/pages/client/ClientBooking"));
+const ClientPayment = lazy(() => import("@/pages/client/ClientPayment"));
+const ClientWallet = lazy(() => import("@/pages/client/ClientWallet"));
+const ClientHistory = lazy(() => import("@/pages/client/ClientHistory"));
+const ClientProfile = lazy(() => import("@/pages/client/ClientProfile"));
+const ClientSupport = lazy(() => import("@/pages/client/ClientSupport"));
 
-import DeliveryHome from "@/pages/delivery/DeliveryHome";
-import DeliveryCategory from "@/pages/delivery/DeliveryCategory";
-import DeliveryHistory from "@/pages/delivery/DeliveryHistory";
-import CourierSend from "@/pages/delivery/CourierSend";
-import CourierAddress from "@/pages/delivery/CourierAddress";
-import DeliverySupport from "@/pages/delivery/DeliverySupport";
-import Cart from "@/pages/delivery/Cart";
+const DeliveryHome = lazy(() => import("@/pages/delivery/DeliveryHome"));
+const DeliveryCategory = lazy(() => import("@/pages/delivery/DeliveryCategory"));
+const DeliveryHistory = lazy(() => import("@/pages/delivery/DeliveryHistory"));
+const CourierSend = lazy(() => import("@/pages/delivery/CourierSend"));
+const CourierAddress = lazy(() => import("@/pages/delivery/CourierAddress"));
+const DeliverySupport = lazy(() => import("@/pages/delivery/DeliverySupport"));
+const Cart = lazy(() => import("@/pages/delivery/Cart"));
 
-import DynamicPage from "@/pages/DynamicPage";
+const DynamicPage = lazy(() => import("@/pages/DynamicPage"));
 
 export const mainRouteElements = (
   <>
