@@ -24,6 +24,11 @@ const ClientWallet = () => {
       if (!user) return;
       const { data: wallet } = await supabase.from("wallet").select("balance").eq("user_id", user.id).maybeSingle();
       setBalance(wallet?.balance || 0);
+      const { data: profile } = await supabase.from("profiles").select("created_at").eq("id", user.id).maybeSingle();
+      if (profile) {
+        const daysSinceReg = (Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24);
+        setFreeTrial(daysSinceReg <= 3);
+      }
       const { data: trips } = await supabase.from("trips")
         .select("id, fare, created_at, start_location, end_location, status")
         .eq("user_id", user.id).eq("status", "completed")
