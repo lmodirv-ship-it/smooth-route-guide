@@ -25,6 +25,12 @@ const DriverWallet = () => {
       if (!user) return;
       const { data: wallet } = await supabase.from("wallet").select("balance").eq("user_id", user.id).maybeSingle();
       setBalance(wallet?.balance || 0);
+      // Check free trial (3 days from registration)
+      const { data: profile } = await supabase.from("profiles").select("created_at").eq("id", user.id).maybeSingle();
+      if (profile) {
+        const daysSinceReg = (Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24);
+        setFreeTrial(daysSinceReg <= 3);
+      }
       const { data: driver } = await supabase.from("drivers").select("id").eq("user_id", user.id).maybeSingle();
       if (!driver) { setLoading(false); return; }
       const { data: trips } = await supabase.from("trips")
