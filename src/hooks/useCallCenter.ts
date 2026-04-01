@@ -346,6 +346,29 @@ export function useCallCenter() {
     });
   }, []);
 
+  const toggleVideo = useCallback(async () => {
+    const stream = localStreamRef.current;
+    if (!stream) return;
+    const videoTracks = stream.getVideoTracks();
+    if (videoTracks.length > 0) {
+      const newEnabled = !videoTracks[0].enabled;
+      videoTracks.forEach(t => { t.enabled = newEnabled; });
+      setIsVideoEnabled(newEnabled);
+    } else {
+      try {
+        const vs = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 320, height: 240 } });
+        vs.getVideoTracks().forEach(t => {
+          stream.addTrack(t);
+          pcRef.current?.addTrack(t, stream);
+        });
+        setLocalStream(new MediaStream(stream.getTracks()));
+        setIsVideoEnabled(true);
+      } catch {
+        toast.error("تعذر تشغيل الكاميرا");
+      }
+    }
+  }, []);
+
   // --- Add note to current call ---
   const addCallNote = useCallback(async (content: string) => {
     const call = activeCallRef.current;
