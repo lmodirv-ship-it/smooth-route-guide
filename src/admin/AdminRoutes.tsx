@@ -67,6 +67,7 @@ import AutoImport from "@/admin/pages/callcenter/AutoImport";
 import GoogleMapsImport from "@/admin/pages/callcenter/GoogleMapsImport";
 import AssistantKnowledge from "@/admin/pages/callcenter/AssistantKnowledge";
 import InternalMessaging from "@/admin/pages/callcenter/InternalMessaging";
+import WalletRechargeRequests from "@/admin/pages/callcenter/WalletRechargeRequests";
 import CallCenterLogin from "@/admin/pages/CallCenterLogin";
 import AdminLogin from "@/admin/pages/AdminLogin";
 import CommunityChat from "@/pages/CommunityChat";
@@ -108,6 +109,7 @@ export const adminRouteElements = (
       <Route path="messaging" element={<InternalMessaging />} />
       <Route path="community-chat" element={<AdminCommunityChat />} />
       <Route path="health-check" element={<SystemHealthCheck />} />
+      <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
     </Route>
 
     <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><CallCenterLayout /></RequireRole>}>
@@ -132,6 +134,7 @@ export const adminRouteElements = (
       <Route path="messaging" element={<InternalMessaging />} />
       <Route path="community" element={<CommunityChat />} />
       <Route path="analytics" element={<VisitorAnalytics />} />
+      <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
     </Route>
 
     {/* ═══ Supervisor Panel ═══ */}
@@ -146,6 +149,7 @@ export const adminRouteElements = (
       <Route path="messaging" element={<InternalMessaging />} />
       <Route path="community" element={<CommunityChat />} />
       <Route path="analytics" element={<VisitorAnalytics />} />
+      <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
     </Route>
   </>
 );

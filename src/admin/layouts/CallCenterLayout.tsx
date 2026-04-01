@@ -4,7 +4,7 @@ import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
   BarChart3, Phone, Car, Users, Search, AlertTriangle, FileText,
   Headphones, BarChart, Shield, Bell, PhoneCall, PlusCircle, Clock,
-  Menu, X, UtensilsCrossed, Download, MapPin, Map, Brain, MessageSquare
+  Menu, X, UtensilsCrossed, Download, MapPin, Map, Brain, MessageSquare, Wallet
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/i18n/context";
@@ -49,6 +49,7 @@ const CallCenterLayout = () => {
     { path: "/call-center/history", icon: Clock, label: t.callCenter.callHistory },
     { path: "/call-center/reports", icon: BarChart, label: t.callCenter.reports },
     { path: "/call-center/messaging", icon: MessageSquare, label: "المحادثات" },
+    { path: "/call-center/wallet-recharge", icon: Wallet, label: "شحن المحفظة" },
     { path: "/call-center/community", icon: Users, label: "مجتمع HN" },
     { path: "/call-center/analytics", icon: BarChart, label: "تحليلات الزوار" },
   ];

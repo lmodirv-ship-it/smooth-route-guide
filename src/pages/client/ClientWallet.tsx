@@ -6,14 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/context";
+import { toast } from "sonner";
 
 const ClientWallet = () => {
   const navigate = useNavigate();
   const { t, dir } = useI18n();
   const [showRecharge, setShowRecharge] = useState(false);
   const [balance, setBalance] = useState(0);
+  const [selectedAmount, setSelectedAmount] = useState(0);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [freeTrial, setFreeTrial] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
@@ -21,6 +24,11 @@ const ClientWallet = () => {
       if (!user) return;
       const { data: wallet } = await supabase.from("wallet").select("balance").eq("user_id", user.id).maybeSingle();
       setBalance(wallet?.balance || 0);
+      const { data: profile } = await supabase.from("profiles").select("created_at").eq("id", user.id).maybeSingle();
+      if (profile) {
+        const daysSinceReg = (Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24);
+        setFreeTrial(daysSinceReg <= 3);
+      }
       const { data: trips } = await supabase.from("trips")
         .select("id, fare, created_at, start_location, end_location, status")
         .eq("user_id", user.id).eq("status", "completed")
@@ -61,19 +69,34 @@ const ClientWallet = () => {
           </div>
         </motion.div>
 
+        {freeTrial && (
+          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 mt-3 text-center">
+            <span className="text-green-400 text-sm font-bold">🎉 أنت في فترة تجريبية مجانية (3 أيام) — استمتع بالخدمة!</span>
+          </div>
+        )}
+
         {showRecharge && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
             className="glass-card rounded-xl p-4 mt-3">
             <p className="text-sm text-foreground font-bold mb-3">{t.customer.chooseAmount}</p>
             <div className="grid grid-cols-3 gap-2 mb-3">
               {[50, 100, 200].map(amount => (
-                <button key={amount} className="py-2 rounded-xl border border-border text-foreground hover:border-primary hover:text-primary transition-all text-sm font-medium">
+                <button key={amount} onClick={() => setSelectedAmount(amount)} className={`py-2 rounded-xl border text-sm font-medium transition-all ${selectedAmount === amount ? "border-primary text-primary bg-primary/10" : "border-border text-foreground hover:border-primary hover:text-primary"}`}>
                   {amount} DH
                 </button>
               ))}
             </div>
             <Input placeholder={t.customer.otherAmount} type="number" className="bg-secondary border-border rounded-xl mb-3" />
-            <Button className="w-full gradient-primary text-primary-foreground rounded-xl">{t.customer.rechargeNow}</Button>
+            <Button className="w-full gradient-primary text-primary-foreground rounded-xl" onClick={async () => {
+              const input = document.querySelector<HTMLInputElement>('input[type="number"]');
+              const val = input?.value ? Number(input.value) : selectedAmount;
+              if (!val || val <= 0) { toast.error(t.customer.chooseAmount); return; }
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) return;
+              await supabase.from("wallet_recharge_requests").insert({ user_id: user.id, amount: val });
+              toast.success("تم إرسال طلب الشحن — سيتواصل معك فريق الدعم");
+              setShowRecharge(false);
+            }}>{t.customer.rechargeNow}</Button>
           </motion.div>
         )}
 
