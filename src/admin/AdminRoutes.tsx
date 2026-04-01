@@ -37,6 +37,7 @@ import VersionManager from "@/admin/pages/VersionManager";
 import PageManagement from "@/admin/pages/PageManagement";
 import DatabaseManager from "@/admin/pages/DatabaseManager";
 import PermissionsManagement from "@/admin/pages/PermissionsManagement";
+import SystemHealthCheck from "@/admin/pages/SystemHealthCheck";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
@@ -106,6 +107,7 @@ export const adminRouteElements = (
       <Route path="permissions" element={<PermissionsManagement />} />
       <Route path="messaging" element={<InternalMessaging />} />
       <Route path="community-chat" element={<AdminCommunityChat />} />
+      <Route path="health-check" element={<SystemHealthCheck />} />
     </Route>
 
     <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><CallCenterLayout /></RequireRole>}>
