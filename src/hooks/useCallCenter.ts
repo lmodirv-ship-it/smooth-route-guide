@@ -194,7 +194,9 @@ export function useCallCenter() {
     pendingCandidatesRef.current = [];
     stopAudio();
     setRemoteStream(null);
+    setLocalStream(null);
     setIsMuted(false);
+    setIsVideoEnabled(false);
     setBusy(false);
     setActiveCall(null);
     setAgentStatus("available");
