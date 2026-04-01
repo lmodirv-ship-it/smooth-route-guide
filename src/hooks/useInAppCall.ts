@@ -274,7 +274,7 @@ export function useInAppCall() {
 
     try {
       setBusy(true);
-      const stream = await ensureAudioStream();
+      const stream = await ensureMediaStream();
       const connection = await createPeerConnection(incomingCall.callId, incomingCall.peer.id, stream);
 
       const offerResponse: any = await supabase
