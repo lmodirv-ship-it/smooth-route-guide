@@ -16,6 +16,7 @@ const ClientWallet = () => {
   const [selectedAmount, setSelectedAmount] = useState(0);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [freeTrial, setFreeTrial] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
