@@ -55,9 +55,12 @@ interface CallCenterModalProps {
 export default function CallCenterModal({
   activeCall,
   isMuted,
+  isVideoEnabled,
+  localStream,
   remoteStream,
   onEndCall,
   onToggleMute,
+  onToggleVideo,
   onAddNote,
   onTransfer,
   onRedial,
