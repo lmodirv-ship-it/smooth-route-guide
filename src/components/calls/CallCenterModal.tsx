@@ -168,7 +168,17 @@ export default function CallCenterModal({
           )}
 
           {/* Controls */}
-          <div className="grid grid-cols-4 gap-2 mb-3">
+          <div className="grid grid-cols-5 gap-2 mb-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onToggleVideo}
+              className={`h-11 flex-col gap-1 ${isVideoEnabled ? "border-primary/30 bg-primary/10" : ""}`}
+            >
+              {isVideoEnabled ? <Video className="h-4 w-4 text-primary" /> : <VideoOff className="h-4 w-4" />}
+              <span className="text-[10px]">{isVideoEnabled ? "إيقاف" : "فيديو"}</span>
+            </Button>
             <Button
               type="button"
               variant="outline"
