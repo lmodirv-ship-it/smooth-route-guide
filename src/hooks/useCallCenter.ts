@@ -66,8 +66,10 @@ export function useCallCenter() {
   const [agentStatus, setAgentStatus] = useState<AgentStatus>("available");
   const [activeCall, setActiveCall] = useState<ActiveCallState | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [isVideoEnabled, setIsVideoEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
