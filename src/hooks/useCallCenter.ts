@@ -313,7 +313,7 @@ export function useCallCenter() {
     } finally {
       setBusy(false);
     }
-  }, [userId, busy, cleanup, createPC, ensureAudio, sendSignal, updateAgentStatus]);
+  }, [userId, busy, cleanup, createPC, ensureMedia, sendSignal, updateAgentStatus]);
 
   // --- End call ---
   const endCall = useCallback(async () => {
