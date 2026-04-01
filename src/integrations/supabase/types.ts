@@ -2423,6 +2423,38 @@ export type Database = {
           },
         ]
       }
+      recharge_chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          request_id: string
+          sender_id: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          id?: string
+          request_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          request_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recharge_chat_messages_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "wallet_recharge_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ride_messages: {
         Row: {
           created_at: string
@@ -3289,6 +3321,42 @@ export type Database = {
         Update: {
           balance?: number
           id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallet_recharge_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          handled_by: string | null
+          handler_role: string | null
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          handled_by?: string | null
+          handler_role?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          handled_by?: string | null
+          handler_role?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
           updated_at?: string
           user_id?: string
         }
