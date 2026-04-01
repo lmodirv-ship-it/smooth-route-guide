@@ -12,6 +12,7 @@ const ClientWallet = () => {
   const { t, dir } = useI18n();
   const [showRecharge, setShowRecharge] = useState(false);
   const [balance, setBalance] = useState(0);
+  const [selectedAmount, setSelectedAmount] = useState(0);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
