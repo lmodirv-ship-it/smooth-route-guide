@@ -130,14 +130,31 @@ export function useInAppCall() {
     } as any);
   }, []);
 
-  const ensureAudioStream = useCallback(async () => {
+  const ensureMediaStream = useCallback(async (withVideo = false) => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      throw new Error("unsupported_audio");
+      throw new Error("unsupported_media");
     }
 
-    if (localStream) return localStream;
+    if (localStream) {
+      // Add video track if needed
+      if (withVideo && !localStream.getVideoTracks().length) {
+        try {
+          const videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 320, height: 240 } });
+          videoStream.getVideoTracks().forEach(t => localStream.addTrack(t));
+          // Add video track to peer connection
+          if (pcRef.current) {
+            videoStream.getVideoTracks().forEach(t => pcRef.current!.addTrack(t, localStream));
+          }
+        } catch { /* video not available */ }
+      }
+      return localStream;
+    }
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const constraints: MediaStreamConstraints = { audio: true };
+    if (withVideo) {
+      constraints.video = { facingMode: "user", width: 320, height: 240 };
+    }
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
     setLocalStream(stream);
     return stream;
   }, [localStream]);
