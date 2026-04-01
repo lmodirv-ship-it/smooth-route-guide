@@ -9,12 +9,15 @@ import type { CallViewState } from "@/hooks/useInAppCall";
 interface InAppCallDialogProps {
   incomingCall: CallViewState | null;
   activeCall: CallViewState | null;
+  localStream: MediaStream | null;
   remoteStream: MediaStream | null;
   isMuted: boolean;
+  isVideoEnabled: boolean;
   busy: boolean;
   onAccept: () => void;
   onEnd: () => void;
   onToggleMute: () => void;
+  onToggleVideo: () => void;
 }
 
 const getStatusLabel = (call: CallViewState | null) => {
