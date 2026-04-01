@@ -323,7 +323,7 @@ export function useInAppCall() {
     } finally {
       setBusy(false);
     }
-  }, [incomingCall, userId, ensureAudioStream, createPeerConnection, flushPendingCandidates, sendSignal, updateSession, clearCallState]);
+  }, [incomingCall, userId, ensureMediaStream, createPeerConnection, flushPendingCandidates, sendSignal, updateSession, clearCallState]);
 
   const endCall = useCallback(async () => {
     const currentCall = activeCallRef.current || incomingCallRef.current;
