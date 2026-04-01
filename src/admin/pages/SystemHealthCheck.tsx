@@ -296,10 +296,10 @@ async function runSingleCheck(id: string, update: (id: string, u: Partial<Health
     }
     case "rls-check": {
       // Check critical tables have RLS by querying them
-      const tables = ["user_roles", "wallet", "profiles", "drivers"];
+      const tables = ["user_roles", "wallet", "profiles", "drivers"] as const;
       const results: string[] = [];
       for (const t of tables) {
-        const { error } = await supabase.from(t).select("id").limit(1);
+        const { error } = await supabase.from(t as any).select("id").limit(1);
         if (error?.message?.includes("permission denied")) {
           results.push(`${t}: ✓ محمي`);
         } else {
