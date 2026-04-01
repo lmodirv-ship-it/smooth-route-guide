@@ -69,6 +69,12 @@ const ClientWallet = () => {
           </div>
         </motion.div>
 
+        {freeTrial && (
+          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 mt-3 text-center">
+            <span className="text-green-400 text-sm font-bold">🎉 أنت في فترة تجريبية مجانية (3 أيام) — استمتع بالخدمة!</span>
+          </div>
+        )}
+
         {showRecharge && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
             className="glass-card rounded-xl p-4 mt-3">
