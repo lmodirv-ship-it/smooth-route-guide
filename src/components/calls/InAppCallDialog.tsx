@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Mic, MicOff, PhoneCall, PhoneOff, Radio } from "lucide-react";
+import { Mic, MicOff, PhoneCall, PhoneOff, Radio, Video, VideoOff } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import VideoCallOverlay from "@/components/calls/VideoCallOverlay";
 import type { CallViewState } from "@/hooks/useInAppCall";
 
 interface InAppCallDialogProps {
