@@ -67,6 +67,7 @@ import AutoImport from "@/admin/pages/callcenter/AutoImport";
 import GoogleMapsImport from "@/admin/pages/callcenter/GoogleMapsImport";
 import AssistantKnowledge from "@/admin/pages/callcenter/AssistantKnowledge";
 import InternalMessaging from "@/admin/pages/callcenter/InternalMessaging";
+import WalletRechargeRequests from "@/admin/pages/callcenter/WalletRechargeRequests";
 import CallCenterLogin from "@/admin/pages/CallCenterLogin";
 import AdminLogin from "@/admin/pages/AdminLogin";
 import CommunityChat from "@/pages/CommunityChat";
