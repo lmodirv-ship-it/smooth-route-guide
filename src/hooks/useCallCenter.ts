@@ -259,7 +259,7 @@ export function useCallCenter() {
     try {
       setBusy(true);
       await updateAgentStatus("in_call");
-      const stream = await ensureAudio();
+      const stream = await ensureMedia();
 
       const callRes: any = await supabase.from("call_sessions" as any).insert({
         created_by: userId,
