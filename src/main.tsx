@@ -24,4 +24,23 @@ if (isPreviewHost || isInIframe) {
 
 void initializeNativeApp();
 
+// ── Global error handlers for unhandled errors ──
+window.addEventListener("unhandledrejection", (event) => {
+  const msg = event.reason?.message || String(event.reason);
+  // Auto-recover from chunk loading failures
+  if (msg.includes("Loading chunk") || msg.includes("dynamically imported module") || msg.includes("Loading CSS chunk")) {
+    console.warn("[AutoRecovery] Chunk load failure detected, reloading...");
+    event.preventDefault();
+    window.location.reload();
+  }
+});
+
+window.addEventListener("error", (event) => {
+  // Recover from script loading errors
+  if (event.message?.includes("Loading chunk") || event.message?.includes("Script error")) {
+    console.warn("[AutoRecovery] Script error detected, reloading...");
+    window.location.reload();
+  }
+});
+
 createRoot(document.getElementById("root")!).render(<App />);

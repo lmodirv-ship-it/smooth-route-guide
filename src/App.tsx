@@ -15,6 +15,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { I18nProvider } from "@/i18n/context";
 import { usePresenceHeartbeat } from "@/hooks/usePresenceHeartbeat";
 import { useTheme } from "@/hooks/useTheme";
+import SmartErrorBoundary from "@/components/SmartErrorBoundary";
 
 // ─── Module route elements ───
 import { mainRouteElements } from "./app/index";
@@ -36,17 +37,21 @@ const AppInner = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <I18nProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <CartProvider>
-          <AppInner />
-        </CartProvider>
-      </TooltipProvider>
-    </I18nProvider>
-  </QueryClientProvider>
+  <SmartErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <I18nProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <CartProvider>
+            <SmartErrorBoundary>
+              <AppInner />
+            </SmartErrorBoundary>
+          </CartProvider>
+        </TooltipProvider>
+      </I18nProvider>
+    </QueryClientProvider>
+  </SmartErrorBoundary>
 );
 
 export default App;
