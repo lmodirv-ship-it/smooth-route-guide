@@ -100,8 +100,24 @@ export default function InAppCallDialog({
         )}
       </AnimatePresence>
 
+      {/* Video overlay when video is active */}
       <AnimatePresence>
-        {activeCall && (
+        {activeCall && isVideoEnabled && (
+          <VideoCallOverlay
+            localStream={localStream}
+            remoteStream={remoteStream}
+            peerName={activeCall.peer.name}
+            isMuted={isMuted}
+            isVideoEnabled={isVideoEnabled}
+            onToggleMute={onToggleMute}
+            onToggleVideo={onToggleVideo}
+            onEndCall={onEnd}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {activeCall && !isVideoEnabled && (
           <motion.div
             initial={{ opacity: 0, y: 30, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -126,10 +142,14 @@ export default function InAppCallDialog({
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-3 gap-2">
               <Button type="button" variant="outline" onClick={onToggleMute} className="h-11" data-active={isMuted}>
                 {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                {isMuted ? "إلغاء الكتم" : "كتم"}
+                {isMuted ? "إلغاء" : "كتم"}
+              </Button>
+              <Button type="button" variant="outline" onClick={onToggleVideo} className="h-11">
+                <Video className="h-4 w-4" />
+                فيديو
               </Button>
               <Button type="button" variant="destructive" onClick={onEnd} className="h-11">
                 <PhoneOff className="h-4 w-4" />
