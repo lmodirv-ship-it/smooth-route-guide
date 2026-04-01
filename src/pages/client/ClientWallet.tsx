@@ -69,7 +69,7 @@ const ClientWallet = () => {
             <p className="text-sm text-foreground font-bold mb-3">{t.customer.chooseAmount}</p>
             <div className="grid grid-cols-3 gap-2 mb-3">
               {[50, 100, 200].map(amount => (
-                <button key={amount} className="py-2 rounded-xl border border-border text-foreground hover:border-primary hover:text-primary transition-all text-sm font-medium">
+                <button key={amount} onClick={() => setSelectedAmount(amount)} className={`py-2 rounded-xl border text-sm font-medium transition-all ${selectedAmount === amount ? "border-primary text-primary bg-primary/10" : "border-border text-foreground hover:border-primary hover:text-primary"}`}>
                   {amount} DH
                 </button>
               ))}

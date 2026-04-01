@@ -148,6 +148,7 @@ export const adminRouteElements = (
       <Route path="messaging" element={<InternalMessaging />} />
       <Route path="community" element={<CommunityChat />} />
       <Route path="analytics" element={<VisitorAnalytics />} />
+      <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
     </Route>
   </>
 );
