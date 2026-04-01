@@ -110,6 +110,7 @@ const AdminLayout = () => {
     { path: "/admin/database", icon: Database, label: "إدارة قاعدة البيانات" },
     { path: "/admin/permissions", icon: Shield, label: "إدارة الصلاحيات" },
     { path: "/admin/health-check", icon: Activity, label: "فحص صحة النظام" },
+    { path: "/admin/wallet-recharge", icon: Wallet, label: "طلبات شحن المحفظة" },
   ];
 
   useEffect(() => {
