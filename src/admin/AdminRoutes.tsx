@@ -109,6 +109,7 @@ export const adminRouteElements = (
       <Route path="messaging" element={<InternalMessaging />} />
       <Route path="community-chat" element={<AdminCommunityChat />} />
       <Route path="health-check" element={<SystemHealthCheck />} />
+      <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
     </Route>
 
     <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><CallCenterLayout /></RequireRole>}>
