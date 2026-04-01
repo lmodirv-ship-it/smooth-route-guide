@@ -1,19 +1,23 @@
 import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Mic, MicOff, PhoneCall, PhoneOff, Radio } from "lucide-react";
+import { Mic, MicOff, PhoneCall, PhoneOff, Radio, Video, VideoOff } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import VideoCallOverlay from "@/components/calls/VideoCallOverlay";
 import type { CallViewState } from "@/hooks/useInAppCall";
 
 interface InAppCallDialogProps {
   incomingCall: CallViewState | null;
   activeCall: CallViewState | null;
+  localStream: MediaStream | null;
   remoteStream: MediaStream | null;
   isMuted: boolean;
+  isVideoEnabled: boolean;
   busy: boolean;
   onAccept: () => void;
   onEnd: () => void;
   onToggleMute: () => void;
+  onToggleVideo: () => void;
 }
 
 const getStatusLabel = (call: CallViewState | null) => {
@@ -27,12 +31,15 @@ const getStatusLabel = (call: CallViewState | null) => {
 export default function InAppCallDialog({
   incomingCall,
   activeCall,
+  localStream,
   remoteStream,
   isMuted,
+  isVideoEnabled,
   busy,
   onAccept,
   onEnd,
   onToggleMute,
+  onToggleVideo,
 }: InAppCallDialogProps) {
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
 
@@ -93,8 +100,24 @@ export default function InAppCallDialog({
         )}
       </AnimatePresence>
 
+      {/* Video overlay when video is active */}
       <AnimatePresence>
-        {activeCall && (
+        {activeCall && isVideoEnabled && (
+          <VideoCallOverlay
+            localStream={localStream}
+            remoteStream={remoteStream}
+            peerName={activeCall.peer.name}
+            isMuted={isMuted}
+            isVideoEnabled={isVideoEnabled}
+            onToggleMute={onToggleMute}
+            onToggleVideo={onToggleVideo}
+            onEndCall={onEnd}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {activeCall && !isVideoEnabled && (
           <motion.div
             initial={{ opacity: 0, y: 30, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -119,10 +142,14 @@ export default function InAppCallDialog({
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-3 gap-2">
               <Button type="button" variant="outline" onClick={onToggleMute} className="h-11" data-active={isMuted}>
                 {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                {isMuted ? "إلغاء الكتم" : "كتم"}
+                {isMuted ? "إلغاء" : "كتم"}
+              </Button>
+              <Button type="button" variant="outline" onClick={onToggleVideo} className="h-11">
+                <Video className="h-4 w-4" />
+                فيديو
               </Button>
               <Button type="button" variant="destructive" onClick={onEnd} className="h-11">
                 <PhoneOff className="h-4 w-4" />

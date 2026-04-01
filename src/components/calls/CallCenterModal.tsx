@@ -7,12 +7,13 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Mic, MicOff, PhoneOff, Phone, Radio, StickyNote,
-  Forward, RotateCcw, Clock, User, Hash,
+  Forward, RotateCcw, Clock, User, Hash, Video, VideoOff,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import VideoCallOverlay from "@/components/calls/VideoCallOverlay";
 import type { ActiveCallState, PartyType } from "@/hooks/useCallCenter";
 
 const PARTY_LABELS: Record<PartyType, string> = {
@@ -40,9 +41,12 @@ const formatTimer = (seconds: number) => {
 interface CallCenterModalProps {
   activeCall: ActiveCallState | null;
   isMuted: boolean;
+  isVideoEnabled: boolean;
+  localStream: MediaStream | null;
   remoteStream: MediaStream | null;
   onEndCall: () => void;
   onToggleMute: () => void;
+  onToggleVideo: () => void;
   onAddNote: (content: string) => void;
   onTransfer?: () => void;
   onRedial?: () => void;
@@ -51,9 +55,12 @@ interface CallCenterModalProps {
 export default function CallCenterModal({
   activeCall,
   isMuted,
+  isVideoEnabled,
+  localStream,
   remoteStream,
   onEndCall,
   onToggleMute,
+  onToggleVideo,
   onAddNote,
   onTransfer,
   onRedial,
@@ -96,6 +103,22 @@ export default function CallCenterModal({
   return (
     <>
       <audio ref={audioRef} autoPlay playsInline />
+
+      {/* Video overlay when video is enabled */}
+      <AnimatePresence>
+        {isVideoEnabled && (
+          <VideoCallOverlay
+            localStream={localStream}
+            remoteStream={remoteStream}
+            peerName={party.name}
+            isMuted={isMuted}
+            isVideoEnabled={isVideoEnabled}
+            onToggleMute={onToggleMute}
+            onToggleVideo={onToggleVideo}
+            onEndCall={onEndCall}
+          />
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         <motion.div
@@ -145,7 +168,17 @@ export default function CallCenterModal({
           )}
 
           {/* Controls */}
-          <div className="grid grid-cols-4 gap-2 mb-3">
+          <div className="grid grid-cols-5 gap-2 mb-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onToggleVideo}
+              className={`h-11 flex-col gap-1 ${isVideoEnabled ? "border-primary/30 bg-primary/10" : ""}`}
+            >
+              {isVideoEnabled ? <Video className="h-4 w-4 text-primary" /> : <VideoOff className="h-4 w-4" />}
+              <span className="text-[10px]">{isVideoEnabled ? "إيقاف" : "فيديو"}</span>
+            </Button>
             <Button
               type="button"
               variant="outline"

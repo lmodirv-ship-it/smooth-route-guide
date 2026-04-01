@@ -222,9 +222,12 @@ const CallCenterLayout = () => {
     <CallCenterModal
       activeCall={callCenter.activeCall}
       isMuted={callCenter.isMuted}
+      isVideoEnabled={callCenter.isVideoEnabled}
+      localStream={callCenter.localStream}
       remoteStream={callCenter.remoteStream}
       onEndCall={callCenter.endCall}
       onToggleMute={callCenter.toggleMute}
+      onToggleVideo={callCenter.toggleVideo}
       onAddNote={callCenter.addCallNote}
     />
 

@@ -51,6 +51,7 @@ export function useInAppCall() {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [isVideoEnabled, setIsVideoEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -129,14 +130,31 @@ export function useInAppCall() {
     } as any);
   }, []);
 
-  const ensureAudioStream = useCallback(async () => {
+  const ensureMediaStream = useCallback(async (withVideo = false) => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      throw new Error("unsupported_audio");
+      throw new Error("unsupported_media");
     }
 
-    if (localStream) return localStream;
+    if (localStream) {
+      // Add video track if needed
+      if (withVideo && !localStream.getVideoTracks().length) {
+        try {
+          const videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 320, height: 240 } });
+          videoStream.getVideoTracks().forEach(t => localStream.addTrack(t));
+          // Add video track to peer connection
+          if (pcRef.current) {
+            videoStream.getVideoTracks().forEach(t => pcRef.current!.addTrack(t, localStream));
+          }
+        } catch { /* video not available */ }
+      }
+      return localStream;
+    }
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const constraints: MediaStreamConstraints = { audio: true };
+    if (withVideo) {
+      constraints.video = { facingMode: "user", width: 320, height: 240 };
+    }
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
     setLocalStream(stream);
     return stream;
   }, [localStream]);
@@ -212,7 +230,7 @@ export function useInAppCall() {
 
       try {
         setBusy(true);
-        const stream = await ensureAudioStream();
+        const stream = await ensureMediaStream();
 
         const callResponse: any = await supabase
           .from("call_sessions" as any)
@@ -248,7 +266,7 @@ export function useInAppCall() {
         setBusy(false);
       }
     },
-    [busy, clearCallState, createPeerConnection, ensureAudioStream, sendSignal, userId],
+    [busy, clearCallState, createPeerConnection, ensureMediaStream, sendSignal, userId],
   );
 
   const acceptCall = useCallback(async () => {
@@ -256,7 +274,7 @@ export function useInAppCall() {
 
     try {
       setBusy(true);
-      const stream = await ensureAudioStream();
+      const stream = await ensureMediaStream();
       const connection = await createPeerConnection(incomingCall.callId, incomingCall.peer.id, stream);
 
       const offerResponse: any = await supabase
@@ -305,7 +323,7 @@ export function useInAppCall() {
     } finally {
       setBusy(false);
     }
-  }, [incomingCall, userId, ensureAudioStream, createPeerConnection, flushPendingCandidates, sendSignal, updateSession, clearCallState]);
+  }, [incomingCall, userId, ensureMediaStream, createPeerConnection, flushPendingCandidates, sendSignal, updateSession, clearCallState]);
 
   const endCall = useCallback(async () => {
     const currentCall = activeCallRef.current || incomingCallRef.current;
@@ -334,6 +352,29 @@ export function useInAppCall() {
       });
       return !prev;
     });
+  }, [localStream]);
+
+  const toggleVideo = useCallback(async () => {
+    if (!localStream) return;
+    const videoTracks = localStream.getVideoTracks();
+    if (videoTracks.length > 0) {
+      // Toggle existing video tracks
+      const newEnabled = !videoTracks[0].enabled;
+      videoTracks.forEach(t => { t.enabled = newEnabled; });
+      setIsVideoEnabled(newEnabled);
+    } else {
+      // Add video track
+      try {
+        const videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 320, height: 240 } });
+        videoStream.getVideoTracks().forEach(t => {
+          localStream.addTrack(t);
+          pcRef.current?.addTrack(t, localStream);
+        });
+        setIsVideoEnabled(true);
+      } catch {
+        toast.error("تعذر تشغيل الكاميرا");
+      }
+    }
   }, [localStream]);
 
   useEffect(() => {
@@ -459,13 +500,16 @@ export function useInAppCall() {
     userId,
     incomingCall,
     activeCall,
+    localStream,
     remoteStream,
     isMuted,
+    isVideoEnabled,
     busy,
     isInCall: Boolean(incomingCall || activeCall),
     startCall,
     acceptCall,
     endCall,
     toggleMute,
+    toggleVideo,
   };
 }

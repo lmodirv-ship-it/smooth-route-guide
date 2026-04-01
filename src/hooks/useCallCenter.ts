@@ -66,8 +66,10 @@ export function useCallCenter() {
   const [agentStatus, setAgentStatus] = useState<AgentStatus>("available");
   const [activeCall, setActiveCall] = useState<ActiveCallState | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const [isVideoEnabled, setIsVideoEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -134,10 +136,25 @@ export function useCallCenter() {
   }, []);
 
   // --- Audio stream ---
-  const ensureAudio = useCallback(async () => {
-    if (localStreamRef.current) return localStreamRef.current;
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const ensureMedia = useCallback(async (withVideo = false) => {
+    if (localStreamRef.current) {
+      if (withVideo && !localStreamRef.current.getVideoTracks().length) {
+        try {
+          const vs = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 320, height: 240 } });
+          vs.getVideoTracks().forEach(t => {
+            localStreamRef.current!.addTrack(t);
+            pcRef.current?.addTrack(t, localStreamRef.current!);
+          });
+        } catch {}
+      }
+      setLocalStream(localStreamRef.current);
+      return localStreamRef.current;
+    }
+    const constraints: MediaStreamConstraints = { audio: true };
+    if (withVideo) constraints.video = { facingMode: "user", width: 320, height: 240 };
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
     localStreamRef.current = stream;
+    setLocalStream(stream);
     return stream;
   }, []);
 
@@ -177,7 +194,9 @@ export function useCallCenter() {
     pendingCandidatesRef.current = [];
     stopAudio();
     setRemoteStream(null);
+    setLocalStream(null);
     setIsMuted(false);
+    setIsVideoEnabled(false);
     setBusy(false);
     setActiveCall(null);
     setAgentStatus("available");
@@ -240,7 +259,7 @@ export function useCallCenter() {
     try {
       setBusy(true);
       await updateAgentStatus("in_call");
-      const stream = await ensureAudio();
+      const stream = await ensureMedia();
 
       const callRes: any = await supabase.from("call_sessions" as any).insert({
         created_by: userId,
@@ -294,7 +313,7 @@ export function useCallCenter() {
     } finally {
       setBusy(false);
     }
-  }, [userId, busy, cleanup, createPC, ensureAudio, sendSignal, updateAgentStatus]);
+  }, [userId, busy, cleanup, createPC, ensureMedia, sendSignal, updateAgentStatus]);
 
   // --- End call ---
   const endCall = useCallback(async () => {
@@ -325,6 +344,29 @@ export function useCallCenter() {
       localStreamRef.current?.getAudioTracks().forEach(t => { t.enabled = prev; });
       return !prev;
     });
+  }, []);
+
+  const toggleVideo = useCallback(async () => {
+    const stream = localStreamRef.current;
+    if (!stream) return;
+    const videoTracks = stream.getVideoTracks();
+    if (videoTracks.length > 0) {
+      const newEnabled = !videoTracks[0].enabled;
+      videoTracks.forEach(t => { t.enabled = newEnabled; });
+      setIsVideoEnabled(newEnabled);
+    } else {
+      try {
+        const vs = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 320, height: 240 } });
+        vs.getVideoTracks().forEach(t => {
+          stream.addTrack(t);
+          pcRef.current?.addTrack(t, stream);
+        });
+        setLocalStream(new MediaStream(stream.getTracks()));
+        setIsVideoEnabled(true);
+      } catch {
+        toast.error("تعذر تشغيل الكاميرا");
+      }
+    }
   }, []);
 
   // --- Add note to current call ---
@@ -409,14 +451,17 @@ export function useCallCenter() {
     agentStatus,
     activeCall,
     isMuted,
+    isVideoEnabled,
     busy,
     remoteStream,
+    localStream,
     isInCall: Boolean(activeCall),
     lookupByReference,
     startCallByReference,
     startCallToParty,
     endCall,
     toggleMute,
+    toggleVideo,
     addCallNote,
     updateAgentStatus,
   };
