@@ -15,6 +15,9 @@ const DriverWallet = () => {
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDeposit, setShowDeposit] = useState(false);
+  const [depositAmount, setDepositAmount] = useState(0);
+  const [freeTrial, setFreeTrial] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
