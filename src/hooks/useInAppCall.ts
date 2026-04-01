@@ -500,13 +500,16 @@ export function useInAppCall() {
     userId,
     incomingCall,
     activeCall,
+    localStream,
     remoteStream,
     isMuted,
+    isVideoEnabled,
     busy,
     isInCall: Boolean(incomingCall || activeCall),
     startCall,
     acceptCall,
     endCall,
     toggleMute,
+    toggleVideo,
   };
 }
