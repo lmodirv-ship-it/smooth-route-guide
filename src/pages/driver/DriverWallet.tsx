@@ -74,7 +74,8 @@ const DriverWallet = () => {
               <Button size="sm" className="bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/30 rounded-xl flex-1">
                 <ArrowUpRight className="w-4 h-4 ml-1" /> {t.driver.withdraw}
               </Button>
-              <Button size="sm" className="bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/30 rounded-xl flex-1">
+              <Button size="sm" className="bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/30 rounded-xl flex-1"
+                onClick={() => setShowDeposit(!showDeposit)}>
                 <CreditCard className="w-4 h-4 ml-1" /> {t.driver.deposit}
               </Button>
             </div>
