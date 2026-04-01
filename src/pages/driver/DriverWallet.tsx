@@ -5,6 +5,8 @@ import { Wallet, ArrowRight, TrendingUp, TrendingDown, CreditCard, ArrowUpRight,
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/context";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 const DriverWallet = () => {
   const navigate = useNavigate();
