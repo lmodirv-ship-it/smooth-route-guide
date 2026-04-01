@@ -136,10 +136,25 @@ export function useCallCenter() {
   }, []);
 
   // --- Audio stream ---
-  const ensureAudio = useCallback(async () => {
-    if (localStreamRef.current) return localStreamRef.current;
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const ensureMedia = useCallback(async (withVideo = false) => {
+    if (localStreamRef.current) {
+      if (withVideo && !localStreamRef.current.getVideoTracks().length) {
+        try {
+          const vs = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 320, height: 240 } });
+          vs.getVideoTracks().forEach(t => {
+            localStreamRef.current!.addTrack(t);
+            pcRef.current?.addTrack(t, localStreamRef.current!);
+          });
+        } catch {}
+      }
+      setLocalStream(localStreamRef.current);
+      return localStreamRef.current;
+    }
+    const constraints: MediaStreamConstraints = { audio: true };
+    if (withVideo) constraints.video = { facingMode: "user", width: 320, height: 240 };
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
     localStreamRef.current = stream;
+    setLocalStream(stream);
     return stream;
   }, []);
 
