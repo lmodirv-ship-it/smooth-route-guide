@@ -31,12 +31,15 @@ const getStatusLabel = (call: CallViewState | null) => {
 export default function InAppCallDialog({
   incomingCall,
   activeCall,
+  localStream,
   remoteStream,
   isMuted,
+  isVideoEnabled,
   busy,
   onAccept,
   onEnd,
   onToggleMute,
+  onToggleVideo,
 }: InAppCallDialogProps) {
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
 
