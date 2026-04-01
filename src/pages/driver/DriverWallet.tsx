@@ -82,6 +82,36 @@ const DriverWallet = () => {
           </div>
         </motion.div>
 
+        {freeTrial && (
+          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 mt-3 text-center">
+            <span className="text-green-400 text-sm font-bold">🎉 أنت في فترة تجريبية مجانية (3 أيام) — استمتع بالخدمة!</span>
+          </div>
+        )}
+
+        {showDeposit && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="glass-card rounded-xl p-4 mt-3">
+            <p className="text-sm text-foreground font-bold mb-3">اختر مبلغ الإيداع</p>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {[50, 100, 200].map(a => (
+                <button key={a} onClick={() => setDepositAmount(a)}
+                  className={`py-2 rounded-xl border text-sm font-medium transition-all ${depositAmount === a ? "border-primary text-primary bg-primary/10" : "border-border text-foreground"}`}>
+                  {a} DH
+                </button>
+              ))}
+            </div>
+            <Input placeholder="مبلغ آخر" type="number" value={depositAmount || ""} onChange={e => setDepositAmount(Number(e.target.value))}
+              className="bg-secondary border-border rounded-xl mb-3" />
+            <Button className="w-full gradient-primary text-primary-foreground rounded-xl" onClick={async () => {
+              if (!depositAmount || depositAmount <= 0) { toast.error("اختر مبلغاً"); return; }
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) return;
+              await supabase.from("wallet_recharge_requests").insert({ user_id: user.id, amount: depositAmount });
+              toast.success("تم إرسال طلب الإيداع — سيتواصل معك فريق الدعم");
+              setShowDeposit(false);
+            }}>إرسال طلب الإيداع</Button>
+          </motion.div>
+        )}
+
         <div className="flex gap-2 mt-6 mb-4">
           {([["all", t.driver.allFilter], ["in", t.driver.incomeFilter], ["out", t.driver.withdrawalsFilter]] as const).map(([key, label]) => (
             <button key={key} onClick={() => setActiveTab(key as any)}
