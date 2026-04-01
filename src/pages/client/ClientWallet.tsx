@@ -73,7 +73,16 @@ const ClientWallet = () => {
               ))}
             </div>
             <Input placeholder={t.customer.otherAmount} type="number" className="bg-secondary border-border rounded-xl mb-3" />
-            <Button className="w-full gradient-primary text-primary-foreground rounded-xl">{t.customer.rechargeNow}</Button>
+            <Button className="w-full gradient-primary text-primary-foreground rounded-xl" onClick={async () => {
+              const input = document.querySelector<HTMLInputElement>('input[type="number"]');
+              const val = input?.value ? Number(input.value) : selectedAmount;
+              if (!val || val <= 0) { toast.error(t.customer.chooseAmount); return; }
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) return;
+              await supabase.from("wallet_recharge_requests").insert({ user_id: user.id, amount: val });
+              toast.success("تم إرسال طلب الشحن — سيتواصل معك فريق الدعم");
+              setShowRecharge(false);
+            }}>{t.customer.rechargeNow}</Button>
           </motion.div>
         )}
 
