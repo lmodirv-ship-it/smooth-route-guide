@@ -147,7 +147,7 @@ export const mainRouteElements = (
     </Route>
 
     {/* ─── Dynamic CMS Pages ─── */}
-    <Route path="/p/:slug" element={<DynamicPage />} />
+    <Route path="/p/:slug" element={<LazyPage component={DynamicPage} />} />
 
     {/* ═══════════════════════════════════════════
         SHORTCUT + LEGACY REDIRECTS
