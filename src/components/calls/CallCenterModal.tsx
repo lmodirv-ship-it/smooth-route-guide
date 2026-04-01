@@ -41,9 +41,12 @@ const formatTimer = (seconds: number) => {
 interface CallCenterModalProps {
   activeCall: ActiveCallState | null;
   isMuted: boolean;
+  isVideoEnabled: boolean;
+  localStream: MediaStream | null;
   remoteStream: MediaStream | null;
   onEndCall: () => void;
   onToggleMute: () => void;
+  onToggleVideo: () => void;
   onAddNote: (content: string) => void;
   onTransfer?: () => void;
   onRedial?: () => void;
