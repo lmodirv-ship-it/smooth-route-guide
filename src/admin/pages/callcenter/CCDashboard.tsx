@@ -153,6 +153,7 @@ const CCDashboard = () => {
     }
   };
 
+  if (loading) return (
     <div className="flex justify-center items-center py-32 min-h-[60vh]">
       <div className="flex flex-col items-center gap-4">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
