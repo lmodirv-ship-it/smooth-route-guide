@@ -41,6 +41,7 @@ const AgentHub = lazy(() => import("@/pages/ai/AgentHub"));
 const AIAssistant = lazy(() => import("@/pages/AIAssistant"));
 const CommunityChat = lazy(() => import("@/pages/CommunityChat"));
 const MyStore = lazy(() => import("@/pages/delivery/MyStore"));
+const StoreSubscription = lazy(() => import("@/pages/delivery/StoreSubscription"));
 
 // ─── All other pages — lazy loaded for performance ───
 const DriverPage = lazy(() => import("@/pages/DriverPage"));
