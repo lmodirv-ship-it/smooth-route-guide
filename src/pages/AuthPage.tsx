@@ -11,15 +11,12 @@ import { toast } from "@/hooks/use-toast";
 import {
   getAuthTimeoutMessage,
   getUserRolesWithTimeout,
-  hasFaceProfileWithTimeout,
   isServiceTimeoutError,
   signInWithPasswordWithTimeout,
   signUpWithTimeout,
   useAuthReady,
 } from "@/hooks/useAuthReady";
 import logo from "@/assets/hn-driver-badge.png";
-import FaceAuthGate from "@/components/FaceAuthGate";
-import FaceRegisterPrompt from "@/components/FaceRegisterPrompt";
 
 type RoleId = "driver" | "client" | "delivery" | "admin" | "agent" | "store_owner";
 type StoredRole = RoleId | "user";
@@ -58,9 +55,6 @@ const AuthPage = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [faceCheckActive, setFaceCheckActive] = useState(false);
-  const [faceVerified, setFaceVerified] = useState(false);
-  const [showFaceRegister, setShowFaceRegister] = useState(false);
   const { ready, session } = useAuthReady();
 
   useEffect(() => {
@@ -123,14 +117,6 @@ const AuthPage = () => {
         const { error } = await signInWithPasswordWithTimeout({ email, password });
         if (error) throw error;
         toast({ title: "تم تسجيل الدخول بنجاح ✅" });
-        try {
-          const faceProfileExists = await hasFaceProfileWithTimeout(email);
-          if (!faceProfileExists) {
-            setShowFaceRegister(true);
-          }
-        } catch {
-          // Face registration is optional; never block password login on it.
-        }
       } else {
         if (!name) {
           toast({ title: "يرجى إدخال الاسم", variant: "destructive" });
@@ -339,25 +325,6 @@ const AuthPage = () => {
         </motion.div>
       )}
 
-      {/* Face Auth Gate */}
-      {faceCheckActive && (
-        <FaceAuthGate
-          email={email}
-          onVerified={() => {
-            setFaceCheckActive(false);
-            setFaceVerified(true);
-          }}
-          onSkip={() => {
-            setFaceCheckActive(false);
-            setFaceVerified(true);
-          }}
-        />
-      )}
-
-      {/* Face Register Prompt */}
-      {showFaceRegister && (
-        <FaceRegisterPrompt onClose={() => setShowFaceRegister(false)} />
-      )}
     </div>
   );
 };
