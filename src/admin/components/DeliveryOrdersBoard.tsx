@@ -58,7 +58,7 @@ const STATUS_META: Record<string, { label: string; badge: string }> = {
 
 const STATUS_FILTERS: Array<{ key: string; label: string }> = [
   { key: "all", label: "الكل" },
-  { key: "pending_call_center", label: "بانتظار التأكيد" },
+  { key: "pending", label: "بانتظار سائق" },
   { key: "confirmed", label: "مؤكد" },
   { key: "ready_for_driver", label: "جاهز للسائق" },
   { key: "driver_assigned", label: "تم التعيين" },
