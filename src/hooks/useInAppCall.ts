@@ -275,6 +275,7 @@ export function useInAppCall() {
           direction: "outgoing",
           status: "ringing",
         });
+        startDialTone();
 
         // Auto-end after 45s if still ringing (no answer)
         const ringingTimeout = setTimeout(() => {
