@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, Navigation, CheckCircle, XCircle, MapPin, Clock, Car, Send, ChevronUp, ChevronDown } from "lucide-react";
+import { Phone, Navigation, CheckCircle, XCircle, MapPin, Clock, Car, Send, ChevronUp, ChevronDown, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
@@ -10,6 +10,8 @@ import CancelRideDialog from "@/components/CancelRideDialog";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 import { usePricingSettings } from "@/hooks/usePricingSettings";
 import { useI18n } from "@/i18n/context";
+import { useInAppCall } from "@/hooks/useInAppCall";
+import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = (v: number) => (v * Math.PI) / 180;
@@ -61,6 +63,7 @@ const DriverTracking = () => {
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
   const pricing = usePricingSettings();
   const { dir } = useI18n();
+  const inAppCall = useInAppCall();
 
   // Auto-find active ride
   useEffect(() => {
@@ -357,12 +360,15 @@ const DriverTracking = () => {
                   <MapPin className="w-4 h-4 text-primary shrink-0" />
                   <span className="text-sm text-foreground/80 flex-1 truncate">{ride.destination || "الوجهة"}</span>
                 </div>
-                {clientPhone && (
-                  <a href={`tel:${clientPhone}`} className="block">
-                    <Button variant="outline" className="w-full h-11 rounded-xl gap-2 border-border">
-                      <Phone className="w-4 h-4 text-blue-500" /> اتصال بالزبون
-                    </Button>
-                  </a>
+                {ride.user_id && (
+                  <Button
+                    variant="outline"
+                    className="w-full h-11 rounded-xl gap-2 border-border"
+                    onClick={() => inAppCall.startCall({ id: ride.user_id, name: clientRefCode || "الزبون" })}
+                    disabled={inAppCall.busy}
+                  >
+                    <PhoneCall className="w-4 h-4 text-blue-500" /> اتصال بالزبون (داخلي)
+                  </Button>
                 )}
               </div>
             </motion.div>
@@ -379,13 +385,27 @@ const DriverTracking = () => {
             >
               {updating ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : nextAction.label}
             </Button>
+
+            {/* In-app call button */}
+            {ride.user_id && (
+              <Button
+                variant="outline"
+                className="w-full h-11 rounded-xl gap-2 border-blue-500/30 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
+                onClick={() => inAppCall.startCall({ id: ride.user_id, name: clientRefCode || "الزبون" })}
+                disabled={inAppCall.busy}
+              >
+                <PhoneCall className="w-4 h-4" /> اتصال بالزبون
+              </Button>
+            )}
+
+            {/* Cancel button */}
             <Button
               onClick={() => setCancelDialogOpen(true)}
               disabled={updating}
-              variant="ghost"
-              className="w-full h-10 rounded-xl text-destructive hover:bg-destructive/10 text-sm gap-1"
+              variant="outline"
+              className="w-full h-10 rounded-xl border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 text-sm gap-1 font-bold"
             >
-              <XCircle className="w-4 h-4" /> إلغاء
+              <XCircle className="w-4 h-4" /> إلغاء الرحلة
             </Button>
           </div>
         )}
@@ -419,6 +439,21 @@ const DriverTracking = () => {
           onCancelled={() => navigate("/driver")}
         />
       )}
+
+      {/* In-App Call Dialog */}
+      <InAppCallDialog
+        incomingCall={inAppCall.incomingCall}
+        activeCall={inAppCall.activeCall}
+        localStream={inAppCall.localStream}
+        remoteStream={inAppCall.remoteStream}
+        isMuted={inAppCall.isMuted}
+        isVideoEnabled={inAppCall.isVideoEnabled}
+        onAccept={inAppCall.acceptCall}
+        onEnd={inAppCall.endCall}
+        onToggleMute={inAppCall.toggleMute}
+        onToggleVideo={inAppCall.toggleVideo}
+        busy={inAppCall.busy}
+      />
     </div>
   );
 };

@@ -1,13 +1,15 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle, Clock, MapPin, Phone, User, Navigation, Car, Route as RouteIcon, XCircle, Star } from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, MapPin, Phone, User, Navigation, Car, Route as RouteIcon, XCircle, Star, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 import RideChat from "@/components/RideChat";
 import CancelRideDialog from "@/components/CancelRideDialog";
+import { useInAppCall } from "@/hooks/useInAppCall";
+import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = (v: number) => (v * Math.PI) / 180;
@@ -53,6 +55,7 @@ const CustomerTracking = () => {
   const [driverPhone, setDriverPhone] = useState<string | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
+  const inAppCall = useInAppCall();
 
   useEffect(() => {
     if (!rideId) return;
@@ -262,10 +265,17 @@ const CustomerTracking = () => {
             {/* Driver card */}
             <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
               <div className="flex items-center gap-2">
-                {driverPhone && (
-                  <a href={`tel:${driverPhone}`} className="w-10 h-10 rounded-full bg-blue-500/15 flex items-center justify-center border border-blue-500/25">
-                    <Phone className="w-5 h-5 text-blue-400" />
-                  </a>
+                {ride.driver_id && (
+                  <button
+                    onClick={async () => {
+                      const { data: driver } = await supabase.from("drivers").select("user_id").eq("id", ride.driver_id!).single();
+                      if (driver) inAppCall.startCall({ id: driver.user_id, name: driverRefCode || "السائق" });
+                    }}
+                    disabled={inAppCall.busy}
+                    className="w-10 h-10 rounded-full bg-blue-500/15 flex items-center justify-center border border-blue-500/25"
+                  >
+                    <PhoneCall className="w-5 h-5 text-blue-400" />
+                  </button>
                 )}
               </div>
               <div className="text-right">
@@ -368,6 +378,21 @@ const CustomerTracking = () => {
           onCancelled={() => navigate("/customer")}
         />
       )}
+
+      {/* In-App Call Dialog */}
+      <InAppCallDialog
+        incomingCall={inAppCall.incomingCall}
+        activeCall={inAppCall.activeCall}
+        localStream={inAppCall.localStream}
+        remoteStream={inAppCall.remoteStream}
+        isMuted={inAppCall.isMuted}
+        isVideoEnabled={inAppCall.isVideoEnabled}
+        onAccept={inAppCall.acceptCall}
+        onEnd={inAppCall.endCall}
+        onToggleMute={inAppCall.toggleMute}
+        onToggleVideo={inAppCall.toggleVideo}
+        busy={inAppCall.busy}
+      />
     </div>
   );
 };
