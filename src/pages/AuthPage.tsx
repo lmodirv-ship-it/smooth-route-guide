@@ -252,10 +252,10 @@ const AuthPage = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label className="text-sm text-muted-foreground text-right block">كلمة المرور</label>
             <div className="relative">
-              <Input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
+              <Input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="أدخل كلمة مرور بسيطة"
                 type={showPassword ? "text" : "password"}
                 className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right" />
               <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -263,6 +263,9 @@ const AuthPage = () => {
                 {showPassword ? <EyeOff className="w-5 h-5 text-muted-foreground" /> : <Eye className="w-5 h-5 text-muted-foreground" />}
               </button>
             </div>
+            {!isLogin && (
+              <p className="text-xs text-muted-foreground text-right">6 أحرف على الأقل — بدون تعقيدات</p>
+            )}
           </div>
 
           {isLogin && (
