@@ -1,17 +1,15 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowRight, Phone, Navigation, CheckCircle, XCircle, MapPin, Clock, Car, Send, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Phone, Navigation, CheckCircle, XCircle, MapPin, Clock, Car, Send, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
 import RideChat from "@/components/RideChat";
 import CancelRideDialog from "@/components/CancelRideDialog";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
-
-const PRICE_PER_KM = 3;
-const BASE_FARE = 5;
-const MIN_FARE = 10;
+import { usePricingSettings } from "@/hooks/usePricingSettings";
+import { useI18n } from "@/i18n/context";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = (v: number) => (v * Math.PI) / 180;
@@ -37,11 +35,12 @@ interface RideData {
   user_id: string;
 }
 
-const STATUS_FLOW: Record<string, { label: string; icon: string }> = {
+const STATUS_STEPS = ["accepted", "in_progress", "arriving", "completed"];
+const STATUS_LABELS: Record<string, { label: string; icon: string }> = {
   accepted: { label: "تم قبول الطلب", icon: "✅" },
-  in_progress: { label: "في الطريق", icon: "🚗" },
-  arriving: { label: "وصلت للزبون", icon: "📍" },
-  completed: { label: "تم التوصيل", icon: "🎉" },
+  in_progress: { label: "في الطريق للزبون", icon: "🚗" },
+  arriving: { label: "وصلت — في انتظار الزبون", icon: "📍" },
+  completed: { label: "تم التوصيل بنجاح", icon: "🎉" },
   cancelled: { label: "تم الإلغاء", icon: "❌" },
 };
 
@@ -52,38 +51,40 @@ const DriverTracking = () => {
   const [rideId, setRideId] = useState<string | null>(rideIdParam);
   const [ride, setRide] = useState<RideData | null>(null);
   const [driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [clientName, setClientName] = useState("الزبون");
-  const [clientPhone, setClientPhone] = useState<string | null>(null);
   const [clientRefCode, setClientRefCode] = useState<string | null>(null);
+  const [clientPhone, setClientPhone] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [navMode, setNavMode] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [initialDistance, setInitialDistance] = useState<number | null>(null);
+  const pricing = usePricingSettings();
+  const { dir } = useI18n();
 
-  // Auto-find active ride if no ID provided
+  // Auto-find active ride
   useEffect(() => {
     if (rideIdParam) { setRideId(rideIdParam); return; }
     const findActiveRide = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
+      
+      // Get driver record
+      const { data: driverRecord } = await supabase.from("drivers").select("id").eq("user_id", user.id).single();
+      if (!driverRecord) { setLoading(false); return; }
+      
       const { data } = await supabase
-        .from("ride_requests")
-        .select("id")
-        .eq("driver_id", user.id)
+        .from("ride_requests").select("id")
+        .eq("driver_id", driverRecord.id)
         .in("status", ["accepted", "in_progress", "arriving"])
-        .order("created_at", { ascending: false })
-        .limit(1);
-      if (data && data.length > 0) {
-        setRideId(data[0].id);
-      } else {
-        setLoading(false);
-      }
+        .order("created_at", { ascending: false }).limit(1);
+      if (data && data.length > 0) setRideId(data[0].id);
+      else setLoading(false);
     };
     findActiveRide();
   }, [rideIdParam]);
 
-  // Watch driver GPS
+  // GPS watch
   useEffect(() => {
     if (!navigator.geolocation) return;
     const watcher = navigator.geolocation.watchPosition(
@@ -94,83 +95,63 @@ const DriverTracking = () => {
     return () => navigator.geolocation.clearWatch(watcher);
   }, []);
 
-  // Update driver location in DB
+  // Sync location to DB
   useEffect(() => {
     if (!driverLocation) return;
     const updateLoc = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      await supabase
-        .from("drivers")
-        .update({
-          current_lat: driverLocation.lat,
-          current_lng: driverLocation.lng,
-          location_updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id);
+      await supabase.from("drivers").update({
+        current_lat: driverLocation.lat, current_lng: driverLocation.lng,
+        location_updated_at: new Date().toISOString(),
+      }).eq("user_id", user.id);
     };
-    const t = setTimeout(updateLoc, 500);
+    const t = setTimeout(updateLoc, 4000);
     return () => clearTimeout(t);
   }, [driverLocation]);
 
-  const fetchRide = async () => {
-    if (!rideId) { setLoading(false); setError(null); return; }
-    setLoading(true);
-    setError(null);
+  // Fetch ride data
+  const fetchRide = useCallback(async () => {
+    if (!rideId) { setLoading(false); return; }
+    setLoading(true); setError(null);
     try {
       const { data, error: fetchErr } = await supabase
-        .from("ride_requests")
-        .select("*")
-        .eq("id", rideId)
-        .single();
+        .from("ride_requests").select("*").eq("id", rideId).single();
       if (fetchErr) throw fetchErr;
-      if (!data) {
-        setError("لم يتم العثور على الرحلة");
-        setRide(null);
-      } else {
+      if (!data) { setError("لم يتم العثور على الرحلة"); setRide(null); }
+      else {
         setRide(data as RideData);
         const { data: profile } = await supabase
-          .from("profiles")
-          .select("name, phone, user_code")
-          .eq("id", data.user_id)
-          .single();
+          .from("profiles").select("phone, user_code").eq("id", data.user_id).single();
         if (profile) {
-          setClientName(profile.name || "الزبون");
           setClientPhone(profile.phone || null);
-          setClientRefCode(profile.user_code || null);
+          setClientRefCode((profile as any).user_code || null);
         }
       }
     } catch (err: any) {
-      setError(err.message || "فشل تحميل بيانات الرحلة");
-      setRide(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+      setError(err.message || "خطأ"); setRide(null);
+    } finally { setLoading(false); }
+  }, [rideId]);
 
   useEffect(() => {
     fetchRide();
     if (!rideId) return;
     const channel = supabase
       .channel(`ride-track-${rideId}`)
-      .on("postgres_changes", {
-        event: "UPDATE", schema: "public", table: "ride_requests",
-        filter: `id=eq.${rideId}`,
-      }, (payload) => { setRide(payload.new as RideData); })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "ride_requests", filter: `id=eq.${rideId}` },
+        (payload) => { setRide(payload.new as RideData); })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [rideId]);
+  }, [rideId, fetchRide]);
 
   const smoothedDriver = useSmoothedPosition(driverLocation);
 
   const targetPosition = useMemo(() => {
     if (!ride) return null;
-    if (["accepted", "in_progress"].includes(ride.status) && ride.pickup_lat && ride.pickup_lng) {
+    if (["accepted", "in_progress"].includes(ride.status) && ride.pickup_lat && ride.pickup_lng)
       return { lat: ride.pickup_lat, lng: ride.pickup_lng };
-    }
-    if (["arriving", "completed"].includes(ride.status) && ride.destination_lat && ride.destination_lng) {
+    if (["arriving", "completed"].includes(ride.status) && ride.destination_lat && ride.destination_lng)
       return { lat: ride.destination_lat, lng: ride.destination_lng };
-    }
     return null;
   }, [ride]);
 
@@ -179,19 +160,36 @@ const DriverTracking = () => {
     return haversineKm(driverLocation, targetPosition);
   }, [driverLocation, targetPosition]);
 
+  // Set initial distance once
+  useEffect(() => {
+    if (distanceToTarget != null && initialDistance == null) {
+      setInitialDistance(distanceToTarget);
+    }
+  }, [distanceToTarget, initialDistance]);
+
+  // Reset initial distance on status change
+  useEffect(() => {
+    setInitialDistance(null);
+  }, [ride?.status]);
+
+  // Progress bar (0 to 1)
+  const progress = useMemo(() => {
+    if (initialDistance == null || initialDistance === 0 || distanceToTarget == null) return 0;
+    return Math.min(1, Math.max(0, 1 - distanceToTarget / initialDistance));
+  }, [distanceToTarget, initialDistance]);
+
+  // Price from DB settings
   const totalTripPrice = useMemo(() => {
     if (!ride) return ride?.price || null;
-    let driverToPickup = 0;
-    if (driverLocation && ride.pickup_lat && ride.pickup_lng) {
-      driverToPickup = haversineKm(driverLocation, { lat: ride.pickup_lat, lng: ride.pickup_lng });
-    }
     let pickupToDest = ride.distance || 0;
     if (!pickupToDest && ride.pickup_lat && ride.pickup_lng && ride.destination_lat && ride.destination_lng) {
       pickupToDest = haversineKm({ lat: ride.pickup_lat, lng: ride.pickup_lng }, { lat: ride.destination_lat, lng: ride.destination_lng });
     }
-    const totalDist = driverToPickup + pickupToDest;
-    return totalDist > 0 ? Math.max(MIN_FARE, Math.round(BASE_FARE + totalDist * PRICE_PER_KM)) : (ride.price || null);
-  }, [ride, driverLocation]);
+    if (pickupToDest > 0) {
+      return Math.max(pricing.minFare, Math.round(pricing.baseFare + pickupToDest * pricing.perKmRate));
+    }
+    return ride.price || null;
+  }, [ride, pricing]);
 
   const etaMinutes = distanceToTarget ? Math.max(1, Math.round(distanceToTarget * 2.5)) : null;
 
@@ -200,270 +198,213 @@ const DriverTracking = () => {
     [smoothedDriver, targetPosition]
   );
 
-  // Route for the map: driver → target when in nav mode, otherwise pickup → destination
   const mapRoute = useMemo(() => {
     if (!ride) return null;
-    if (navMode && smoothedDriver && targetPosition) {
+    // Always show driver → target route for real-time navigation
+    if (smoothedDriver && targetPosition) {
       return { pickup: smoothedDriver, destination: targetPosition };
     }
     if (ride.pickup_lat && ride.pickup_lng && ride.destination_lat && ride.destination_lng) {
-      return {
-        pickup: { lat: ride.pickup_lat, lng: ride.pickup_lng },
-        destination: { lat: ride.destination_lat, lng: ride.destination_lng },
-      };
+      return { pickup: { lat: ride.pickup_lat, lng: ride.pickup_lng }, destination: { lat: ride.destination_lat, lng: ride.destination_lng } };
     }
     return null;
-  }, [ride, smoothedDriver, targetPosition, navMode]);
+  }, [ride, smoothedDriver, targetPosition]);
 
   const handleStatusUpdate = async (newStatus: string) => {
     if (!rideId || updating) return;
     setUpdating(true);
     try {
-      const { error } = await supabase
-        .from("ride_requests")
-        .update({ status: newStatus })
-        .eq("id", rideId);
+      const updates: any = { status: newStatus };
+      if (newStatus === "completed" && totalTripPrice) updates.price = totalTripPrice;
+      const { error } = await supabase.from("ride_requests").update(updates).eq("id", rideId);
       if (error) throw error;
-      if (newStatus === "completed" || newStatus === "cancelled") {
-        navigate("/driver");
-      }
-    } catch (err: any) {
-      console.error("Status update error:", err);
-    } finally {
-      setUpdating(false);
-    }
+      if (newStatus === "completed" || newStatus === "cancelled") navigate("/driver");
+    } catch (err: any) { console.error(err); }
+    finally { setUpdating(false); }
   };
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
-        <div className="text-primary animate-pulse">جارٍ التحميل...</div>
-      </div>
-    );
-  }
+  const statusStep = STATUS_STEPS.indexOf(ride?.status || "");
 
-  // No ride found
-  if (!rideId || (!ride && !error)) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4" dir="rtl">
-        <MapPin className="w-14 h-14 text-muted-foreground/30" />
-        <p className="text-muted-foreground text-lg">لا توجد رحلة نشطة</p>
-        <Button onClick={() => navigate("/driver")} className="rounded-xl">العودة للرئيسية</Button>
+  // Loading / Error / No ride states
+  if (loading) return (
+    <div className="h-dvh bg-background flex items-center justify-center" dir={dir}>
+      <div className="text-primary animate-pulse text-lg">جارٍ التحميل...</div>
+    </div>
+  );
+  if (!rideId || (!ride && !error)) return (
+    <div className="h-dvh bg-background flex flex-col items-center justify-center gap-4" dir={dir}>
+      <MapPin className="w-14 h-14 text-muted-foreground/30" />
+      <p className="text-muted-foreground text-lg">لا توجد رحلة نشطة</p>
+      <Button onClick={() => navigate("/driver")} className="rounded-xl">العودة</Button>
+    </div>
+  );
+  if (error || !ride) return (
+    <div className="h-dvh bg-background flex flex-col items-center justify-center gap-4" dir={dir}>
+      <XCircle className="w-14 h-14 text-destructive/50" />
+      <p className="text-destructive">{error}</p>
+      <div className="flex gap-3">
+        <Button onClick={fetchRide} variant="outline" className="rounded-xl">إعادة</Button>
+        <Button onClick={() => navigate("/driver")} className="rounded-xl">العودة</Button>
       </div>
-    );
-  }
+    </div>
+  );
 
-  // Error state
-  if (error || !ride) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4" dir="rtl">
-        <XCircle className="w-14 h-14 text-destructive/50" />
-        <p className="text-destructive text-lg">{error || "لم يتم العثور على الرحلة"}</p>
-        <div className="flex gap-3">
-          <Button onClick={fetchRide} variant="outline" className="rounded-xl">إعادة المحاولة</Button>
-          <Button onClick={() => navigate("/driver")} className="rounded-xl">العودة للرئيسية</Button>
-        </div>
-      </div>
-    );
-  }
-
-  const statusInfo = STATUS_FLOW[ride.status] || { label: ride.status, icon: "📦" };
+  const statusInfo = STATUS_LABELS[ride.status] || { label: ride.status, icon: "📦" };
   const isFinished = ride.status === "completed" || ride.status === "cancelled";
 
+  const nextAction = ride.status === "accepted"
+    ? { label: "🚗 في الطريق", status: "in_progress", colors: "from-amber-500 to-orange-500" }
+    : ride.status === "in_progress"
+    ? { label: "📍 وصلت للزبون", status: "arriving", colors: "from-blue-500 to-cyan-500" }
+    : ride.status === "arriving"
+    ? { label: "✅ تم التوصيل", status: "completed", colors: "from-emerald-500 to-green-500" }
+    : null;
+
   return (
-    <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background" dir="rtl">
-      {/* ─── Full-screen Navigation Mode ─── */}
-      {navMode && (
-        <div className="absolute inset-0 z-[100] flex flex-col bg-background">
-          <div className="relative flex-1">
-            <LeafletMap
-              center={smoothedDriver || mapCenter}
-              zoom={16}
-              className="w-full h-full"
-              showMarker={false}
-              driverLocation={smoothedDriver}
-              route={mapRoute}
-            />
-            {/* Floating info */}
-            {distanceToTarget != null && etaMinutes != null && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1001] bg-black/80 text-white px-5 py-2.5 rounded-full text-sm backdrop-blur-sm flex items-center gap-3 border border-white/10">
-                <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-orange-400" />{distanceToTarget.toFixed(1)} كم</span>
-                <span className="text-white/30">|</span>
-                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-blue-400" />{etaMinutes} د</span>
-              </div>
-            )}
-            {/* Close nav mode */}
-            <button
-              onClick={() => setNavMode(false)}
-              className="absolute top-4 right-4 z-[1001] w-10 h-10 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/10"
-            >
-              <X className="w-5 h-5 text-white" />
-            </button>
-            {/* Status action floating */}
-            <div className="absolute bottom-4 left-4 right-4 z-[1001] space-y-2">
-              {ride.status === "accepted" && (
-                <Button onClick={() => handleStatusUpdate("in_progress")} disabled={updating}
-                  className="w-full h-14 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-base shadow-lg gap-2">
-                  <Send className="w-5 h-5" /> في الطريق
-                </Button>
-              )}
-              {ride.status === "in_progress" && (
-                <Button onClick={() => handleStatusUpdate("arriving")} disabled={updating}
-                  className="w-full h-14 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-base shadow-lg gap-2">
-                  <Car className="w-5 h-5" /> وصلت
-                </Button>
-              )}
-              {ride.status === "arriving" && (
-                <Button onClick={() => handleStatusUpdate("completed")} disabled={updating}
-                  className="w-full h-14 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-bold text-base shadow-lg gap-2">
-                  <CheckCircle className="w-5 h-5" /> تم التوصيل
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ─── Header ─── */}
-      <div className="shrink-0 bg-background/90 backdrop-blur-sm border-b border-border px-4 py-3 flex items-center justify-between z-50">
-        <button onClick={() => navigate("/driver")} className="p-2 rounded-full hover:bg-muted">
-          <ArrowRight className="w-5 h-5 text-muted-foreground" />
-        </button>
-        <span className="font-bold text-foreground">التوصيل</span>
-        <div className="w-9" />
-      </div>
-
-      {/* ─── Map (top section) ─── */}
-      <div className="relative h-[30vh] min-h-[180px] shrink-0">
+    <div className="h-dvh flex flex-col bg-background overflow-hidden" dir={dir}>
+      {/* ── Fullscreen Map ── */}
+      <div className="flex-1 relative min-h-0">
         <LeafletMap
           center={mapCenter}
-          zoom={15}
+          zoom={16}
           className="w-full h-full"
           showMarker={!!targetPosition}
           markerPosition={targetPosition || undefined}
           driverLocation={smoothedDriver}
           route={mapRoute}
         />
+
+        {/* Top floating: distance + ETA */}
         {distanceToTarget != null && etaMinutes != null && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[1000] bg-black/70 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm flex items-center gap-3 border border-white/10">
-            <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-orange-400" />{distanceToTarget.toFixed(1)} كم</span>
-            <span className="text-white/30">|</span>
-            <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-blue-400" />{etaMinutes} د</span>
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1001] bg-card/95 backdrop-blur-xl px-5 py-2.5 rounded-2xl text-sm flex items-center gap-4 border border-border shadow-xl">
+            <span className="flex items-center gap-1.5 font-bold text-foreground">
+              <MapPin className="w-4 h-4 text-primary" />{distanceToTarget.toFixed(1)} كم
+            </span>
+            <div className="w-px h-5 bg-border" />
+            <span className="flex items-center gap-1.5 font-bold text-foreground">
+              <Clock className="w-4 h-4 text-blue-500" />{etaMinutes} د
+            </span>
           </div>
         )}
+
+        {/* Back button */}
+        <button
+          onClick={() => navigate("/driver")}
+          className="absolute top-4 right-4 z-[1001] w-10 h-10 bg-card/90 backdrop-blur-xl rounded-full flex items-center justify-center border border-border shadow-lg"
+        >
+          <Navigation className="w-5 h-5 text-foreground" />
+        </button>
+
+        {/* Client reference floating */}
+        {clientRefCode && (
+          <div className="absolute top-4 left-4 z-[1001] bg-primary/90 backdrop-blur-xl px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
+            <span className="text-primary-foreground text-xs font-mono font-bold">{clientRefCode}</span>
+          </div>
+        )}
+
+        {/* Progress bar at bottom of map */}
+        <div className="absolute bottom-0 left-0 right-0 z-[1001] h-1.5 bg-muted/50">
+          <motion.div
+            className="h-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.6)]"
+            initial={{ width: "0%" }}
+            animate={{ width: `${progress * 100}%` }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
+        </div>
       </div>
 
-      {/* ─── Bottom Panel ─── */}
-      <div className="flex-1 overflow-y-auto">
-        <motion.div
-          initial={{ y: 40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="p-4 space-y-3"
-        >
-          {/* Client info card */}
-          <div className="rounded-2xl border border-border glass-card p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="bg-emerald-500/15 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/20">
-                {statusInfo.label}
+      {/* ── Bottom Action Panel ── */}
+      <div className="shrink-0 bg-card border-t border-border safe-area-bottom">
+        {/* Status steps */}
+        <div className="px-4 pt-3 pb-2">
+          <div className="flex items-center gap-1">
+            {STATUS_STEPS.map((step, i) => (
+              <div key={step} className="flex-1 flex items-center gap-1">
+                <div className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
+                  i <= statusStep ? "bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.4)]" : "bg-muted"
+                }`} />
               </div>
-              <div className="text-right">
-                <p className="text-foreground font-bold text-lg">
-                  {clientName}
-                  {clientRefCode && (
-                    <span className="font-mono text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded-md border border-primary/30 mr-2">
-                      {clientRefCode}
-                    </span>
-                  )}
-                </p>
-                <p className="text-muted-foreground text-sm">{clientPhone || "—"}</p>
-              </div>
-            </div>
-
-            {/* Route */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border">
-                <Car className="w-4 h-4 text-emerald-400" />
-                <span className="text-sm text-foreground/80 flex-1">{ride.pickup || "موقعي الحالي"}</span>
-              </div>
-              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border">
-                <MapPin className="w-4 h-4 text-orange-400" />
-                <span className="text-sm text-foreground/80 flex-1">{ride.destination || "الوجهة"}</span>
-              </div>
-            </div>
-
-            {/* Price & ETA */}
-            <div className="flex justify-between items-center mt-3 pt-3 border-t border-border">
-              <span className="text-muted-foreground text-sm">ETA {etaMinutes ? `${etaMinutes} د` : "—"}</span>
-              <span className="text-primary font-black text-xl">{totalTripPrice || ride.price || "—"} DH</span>
-            </div>
+            ))}
           </div>
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-xs text-muted-foreground">{statusInfo.icon} {statusInfo.label}</span>
+            <span className="text-lg font-black text-primary">{totalTripPrice || ride.price || "—"} DH</span>
+          </div>
+        </div>
 
-          {/* In-app navigation button (replaces external nav links) */}
-          {targetPosition && !isFinished && (
-            <Button
-              onClick={() => setNavMode(true)}
-              className="w-full h-12 rounded-xl gap-2 bg-gradient-to-r from-primary to-orange-500 hover:from-primary/90 hover:to-orange-600 text-primary-foreground font-bold text-base"
+        {/* Expandable details */}
+        <button
+          onClick={() => setPanelOpen(!panelOpen)}
+          className="w-full flex items-center justify-center py-1 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {panelOpen ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
+        </button>
+
+        <AnimatePresence>
+          {panelOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden px-4 pb-2"
             >
-              <Navigation className="w-5 h-5" />
-              ابدأ الملاحة
-            </Button>
-          )}
-
-          {/* ─── Action Buttons ─── */}
-          {!isFinished && (
-            <div className="space-y-2.5 pt-1">
-              {clientPhone && (
-                <a href={`tel:${clientPhone}`} className="block">
-                  <Button className="w-full h-13 rounded-xl bg-secondary hover:bg-secondary/80 text-secondary-foreground font-bold text-base border border-border gap-2">
-                    <Phone className="w-5 h-5 text-blue-400" />
-                    اتصال بالعميل
-                  </Button>
-                </a>
-              )}
-
-              {ride.status === "accepted" && (
-                <Button onClick={() => handleStatusUpdate("in_progress")} disabled={updating}
-                  className="w-full h-14 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-base shadow-lg gap-2">
-                  <Send className="w-5 h-5" /> في الطريق
-                </Button>
-              )}
-              {ride.status === "in_progress" && (
-                <Button onClick={() => handleStatusUpdate("arriving")} disabled={updating}
-                  className="w-full h-14 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-base shadow-lg gap-2">
-                  <Car className="w-5 h-5" /> وصلت
-                </Button>
-              )}
-              {ride.status === "arriving" && (
-                <Button onClick={() => handleStatusUpdate("completed")} disabled={updating}
-                  className="w-full h-14 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-bold text-base shadow-lg gap-2">
-                  <CheckCircle className="w-5 h-5" /> تم التوصيل
-                </Button>
-              )}
-
-              <Button onClick={() => setCancelDialogOpen(true)} disabled={updating} variant="outline"
-                className="w-full h-13 rounded-xl border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 font-bold text-base gap-2">
-                <XCircle className="w-5 h-5" /> إلغاء الطلب
-              </Button>
-            </div>
-          )}
-
-          {/* Completed state */}
-          {ride.status === "completed" && (
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-              className="text-center p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-              <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto mb-3" />
-              <p className="text-foreground font-bold text-lg">تم التوصيل بنجاح! 🎉</p>
-              <p className="text-muted-foreground text-sm mt-1">
-                الأجرة: <span className="text-primary font-bold">{totalTripPrice || ride.price || "—"} DH</span>
-              </p>
-              <Button onClick={() => navigate("/driver")}
-                className="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold">
-                العودة للطلبات
-              </Button>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border">
+                  <Car className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span className="text-sm text-foreground/80 flex-1 truncate">{ride.pickup || "نقطة الانطلاق"}</span>
+                </div>
+                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border">
+                  <MapPin className="w-4 h-4 text-primary shrink-0" />
+                  <span className="text-sm text-foreground/80 flex-1 truncate">{ride.destination || "الوجهة"}</span>
+                </div>
+                {clientPhone && (
+                  <a href={`tel:${clientPhone}`} className="block">
+                    <Button variant="outline" className="w-full h-11 rounded-xl gap-2 border-border">
+                      <Phone className="w-4 h-4 text-blue-500" /> اتصال بالزبون
+                    </Button>
+                  </a>
+                )}
+              </div>
             </motion.div>
           )}
-        </motion.div>
+        </AnimatePresence>
+
+        {/* Main action button */}
+        {!isFinished && nextAction && (
+          <div className="px-4 pb-3 pt-1 space-y-2">
+            <Button
+              onClick={() => handleStatusUpdate(nextAction.status)}
+              disabled={updating}
+              className={`w-full h-14 rounded-2xl bg-gradient-to-r ${nextAction.colors} text-white font-bold text-base shadow-xl gap-2`}
+            >
+              {updating ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : nextAction.label}
+            </Button>
+            <Button
+              onClick={() => setCancelDialogOpen(true)}
+              disabled={updating}
+              variant="ghost"
+              className="w-full h-10 rounded-xl text-destructive hover:bg-destructive/10 text-sm gap-1"
+            >
+              <XCircle className="w-4 h-4" /> إلغاء
+            </Button>
+          </div>
+        )}
+
+        {/* Completed */}
+        {ride.status === "completed" && (
+          <div className="px-4 pb-4">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              className="text-center p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+              <CheckCircle className="w-14 h-14 text-emerald-400 mx-auto mb-2" />
+              <p className="text-foreground font-bold text-lg">تم التوصيل بنجاح! 🎉</p>
+              <p className="text-primary font-black text-2xl mt-1">{totalTripPrice || ride.price || "—"} DH</p>
+              <Button onClick={() => navigate("/driver")}
+                className="mt-3 w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold">
+                العودة
+              </Button>
+            </motion.div>
+          </div>
+        )}
       </div>
 
       {/* Chat */}
