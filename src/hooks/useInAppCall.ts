@@ -544,6 +544,8 @@ export function useInAppCall() {
     isMuted,
     isVideoEnabled,
     busy,
+    callDuration,
+    connectionQuality,
     isInCall: Boolean(incomingCall || activeCall),
     startCall,
     acceptCall,
