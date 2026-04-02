@@ -207,6 +207,8 @@ const DriverRequestsTable = () => {
                 <th className="p-4 font-medium text-muted-foreground">العميل</th>
                 <th className="p-4 font-medium text-muted-foreground">الانطلاق</th>
                 <th className="p-4 font-medium text-muted-foreground">الوجهة</th>
+                <th className="p-4 font-medium text-muted-foreground">المسافة</th>
+                <th className="p-4 font-medium text-muted-foreground">الوقت المتوقع</th>
                 <th className="p-4 font-medium text-muted-foreground">المبلغ</th>
                 <th className="p-4 font-medium text-muted-foreground">الحالة</th>
                 <th className="p-4 font-medium text-muted-foreground">الوقت</th>
