@@ -254,9 +254,9 @@ const AdminLayout = () => {
       )}
 
       {/* Main */}
-      <div className="flex-1 overflow-auto flex flex-col">
-        {/* Top Bar */}
-        <header className="glass-strong border-b border-border px-3 md:px-6 py-3 flex items-center justify-between sticky top-0 z-40">
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Top Bar - Fixed */}
+        <header className="glass-strong border-b border-border px-3 md:px-6 py-3 flex items-center justify-between z-40 shrink-0">
           <div className="flex items-center gap-2">
             <button onClick={() => setMobileOpen(true)} className="lg:hidden p-1.5 hover:bg-secondary rounded-lg">
               <Menu className="w-5 h-5 text-muted-foreground" />
