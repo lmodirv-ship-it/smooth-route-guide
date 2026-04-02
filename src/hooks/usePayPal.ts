@@ -2,9 +2,6 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-// PayPal client-side integration
-// Uses PayPal's client-side SDK for payment processing
-
 const PAYPAL_CLIENT_ID = "AetPmdLcTL5KAJx6hYvo6K2NtAvaevJ2vTn0jxdc1hOE6X7pCmP6jMK3hrgSEUqN5xviMWUPTRe7uGqG";
 
 let sdkLoaded = false;
@@ -68,7 +65,21 @@ export function usePayPal() {
       
       if (error) throw error;
 
-      return txn.id;
+      // Call edge function to create PayPal order
+      const { data: orderData, error: fnError } = await supabase.functions.invoke("paypal-payment", {
+        body: {
+          action: "create-order",
+          amount: options.amount,
+          currency: options.currency || "MAD",
+          description: options.description,
+          transactionId: txn.id,
+        },
+      });
+
+      if (fnError) throw fnError;
+      if (orderData?.error) throw new Error(orderData.error);
+
+      return { transactionId: txn.id, orderId: orderData.orderId, approveUrl: orderData.approveUrl };
     } catch (err: any) {
       toast.error(err.message || "خطأ في إنشاء معاملة PayPal");
       return null;
@@ -77,21 +88,36 @@ export function usePayPal() {
     }
   }, []);
 
-  const completePayment = useCallback(async (transactionId: string, paypalOrderId: string) => {
+  const capturePayment = useCallback(async (transactionId: string, paypalOrderId: string) => {
+    setLoading(true);
     try {
-      await supabase.from("payment_transactions").update({
-        status: "completed",
-        completed_at: new Date().toISOString(),
-        metadata: { paypal_order_id: paypalOrderId },
-      }).eq("id", transactionId);
-      
-      toast.success("تم الدفع بنجاح عبر PayPal ✅");
-      return true;
-    } catch {
-      toast.error("خطأ في تأكيد الدفع");
+      const { data, error } = await supabase.functions.invoke("paypal-payment", {
+        body: {
+          action: "capture-order",
+          orderId: paypalOrderId,
+          transactionId,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      if (data?.status === "completed") {
+        toast.success("تم الدفع بنجاح عبر PayPal ✅");
+        return true;
+      }
+      toast.error("فشل تأكيد الدفع");
       return false;
+    } catch (err: any) {
+      toast.error(err.message || "خطأ في تأكيد الدفع");
+      return false;
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  return { init, ready, loading, createPayment, completePayment };
+  // Legacy compat
+  const completePayment = capturePayment;
+
+  return { init, ready, loading, createPayment, capturePayment, completePayment };
 }
