@@ -115,6 +115,7 @@ export const adminRouteElements = (
       <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
       <Route path="payments" element={<PaymentManagement />} />
       <Route path="paypal-settings" element={<PayPalSettings />} />
+      <Route path="coupons" element={<CouponsManagement />} />
     </Route>
 
     <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><CallCenterLayout /></RequireRole>}>
