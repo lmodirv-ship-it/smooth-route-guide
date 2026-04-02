@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Package, CheckCircle, Bike, MapPin, Clock, Phone, ChefHat, Store, User, Car, XCircle, UtensilsCrossed } from "lucide-react";
+import { ArrowRight, Package, CheckCircle, Bike, MapPin, Clock, Phone, ChefHat, Store, User, Car, XCircle, UtensilsCrossed, Star, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const steps = [
   { key: "pending_call_center", label: "بانتظار مركز الاتصال", sublabel: "مركز الاتصال يراجع طلبك", icon: Clock, color: "bg-amber-500" },
@@ -21,6 +22,10 @@ const OrderTracking = () => {
   const { id } = useParams<{ id: string }>();
   const [order, setOrder] = useState<any>(null);
   const [driverProfile, setDriverProfile] = useState<any>(null);
+  const [rating, setRating] = useState(0);
+  const [ratingComment, setRatingComment] = useState("");
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
+  const [submittingRating, setSubmittingRating] = useState(false);
 
   const fetchDriverProfile = async (driverId: string) => {
     const { data: driver } = await supabase.from("drivers").select("user_id").eq("id", driverId).single();
@@ -217,6 +222,73 @@ const OrderTracking = () => {
                   })}
                 </div>
               </div>
+            </motion.div>
+          )}
+
+          {/* Rating section when delivered */}
+          {order?.status === "delivered" && !ratingSubmitted && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+              className="glass-card rounded-2xl p-5 mt-4 text-center">
+              <div className="text-3xl mb-2">🎉</div>
+              <h3 className="font-bold text-foreground text-lg mb-1">شكرًا لاستعمالك التطبيق!</h3>
+              <p className="text-sm text-muted-foreground mb-4">كيف كانت تجربتك؟ قيّم السائق</p>
+              
+              {/* Stars */}
+              <div className="flex items-center justify-center gap-2 mb-4">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button key={star} onClick={() => setRating(star)}
+                    className="transition-transform hover:scale-110 active:scale-95">
+                    <Star className={`w-9 h-9 ${star <= rating ? "text-amber-400 fill-amber-400" : "text-muted-foreground/30"} transition-colors`} />
+                  </button>
+                ))}
+              </div>
+
+              {/* Comment */}
+              <textarea
+                value={ratingComment}
+                onChange={(e) => setRatingComment(e.target.value)}
+                placeholder="اكتب ملاحظة (اختياري)..."
+                className="w-full p-3 rounded-xl bg-muted/50 border border-border text-foreground text-sm resize-none h-20 mb-3 placeholder:text-muted-foreground/50"
+                dir="rtl"
+              />
+
+              <Button
+                disabled={rating === 0 || submittingRating}
+                onClick={async () => {
+                  if (!order?.driver_id || rating === 0) return;
+                  setSubmittingRating(true);
+                  try {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (!user) return;
+                    await supabase.from("ratings").insert({
+                      user_id: order.driver_id,
+                      driver_id: order.driver_id,
+                      score: rating,
+                      comment: ratingComment.trim() || null,
+                    });
+                    setRatingSubmitted(true);
+                    toast({ title: "شكرًا على تقييمك! ⭐" });
+                  } catch { 
+                    toast({ title: "حدث خطأ", variant: "destructive" });
+                  } finally { setSubmittingRating(false); }
+                }}
+                className="w-full h-12 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold gap-2"
+              >
+                <Send className="w-4 h-4" /> إرسال التقييم
+              </Button>
+            </motion.div>
+          )}
+
+          {/* Rating submitted thank you */}
+          {order?.status === "delivered" && ratingSubmitted && (
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              className="glass-card rounded-2xl p-5 mt-4 text-center">
+              <div className="text-4xl mb-2">💚</div>
+              <p className="text-foreground font-bold text-lg">شكرًا لتقييمك!</p>
+              <p className="text-sm text-muted-foreground mt-1">نتمنى لك تجربة رائعة دائمًا</p>
+              <Button onClick={() => navigate("/delivery")} variant="outline" className="mt-4 rounded-xl">
+                العودة للرئيسية
+              </Button>
             </motion.div>
           )}
 
