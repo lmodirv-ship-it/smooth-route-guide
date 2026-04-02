@@ -230,8 +230,10 @@ const DriverPage = () => {
     try {
       const order = nearbyOrders.find(o => o.id === orderId);
       const totalPrice = order ? order.totalPrice : 0;
+      const totalDistance = order ? order.totalDistance : null;
+      const estimatedTime = order ? order.eta : null;
       const { error } = await supabase.from("ride_requests")
-        .update({ status: "accepted", driver_id: driverRecord.id, accepted_at: new Date().toISOString(), price: totalPrice })
+        .update({ status: "accepted", driver_id: driverRecord.id, accepted_at: new Date().toISOString(), price: totalPrice, distance: totalDistance, estimated_time: estimatedTime })
         .eq("id", orderId).eq("status", "pending");
       if (error) throw error;
       setActiveRideId(orderId);

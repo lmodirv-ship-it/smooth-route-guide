@@ -154,7 +154,9 @@ const AdminRideRequests = () => {
                     )}
                   </td>
                   <td className="p-4"><span className={`text-xs px-2 py-1 rounded-full ${statusColor(req.status)} bg-secondary`}>{statusLabel(req.status)}</span></td>
-                  <td className="p-4 text-primary font-semibold">{req.price || 0} ر.س</td>
+                  <td className="p-4 text-primary font-semibold">{req.price || 0} DH</td>
+                  <td className="p-4 text-foreground text-sm">{req.distance ? `${Number(req.distance).toFixed(1)} كم` : "—"}</td>
+                  <td className="p-4 text-foreground text-sm">{req.estimated_time ? `${req.estimated_time} د` : "—"}</td>
                   <td className="p-4 text-muted-foreground text-xs">{new Date(req.created_at).toLocaleString("ar-SA", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}</td>
                   <td className="p-4 text-foreground truncate max-w-[200px]">{req.destination || "—"}</td>
                   <td className="p-4 text-foreground truncate max-w-[200px]">{req.pickup || "—"}</td>
