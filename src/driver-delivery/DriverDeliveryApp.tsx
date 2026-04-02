@@ -82,6 +82,7 @@ const DriverDeliveryApp = () => (
 
             {/* Delivery Driver pages */}
             <Route path="/delivery" element={<RequireRole allowed={["delivery"]}><><DeliveryDriverLayout /><DriverDelivery /></></RequireRole>} />
+            <Route path="/delivery/tracking" element={<RequireRole allowed={["delivery"]}><DeliveryDriverTracking /></RequireRole>} />
             <Route path="/delivery/history" element={<RequireRole allowed={["delivery"]}><><DeliveryDriverLayout /><DriverHistory /></></RequireRole>} />
             <Route path="/delivery/notifications" element={<RequireRole allowed={["delivery"]}><><DeliveryDriverLayout /><DriverNotifications /></></RequireRole>} />
             <Route path="/delivery/settings" element={<RequireRole allowed={["delivery"]}><><DeliveryDriverLayout /><DriverSettings /></></RequireRole>} />
