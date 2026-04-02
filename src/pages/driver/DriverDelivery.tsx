@@ -81,6 +81,7 @@ const DriverDelivery = () => {
   const { location: driverLocation } = useDriverGeolocation(true);
   const { isExpired: subscriptionExpired, daysLeft: subDaysLeft } = useDriverSubscription();
   const { mapTheme, mapExpanded } = useDriverMapControls();
+  const heatPoints = useDemandHeatmap();
   const { driverCode, userCode } = useUserReference();
   const refCode = driverCode || userCode;
   const prevCountRef = useRef(0);
