@@ -1,0 +1,1 @@
+ALTER TABLE public.payment_methods ADD CONSTRAINT payment_methods_user_method_unique UNIQUE (user_id, method_type);
