@@ -319,7 +319,7 @@ const LeafletMap = ({
         }
       })
       .catch(() => {
-        L.polyline([pickupLatLng, destLatLng], { color: "#10b981", weight: 4, opacity: 0.8, dashArray: "10, 8" }).addTo(layer);
+        L.polyline([pickupLatLng, destLatLng], { color: routeColor, weight: 4, opacity: 0.8, dashArray: "10, 8" }).addTo(layer);
         try {
           const bounds = L.latLngBounds([pickupLatLng, destLatLng]);
           if (bounds.isValid() && map.getContainer()?.offsetWidth > 0) {
