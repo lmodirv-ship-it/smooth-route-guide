@@ -89,7 +89,7 @@ const Cart = () => {
           category: "restaurant",
           store_name: storeName || "",
           store_id: storeId || null,
-          status: "pending_call_center",
+          status: "pending",
           estimated_price: grandTotal,
           subtotal: subtotal,
           delivery_fee: deliveryFee,

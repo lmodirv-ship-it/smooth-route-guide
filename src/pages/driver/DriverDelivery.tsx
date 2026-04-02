@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Bike, CheckCircle, Clock, MapPin, Navigation, Package,
+  Bike, CheckCircle, Clock, MapPin, Navigation, Package, Phone,
   Store, XCircle, Radar, Wallet, TrendingUp, Crown, Loader2,
   Star, Settings, Volume2,
 } from "lucide-react";
@@ -146,7 +146,7 @@ const DriverDelivery = () => {
     setActiveOrder(active as DeliveryOrder | null);
     if (!active) {
       let query = supabase.from("delivery_orders").select("*")
-        .eq("status", "ready_for_driver").order("created_at", { ascending: false }).limit(20);
+        .in("status", ["pending", "ready_for_driver"]).order("created_at", { ascending: false }).limit(20);
       if (driverCity) query = query.ilike("city", `%${driverCity}%`);
       const { data: pending } = await query;
 
@@ -158,12 +158,21 @@ const DriverDelivery = () => {
         customerMap = new Map((profiles || []).map((p: any) => [p.id, { user_code: p.user_code, avg_rating: Number(p.avg_rating) || 0 }]));
       }
 
+      // Fetch store phone numbers
+      const storeIds = Array.from(new Set((pending || []).map((o: any) => o.store_id).filter(Boolean)));
+      let storePhoneMap = new Map<string, string>();
+      if (storeIds.length > 0) {
+        const { data: stores } = await supabase.from("stores").select("id, phone").in("id", storeIds);
+        storePhoneMap = new Map((stores || []).map((s: any) => [s.id, s.phone || ""]));
+      }
+
       const enriched = (pending || []).map((order: any) => {
         const customer = customerMap.get(order.user_id);
         return {
           ...order,
           customer_reference: customer?.user_code || `#${order.id.slice(0, 6).toUpperCase()}`,
           customer_rating: customer?.avg_rating || 0,
+          store_phone: storePhoneMap.get(order.store_id) || "",
         };
       });
 
@@ -205,7 +214,7 @@ const DriverDelivery = () => {
         distance: order?.distKm || null,
         estimated_time: order?.etaMin || null,
       })
-      .eq("id", orderId).eq("status", "ready_for_driver");
+      .eq("id", orderId).in("status", ["pending", "ready_for_driver"]);
     if (error) {
       toast({ title: "خطأ", description: "تم قبول الطلب من سائق آخر", variant: "destructive" });
     } else {
@@ -384,6 +393,7 @@ const DriverDelivery = () => {
                       <TableHead className="text-right text-xs font-bold">Reference</TableHead>
                       <TableHead className="text-right text-xs font-bold">⭐</TableHead>
                       <TableHead className="text-right text-xs font-bold">المتجر</TableHead>
+                      <TableHead className="text-center text-xs font-bold">📞</TableHead>
                       <TableHead className="text-right text-xs font-bold">المسافة</TableHead>
                       <TableHead className="text-right text-xs font-bold">الوقت</TableHead>
                       <TableHead className="text-right text-xs font-bold">الثمن</TableHead>
@@ -407,6 +417,17 @@ const DriverDelivery = () => {
                           </TableCell>
                           <TableCell className="text-right text-xs text-foreground truncate max-w-[100px]">
                             {order.store_name || "—"}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {(order as any).store_phone ? (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); window.open(`tel:${(order as any).store_phone}`); }}
+                                className="w-7 h-7 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 flex items-center justify-center mx-auto transition-colors"
+                                title={`اتصل بالمطعم: ${(order as any).store_phone}`}
+                              >
+                                <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                              </button>
+                            ) : <span className="text-muted-foreground/40 text-xs">—</span>}
                           </TableCell>
                           <TableCell className="text-right text-xs text-muted-foreground">
                             {order.distKm != null ? `${order.distKm} كم` : "—"}

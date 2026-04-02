@@ -103,6 +103,13 @@ const CCDashboard = () => {
     setLoading(false);
   }, []);
 
+  // Check for escalated orders (pending > 5 min without driver)
+  const escalatedOrders = recentOrders.filter(o => {
+    if (o.status !== "pending") return false;
+    const ageMs = Date.now() - new Date(o.created_at).getTime();
+    return ageMs > 5 * 60 * 1000; // 5 minutes
+  });
+
   useEffect(() => {
     fetchAll();
     const ch = supabase.channel("cc-dash-realtime")
@@ -111,7 +118,9 @@ const CCDashboard = () => {
       .on("postgres_changes", { event: "*", schema: "public", table: "complaints" }, fetchAll)
       .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, fetchAll)
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    // Re-check escalation every 30 seconds
+    const escalationTimer = setInterval(fetchAll, 30000);
+    return () => { supabase.removeChannel(ch); clearInterval(escalationTimer); };
   }, [fetchAll]);
 
   const statCards = [
@@ -233,7 +242,45 @@ const CCDashboard = () => {
         ))}
       </div>
 
-      {/* Alerts */}
+      {/* ⚠️ Escalated Orders - pending > 5 min */}
+      {escalatedOrders.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl bg-amber-950/30 border border-amber-500/25 p-4 backdrop-blur-sm"
+        >
+          <h2 className="text-foreground font-bold text-xs mb-2.5 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            ⚠️ طلبات متأخرة — بدون سائق منذ أكثر من 5 دقائق ({escalatedOrders.length})
+          </h2>
+          <div className="space-y-1.5">
+            {escalatedOrders.map(o => {
+              const mins = Math.floor((Date.now() - new Date(o.created_at).getTime()) / 60000);
+              return (
+                <div key={o.id} className="flex items-center justify-between gap-2 bg-amber-500/5 rounded-lg p-2.5 border border-amber-500/10">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-6 text-[9px] px-2 border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+                      onClick={() => {
+                        handleOrderAction(o.id, "confirmed");
+                        toast({ title: "تم تأكيد الطلب وسيتم إرساله للسائق" });
+                      }}
+                    >✅ تأكيد</Button>
+                    <span className="text-[10px] text-amber-400 font-bold">{mins} دقيقة</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-right">
+                    <span className="text-[11px] text-foreground/80">{o.store_name || "طلب"} — {o.userName}</span>
+                    <Package className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
+
       {alerts.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}

@@ -58,7 +58,7 @@ const STATUS_META: Record<string, { label: string; badge: string }> = {
 
 const STATUS_FILTERS: Array<{ key: string; label: string }> = [
   { key: "all", label: "الكل" },
-  { key: "pending_call_center", label: "بانتظار التأكيد" },
+  { key: "pending", label: "بانتظار سائق" },
   { key: "confirmed", label: "مؤكد" },
   { key: "ready_for_driver", label: "جاهز للسائق" },
   { key: "driver_assigned", label: "تم التعيين" },
@@ -151,7 +151,7 @@ const DeliveryOrdersBoard = ({ title }: { title: string }) => {
 
   const stats = useMemo(() => ({
     total: orders.length,
-    pending: orders.filter((o) => o.status === "pending_call_center").length,
+    pending: orders.filter((o) => o.status === "pending" || o.status === "pending_call_center").length,
     live: orders.filter((o) => ["confirmed", "ready_for_driver", "driver_assigned", "on_the_way_to_vendor", "picked_up", "on_the_way_to_customer"].includes(o.status)).length,
     done: orders.filter((o) => ["delivered", "completed"].includes(o.status)).length,
   }), [orders]);
