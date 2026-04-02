@@ -188,7 +188,7 @@ const DriverSubscription = () => {
                 </div>
 
                 <Button
-                  onClick={() => handleSubscribe(pkg)}
+                  onClick={() => setSelectedPkg(pkg)}
                   disabled={subscribing === pkg.id}
                     className={`w-full h-12 rounded-xl font-bold text-base ${
                     pkg.is_featured
@@ -198,6 +198,21 @@ const DriverSubscription = () => {
                 >
                   {subscribing === pkg.id ? "جاري الاشتراك..." : "اشترك الآن"}
                 </Button>
+
+                {/* Payment picker for selected package */}
+                {selectedPkg?.id === pkg.id && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 pt-4 border-t border-border">
+                    <PaymentMethodPicker
+                      selected={paymentMethod}
+                      onChange={setPaymentMethod}
+                      walletBalance={walletBalance}
+                      amount={pkg.price}
+                      onPaymentComplete={handlePaymentComplete}
+                      loading={!!subscribing}
+                      referenceType="driver_subscription"
+                    />
+                  </motion.div>
+                )}
               </motion.div>
             ))}
           </div>
