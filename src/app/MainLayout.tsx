@@ -67,6 +67,8 @@ const MainLayoutInner = () => {
               <Users className="w-3.5 h-3.5" />
             </button>
           )}
+          {isVisible("floating_chat_btn") && <FloatingChatButton />}
+          {isVisible("voice_order_btn") && <VoiceOrderButton />}
         </div>
 
         {/* Separator */}
@@ -109,8 +111,7 @@ const MainLayoutInner = () => {
       </div>
       {/* Spacer for fixed bar */}
       <div className="h-11" />
-      {isVisible("floating_chat_btn") && <FloatingChatButton />}
-      {isVisible("voice_order_btn") && <VoiceOrderButton />}
+      
       
       <Outlet />
       {isVisible("contact_footer") && <GlobalContactFooter />}
