@@ -5,7 +5,7 @@ import { toast } from "sonner";
 // PayPal client-side integration
 // Uses PayPal's client-side SDK for payment processing
 
-const PAYPAL_CLIENT_ID = "sb"; // sandbox - replace with live client ID in production
+const PAYPAL_CLIENT_ID = "AetPmdLcTL5KAJx6hYvo6K2NtAvaevJ2vTn0jxdc1hOE6X7pCmP6jMK3hrgSEUqN5xviMWUPTRe7uGqG";
 
 let sdkLoaded = false;
 let sdkPromise: Promise<void> | null = null;
