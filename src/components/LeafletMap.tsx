@@ -127,6 +127,10 @@ const LeafletMap = ({
   onMapClick,
   expandable = true,
   onExpandChange,
+  hideControls = false,
+  externalTheme,
+  onThemeChange,
+  externalExpanded,
   children,
 }: LeafletMapProps) => {
   const mapElementRef = useRef<HTMLDivElement | null>(null);
