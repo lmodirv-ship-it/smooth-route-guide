@@ -63,7 +63,7 @@ const DriverTracking = () => {
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
   const pricing = usePricingSettings();
   const { dir } = useI18n();
-  const { callView, startCall, endCall, acceptCall } = useInAppCall();
+  const inAppCall = useInAppCall();
 
   // Auto-find active ride
   useEffect(() => {
