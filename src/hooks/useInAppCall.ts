@@ -201,12 +201,18 @@ export function useInAppCall() {
           return;
         }
 
+        // Only auto-clear on failure if the call was already active (answered)
+        // Don't clear during "ringing" phase - let the ringing timeout handle it
         if (["failed", "disconnected", "closed"].includes(peer.connectionState) && activeCallRef.current) {
-          window.setTimeout(() => {
-            if (peer.connectionState !== "connected") {
-              clearCallState();
-            }
-          }, 1200);
+          const wasActive = activeCallRef.current.status === "active" || activeCallRef.current.status === "connecting";
+          if (wasActive) {
+            window.setTimeout(() => {
+              if (peer.connectionState !== "connected") {
+                clearCallState();
+              }
+            }, 3000);
+          }
+          // If still "ringing" (outgoing), don't auto-clear - let user cancel manually
         }
       };
 
@@ -253,6 +259,17 @@ export function useInAppCall() {
           direction: "outgoing",
           status: "ringing",
         });
+
+        // Auto-end after 45s if still ringing (no answer)
+        const ringingTimeout = setTimeout(() => {
+          const current = activeCallRef.current;
+          if (current?.callId === callRow.id && current?.status === "ringing") {
+            toast.error("لم يتم الرد على المكالمة");
+            void sendSignal(callRow.id, peer.id, "end", {});
+            void updateSession(callRow.id, { status: "missed", ended_at: new Date().toISOString() });
+            clearCallState();
+          }
+        }, 45000);
 
         const connection = await createPeerConnection(callRow.id, peer.id, stream);
         const offer = await connection.createOffer();
