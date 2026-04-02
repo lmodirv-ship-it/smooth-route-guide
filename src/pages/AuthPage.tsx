@@ -152,7 +152,8 @@ const AuthPage = () => {
       let msg = err?.message || "حدث خطأ غير متوقع";
       if (msg.includes("Invalid login credentials")) msg = "بريد أو كلمة مرور غير صحيحة";
       if (msg.includes("User already registered")) msg = "هذا البريد مسجل مسبقاً";
-      if (msg.includes("Password should be at least")) msg = "كلمة المرور ضعيفة";
+      if (msg.includes("Password should be at least")) msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+      if (msg.includes("password") && msg.includes("characters")) msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
       toast({ title: "خطأ", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
