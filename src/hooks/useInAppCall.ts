@@ -424,8 +424,9 @@ export function useInAppCall() {
   useEffect(() => {
     if (!userId) return;
 
+    const signalChannelId = `call-signals-${userId}-${Date.now()}`;
     const signalChannel = supabase
-      .channel(`call-signals-${userId}`)
+      .channel(signalChannelId)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "call_signals", filter: `recipient_id=eq.${userId}` },
