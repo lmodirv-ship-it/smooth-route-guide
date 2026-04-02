@@ -114,6 +114,7 @@ const AdminLayout = () => {
     { path: "/admin/wallet-recharge", icon: Wallet, label: "طلبات شحن المحفظة" },
     { path: "/admin/payments", icon: CreditCard, label: "💳 إدارة المدفوعات" },
     { path: "/admin/paypal-settings", icon: CreditCard, label: "💎 إعدادات PayPal" },
+    { path: "/admin/coupons", icon: Ticket, label: "🎟️ كوبونات الخصم" },
   ];
 
   useEffect(() => {
