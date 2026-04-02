@@ -285,6 +285,13 @@ const DriverPage = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <button onClick={() => navigate("/driver/settings")}
+                className="p-2 rounded-full backdrop-blur-sm border border-white/20 bg-white/10 text-white/80 hover:bg-white/20 transition-all">
+                <Settings className="w-3.5 h-3.5" />
+              </button>
+              <div className="relative">
+                <div className={`w-3 h-3 rounded-full border-2 border-black/60 ${driverLocation ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" : "bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]"}`} />
+              </div>
               <button onClick={() => setSoundEnabled(!soundEnabled)}
                 className={`p-2 rounded-full backdrop-blur-sm border transition-all ${soundEnabled ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400" : "bg-white/10 border-white/20 text-white/40"}`}>
                 <Volume2 className="w-3.5 h-3.5" />
