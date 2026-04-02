@@ -78,6 +78,7 @@ const DeliveryDriverTracking = () => {
       if (!user) { setLoading(false); return; }
       const { data: driver } = await supabase.from("drivers").select("id").eq("user_id", user.id).single();
       if (!driver) { setLoading(false); return; }
+      setDriverId(driver.id);
       const { data } = await supabase
         .from("delivery_orders").select("id")
         .eq("driver_id", driver.id)
