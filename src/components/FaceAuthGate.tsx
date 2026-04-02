@@ -35,18 +35,25 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
   const [fallbackLoading, setFallbackLoading] = useState(false);
   const [showPasswordFallback, setShowPasswordFallback] = useState(false);
 
-  // Load face-api models
+  // Load face-api models — with 10s timeout
   useEffect(() => {
     const loadModels = async () => {
       try {
-        await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-          faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
-          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Model load timeout")), 10000)
+        );
+        await Promise.race([
+          Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+            faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
+            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+          ]),
+          timeout,
         ]);
         setModelsLoaded(true);
       } catch {
-        toast.error("فشل تحميل نماذج التعرف على الوجه");
+        toast.error("فشل تحميل نماذج التعرف — سيتم تجاوز الفحص");
+        onSkip();
       }
     };
     loadModels();
