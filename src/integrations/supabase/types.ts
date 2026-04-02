@@ -3279,46 +3279,82 @@ export type Database = {
       }
       trips: {
         Row: {
+          accepted_at: string | null
+          cancel_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          city: string | null
+          country: string | null
           created_at: string
+          destination_lat: number | null
+          destination_lng: number | null
           distance: number | null
           driver_id: string | null
           end_location: string | null
           ended_at: string | null
+          estimated_time: number | null
           fare: number | null
           id: string
+          pickup_lat: number | null
+          pickup_lng: number | null
           start_location: string | null
           started_at: string | null
           status: string
           trip_code: string | null
           user_id: string
+          zone_id: string | null
         }
         Insert: {
+          accepted_at?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
+          destination_lat?: number | null
+          destination_lng?: number | null
           distance?: number | null
           driver_id?: string | null
           end_location?: string | null
           ended_at?: string | null
+          estimated_time?: number | null
           fare?: number | null
           id?: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
           start_location?: string | null
           started_at?: string | null
           status?: string
           trip_code?: string | null
           user_id: string
+          zone_id?: string | null
         }
         Update: {
+          accepted_at?: string | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
+          destination_lat?: number | null
+          destination_lng?: number | null
           distance?: number | null
           driver_id?: string | null
           end_location?: string | null
           ended_at?: string | null
+          estimated_time?: number | null
           fare?: number | null
           id?: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
           start_location?: string | null
           started_at?: string | null
           status?: string
           trip_code?: string | null
           user_id?: string
+          zone_id?: string | null
         }
         Relationships: [
           {
@@ -3333,6 +3369,13 @@ export type Database = {
             columns: ["driver_id"]
             isOneToOne: false
             referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trips_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
             referencedColumns: ["id"]
           },
         ]
