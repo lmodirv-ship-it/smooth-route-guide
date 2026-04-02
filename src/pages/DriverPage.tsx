@@ -83,9 +83,9 @@ const DriverPage = () => {
     const fetchStats = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: profile } = await supabase.from("profiles").select("name, avatar_url").eq("id", user.id).single();
-      if (profile?.name) setDriverName(profile.name);
+      const { data: profile } = await supabase.from("profiles").select("name, avatar_url, avg_rating").eq("id", user.id).single();
       if (profile?.avatar_url) setDriverAvatar(profile.avatar_url);
+      setDriverRating(Number(profile?.avg_rating) || 0);
 
       const { data: activeRides } = await supabase.from("ride_requests").select("id, status")
         .eq("driver_id", user.id).in("status", ["accepted", "in_progress", "arriving"]).limit(1);
