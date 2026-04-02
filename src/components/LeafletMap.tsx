@@ -105,6 +105,13 @@ interface LeafletMapProps {
   /** Allow parent to control expanded state */
   expandable?: boolean;
   onExpandChange?: (expanded: boolean) => void;
+  /** Hide internal map controls (theme/expand buttons) */
+  hideControls?: boolean;
+  /** External theme control */
+  externalTheme?: ThemeKey;
+  onThemeChange?: (theme: ThemeKey) => void;
+  /** External expand control */
+  externalExpanded?: boolean;
   children?: React.ReactNode;
 }
 
