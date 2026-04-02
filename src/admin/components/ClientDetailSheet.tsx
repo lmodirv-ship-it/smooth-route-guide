@@ -8,11 +8,24 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import {
   User, Phone, Mail, Calendar, Shield, Wallet, Car, MapPin,
   KeyRound, Save, Loader2, Eye, EyeOff, Copy, Check,
-  Star, Ban, CheckCircle, History, ShieldAlert
+  Star, Ban, CheckCircle, History, ShieldAlert, UserPlus, Trash2
 } from "lucide-react";
+
+type AppRole = Database["public"]["Enums"]["app_role"];
+
+const ALL_ROLES: { key: AppRole; label: string; icon: string }[] = [
+  { key: "admin", label: "مسؤول", icon: "🔴" },
+  { key: "moderator", label: "مشرف", icon: "🛡️" },
+  { key: "agent", label: "مركز اتصال", icon: "📞" },
+  { key: "driver", label: "سائق ركاب", icon: "🚗" },
+  { key: "delivery", label: "سائق توصيل", icon: "🏍️" },
+  { key: "store_owner", label: "صاحب محل", icon: "🏪" },
+  { key: "user", label: "عميل", icon: "👤" },
+];
 
 interface ClientDetailProps {
   clientId: string | null;
