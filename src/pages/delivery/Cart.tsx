@@ -69,10 +69,8 @@ const Cart = () => {
   const grandTotal = subtotal + deliveryFee;
 
   const handleOrder = async () => {
-    if (!deliveryAddress.trim()) {
-      toast({ title: "يرجى إدخال عنوان التوصيل", variant: "destructive" });
-      return;
-    }
+    // Address is auto-detected by GPS; manual input is optional
+    const finalAddress = deliveryAddress.trim() || "موقع GPS";
 
     setSubmitting(true);
     try {
