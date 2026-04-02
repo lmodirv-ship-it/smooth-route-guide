@@ -118,11 +118,13 @@ const AdminRideRequests = () => {
       <div className="glass-card rounded-xl overflow-hidden">
         <div className="overflow-auto">
           <table className="w-full text-sm">
-            <thead>
+             <thead>
               <tr className="border-b border-border text-right">
                 <th className="p-4 text-muted-foreground font-medium">إجراءات</th>
                 <th className="p-4 text-muted-foreground font-medium">الحالة</th>
                 <th className="p-4 text-muted-foreground font-medium">السعر</th>
+                <th className="p-4 text-muted-foreground font-medium">المسافة</th>
+                <th className="p-4 text-muted-foreground font-medium">الوقت المتوقع</th>
                 <th className="p-4 text-muted-foreground font-medium">الوقت</th>
                 <th className="p-4 text-muted-foreground font-medium">الوجهة</th>
                 <th className="p-4 text-muted-foreground font-medium">نقطة الانطلاق</th>
