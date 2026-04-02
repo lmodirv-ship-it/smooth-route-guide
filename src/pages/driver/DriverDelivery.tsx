@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Bike, CheckCircle, Clock, MapPin, Navigation, Package,
   Store, XCircle, Radar, Wallet, TrendingUp, Crown, Loader2,
+  Star, Settings, Volume2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -26,6 +27,15 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
   const dLng = toRad(b.lng - a.lng);
   const x = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
   return 6371 * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
+
+function detectCity(loc: { lat: number; lng: number }): string {
+  if (loc.lat > 35.6 && loc.lat < 35.85 && loc.lng > -5.95 && loc.lng < -5.7) return "طنجة";
+  if (loc.lat > 35.5 && loc.lat < 35.65 && loc.lng > -5.45 && loc.lng < -5.2) return "تطوان";
+  if (loc.lat > 33.95 && loc.lat < 34.1 && loc.lng > -6.9 && loc.lng < -6.7) return "الرباط";
+  if (loc.lat > 33.5 && loc.lat < 33.7 && loc.lng > -7.7 && loc.lng < -7.4) return "الدار البيضاء";
+  if (loc.lat > 31.55 && loc.lat < 31.7 && loc.lng > -8.1 && loc.lng < -7.9) return "مراكش";
+  return "منطقتك";
 }
 
 type OrderStatus = string;
@@ -51,15 +61,9 @@ interface DeliveryOrder {
   notes: string | null;
   order_code: string | null;
   distance: number | null;
+  customer_reference?: string;
+  customer_rating?: number;
 }
-
-const STATUS_FLOW: { key: string; label: string; icon: typeof Clock }[] = [
-  { key: "driver_assigned", label: "تم القبول", icon: CheckCircle },
-  { key: "on_the_way_to_vendor", label: "في الطريق للمطعم", icon: Navigation },
-  { key: "picked_up", label: "تم الاستلام", icon: Store },
-  { key: "on_the_way_to_customer", label: "في الطريق للزبون", icon: Bike },
-  { key: "delivered", label: "تم التسليم", icon: CheckCircle },
-];
 
 const DriverDelivery = () => {
   const navigate = useNavigate();
@@ -69,21 +73,32 @@ const DriverDelivery = () => {
   const [pendingOrders, setPendingOrders] = useState<DeliveryOrder[]>([]);
   const [activeOrder, setActiveOrder] = useState<DeliveryOrder | null>(null);
   const [accepting, setAccepting] = useState<string | null>(null);
-  const [todayStats, setTodayStats] = useState({ deliveries: 0, earnings: 0 });
+  const [todayStats, setTodayStats] = useState({ deliveries: 0, earnings: 0, rating: 0 });
+  const [driverRating, setDriverRating] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const { location: driverLocation } = useDriverGeolocation(true);
-  const { isExpired: subscriptionExpired } = useDriverSubscription();
+  const { isExpired: subscriptionExpired, daysLeft: subDaysLeft } = useDriverSubscription();
   const { mapTheme, mapExpanded } = useDriverMapControls();
   const { driverCode, userCode } = useUserReference();
+  const refCode = driverCode || userCode;
   const prevCountRef = useRef(0);
   const initialRef = useRef(true);
 
-  // Init driver
+  // Init driver + stats
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
-      const { data: driver } = await supabase.from("drivers").select("id").eq("user_id", user.id).maybeSingle();
+      
+      // Profile
+      const { data: profile } = await supabase.from("profiles").select("avg_rating").eq("id", user.id).single();
+      setDriverRating(Number(profile?.avg_rating) || 0);
+
+      // Driver record
+      const { data: driver } = await supabase.from("drivers").select("id, rating").eq("user_id", user.id).maybeSingle();
       if (driver) setDriverId(driver.id);
 
+      // Today stats
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
       const { data: completed } = await supabase
@@ -93,19 +108,32 @@ const DriverDelivery = () => {
       setTodayStats({
         deliveries: completed?.length || 0,
         earnings: completed?.reduce((s, o) => s + (Number(o.delivery_fee) || Number(o.total_price) || 0), 0) || 0,
+        rating: Number(driver?.rating) || 0,
       });
-
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-          try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&accept-language=fr`);
-            const geo = await res.json();
-            setDriverCity(geo?.address?.city || geo?.address?.town || "Tanger");
-          } catch { setDriverCity("Tanger"); }
-        }, () => setDriverCity("Tanger"), { timeout: 8000 });
-      }
     });
+
+    // Detect city
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        setDriverCity(detectCity({ lat: pos.coords.latitude, lng: pos.coords.longitude }));
+      }, () => setDriverCity("طنجة"), { timeout: 8000 });
+    }
   }, []);
+
+  // Sync location to DB
+  useEffect(() => {
+    if (!driverLocation) return;
+    const updateLoc = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase.from("drivers").update({
+        current_lat: driverLocation.lat, current_lng: driverLocation.lng,
+        location_updated_at: new Date().toISOString(),
+      }).eq("user_id", user.id);
+    };
+    const timer = setTimeout(updateLoc, 1000);
+    return () => clearTimeout(timer);
+  }, [driverLocation]);
 
   const fetchOrders = useCallback(async () => {
     if (!driverId) return;
@@ -121,15 +149,33 @@ const DriverDelivery = () => {
         .eq("status", "ready_for_driver").order("created_at", { ascending: false }).limit(20);
       if (driverCity) query = query.ilike("city", `%${driverCity}%`);
       const { data: pending } = await query;
-      const newCount = pending?.length || 0;
-      if (!initialRef.current && newCount > prevCountRef.current) notifyNewOrder();
+
+      // Enrich with customer references
+      const userIds = Array.from(new Set((pending || []).map((o: any) => o.user_id).filter(Boolean)));
+      let customerMap = new Map<string, { user_code: string | null; avg_rating: number }>();
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase.from("profiles").select("id, user_code, avg_rating").in("id", userIds);
+        customerMap = new Map((profiles || []).map((p: any) => [p.id, { user_code: p.user_code, avg_rating: Number(p.avg_rating) || 0 }]));
+      }
+
+      const enriched = (pending || []).map((order: any) => {
+        const customer = customerMap.get(order.user_id);
+        return {
+          ...order,
+          customer_reference: customer?.user_code || `#${order.id.slice(0, 6).toUpperCase()}`,
+          customer_rating: customer?.avg_rating || 0,
+        };
+      });
+
+      const newCount = enriched.length;
+      if (!initialRef.current && newCount > prevCountRef.current && soundEnabled) notifyNewOrder();
       initialRef.current = false;
       prevCountRef.current = newCount;
-      setPendingOrders((pending || []) as DeliveryOrder[]);
+      setPendingOrders(enriched as DeliveryOrder[]);
     } else {
       setPendingOrders([]);
     }
-  }, [driverId, driverCity]);
+  }, [driverId, driverCity, soundEnabled]);
 
   useEffect(() => {
     if (!driverId) return;
@@ -149,44 +195,38 @@ const DriverDelivery = () => {
       setAccepting(null);
       return;
     }
+    const order = enrichedOrders.find(o => o.id === orderId);
     const { error } = await supabase.from("delivery_orders")
-      .update({ status: "driver_assigned", driver_id: driverId, accepted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .update({
+        status: "driver_assigned",
+        driver_id: driverId,
+        accepted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        distance: order?.distKm || null,
+        estimated_time: order?.etaMin || null,
+      })
       .eq("id", orderId).eq("status", "ready_for_driver");
     if (error) {
       toast({ title: "خطأ", description: "تم قبول الطلب من سائق آخر", variant: "destructive" });
     } else {
       toast({ title: "تم قبول الطلب ✅" });
-      // Navigate to tracking page
-      navigate(`/delivery/tracking?id=${orderId}`);
+      navigate(`/driver/delivery/tracking?id=${orderId}`);
     }
     setAccepting(null);
     fetchOrders();
   };
 
   const route = useMemo(() => {
-    if (!activeOrder || !driverLocation) return null;
-    if (["driver_assigned", "on_the_way_to_vendor"].includes(activeOrder.status) && activeOrder.pickup_lat != null) {
-      return { pickup: driverLocation, destination: { lat: Number(activeOrder.pickup_lat), lng: Number(activeOrder.pickup_lng) } };
-    }
-    if (["picked_up", "on_the_way_to_customer"].includes(activeOrder.status) && activeOrder.delivery_lat != null) {
-      return { pickup: driverLocation, destination: { lat: Number(activeOrder.delivery_lat), lng: Number(activeOrder.delivery_lng) } };
-    }
-    return null;
-  }, [activeOrder, driverLocation]);
+    if (!selectedOrderId) return null;
+    const order = enrichedOrders.find(o => o.id === selectedOrderId);
+    if (!order?.pickup_lat || !order?.delivery_lat) return null;
+    return {
+      pickup: { lat: Number(order.pickup_lat), lng: Number(order.pickup_lng) },
+      destination: { lat: Number(order.delivery_lat), lng: Number(order.delivery_lng) },
+    };
+  }, [selectedOrderId]);
 
-  const setStatus = async (status: string) => {
-    if (!activeOrder) return;
-    const updates: Record<string, any> = { status, updated_at: new Date().toISOString() };
-    if (status === "picked_up") updates.picked_up_at = new Date().toISOString();
-    if (status === "delivered") updates.delivered_at = new Date().toISOString();
-    await supabase.from("delivery_orders").update(updates).eq("id", activeOrder.id);
-    if (status === "delivered") toast({ title: "تم التسليم بنجاح ✅" });
-    fetchOrders();
-  };
-
-  const currentStepIdx = activeOrder ? STATUS_FLOW.findIndex(s => s.key === activeOrder.status) : -1;
-
-  // Enrich pending orders with distance/ETA
+  // Enrich with distance/ETA
   const enrichedOrders = useMemo(() => {
     return pendingOrders.map(order => {
       let distKm: number | null = null;
@@ -196,8 +236,11 @@ const DriverDelivery = () => {
         etaMin = Math.max(1, Math.round(distKm * 2.5));
       }
       return { ...order, distKm, etaMin };
-    });
+    }).filter(o => o.distKm === null || o.distKm <= MAX_RADIUS_KM)
+      .sort((a, b) => (a.distKm ?? 999) - (b.distKm ?? 999));
   }, [pendingOrders, driverLocation]);
+
+  const cityName = driverLocation ? detectCity(driverLocation) : "جارٍ التحديد...";
 
   return (
     <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background overflow-hidden" dir={dir} onClick={() => unlockAudio()}>
@@ -219,7 +262,7 @@ const DriverDelivery = () => {
         {/* Radius indicator */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] bg-card/90 backdrop-blur-md text-foreground px-4 py-1.5 rounded-full text-xs flex items-center gap-2 border border-border">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          نطاق البحث: {MAX_RADIUS_KM} كم
+          نطاق البحث: {MAX_RADIUS_KM} كم — {cityName}
         </div>
       </div>
 
@@ -240,14 +283,17 @@ const DriverDelivery = () => {
       {activeOrder && (
         <div className="shrink-0 bg-emerald-500/10 border-t border-emerald-500/30 p-3">
           <button
-            onClick={() => navigate(`/delivery/tracking?id=${activeOrder.id}`)}
+            onClick={() => navigate(`/driver/delivery/tracking?id=${activeOrder.id}`)}
             className="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all"
           >
             <div className="flex items-center gap-2">
               <Bike className="w-5 h-5 text-emerald-400 animate-pulse" />
               <div className="text-right">
                 <p className="text-foreground font-bold text-sm">{activeOrder.store_name || "طلب توصيل نشط"}</p>
-                <p className="text-muted-foreground text-xs">{STATUS_FLOW.find(s => s.key === activeOrder.status)?.label || activeOrder.status}</p>
+                <p className="text-muted-foreground text-xs">
+                  {activeOrder.status === "driver_assigned" ? "في الطريق للمطعم" :
+                   activeOrder.status === "picked_up" ? "في الطريق للزبون" : activeOrder.status}
+                </p>
               </div>
             </div>
             <div className="text-left">
@@ -260,7 +306,31 @@ const DriverDelivery = () => {
 
       {/* Pending orders table */}
       {!activeOrder && (
-        <div className="shrink-0 max-h-[35vh] overflow-y-auto bg-background border-t border-border">
+        <div className="shrink-0 max-h-[40vh] overflow-y-auto bg-background border-t border-border">
+          {/* Today Stats Bar */}
+          <div className="flex items-center justify-between px-4 py-2 bg-card/50 border-b border-border">
+            <div className="flex items-center gap-4 text-xs">
+              <div className="flex items-center gap-1">
+                <Package className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-muted-foreground">اليوم:</span>
+                <span className="font-bold text-foreground">{todayStats.deliveries}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Wallet className="w-3.5 h-3.5 text-primary" />
+                <span className="font-bold text-foreground">{todayStats.earnings} DH</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Star className="w-3.5 h-3.5 text-amber-400" />
+                <span className="font-bold text-foreground">{driverRating > 0 ? driverRating.toFixed(1) : "—"}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              {refCode && (
+                <span className="font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-full font-bold">{refCode}</span>
+              )}
+            </div>
+          </div>
+
           {enrichedOrders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Radar className="w-10 h-10 text-muted-foreground/30 mb-2 animate-pulse" />
@@ -282,7 +352,8 @@ const DriverDelivery = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-right text-xs font-bold">Ref</TableHead>
+                      <TableHead className="text-right text-xs font-bold">Reference</TableHead>
+                      <TableHead className="text-right text-xs font-bold">⭐</TableHead>
                       <TableHead className="text-right text-xs font-bold">المتجر</TableHead>
                       <TableHead className="text-right text-xs font-bold">المسافة</TableHead>
                       <TableHead className="text-right text-xs font-bold">الوقت</TableHead>
@@ -291,35 +362,48 @@ const DriverDelivery = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {enrichedOrders.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell className="font-mono text-xs font-semibold text-primary">
-                          {order.order_code || order.id.slice(0, 6).toUpperCase()}
-                        </TableCell>
-                        <TableCell className="text-right text-xs text-foreground truncate max-w-[100px]">
-                          {order.store_name || "—"}
-                        </TableCell>
-                        <TableCell className="text-right text-xs text-muted-foreground">
-                          {order.distKm != null ? `${order.distKm} كم` : "—"}
-                        </TableCell>
-                        <TableCell className="text-right text-xs text-muted-foreground">
-                          {order.etaMin != null ? `${order.etaMin} د` : "—"}
-                        </TableCell>
-                        <TableCell className="text-right text-sm font-bold text-foreground">
-                          {order.total_price || order.estimated_price || "—"} DH
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Button
-                            size="sm"
-                            className="h-8 min-w-16 bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
-                            onClick={() => acceptOrder(order.id)}
-                            disabled={accepting === order.id}
-                          >
-                            {accepting === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "قبول"}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {enrichedOrders.map((order) => {
+                      const isSelected = selectedOrderId === order.id;
+                      return (
+                        <TableRow
+                          key={order.id}
+                          className={`cursor-pointer transition-colors ${isSelected ? "bg-muted/50" : ""}`}
+                          onClick={() => setSelectedOrderId(order.id === selectedOrderId ? null : order.id)}
+                        >
+                          <TableCell className="font-mono text-xs font-semibold text-primary">
+                            {order.customer_reference || order.order_code || order.id.slice(0, 6).toUpperCase()}
+                          </TableCell>
+                          <TableCell className="text-right text-xs text-amber-400">
+                            {order.customer_rating ? `${"★".repeat(Math.min(Math.round(order.customer_rating), 5))}` : "—"}
+                          </TableCell>
+                          <TableCell className="text-right text-xs text-foreground truncate max-w-[100px]">
+                            {order.store_name || "—"}
+                          </TableCell>
+                          <TableCell className="text-right text-xs text-muted-foreground">
+                            {order.distKm != null ? `${order.distKm} كم` : "—"}
+                          </TableCell>
+                          <TableCell className="text-right text-xs text-muted-foreground">
+                            {order.etaMin != null ? `${order.etaMin} د` : "—"}
+                          </TableCell>
+                          <TableCell className="text-right text-sm font-bold text-foreground">
+                            {order.total_price || order.estimated_price || "—"} DH
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Button
+                              size="sm"
+                              className="h-8 min-w-16 bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                acceptOrder(order.id);
+                              }}
+                              disabled={accepting === order.id}
+                            >
+                              {accepting === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "قبول"}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>

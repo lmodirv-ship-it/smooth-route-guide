@@ -20,6 +20,7 @@ interface Driver {
 const AdminDrivers = () => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | "ride" | "delivery" | "both">("all");
   const [search, setSearch] = useState("");
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [docs, setDocs] = useState<any[]>([]);
@@ -57,6 +58,7 @@ const AdminDrivers = () => {
   const filtered = drivers.filter(d => {
     if (filter === "active" && d.status !== "active") return false;
     if (filter === "inactive" && d.status !== "inactive") return false;
+    if (typeFilter !== "all" && d.driver_type !== typeFilter) return false;
     if (search && !d.name?.includes(search) && !d.license_no.includes(search)) return false;
     return true;
   });
@@ -74,6 +76,13 @@ const AdminDrivers = () => {
             <button key={f} onClick={() => setFilter(f)}
               className={`text-xs px-4 py-2 rounded-lg transition-colors ${filter === f ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
               {f === "all" ? "الكل" : f === "active" ? "نشط" : "غير نشط"}
+            </button>
+          ))}
+          <div className="w-px h-6 bg-border" />
+          {(["all", "ride", "delivery", "both"] as const).map(f => (
+            <button key={f} onClick={() => setTypeFilter(f)}
+              className={`text-xs px-3 py-2 rounded-lg transition-colors ${typeFilter === f ? "bg-info/20 text-info border border-info/30" : "bg-secondary text-muted-foreground"}`}>
+              {f === "all" ? "كل الأنواع" : f === "ride" ? "🚗 ركاب" : f === "delivery" ? "🏍️ توصيل" : "الكل"}
             </button>
           ))}
         </div>
