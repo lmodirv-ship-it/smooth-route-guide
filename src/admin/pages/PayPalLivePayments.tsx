@@ -28,6 +28,7 @@ interface PaymentTxn {
   currency: string;
   status: string;
   payment_method: string;
+  transaction_type: string;
   provider: string | null;
   reference_type: string | null;
   created_at: string;
