@@ -113,6 +113,7 @@ const AdminLayout = () => {
     { path: "/admin/health-check", icon: Activity, label: "فحص صحة النظام" },
     { path: "/admin/wallet-recharge", icon: Wallet, label: "طلبات شحن المحفظة" },
     { path: "/admin/payments", icon: CreditCard, label: "💳 إدارة المدفوعات" },
+    { path: "/admin/paypal-settings", icon: CreditCard, label: "💎 إعدادات PayPal" },
   ];
 
   useEffect(() => {

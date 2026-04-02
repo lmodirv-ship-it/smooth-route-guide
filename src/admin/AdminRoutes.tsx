@@ -39,6 +39,7 @@ import DatabaseManager from "@/admin/pages/DatabaseManager";
 import PermissionsManagement from "@/admin/pages/PermissionsManagement";
 import SystemHealthCheck from "@/admin/pages/SystemHealthCheck";
 import PaymentManagement from "@/admin/pages/PaymentManagement";
+import PayPalSettings from "@/admin/pages/PayPalSettings";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
@@ -112,6 +113,7 @@ export const adminRouteElements = (
       <Route path="health-check" element={<SystemHealthCheck />} />
       <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
       <Route path="payments" element={<PaymentManagement />} />
+      <Route path="paypal-settings" element={<PayPalSettings />} />
     </Route>
 
     <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><CallCenterLayout /></RequireRole>}>

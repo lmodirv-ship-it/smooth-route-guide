@@ -6,33 +6,54 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const PAYPAL_CLIENT_ID = "AetPmdLcTL5KAJx6hYvo6K2NtAvaevJ2vTn0jxdc1hOE6X7pCmP6jMK3hrgSEUqN5xviMWUPTRe7uGqG";
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const PAYPAL_SECRET = Deno.env.get("PAYPAL_SECRET_KEY");
-    if (!PAYPAL_SECRET) throw new Error("PayPal secret not configured");
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Verify user
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No auth");
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) throw new Error("Unauthorized");
+    // Load PayPal settings from DB (admin-configurable)
+    const { data: settingsRow } = await supabase
+      .from("app_settings")
+      .select("value")
+      .eq("key", "paypal_settings")
+      .maybeSingle();
 
+    const ppSettings = (settingsRow?.value || {}) as Record<string, unknown>;
+    const PAYPAL_CLIENT_ID = String(ppSettings.clientId || "");
+    const PAYPAL_SECRET = String(ppSettings.secretKey || "") || Deno.env.get("PAYPAL_SECRET_KEY") || "";
+    const sandboxMode = ppSettings.sandboxMode !== false;
+    const configCurrency = String(ppSettings.currency || "USD");
+    const brandName = String(ppSettings.brandName || "HN Driver");
+
+    if (!PAYPAL_CLIENT_ID || !PAYPAL_SECRET) {
+      throw new Error("PayPal credentials not configured. Set them in admin settings.");
+    }
+
+    const baseUrl = sandboxMode
+      ? "https://api-m.sandbox.paypal.com"
+      : "https://api-m.paypal.com";
+
+    // Verify user (skip for test-connection from admin)
+    const authHeader = req.headers.get("Authorization");
     const body = await req.json();
     const { action } = body;
 
+    // Allow test-connection with auth
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { error: authError } = await supabase.auth.getUser(token);
+      if (authError) throw new Error("Unauthorized");
+    } else if (action !== "test-connection") {
+      throw new Error("No auth");
+    }
+
     // Get PayPal access token
-    const tokenRes = await fetch("https://api-m.sandbox.paypal.com/v1/oauth2/token", {
+    const tokenRes = await fetch(`${baseUrl}/v1/oauth2/token`, {
       method: "POST",
       headers: {
         "Authorization": `Basic ${btoa(`${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`)}`,
@@ -41,16 +62,24 @@ serve(async (req) => {
       body: "grant_type=client_credentials",
     });
     const tokenData = await tokenRes.json();
-    if (!tokenData.access_token) throw new Error("PayPal auth failed");
+    if (!tokenData.access_token) throw new Error("PayPal auth failed: " + (tokenData.error_description || "Invalid credentials"));
     const accessToken = tokenData.access_token;
 
-    if (action === "create-order") {
-      const { amount, currency = "USD", description, transactionId } = body;
-      
-      // Convert MAD to USD approximate (1 MAD ≈ 0.10 USD)
-      const usdAmount = currency === "MAD" ? (amount * 0.10).toFixed(2) : amount.toFixed(2);
+    // Test connection
+    if (action === "test-connection") {
+      return new Response(JSON.stringify({ success: true, mode: sandboxMode ? "sandbox" : "live" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-      const orderRes = await fetch("https://api-m.sandbox.paypal.com/v2/checkout/orders", {
+    if (action === "create-order") {
+      const { amount, currency = configCurrency, description, transactionId } = body;
+
+      // Convert MAD to USD approximate (1 MAD ≈ 0.10 USD)
+      const finalCurrency = currency === "MAD" ? "USD" : currency;
+      const finalAmount = currency === "MAD" ? (amount * 0.10).toFixed(2) : amount.toFixed(2);
+
+      const orderRes = await fetch(`${baseUrl}/v2/checkout/orders`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${accessToken}`,
@@ -59,16 +88,20 @@ serve(async (req) => {
         body: JSON.stringify({
           intent: "CAPTURE",
           purchase_units: [{
-            amount: { currency_code: "USD", value: usdAmount },
+            amount: { currency_code: finalCurrency, value: finalAmount },
             description: description || "Payment",
           }],
+          application_context: {
+            brand_name: brandName,
+            ...(ppSettings.returnUrl ? { return_url: String(ppSettings.returnUrl) } : {}),
+            ...(ppSettings.cancelUrl ? { cancel_url: String(ppSettings.cancelUrl) } : {}),
+          },
         }),
       });
 
       const order = await orderRes.json();
       if (!order.id) throw new Error("Failed to create PayPal order");
 
-      // Update transaction with PayPal order ID
       if (transactionId) {
         await supabase.from("payment_transactions").update({
           paypal_order_id: order.id,
@@ -76,7 +109,10 @@ serve(async (req) => {
         }).eq("id", transactionId);
       }
 
-      return new Response(JSON.stringify({ orderId: order.id, approveUrl: order.links?.find((l: any) => l.rel === "approve")?.href }), {
+      return new Response(JSON.stringify({
+        orderId: order.id,
+        approveUrl: order.links?.find((l: any) => l.rel === "approve")?.href,
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -84,7 +120,7 @@ serve(async (req) => {
     if (action === "capture-order") {
       const { orderId, transactionId } = body;
 
-      const captureRes = await fetch(`https://api-m.sandbox.paypal.com/v2/checkout/orders/${orderId}/capture`, {
+      const captureRes = await fetch(`${baseUrl}/v2/checkout/orders/${orderId}/capture`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${accessToken}`,
@@ -104,15 +140,14 @@ serve(async (req) => {
           metadata: { paypal_capture: capture },
         }).eq("id", transactionId);
 
-        // If wallet topup, credit the wallet
         if (status === "completed") {
           const { data: txn } = await supabase.from("payment_transactions")
             .select("amount, reference_type, user_id").eq("id", transactionId).single();
-          
+
           if (txn?.reference_type === "wallet_topup") {
             const { data: wallet } = await supabase.from("wallet")
               .select("id, balance").eq("user_id", txn.user_id).single();
-            
+
             if (wallet) {
               const newBalance = Number(wallet.balance) + Number(txn.amount);
               await supabase.from("wallet").update({ balance: newBalance }).eq("id", wallet.id);
