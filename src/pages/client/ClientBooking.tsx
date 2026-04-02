@@ -35,7 +35,7 @@ const ClientBooking = () => {
   const location = useLocation();
   const { t, dir } = useI18n();
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "wallet">("cash");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>("cash");
   const { drivers: nearbyDrivers } = useNearbyDrivers();
 
   const ride = ((location.state as { ride?: RideDraft } | null)?.ride) ?? DEFAULT_RIDE;
