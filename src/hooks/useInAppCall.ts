@@ -54,6 +54,9 @@ export function useInAppCall() {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoEnabled, setIsVideoEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [callDuration, setCallDuration] = useState(0);
+  const [connectionQuality, setConnectionQuality] = useState<"good" | "medium" | "poor">("good");
+  const callTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
