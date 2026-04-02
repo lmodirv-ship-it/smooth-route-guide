@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Check, Crown, Shield, Sparkles, Timer, Zap } from "lucide-react";
@@ -6,15 +6,30 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useDriverSubscription, useDriverPackages } from "@/hooks/useDriverSubscription";
+import PaymentMethodPicker, { PaymentMethod } from "@/components/PaymentMethodPicker";
 
 const DriverSubscription = () => {
   const navigate = useNavigate();
   const { activeSubscription, daysLeft, isExpired } = useDriverSubscription();
   const { packages, loading } = useDriverPackages();
+  const [selectedPkg, setSelectedPkg] = useState<any>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
+  const [walletBalance, setWalletBalance] = useState(0);
   const [subscribing, setSubscribing] = useState<string | null>(null);
 
-  const handleSubscribe = async (pkg: any) => {
-    setSubscribing(pkg.id);
+  useEffect(() => {
+    const loadWallet = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: wallet } = await supabase.from("wallet").select("balance").eq("user_id", user.id).maybeSingle();
+      setWalletBalance(wallet?.balance || 0);
+    };
+    loadWallet();
+  }, []);
+
+  const handlePaymentComplete = async (method: PaymentMethod, transactionId?: string) => {
+    if (!selectedPkg) return;
+    setSubscribing(selectedPkg.id);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("يجب تسجيل الدخول");
@@ -27,22 +42,25 @@ const DriverSubscription = () => {
       if (!driver) throw new Error("لم يتم العثور على حساب السائق");
 
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + pkg.duration_days);
+      expiresAt.setDate(expiresAt.getDate() + selectedPkg.duration_days);
+
+      const paymentStatus = method === "wallet" ? "completed" : method === "paypal" ? "pending" : "pending";
 
       const { error } = await supabase.from("driver_subscriptions").insert({
         driver_id: driver.id,
-        package_id: pkg.id,
+        package_id: selectedPkg.id,
         user_id: user.id,
-        status: "active",
+        status: paymentStatus === "completed" ? "active" : "pending",
         starts_at: new Date().toISOString(),
         expires_at: expiresAt.toISOString(),
-        payment_method: "cash",
-        payment_status: "completed",
-        amount_paid: pkg.price,
+        payment_method: method,
+        payment_status: paymentStatus,
+        amount_paid: selectedPkg.price,
       });
 
       if (error) throw error;
-      toast({ title: "تم الاشتراك بنجاح! ✅", description: `باقة ${pkg.name_ar} - ${pkg.duration_days} يوم` });
+      toast({ title: "تم الاشتراك بنجاح! ✅", description: `باقة ${selectedPkg.name_ar} - ${selectedPkg.duration_days} يوم` });
+      setSelectedPkg(null);
       setTimeout(() => window.location.reload(), 1000);
     } catch (err: any) {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
@@ -50,7 +68,6 @@ const DriverSubscription = () => {
       setSubscribing(null);
     }
   };
-
   const discount = (pkg: any) => {
     if (!pkg.original_price || pkg.original_price <= pkg.price) return 0;
     return Math.round(((pkg.original_price - pkg.price) / pkg.original_price) * 100);
