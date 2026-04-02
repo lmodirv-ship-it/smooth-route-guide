@@ -134,6 +134,7 @@ const LeafletMap = ({
   driverLocation,
   nearbyDrivers = [],
   route,
+  routeColor = "#10b981",
   onMapClick,
   expandable = true,
   onExpandChange,
