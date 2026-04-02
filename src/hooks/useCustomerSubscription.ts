@@ -16,6 +16,8 @@ export function useCustomerSubscription() {
   const [subs, setSubs] = useState<CustomerSub[]>([]);
   const [walletBalance, setWalletBalance] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isInTrial, setIsInTrial] = useState(false);
+  const [trialDaysLeft, setTrialDaysLeft] = useState(0);
 
   useEffect(() => {
     const fetch = async () => {
@@ -24,7 +26,7 @@ export function useCustomerSubscription() {
 
       const now = new Date().toISOString();
 
-      const [subsRes, walletRes] = await Promise.all([
+      const [subsRes, walletRes, profileRes] = await Promise.all([
         supabase
           .from("customer_subscriptions")
           .select("*, customer_packages(name_ar, name_fr)")
@@ -33,9 +35,10 @@ export function useCustomerSubscription() {
           .gte("expires_at", now)
           .order("expires_at", { ascending: false }) as any,
         supabase.from("wallet").select("balance").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profiles").select("created_at").eq("id", user.id).maybeSingle(),
       ]);
 
-      if (subsRes.data) {
+      if (subsRes.data && subsRes.data.length > 0) {
         setSubs(subsRes.data.map((s: any) => ({
           id: s.id,
           subscription_type: s.subscription_type,
@@ -46,6 +49,25 @@ export function useCustomerSubscription() {
           expires_at: s.expires_at,
           package_name: s.customer_packages?.name_ar || "باقة",
         })));
+      } else {
+        // Check 5-day free trial
+        const createdAt = new Date(profileRes.data?.created_at || user.created_at || Date.now());
+        const trialEnds = new Date(createdAt.getTime() + 5 * 24 * 60 * 60 * 1000);
+        const daysLeft = Math.max(0, Math.ceil((trialEnds.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+        if (daysLeft > 0) {
+          setIsInTrial(true);
+          setTrialDaysLeft(daysLeft);
+          setSubs([{
+            id: "trial",
+            subscription_type: "credits",
+            status: "trial",
+            credits_remaining: 999,
+            credits_total: 999,
+            starts_at: createdAt.toISOString(),
+            expires_at: trialEnds.toISOString(),
+            package_name: "تجربة مجانية (5 أيام)",
+          }]);
+        }
       }
 
       setWalletBalance(walletRes.data?.balance || 0);
@@ -54,5 +76,5 @@ export function useCustomerSubscription() {
     fetch();
   }, []);
 
-  return { subs, walletBalance, loading };
+  return { subs, walletBalance, loading, isInTrial, trialDaysLeft };
 }
