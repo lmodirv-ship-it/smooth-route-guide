@@ -284,6 +284,9 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
         <div className="text-center space-y-4">
           <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto" />
           <p className="text-muted-foreground">جاري التحقق من الهوية...</p>
+          <Button variant="outline" onClick={handleSkip} className="mx-auto border-border">
+            تخطي والمتابعة بكلمة المرور
+          </Button>
         </div>
       </motion.div>
     );
