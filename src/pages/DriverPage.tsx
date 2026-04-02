@@ -374,7 +374,7 @@ const DriverPage = () => {
       </div>
 
       {/* Incoming Ride Requests */}
-      <div className="shrink-0 bg-background border-t border-border">
+      <div className="shrink-0 max-h-[35vh] overflow-y-auto bg-background border-t border-border">
         {nearbyOrders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Radar className="w-10 h-10 text-muted-foreground/30 mb-2 animate-pulse" />
@@ -392,7 +392,7 @@ const DriverPage = () => {
                 طلبات جديدة
               </h3>
             </div>
-            <div className="max-h-[28vh] overflow-y-auto rounded-xl border border-border bg-card">
+            <div className="rounded-xl border border-border bg-card">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -405,7 +405,6 @@ const DriverPage = () => {
                 <TableBody>
                   {nearbyOrders.map((order) => {
                     const isSelected = selectedOrderId === order.id;
-
                     return (
                       <TableRow
                         key={order.id}
