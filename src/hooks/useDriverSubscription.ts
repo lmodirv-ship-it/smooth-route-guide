@@ -34,9 +34,28 @@ export function useDriverSubscription() {
   const [isExpired, setIsExpired] = useState(true);
 
   useEffect(() => {
+    const SUBSCRIPTION_START_DATE = new Date("2026-04-05T00:00:00Z");
     const check = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
+
+      // Before April 5, 2026 — everything is free
+      if (Date.now() < SUBSCRIPTION_START_DATE.getTime()) {
+        setIsExpired(false);
+        setDaysLeft(Math.max(0, Math.ceil((SUBSCRIPTION_START_DATE.getTime() - Date.now()) / (1000 * 60 * 60 * 24))));
+        setActiveSubscription({
+          id: "pre-launch",
+          status: "free",
+          starts_at: new Date().toISOString(),
+          expires_at: SUBSCRIPTION_START_DATE.toISOString(),
+          orders_used: 0,
+          km_used: 0,
+          package_name: "مجاني حتى 5 أبريل",
+          duration_days: Math.ceil((SUBSCRIPTION_START_DATE.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+        });
+        setLoading(false);
+        return;
+      }
 
       const now = new Date().toISOString();
 
