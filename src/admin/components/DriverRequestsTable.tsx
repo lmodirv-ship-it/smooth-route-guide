@@ -116,6 +116,8 @@ const DriverRequestsTable = () => {
         pickup: order.pickup_address || "—",
         destination: order.delivery_address || "—",
         amount: Number(order.total_price ?? order.estimated_price ?? order.delivery_fee ?? 0),
+        distance: order.distance ? Number(order.distance) : null,
+        estimatedTime: order.estimated_time ?? null,
         status: order.status,
         createdAt: order.created_at,
       };
