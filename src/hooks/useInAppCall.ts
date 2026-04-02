@@ -260,6 +260,17 @@ export function useInAppCall() {
           status: "ringing",
         });
 
+        // Auto-end after 45s if still ringing (no answer)
+        const ringingTimeout = setTimeout(() => {
+          const current = activeCallRef.current;
+          if (current?.callId === callRow.id && current?.status === "ringing") {
+            toast.error("لم يتم الرد على المكالمة");
+            void sendSignal(callRow.id, peer.id, "end", {});
+            void updateSession(callRow.id, { status: "missed", ended_at: new Date().toISOString() });
+            clearCallState();
+          }
+        }, 45000);
+
         const connection = await createPeerConnection(callRow.id, peer.id, stream);
         const offer = await connection.createOffer();
         await connection.setLocalDescription(offer);
