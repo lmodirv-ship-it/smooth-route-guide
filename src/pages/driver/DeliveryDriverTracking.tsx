@@ -170,10 +170,26 @@ const DeliveryDriverTracking = () => {
     [smoothedDriver, targetPosition]
   );
 
+  // Show route from store → customer so both locations are always visible
+  const storePosition = useMemo(() => {
+    if (order?.pickup_lat != null && order?.pickup_lng != null)
+      return { lat: Number(order.pickup_lat), lng: Number(order.pickup_lng) };
+    return null;
+  }, [order?.pickup_lat, order?.pickup_lng]);
+
+  const customerPosition = useMemo(() => {
+    if (order?.delivery_lat != null && order?.delivery_lng != null)
+      return { lat: Number(order.delivery_lat), lng: Number(order.delivery_lng) };
+    return null;
+  }, [order?.delivery_lat, order?.delivery_lng]);
+
   const mapRoute = useMemo(() => {
+    // Show full route: store → customer (both markers always visible)
+    if (storePosition && customerPosition) return { pickup: storePosition, destination: customerPosition };
+    // Fallback: driver → target
     if (smoothedDriver && targetPosition) return { pickup: smoothedDriver, destination: targetPosition };
     return null;
-  }, [smoothedDriver, targetPosition]);
+  }, [smoothedDriver, storePosition, customerPosition, targetPosition]);
 
   const currentStepIdx = order ? STATUS_FLOW.findIndex(s => s.key === order.status) : -1;
   const currentStep = STATUS_FLOW[currentStepIdx] || null;
