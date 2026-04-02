@@ -40,6 +40,7 @@ import PermissionsManagement from "@/admin/pages/PermissionsManagement";
 import SystemHealthCheck from "@/admin/pages/SystemHealthCheck";
 import PaymentManagement from "@/admin/pages/PaymentManagement";
 import PayPalSettings from "@/admin/pages/PayPalSettings";
+import PayPalLivePayments from "@/admin/pages/PayPalLivePayments";
 import CouponsManagement from "@/admin/pages/CouponsManagement";
 
 // Supervisor layout & pages
@@ -115,6 +116,7 @@ export const adminRouteElements = (
       <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
       <Route path="payments" element={<PaymentManagement />} />
       <Route path="paypal-settings" element={<PayPalSettings />} />
+      <Route path="paypal-live" element={<PayPalLivePayments />} />
       <Route path="coupons" element={<CouponsManagement />} />
     </Route>
 
