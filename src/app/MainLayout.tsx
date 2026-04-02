@@ -111,7 +111,7 @@ const MainLayoutInner = () => {
       <div className="h-11" />
       {isVisible("floating_chat_btn") && <FloatingChatButton />}
       {isVisible("voice_order_btn") && <VoiceOrderButton />}
-      {isVisible("community_btn") && <FloatingCommunityButton />}
+      
       <Outlet />
       {isVisible("contact_footer") && <GlobalContactFooter />}
     </>
