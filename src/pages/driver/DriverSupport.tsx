@@ -169,6 +169,7 @@ const DriverSupport = () => {
         isVideoEnabled={inAppCall.isVideoEnabled}
         callDuration={inAppCall.callDuration}
         connectionQuality={inAppCall.connectionQuality}
+        busy={inAppCall.busy}
         onAccept={inAppCall.acceptCall}
         
         onEnd={inAppCall.endCall}
