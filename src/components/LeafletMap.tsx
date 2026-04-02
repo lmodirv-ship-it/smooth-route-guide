@@ -310,7 +310,8 @@ const LeafletMap = ({
     <div className={`${className} relative ring-[3px] ring-black/80 ring-inset rounded-lg shadow-[inset_0_0_12px_rgba(0,0,0,0.6)]`}>
       <div ref={mapElementRef} className="h-full w-full" />
 
-      {/* Map controls */}
+      {/* Map controls - only show if not hidden */}
+      {!hideControls && (
       <div className="absolute top-2 left-2 z-[1000] flex flex-col gap-1.5">
         {/* Theme toggle */}
         <div className="relative">
@@ -351,6 +352,7 @@ const LeafletMap = ({
           </button>
         )}
       </div>
+      )}
 
       {/* OSM badge */}
       <div className="absolute bottom-1 left-1 z-[1000] rounded bg-background/70 px-1.5 py-0.5 text-[10px] text-muted-foreground backdrop-blur-sm">
