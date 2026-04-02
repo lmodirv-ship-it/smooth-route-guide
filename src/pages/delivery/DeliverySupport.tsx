@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowRight, Phone, MessageCircle, MapPin, Loader2, Send } from "lucide-react";
+import { ArrowRight, Phone, MessageCircle, Loader2, Send, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useInAppCall } from "@/hooks/useInAppCall";
+import InAppCallDialog from "@/components/calls/InAppCallDialog";
 import deliveryLogo from "@/assets/hn-delivery-logo.jpeg";
 
 const reasons = [
@@ -22,8 +22,44 @@ const DeliverySupport = () => {
   const navigate = useNavigate();
   const [selectedReason, setSelectedReason] = useState("");
   const [description, setDescription] = useState("");
-  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+  const [callingAgent, setCallingAgent] = useState(false);
+  const inAppCall = useInAppCall();
+
+  const handleCallCenter = async () => {
+    setCallingAgent(true);
+    try {
+      // Find an available call center agent
+      const { data: agents } = await supabase
+        .from("user_roles" as any)
+        .select("user_id")
+        .eq("role", "agent")
+        .limit(5);
+
+      if (!agents || agents.length === 0) {
+        toast({ title: "لا يوجد وكلاء متاحون حالياً", variant: "destructive" });
+        return;
+      }
+
+      // Pick first available agent
+      const agentId = (agents[0] as any).user_id;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, name, user_code, avatar_url")
+        .eq("id", agentId)
+        .maybeSingle();
+
+      await inAppCall.startCall({
+        id: agentId,
+        name: profile?.user_code || profile?.name || "مركز الاتصال",
+        avatarUrl: profile?.avatar_url,
+      });
+    } catch {
+      toast({ title: "تعذر الاتصال بمركز المساعدة", variant: "destructive" });
+    } finally {
+      setCallingAgent(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!selectedReason || !description.trim()) {
@@ -38,30 +74,16 @@ const DeliverySupport = () => {
         return;
       }
 
-      const { error } = await supabase.from("complaints").insert({
+      await supabase.from("complaints").insert({
         user_id: user.id,
         category: selectedReason,
         description: description.trim(),
         priority: selectedReason === "driver_issue" ? "high" : "medium",
       });
-      if (error) throw error;
-
-      // Create call log
-      if (phone.trim()) {
-        await supabase.from("call_logs").insert({
-          caller_name: "عميل توصيل",
-          caller_phone: phone.trim(),
-          reason: selectedReason,
-          call_type: "incoming",
-          status: "pending",
-          user_id: user.id,
-        });
-      }
 
       toast({ title: "تم إرسال طلب المساعدة ✅", description: "سيتواصل معك فريقنا قريباً" });
       setSelectedReason("");
       setDescription("");
-      setPhone("");
     } catch (err: any) {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
     } finally {
@@ -80,25 +102,29 @@ const DeliverySupport = () => {
             <img src={deliveryLogo} alt="" className="w-8 h-8 rounded-full border border-white/30" />
             <div>
               <h1 className="text-lg font-bold text-white">مركز المساعدة</h1>
-              <p className="text-xs text-white/60">Centre d'aide - Tanger</p>
+              <p className="text-xs text-white/60">Centre d'aide</p>
             </div>
           </div>
           <div className="w-9" />
         </div>
 
-        {/* Call Center */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 flex items-center gap-3">
+        {/* In-App Call to Call Center */}
+        <button
+          onClick={handleCallCenter}
+          disabled={callingAgent || inAppCall.isInCall}
+          className="w-full bg-white/10 backdrop-blur-sm rounded-2xl p-4 flex items-center gap-3 hover:bg-white/20 transition-colors disabled:opacity-50"
+        >
           <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-            <Phone className="w-6 h-6 text-white" />
+            <PhoneCall className="w-6 h-6 text-white" />
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-bold text-white">اتصل بنا مباشرة</p>
-            <p className="text-xs text-white/60">متاحون 24/7 في طنجة</p>
+          <div className="flex-1 text-right">
+            <p className="text-sm font-bold text-white">اتصل بمركز المساعدة</p>
+            <p className="text-xs text-white/60">مكالمة مباشرة داخل التطبيق</p>
           </div>
-          <a href="tel:+212539000000" className="bg-white/20 rounded-xl px-4 py-2 text-xs font-bold text-white">
-            اتصال
-          </a>
-        </div>
+          <div className="bg-green-500/30 rounded-xl px-4 py-2 text-xs font-bold text-white">
+            {callingAgent ? "جاري..." : "اتصال"}
+          </div>
+        </button>
       </div>
 
       <div className="px-5 mt-5 pb-10 space-y-4">
@@ -135,22 +161,6 @@ const DeliverySupport = () => {
           />
         </div>
 
-        {/* Phone */}
-        <div className="space-y-2">
-          <label className="text-sm text-muted-foreground block">رقم الهاتف (اختياري - للاتصال بك)</label>
-          <div className="relative">
-            <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="06XXXXXXXX"
-              type="tel"
-              maxLength={15}
-              className="glass-card border-border h-12 rounded-xl pr-10 text-right"
-            />
-          </div>
-        </div>
-
         <Button
           onClick={handleSubmit}
           disabled={loading || !selectedReason || !description.trim()}
@@ -159,11 +169,28 @@ const DeliverySupport = () => {
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
             <>
               <Send className="w-4 h-4" />
-              إرسال
+              إرسال رسالة
             </>
           )}
         </Button>
       </div>
+
+      <InAppCallDialog
+        incomingCall={inAppCall.incomingCall}
+        activeCall={inAppCall.activeCall}
+        localStream={inAppCall.localStream}
+        remoteStream={inAppCall.remoteStream}
+        isMuted={inAppCall.isMuted}
+        isVideoEnabled={inAppCall.isVideoEnabled}
+        callDuration={inAppCall.callDuration}
+        connectionQuality={inAppCall.connectionQuality}
+        busy={inAppCall.busy}
+        onAccept={inAppCall.acceptCall}
+        
+        onEnd={inAppCall.endCall}
+        onToggleMute={inAppCall.toggleMute}
+        onToggleVideo={inAppCall.toggleVideo}
+      />
     </div>
   );
 };
