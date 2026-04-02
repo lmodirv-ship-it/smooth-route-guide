@@ -11,7 +11,7 @@ const CHECK_INTERVAL_MS = 3000;
 
 type GuardState = "loading" | "no-face" | "register" | "monitoring" | "alert" | "locked";
 
-const FaceGuard = ({ onLock }: { onLock: () => void }) => {
+const FaceGuard = ({ onLock, disabled = false }: { onLock: () => void; disabled?: boolean }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -23,6 +23,7 @@ const FaceGuard = ({ onLock }: { onLock: () => void }) => {
   const [cameraOn, setCameraOn] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [failCount, setFailCount] = useState(0);
+
 
   // Load face-api models
   useEffect(() => {
@@ -85,12 +86,20 @@ const FaceGuard = ({ onLock }: { onLock: () => void }) => {
     if (intervalRef.current) clearInterval(intervalRef.current);
   }, []);
 
+  // When disabled, stop camera and hide
   useEffect(() => {
+    if (disabled) {
+      stopCamera();
+    }
+  }, [disabled, stopCamera]);
+
+  useEffect(() => {
+    if (disabled) return;
     if (modelsLoaded && (state === "register" || state === "monitoring")) {
       startCamera();
     }
     return () => stopCamera();
-  }, [modelsLoaded, state, startCamera, stopCamera]);
+  }, [modelsLoaded, state, startCamera, stopCamera, disabled]);
 
   // Detect face from video
   const detectFace = useCallback(async () => {
@@ -162,7 +171,7 @@ const FaceGuard = ({ onLock }: { onLock: () => void }) => {
     };
   }, [state, cameraOn, detectFace, onLock, stopCamera]);
 
-  if (state === "locked") return null;
+  if (disabled || state === "locked") return null;
 
   if (minimized) {
     return (

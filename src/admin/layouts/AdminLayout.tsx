@@ -5,7 +5,7 @@ import {
   BarChart3, FileText, Car, Users, TrendingUp, MapPin,
   AlertTriangle, FileCheck, Headphones, Settings, Shield,
   Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog, Percent,
-  ShieldCheck, ShieldOff, Globe, RefreshCw, BrainCircuit, Menu, MessageSquare, MessagesSquare, Package, Palette, Monitor, GitBranch, Database, Wallet
+  ShieldCheck, ShieldOff, Globe, RefreshCw, BrainCircuit, Menu, MessageSquare, MessagesSquare, Package, Palette, Monitor, GitBranch, Database, Wallet, Camera, CameraOff
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -71,6 +71,7 @@ const AdminLayout = () => {
   const [smartSiteUrl, setSmartSiteUrl] = useState("");
   const [smartPreviewUrl, setSmartPreviewUrl] = useState("");
   const [smartRefreshKey, setSmartRefreshKey] = useState(0);
+  const [cameraEnabled, setCameraEnabled] = useState(true);
 
   const handleFaceLock = useCallback(async () => {
     await supabase.auth.signOut();
@@ -348,10 +349,17 @@ const AdminLayout = () => {
                 <div className="w-px h-6 bg-border" />
               </>
             )}
-            <FaceGuard onLock={handleFaceLock} />
+            <FaceGuard onLock={handleFaceLock} disabled={!cameraEnabled} />
             <GlobalLogoutButton />
             <VisitorCounter />
             <LanguageSwitcher />
+            <button
+              onClick={() => setCameraEnabled(prev => !prev)}
+              className={`p-2 rounded-lg transition-colors ${cameraEnabled ? "hover:bg-secondary text-success" : "hover:bg-secondary text-muted-foreground"}`}
+              title={cameraEnabled ? "إيقاف الكاميرا" : "تشغيل الكاميرا"}
+            >
+              {cameraEnabled ? <Camera className="w-5 h-5" /> : <CameraOff className="w-5 h-5" />}
+            </button>
             <button className="p-2 relative hover:bg-secondary rounded-lg transition-colors">
               <Bell className="w-5 h-5 text-muted-foreground" />
               {pendingCount > 0 && <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-destructive animate-pulse" />}
