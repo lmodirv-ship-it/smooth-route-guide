@@ -360,12 +360,15 @@ const DriverTracking = () => {
                   <MapPin className="w-4 h-4 text-primary shrink-0" />
                   <span className="text-sm text-foreground/80 flex-1 truncate">{ride.destination || "الوجهة"}</span>
                 </div>
-                {clientPhone && (
-                  <a href={`tel:${clientPhone}`} className="block">
-                    <Button variant="outline" className="w-full h-11 rounded-xl gap-2 border-border">
-                      <Phone className="w-4 h-4 text-blue-500" /> اتصال بالزبون
-                    </Button>
-                  </a>
+                {ride.user_id && (
+                  <Button
+                    variant="outline"
+                    className="w-full h-11 rounded-xl gap-2 border-border"
+                    onClick={() => inAppCall.startCall(ride.user_id)}
+                    disabled={inAppCall.busy}
+                  >
+                    <PhoneCall className="w-4 h-4 text-blue-500" /> اتصال بالزبون (داخلي)
+                  </Button>
                 )}
               </div>
             </motion.div>
