@@ -91,6 +91,7 @@ const DeliveryTracking = () => {
       if (!driver) return;
       if (driver.driver_code) setDriverRefCode(driver.driver_code);
       if (driver.rating) setDriverRating(Number(driver.rating));
+      if (driver.user_id) setDriverUserId(driver.user_id);
       if (driver.current_lat && driver.current_lng) {
         setDriverLocation({ lat: Number(driver.current_lat), lng: Number(driver.current_lng) });
       }
