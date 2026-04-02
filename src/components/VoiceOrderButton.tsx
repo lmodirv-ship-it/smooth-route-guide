@@ -87,13 +87,13 @@ const VoiceOrderButton = () => {
 
   return (
     <>
-      <motion.button
-        whileTap={{ scale: 0.9 }}
+      <button
         onClick={() => setShowPanel(true)}
-        className="fixed bottom-20 right-4 z-40 w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg flex items-center justify-center"
+        className="p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-orange-500 hover:text-white transition-all"
+        title="طلب صوتي"
       >
-        <Mic className="w-5 h-5" />
-      </motion.button>
+        <Mic className="w-3.5 h-3.5" />
+      </button>
 
       <AnimatePresence>
         {showPanel && (
