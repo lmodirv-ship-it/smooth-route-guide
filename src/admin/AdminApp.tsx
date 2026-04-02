@@ -31,6 +31,7 @@ import AdsManagement from "./pages/AdsManagement";
 import PageManagement from "./pages/PageManagement";
 import DatabaseManager from "./pages/DatabaseManager";
 import PermissionsManagement from "./pages/PermissionsManagement";
+import PayPalLivePayments from "./pages/PayPalLivePayments";
 
 // Call Center layout & pages
 import CallCenterLayout from "./layouts/CallCenterLayout";
