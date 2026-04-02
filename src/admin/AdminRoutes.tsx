@@ -137,6 +137,7 @@ export const adminRouteElements = (
       <Route path="community" element={<CommunityChat />} />
       <Route path="analytics" element={<VisitorAnalytics />} />
       <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
+      <Route path="payments" element={<PaymentManagement />} />
     </Route>
 
     {/* ═══ Supervisor Panel ═══ */}
