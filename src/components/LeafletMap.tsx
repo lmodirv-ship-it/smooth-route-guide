@@ -102,6 +102,12 @@ interface RoutePoints {
   destination: { lat: number; lng: number };
 }
 
+interface HeatPoint {
+  lat: number;
+  lng: number;
+  intensity: number;
+}
+
 interface LeafletMapProps {
   center?: { lat: number; lng: number };
   zoom?: number;
@@ -122,6 +128,8 @@ interface LeafletMapProps {
   externalExpanded?: boolean;
   /** Icon type for the driver marker: 'car' (default) or 'motorcycle' */
   driverIconType?: "car" | "motorcycle";
+  /** Heatmap points for demand visualization */
+  heatPoints?: HeatPoint[];
   children?: React.ReactNode;
 }
 
