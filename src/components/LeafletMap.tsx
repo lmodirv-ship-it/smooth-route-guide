@@ -296,6 +296,24 @@ const LeafletMap = ({
     });
   }, [nearbyDrivers]);
 
+  // Heatmap circles
+  useEffect(() => {
+    const layer = heatLayerRef.current;
+    if (!layer) return;
+    layer.clearLayers();
+    heatPoints.forEach((p) => {
+      const radius = 300 + p.intensity * 500;
+      const color = p.intensity > 0.7 ? "#ef4444" : p.intensity > 0.4 ? "#f59e0b" : "#22c55e";
+      const opacity = 0.12 + p.intensity * 0.25;
+      L.circle([p.lat, p.lng], {
+        radius,
+        color: "transparent",
+        fillColor: color,
+        fillOpacity: opacity,
+      }).addTo(layer);
+    });
+  }, [heatPoints]);
+
   useEffect(() => {
     const layer = routeLayerRef.current;
     const map = mapInstanceRef.current;
