@@ -39,6 +39,8 @@ export function useDriverSubscription() {
       if (!user) { setLoading(false); return; }
 
       const now = new Date().toISOString();
+
+      // Check active subscription
       const { data } = await supabase
         .from("driver_subscriptions")
         .select("*, driver_packages(name_ar, duration_days)")
@@ -65,8 +67,34 @@ export function useDriverSubscription() {
           duration_days: sub.driver_packages?.duration_days || 30,
         });
       } else {
-        setIsExpired(true);
-        setActiveSubscription(null);
+        // Check 5-day free trial based on profile creation date
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("created_at")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        const createdAt = new Date(profile?.created_at || user.created_at || Date.now());
+        const trialEnds = new Date(createdAt.getTime() + 5 * 24 * 60 * 60 * 1000);
+        const trialDaysLeft = Math.max(0, Math.ceil((trialEnds.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+
+        if (trialDaysLeft > 0) {
+          setIsExpired(false);
+          setDaysLeft(trialDaysLeft);
+          setActiveSubscription({
+            id: "trial",
+            status: "trial",
+            starts_at: createdAt.toISOString(),
+            expires_at: trialEnds.toISOString(),
+            orders_used: 0,
+            km_used: 0,
+            package_name: "تجربة مجانية (5 أيام)",
+            duration_days: 5,
+          });
+        } else {
+          setIsExpired(true);
+          setActiveSubscription(null);
+        }
       }
       setLoading(false);
     };
