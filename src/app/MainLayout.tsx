@@ -2,6 +2,7 @@
  * Main Application Layout — wraps customer, driver, and delivery interfaces.
  */
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Users } from "lucide-react";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -41,7 +42,9 @@ const DriverTopBarControlsWithContext = () => {
 const MainLayoutInner = () => {
   const { isVisible } = useVisibility();
   const location = useLocation();
+  const navigate = useNavigate();
   const isDriverPage = location.pathname.startsWith("/driver");
+  const isCommunityPage = location.pathname.includes("community");
 
   return (
     <>
@@ -55,6 +58,15 @@ const MainLayoutInner = () => {
           <div className="w-px h-5 bg-border/40" />
           {isVisible("logout_btn") && <GlobalLogoutButton />}
           {isVisible("language_switcher") && <LanguageSwitcher />}
+          {isVisible("community_btn") && !isCommunityPage && (
+            <button
+              onClick={() => navigate("/community")}
+              className="p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-emerald-500 hover:text-white transition-all"
+              title="مجتمع HN"
+            >
+              <Users className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         {/* Separator */}
@@ -99,7 +111,7 @@ const MainLayoutInner = () => {
       <div className="h-11" />
       {isVisible("floating_chat_btn") && <FloatingChatButton />}
       {isVisible("voice_order_btn") && <VoiceOrderButton />}
-      {isVisible("community_btn") && <FloatingCommunityButton />}
+      
       <Outlet />
       {isVisible("contact_footer") && <GlobalContactFooter />}
     </>
