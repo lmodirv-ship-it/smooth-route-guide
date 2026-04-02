@@ -96,7 +96,7 @@ export async function getUserRolesWithTimeout(userId: string, timeoutMs = AUTH_T
 
   return (data ?? [])
     .map((row) => row.role)
-    .filter((role): role is string => typeof role === "string" && role.length > 0);
+    .filter((role) => typeof role === "string" && role.length > 0) as string[];
 }
 
 export async function hasFaceProfileWithTimeout(email: string, timeoutMs = 3000): Promise<boolean> {
