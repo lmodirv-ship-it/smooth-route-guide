@@ -23,3 +23,6 @@ verify_jwt = true
 
 [functions.face-auth-lookup]
 verify_jwt = false
+
+[functions.paypal-live]
+verify_jwt = false
