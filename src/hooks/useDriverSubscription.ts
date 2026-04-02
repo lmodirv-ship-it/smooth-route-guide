@@ -34,6 +34,7 @@ export function useDriverSubscription() {
   const [isExpired, setIsExpired] = useState(true);
 
   useEffect(() => {
+    const SUBSCRIPTION_START_DATE = new Date("2026-04-05T00:00:00Z");
     const check = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
