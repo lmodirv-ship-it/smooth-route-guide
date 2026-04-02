@@ -175,7 +175,7 @@ const DeliveryTracking = () => {
     [smoothedDriver, pickupPos, deliveryPos]
   );
 
-  const currentStep = steps.findIndex((s) => s.key === (order?.status || "pending_call_center"));
+  const currentStep = steps.findIndex((s) => s.key === (order?.status || "pending"));
   const isCancelled = order?.status === "cancelled" || order?.status === "canceled";
   const isDelivered = order?.status === "delivered";
   const hasDriver = !!order?.driver_id;

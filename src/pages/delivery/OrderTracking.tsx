@@ -72,7 +72,7 @@ const OrderTracking = () => {
     return () => { supabase.removeChannel(channel); };
   }, [id]);
 
-  const currentStep = steps.findIndex((s) => s.key === (order?.status || "pending_call_center"));
+  const currentStep = steps.findIndex((s) => s.key === (order?.status || "pending"));
   const isCancelled = order?.status === "cancelled" || order?.status === "canceled";
 
   return (
