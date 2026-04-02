@@ -49,7 +49,7 @@ const DriverRequestsTable = () => {
 
     let rideQuery = supabase
       .from("ride_requests")
-      .select("id, pickup, destination, price, status, created_at, user_id")
+      .select("id, pickup, destination, price, status, created_at, user_id, distance, estimated_time")
       .in("status", ["pending", "accepted"])
       .order("created_at", { ascending: false })
       .limit(50);
