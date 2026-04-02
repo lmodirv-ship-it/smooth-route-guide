@@ -277,7 +277,7 @@ const LeafletMap = ({
   }, [route]);
 
   return (
-    <div className={`${className} relative`}>
+    <div className={`${className} relative ring-[3px] ring-black/80 ring-inset rounded-lg shadow-[inset_0_0_12px_rgba(0,0,0,0.6)]`}>
       <div ref={mapElementRef} className="h-full w-full" />
 
       {/* Map controls */}
