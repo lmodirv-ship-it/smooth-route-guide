@@ -7,9 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 const steps = [
-  { key: "pending_call_center", label: "بانتظار مركز الاتصال", sublabel: "مركز الاتصال يراجع طلبك", icon: Clock, color: "bg-amber-500" },
-  { key: "confirmed", label: "تم التأكيد", sublabel: "تم تأكيد الطلب مع المطعم", icon: CheckCircle, color: "bg-blue-500" },
-  { key: "ready_for_driver", label: "جاهز للسائق", sublabel: "بانتظار سائق لاستلام الطلب", icon: Car, color: "bg-cyan-500" },
+  { key: "pending", label: "بانتظار سائق", sublabel: "جاري البحث عن أقرب سائق", icon: Clock, color: "bg-amber-500" },
   { key: "driver_assigned", label: "السائق قبل الطلب", sublabel: "تم تعيين سائق لطلبك", icon: Bike, color: "bg-indigo-500" },
   { key: "on_the_way_to_vendor", label: "في الطريق للمطعم", sublabel: "السائق متجه للمطعم", icon: Store, color: "bg-orange-500" },
   { key: "picked_up", label: "تم الاستلام", sublabel: "السائق استلم الطلب", icon: Package, color: "bg-purple-500" },

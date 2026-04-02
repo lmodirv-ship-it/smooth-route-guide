@@ -20,9 +20,7 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
 }
 
 const steps = [
-  { key: "pending_call_center", label: "بانتظار مركز الاتصال", icon: Headphones },
-  { key: "confirmed", label: "تم تأكيد الطلب", icon: CheckCircle },
-  { key: "ready_for_driver", label: "جاهز للسائق", icon: User },
+  { key: "pending", label: "بانتظار سائق", icon: Clock },
   { key: "driver_assigned", label: "السائق قبل الطلب", icon: Bike },
   { key: "on_the_way_to_vendor", label: "في الطريق للمطعم", icon: Navigation },
   { key: "picked_up", label: "تم استلام الطلب", icon: Package },
