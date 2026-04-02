@@ -71,6 +71,7 @@ const AdminLayout = () => {
   const [smartSiteUrl, setSmartSiteUrl] = useState("");
   const [smartPreviewUrl, setSmartPreviewUrl] = useState("");
   const [smartRefreshKey, setSmartRefreshKey] = useState(0);
+  const [cameraEnabled, setCameraEnabled] = useState(true);
 
   const handleFaceLock = useCallback(async () => {
     await supabase.auth.signOut();
