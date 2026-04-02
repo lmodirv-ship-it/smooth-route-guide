@@ -38,9 +38,10 @@ const PayPalSettings = () => {
 
   useEffect(() => {
     const load = async () => {
-      const [paypalRes, bankRes] = await Promise.all([
+      const [paypalRes, bankRes, agencyRes] = await Promise.all([
         supabase.from("app_settings").select("value").eq("key", "paypal_settings").maybeSingle(),
         supabase.from("app_settings").select("value").eq("key", "bank_transfer_settings").maybeSingle(),
+        supabase.from("app_settings").select("value").eq("key", "agency_transfer_settings").maybeSingle(),
       ]);
       if (paypalRes.data?.value) {
         const v = paypalRes.data.value as Record<string, unknown>;
@@ -64,6 +65,14 @@ const PayPalSettings = () => {
           bankCity: String(b.bankCity ?? ""),
           bankSwift: String(b.bankSwift ?? ""),
           enabled: b.enabled !== false,
+        });
+      }
+      if (agencyRes.data?.value) {
+        const a = agencyRes.data.value as Record<string, unknown>;
+        setAgencySettings({
+          firstName: String(a.firstName ?? ""),
+          lastName: String(a.lastName ?? ""),
+          enabled: a.enabled !== false,
         });
       }
       setLoading(false);
