@@ -266,47 +266,7 @@ const DriverPage = () => {
   }, [tripProgress]);
 
   return (
-    <div className="h-dvh flex flex-col bg-background overflow-hidden" dir={dir} onClick={() => unlockAudio()}>
-      {/* Fixed top bar - OUTSIDE map */}
-      <div className="shrink-0 bg-card border-b border-border px-4 py-2 flex items-center justify-between z-50">
-        {/* Left: logo + ref + rating */}
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate("/driver/profile")} className="relative">
-            <Avatar className="w-10 h-10 border-2 border-primary shadow-md">
-              <AvatarImage src={driverAvatar || undefined} />
-              <AvatarFallback className="bg-primary text-primary-foreground font-bold text-sm">
-                {refCode?.charAt(0)?.toUpperCase() || "S"}
-              </AvatarFallback>
-            </Avatar>
-            <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card ${driverLocation ? "bg-emerald-400" : "bg-red-500"}`} />
-          </button>
-          <div>
-            <p className="text-foreground font-bold text-sm font-mono">{refCode || "—"}</p>
-            <p className="text-muted-foreground text-[11px] flex items-center gap-1">
-              {driverRating > 0 && <>{"⭐".repeat(Math.min(Math.round(driverRating), 5))} <span className="text-muted-foreground">{driverRating}</span></>}
-              {!driverRating && t.driver.connected}
-            </p>
-          </div>
-        </div>
-
-        {/* Right: status dot + settings + sound + city */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-secondary px-3 py-1.5 rounded-full border border-border">
-            <Radar className="w-3.5 h-3.5 text-primary animate-pulse" />
-            <span className="text-xs text-foreground">{cityName}</span>
-          </div>
-          <button onClick={() => setSoundEnabled(!soundEnabled)}
-            className={`p-2 rounded-full border transition-all ${soundEnabled ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-500" : "bg-secondary border-border text-muted-foreground"}`}>
-            <Volume2 className="w-3.5 h-3.5" />
-          </button>
-          <button onClick={() => navigate("/driver/settings")}
-            className="p-2 rounded-full border border-border bg-secondary text-foreground hover:bg-muted transition-all">
-            <Settings className="w-3.5 h-3.5" />
-          </button>
-          <div className={`w-3 h-3 rounded-full ${driverLocation ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" : "bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]"}`} />
-        </div>
-      </div>
-
+    <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background overflow-hidden" dir={dir} onClick={() => unlockAudio()}>
       {/* Map */}
       <div className="relative flex-1 min-h-0">
         <LeafletMap center={driverLocation || DEFAULT_LOCATION} zoom={14} showMarker driverLocation={driverLocation} route={route} className="w-full h-full" />

@@ -1,9 +1,7 @@
 /**
  * Main Application Layout — wraps customer, driver, and delivery interfaces.
- * Provides shared context (cart, i18n, notifications) and global UI elements.
- * Separated from Admin Panel which has its own layout in src/admin/.
  */
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -13,6 +11,7 @@ import FloatingCommunityButton from "@/components/FloatingCommunityButton";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
 import { useVisibility } from "@/hooks/useVisibility";
 import VisitorCounter from "@/components/VisitorCounter";
+import DriverTopBarControls from "@/components/driver/DriverTopBarControls";
 import logo from "@/assets/hn-driver-badge.png";
 import partnerHibaEco from "@/assets/partner-hiba-eco.png";
 import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
@@ -28,6 +27,8 @@ const PARTNER_SITES = [
 
 const MainLayout = () => {
   const { isVisible } = useVisibility();
+  const location = useLocation();
+  const isDriverPage = location.pathname.startsWith("/driver");
 
   return (
     <>
@@ -49,7 +50,6 @@ const MainLayout = () => {
         {/* Center: Scrolling partner sites with logos */}
         {isVisible("partner_bar") && (
           <div className="flex-1 overflow-hidden mx-3 relative">
-            {/* Fade edges */}
             <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background/90 to-transparent z-10 pointer-events-none" />
             <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/90 to-transparent z-10 pointer-events-none" />
             
@@ -75,9 +75,11 @@ const MainLayout = () => {
         {/* Separator */}
         <div className="w-px h-6 bg-border/50 shrink-0" />
 
-        {/* Right accent dot */}
+        {/* Right: Driver controls or accent dot */}
         <div className="px-3 shrink-0">
-          <div className="w-2 h-2 rounded-full bg-primary/50 animate-pulse" />
+          {isDriverPage ? <DriverTopBarControls /> : (
+            <div className="w-2 h-2 rounded-full bg-primary/50 animate-pulse" />
+          )}
         </div>
       </div>
       {/* Spacer for fixed bar */}
