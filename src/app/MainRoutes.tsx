@@ -124,6 +124,7 @@ export const mainRouteElements = (
       <Route path="/driver/status" element={<RequireRole allowed={["driver"]}><LazyPage component={DriverStatus} /></RequireRole>} />
       <Route path="/driver/earnings" element={<RequireRole allowed={["driver"]}><LazyPage component={DriverEarnings} /></RequireRole>} />
       <Route path="/driver/delivery" element={<RequireRole allowed={["driver", "delivery"]}><LazyPage component={DriverDelivery} /></RequireRole>} />
+      <Route path="/driver/delivery/tracking" element={<RequireRole allowed={["driver", "delivery"]}><LazyPage component={DeliveryDriverTracking} /></RequireRole>} />
       <Route path="/driver/subscription" element={<RequireRole allowed={["driver", "delivery"]}><LazyPage component={DriverSubscription} /></RequireRole>} />
 
       {/* ─── Delivery /delivery/* ─── */}
