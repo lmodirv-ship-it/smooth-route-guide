@@ -113,14 +113,7 @@ const ClientBooking = () => {
 
           <div className="glass-card rounded-xl p-4 mb-4">
             <p className="text-sm text-foreground font-bold mb-3">{t.customer.paymentMethodTitle}</p>
-            <div className="flex gap-3">
-              {([ ["cash", t.customer.cashLabel, CreditCard], ["wallet", t.customer.walletLabel, Wallet]] as const).map(([key, label, Icon]) => (
-                <button key={key} onClick={() => setPaymentMethod(key as any)}
-                  className={`flex-1 p-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${paymentMethod === key ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>
-                  <Icon className="w-4 h-4" /><span className="text-sm">{label}</span>
-                </button>
-              ))}
-            </div>
+            <PaymentMethodSelector selected={paymentMethod} onChange={setPaymentMethod} compact />
           </div>
 
           <Button onClick={handleConfirmBooking} disabled={loading}
