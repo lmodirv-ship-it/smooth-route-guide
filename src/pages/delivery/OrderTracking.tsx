@@ -22,6 +22,10 @@ const OrderTracking = () => {
   const { id } = useParams<{ id: string }>();
   const [order, setOrder] = useState<any>(null);
   const [driverProfile, setDriverProfile] = useState<any>(null);
+  const [rating, setRating] = useState(0);
+  const [ratingComment, setRatingComment] = useState("");
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
+  const [submittingRating, setSubmittingRating] = useState(false);
 
   const fetchDriverProfile = async (driverId: string) => {
     const { data: driver } = await supabase.from("drivers").select("user_id").eq("id", driverId).single();
