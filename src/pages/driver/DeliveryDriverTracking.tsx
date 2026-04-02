@@ -493,6 +493,8 @@ const DeliveryDriverTracking = () => {
         onToggleMute={inAppCall.toggleMute}
         onToggleVideo={inAppCall.toggleVideo}
         busy={inAppCall.busy}
+        callDuration={inAppCall.callDuration}
+        connectionQuality={inAppCall.connectionQuality}
       />
     </div>
   );
