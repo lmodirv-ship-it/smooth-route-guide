@@ -451,6 +451,7 @@ const DeliveryTracking = () => {
         remoteStream={inAppCall.remoteStream}
         isMuted={inAppCall.isMuted}
         isVideoEnabled={inAppCall.isVideoEnabled}
+        busy={inAppCall.busy}
         onAccept={inAppCall.acceptCall}
         onEnd={inAppCall.endCall}
         onToggleMute={inAppCall.toggleMute}
