@@ -67,7 +67,7 @@ const DriverPage = () => {
   const [accepting, setAccepting] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [todayStats, setTodayStats] = useState({ trips: 0, earnings: 0, rating: 0 });
-  const [driverName, setDriverName] = useState("السائق");
+  const [driverRating, setDriverRating] = useState(0);
   const [driverAvatar, setDriverAvatar] = useState<string | null>(null);
   const [activeRideId, setActiveRideId] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
