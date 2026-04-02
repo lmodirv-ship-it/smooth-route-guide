@@ -31,6 +31,7 @@ import AdsManagement from "./pages/AdsManagement";
 import PageManagement from "./pages/PageManagement";
 import DatabaseManager from "./pages/DatabaseManager";
 import PermissionsManagement from "./pages/PermissionsManagement";
+import PayPalLivePayments from "./pages/PayPalLivePayments";
 
 // Call Center layout & pages
 import CallCenterLayout from "./layouts/CallCenterLayout";
@@ -91,6 +92,7 @@ const AdminApp = () => (
               <Route path="pages" element={<PageManagement />} />
               <Route path="database" element={<DatabaseManager />} />
               <Route path="permissions" element={<PermissionsManagement />} />
+              <Route path="paypal-live" element={<PayPalLivePayments />} />
             </Route>
 
             {/* Redirect /admin/* to root (standalone mode) */}
