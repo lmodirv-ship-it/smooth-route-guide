@@ -91,6 +91,9 @@ const ClientProfile = () => {
           </motion.button>
         ))}
 
+        {/* Referral Card */}
+        <ReferralCard />
+
         <Button variant="outline" className="w-full mt-4 border-destructive/30 text-destructive hover:bg-destructive/10 rounded-xl"
           onClick={logout}>
           <LogOut className="w-4 h-4 ml-2" /> {t.common.logout}
