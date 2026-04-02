@@ -201,12 +201,18 @@ export function useInAppCall() {
           return;
         }
 
+        // Only auto-clear on failure if the call was already active (answered)
+        // Don't clear during "ringing" phase - let the ringing timeout handle it
         if (["failed", "disconnected", "closed"].includes(peer.connectionState) && activeCallRef.current) {
-          window.setTimeout(() => {
-            if (peer.connectionState !== "connected") {
-              clearCallState();
-            }
-          }, 1200);
+          const wasActive = activeCallRef.current.status === "active" || activeCallRef.current.status === "connecting";
+          if (wasActive) {
+            window.setTimeout(() => {
+              if (peer.connectionState !== "connected") {
+                clearCallState();
+              }
+            }, 3000);
+          }
+          // If still "ringing" (outgoing), don't auto-clear - let user cancel manually
         }
       };
 
