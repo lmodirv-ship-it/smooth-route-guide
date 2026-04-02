@@ -1,25 +1,31 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, CreditCard, Wallet, Banknote, Plus, CheckCircle, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/context";
+import PaymentMethodSelector, { PaymentMethodType } from "@/components/PaymentMethodSelector";
 
 const ClientPayment = () => {
   const navigate = useNavigate();
   const { t, dir } = useI18n();
-  const [defaultMethod, setDefaultMethod] = useState("cash");
+  const [defaultMethod, setDefaultMethod] = useState<PaymentMethodType>("cash");
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [balance, setBalance] = useState(0);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const { data: wallet } = await supabase.from("wallet").select("balance").eq("user_id", user.id).maybeSingle();
       setBalance(wallet?.balance || 0);
+
+      // Load saved default method
+      const { data: methods } = await supabase.from("payment_methods")
+        .select("method_type").eq("user_id", user.id).eq("is_default", true).maybeSingle();
+      if (methods) setDefaultMethod(methods.method_type as PaymentMethodType);
+
       const { data: trips } = await supabase.from("trips")
         .select("id, fare, created_at, start_location, end_location")
         .eq("user_id", user.id).eq("status", "completed")
@@ -33,13 +39,23 @@ const ClientPayment = () => {
       })));
       setLoading(false);
     };
-    fetch();
+    fetchData();
   }, []);
 
-  const methods = [
-    { id: "cash", label: t.customer.cashLabel, icon: Banknote, desc: t.customer.payOnArrival, color: "text-success" },
-    { id: "wallet", label: t.customer.walletLabel, icon: Wallet, desc: `${t.customer.availableBalance}: ${balance} DH`, color: "text-primary" },
-  ];
+  const handleMethodChange = async (method: PaymentMethodType) => {
+    setDefaultMethod(method);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    // Reset all defaults, then set new one
+    await supabase.from("payment_methods").update({ is_default: false }).eq("user_id", user.id);
+    await supabase.from("payment_methods").upsert({
+      user_id: user.id,
+      method_type: method,
+      provider: method,
+      label: method === "cash" ? "نقد" : method === "wallet" ? "محفظة" : "PayPal",
+      is_default: true,
+    }, { onConflict: "user_id,method_type" }).select();
+  };
 
   if (loading) return <div className="min-h-screen gradient-dark flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
@@ -53,33 +69,20 @@ const ClientPayment = () => {
 
       <div className="px-4 mt-4">
         <h3 className="text-foreground font-bold mb-3">{t.customer.defaultPayment}</h3>
-        <div className="space-y-2">
-          {methods.map((m, i) => (
-            <motion.button key={m.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-              onClick={() => setDefaultMethod(m.id)}
-              className={`w-full gradient-card rounded-xl p-4 border flex items-center justify-between transition-all ${defaultMethod === m.id ? "border-primary glow-ring-orange" : "border-border"}`}>
-              <div className="flex items-center gap-2">
-                {defaultMethod === m.id && <CheckCircle className="w-5 h-5 text-primary" />}
-              </div>
-              <div className="flex items-center gap-3">
-                <div><p className="text-sm text-foreground font-medium">{m.label}</p><p className="text-xs text-muted-foreground">{m.desc}</p></div>
-                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center"><m.icon className={`w-5 h-5 ${m.color}`} /></div>
-              </div>
-            </motion.button>
-          ))}
-        </div>
+        <PaymentMethodSelector selected={defaultMethod} onChange={handleMethodChange} walletBalance={balance} />
 
         <h3 className="text-foreground font-bold mt-6 mb-3">{t.customer.paymentHistoryTitle}</h3>
         <div className="space-y-2">
           {payments.length === 0 && <p className="text-center text-muted-foreground text-sm py-4">{t.customer.noPayments}</p>}
           {payments.map(h => (
-            <div key={h.id} className="glass-card rounded-xl p-4 flex items-center justify-between">
+            <motion.div key={h.id} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}
+              className="glass-card rounded-xl p-4 flex items-center justify-between">
               <span className="text-primary font-bold">{h.amount}</span>
               <div>
                 <p className="text-sm text-foreground truncate max-w-[200px]">{h.trip}</p>
                 <p className="text-xs text-muted-foreground">{h.date} • {h.method}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

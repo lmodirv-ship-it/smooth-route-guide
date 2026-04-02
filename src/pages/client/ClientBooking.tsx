@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, CreditCard, Loader2, Navigation, Wallet } from "lucide-react";
+import { ArrowRight, Loader2, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import LeafletMap from "@/components/LeafletMap";
