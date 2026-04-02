@@ -1,13 +1,15 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle, Clock, MapPin, Phone, User, Navigation, Car, Route as RouteIcon, XCircle, Star } from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, MapPin, Phone, User, Navigation, Car, Route as RouteIcon, XCircle, Star, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 import RideChat from "@/components/RideChat";
 import CancelRideDialog from "@/components/CancelRideDialog";
+import { useInAppCall } from "@/hooks/useInAppCall";
+import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = (v: number) => (v * Math.PI) / 180;
