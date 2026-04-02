@@ -269,8 +269,8 @@ const DriverPage = () => {
       <div className="relative flex-1 min-h-0">
         <LeafletMap center={driverLocation || DEFAULT_LOCATION} zoom={14} showMarker driverLocation={driverLocation} route={route} className="w-full h-full" />
 
-        {/* Top overlay */}
-        <div className="absolute top-0 inset-x-0 z-[1000] bg-gradient-to-b from-black/80 via-black/40 to-transparent px-4 pt-3 pb-10">
+        {/* Top overlay - FIXED */}
+        <div className="absolute top-0 inset-x-0 z-[1000] bg-gradient-to-b from-black/80 via-black/40 to-transparent px-4 pt-3 pb-10 pointer-events-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <img src={driverLogo} alt="HN" className="w-8 h-8 rounded-full shadow-lg border border-white/20" />
