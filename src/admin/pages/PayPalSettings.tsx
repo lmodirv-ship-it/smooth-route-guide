@@ -101,6 +101,7 @@ const PayPalSettings = () => {
       await Promise.all([
         saveToAppSettings("paypal_settings", { ...settings }),
         saveToAppSettings("bank_transfer_settings", { ...bankSettings }),
+        saveToAppSettings("agency_transfer_settings", { ...agencySettings }),
       ]);
       toast({ title: "✅ تم حفظ جميع إعدادات الدفع بنجاح" });
     } catch (err: any) {
