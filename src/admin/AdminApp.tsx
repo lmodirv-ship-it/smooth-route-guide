@@ -92,6 +92,7 @@ const AdminApp = () => (
               <Route path="pages" element={<PageManagement />} />
               <Route path="database" element={<DatabaseManager />} />
               <Route path="permissions" element={<PermissionsManagement />} />
+              <Route path="paypal-live" element={<PayPalLivePayments />} />
             </Route>
 
             {/* Redirect /admin/* to root (standalone mode) */}
