@@ -171,7 +171,7 @@ const FaceGuard = ({ onLock, disabled = false }: { onLock: () => void; disabled?
     };
   }, [state, cameraOn, detectFace, onLock, stopCamera]);
 
-  if (state === "locked") return null;
+  if (disabled || state === "locked") return null;
 
   if (minimized) {
     return (
