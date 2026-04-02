@@ -270,6 +270,7 @@ const DeliveryDriverTracking = () => {
           driverLocation={smoothedDriver}
           driverIconType="motorcycle"
           route={mapRoute}
+          routeColor={routeColor}
         />
 
         {/* Top floating: distance + ETA */}
