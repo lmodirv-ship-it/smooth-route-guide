@@ -347,32 +347,6 @@ const DriverPage = () => {
         </div>
       )}
 
-      {/* Stats bar */}
-      <div className="shrink-0 bg-card border-t border-border px-3 py-2">
-        <div className="grid grid-cols-4 gap-2">
-          <button onClick={() => navigate("/driver/earnings")} className="flex flex-col items-center gap-0.5 p-2 rounded-lg hover:bg-secondary/50 transition-colors">
-            <TrendingUp className="w-4 h-4 text-primary" />
-            <span className="text-xs font-bold text-foreground">{todayStats.earnings} DH</span>
-            <span className="text-[10px] text-muted-foreground">الأرباح</span>
-          </button>
-          <button onClick={() => navigate("/driver/history")} className="flex flex-col items-center gap-0.5 p-2 rounded-lg hover:bg-secondary/50 transition-colors">
-            <Route className="w-4 h-4 text-primary" />
-            <span className="text-xs font-bold text-foreground">{todayStats.trips}</span>
-            <span className="text-[10px] text-muted-foreground">الرحلات</span>
-          </button>
-          <button onClick={() => navigate("/driver/wallet")} className="flex flex-col items-center gap-0.5 p-2 rounded-lg hover:bg-secondary/50 transition-colors">
-            <Wallet className="w-4 h-4 text-primary" />
-            <span className="text-xs font-bold text-foreground">المحفظة</span>
-            <span className="text-[10px] text-muted-foreground">الرصيد</span>
-          </button>
-          <button onClick={() => navigate("/driver/profile")} className="flex flex-col items-center gap-0.5 p-2 rounded-lg hover:bg-secondary/50 transition-colors">
-            <Star className="w-4 h-4 text-amber-400" />
-            <span className="text-xs font-bold text-foreground">{todayStats.rating || "—"}</span>
-            <span className="text-[10px] text-muted-foreground">التقييم</span>
-          </button>
-        </div>
-      </div>
-
       {/* Incoming Ride Requests */}
       <div className="shrink-0 max-h-[35vh] overflow-y-auto bg-background border-t border-border">
         {nearbyOrders.length === 0 ? (

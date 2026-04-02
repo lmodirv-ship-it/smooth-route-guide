@@ -24,9 +24,6 @@ const clientNav: NavItem[] = [
 
 const driverNav: NavItem[] = [
   { icon: Car, labelKey: "home", path: "/driver" },
-  { icon: TrendingUp, labelKey: "earnings", path: "/driver/earnings" },
-  { icon: Clock, labelKey: "history", path: "/driver/history" },
-  { icon: FileText, labelKey: "documents", path: "/driver/documents" },
   { icon: Settings, labelKey: "settings", path: "/driver/settings" },
 ];
 
