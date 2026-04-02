@@ -111,6 +111,8 @@ interface LeafletMapProps {
   driverLocation?: { lat: number; lng: number } | null;
   nearbyDrivers?: NearbyDriverMarker[];
   route?: RoutePoints | null;
+  /** Color for the route polyline (default: "#10b981") */
+  routeColor?: string;
   onMapClick?: (latlng: { lat: number; lng: number }) => void;
   expandable?: boolean;
   onExpandChange?: (expanded: boolean) => void;
