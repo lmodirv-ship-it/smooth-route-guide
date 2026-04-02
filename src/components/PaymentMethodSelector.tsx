@@ -16,7 +16,7 @@ const PaymentMethodSelector = ({ selected, onChange, walletBalance = 0, compact 
   const methods: { id: PaymentMethodType; label: string; icon: any; desc: string; color: string }[] = [
     { id: "cash", label: t.customer.cashLabel, icon: Banknote, desc: t.customer.payOnArrival || "الدفع عند الوصول", color: "text-success" },
     { id: "wallet", label: t.customer.walletLabel, icon: Wallet, desc: `${walletBalance.toFixed(2)} DH`, color: "text-primary" },
-    { id: "paypal", label: "PayPal", icon: CreditCard, desc: t.customer.paypalDesc || "دفع إلكتروني آمن", color: "text-blue-500" },
+    { id: "paypal", label: "PayPal", icon: CreditCard, desc: "دفع إلكتروني آمن", color: "text-info" },
   ];
 
   if (compact) {
