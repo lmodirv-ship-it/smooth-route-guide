@@ -152,7 +152,7 @@ const ResetPassword = () => {
             <div className="relative">
               <Input
                 value={password}
-                onChange={(e) => setPassword(sanitizePlainText(e.target.value, 128))}
+                onChange={(e) => setPassword(e.target.value.slice(0, 128))}
                 placeholder="••••••••"
                 type={showPassword ? "text" : "password"}
                 className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 pl-11"
