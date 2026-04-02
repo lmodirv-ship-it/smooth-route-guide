@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp,
-  Wallet, Star, Navigation, Volume2, Percent, Package, Crown, Phone,
+  Wallet, Star, Navigation, Volume2, Percent, Package, Crown, Phone, Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
