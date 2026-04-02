@@ -111,6 +111,8 @@ interface LeafletMapProps {
   driverLocation?: { lat: number; lng: number } | null;
   nearbyDrivers?: NearbyDriverMarker[];
   route?: RoutePoints | null;
+  /** Color for the route polyline (default: "#10b981") */
+  routeColor?: string;
   onMapClick?: (latlng: { lat: number; lng: number }) => void;
   expandable?: boolean;
   onExpandChange?: (expanded: boolean) => void;
@@ -132,6 +134,7 @@ const LeafletMap = ({
   driverLocation,
   nearbyDrivers = [],
   route,
+  routeColor = "#10b981",
   onMapClick,
   expandable = true,
   onExpandChange,
@@ -306,7 +309,7 @@ const LeafletMap = ({
           const coords = data.routes[0].geometry.coordinates.map(
             (c: [number, number]) => [c[1], c[0]] as L.LatLngExpression
           );
-          L.polyline(coords, { color: "#10b981", weight: 5, opacity: 0.9 }).addTo(layer);
+          L.polyline(coords, { color: routeColor, weight: 5, opacity: 0.9 }).addTo(layer);
           try {
             const bounds = L.latLngBounds(coords as L.LatLngExpression[]);
             if (bounds.isValid() && map.getContainer()?.offsetWidth > 0) {
@@ -316,7 +319,7 @@ const LeafletMap = ({
         }
       })
       .catch(() => {
-        L.polyline([pickupLatLng, destLatLng], { color: "#10b981", weight: 4, opacity: 0.8, dashArray: "10, 8" }).addTo(layer);
+        L.polyline([pickupLatLng, destLatLng], { color: routeColor, weight: 4, opacity: 0.8, dashArray: "10, 8" }).addTo(layer);
         try {
           const bounds = L.latLngBounds([pickupLatLng, destLatLng]);
           if (bounds.isValid() && map.getContainer()?.offsetWidth > 0) {
@@ -324,7 +327,7 @@ const LeafletMap = ({
           }
         } catch {}
       });
-  }, [route]);
+  }, [route, routeColor]);
 
   return (
     <div className={`${className} relative ring-[3px] ring-black/80 ring-inset rounded-lg shadow-[inset_0_0_12px_rgba(0,0,0,0.6)]`}>

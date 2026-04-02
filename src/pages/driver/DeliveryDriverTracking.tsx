@@ -191,12 +191,19 @@ const DeliveryDriverTracking = () => {
   }, [order?.delivery_lat, order?.delivery_lng]);
 
   const mapRoute = useMemo(() => {
-    // Show full route: store → customer (both markers always visible)
-    if (storePosition && customerPosition) return { pickup: storePosition, destination: customerPosition };
-    // Fallback: driver → target
+    // Show route from driver to current target
     if (smoothedDriver && targetPosition) return { pickup: smoothedDriver, destination: targetPosition };
+    // Fallback: store → customer
+    if (storePosition && customerPosition) return { pickup: storePosition, destination: customerPosition };
     return null;
   }, [smoothedDriver, storePosition, customerPosition, targetPosition]);
+
+  // Blue when heading to store, green when heading to customer
+  const routeColor = useMemo(() => {
+    if (!order) return "#3b82f6";
+    if (["driver_assigned", "on_the_way_to_vendor"].includes(order.status)) return "#3b82f6";
+    return "#10b981";
+  }, [order?.status]);
 
   const currentStepIdx = order ? STATUS_FLOW.findIndex(s => s.key === order.status) : -1;
   const currentStep = STATUS_FLOW[currentStepIdx] || null;
@@ -263,6 +270,7 @@ const DeliveryDriverTracking = () => {
           driverLocation={smoothedDriver}
           driverIconType="motorcycle"
           route={mapRoute}
+          routeColor={routeColor}
         />
 
         {/* Top floating: distance + ETA */}
