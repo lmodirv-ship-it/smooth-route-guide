@@ -69,10 +69,8 @@ const Cart = () => {
   const grandTotal = subtotal + deliveryFee;
 
   const handleOrder = async () => {
-    if (!deliveryAddress.trim()) {
-      toast({ title: "يرجى إدخال عنوان التوصيل", variant: "destructive" });
-      return;
-    }
+    // Address is auto-detected by GPS; manual input is optional
+    const finalAddress = deliveryAddress.trim() || "موقع GPS";
 
     setSubmitting(true);
     try {
@@ -97,7 +95,7 @@ const Cart = () => {
           delivery_fee: deliveryFee,
           total_price: grandTotal,
           delivery_type: "standard",
-          delivery_address: deliveryAddress,
+          delivery_address: finalAddress,
           delivery_lat: customerLat,
           delivery_lng: customerLng,
           pickup_address: store?.address || "",
@@ -207,14 +205,22 @@ const Cart = () => {
       {/* Delivery Address */}
       <div className="px-5 mt-4 space-y-3">
         <div className="glass-card rounded-2xl p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-primary" />
-            <h3 className="font-bold text-foreground text-sm">عنوان التوصيل</h3>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-primary" />
+              <h3 className="font-bold text-foreground text-sm">عنوان التوصيل</h3>
+            </div>
+            {customerLat && customerLng && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                تم تحديد موقعك بـ GPS
+              </span>
+            )}
           </div>
           <Input
             value={deliveryAddress}
             onChange={(e) => setDeliveryAddress(e.target.value)}
-            placeholder="أدخل عنوان التوصيل الكامل..."
+            placeholder="يتم تحديد العنوان تلقائياً بـ GPS — يمكنك تعديله (اختياري)"
             className="bg-secondary/60 border-border rounded-xl text-right"
           />
           <Textarea
