@@ -268,6 +268,7 @@ const DriverDelivery = () => {
           externalTheme={mapTheme}
           externalExpanded={mapExpanded}
           driverIconType="motorcycle"
+          heatPoints={heatPoints}
         />
 
         {/* Radius indicator */}
