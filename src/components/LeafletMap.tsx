@@ -79,7 +79,8 @@ const TILE_THEMES = {
   },
 };
 
-type ThemeKey = keyof typeof TILE_THEMES;
+export type ThemeKey = keyof typeof TILE_THEMES;
+export { TILE_THEMES };
 
 interface NearbyDriverMarker {
   id: string;
@@ -105,6 +106,13 @@ interface LeafletMapProps {
   /** Allow parent to control expanded state */
   expandable?: boolean;
   onExpandChange?: (expanded: boolean) => void;
+  /** Hide internal map controls (theme/expand buttons) */
+  hideControls?: boolean;
+  /** External theme control */
+  externalTheme?: ThemeKey;
+  onThemeChange?: (theme: ThemeKey) => void;
+  /** External expand control */
+  externalExpanded?: boolean;
   children?: React.ReactNode;
 }
 
@@ -120,6 +128,10 @@ const LeafletMap = ({
   onMapClick,
   expandable = true,
   onExpandChange,
+  hideControls = false,
+  externalTheme,
+  onThemeChange,
+  externalExpanded,
   children,
 }: LeafletMapProps) => {
   const mapElementRef = useRef<HTMLDivElement | null>(null);
@@ -145,14 +157,33 @@ const LeafletMap = ({
     return mapCenter;
   }, [markerPosition, mapCenter]);
 
+  // Sync external theme
+  useEffect(() => {
+    if (externalTheme && externalTheme !== theme) {
+      setTheme(externalTheme);
+      if (tileLayerRef.current && mapInstanceRef.current) {
+        tileLayerRef.current.setUrl(TILE_THEMES[externalTheme].url);
+      }
+    }
+  }, [externalTheme]);
+
+  // Sync external expanded
+  useEffect(() => {
+    if (externalExpanded !== undefined && externalExpanded !== isExpanded) {
+      setIsExpanded(externalExpanded);
+      setTimeout(() => mapInstanceRef.current?.invalidateSize(), 350);
+    }
+  }, [externalExpanded]);
+
   // Switch tile theme
   const switchTheme = useCallback((newTheme: ThemeKey) => {
     setTheme(newTheme);
     setShowThemeMenu(false);
+    onThemeChange?.(newTheme);
     if (tileLayerRef.current && mapInstanceRef.current) {
       tileLayerRef.current.setUrl(TILE_THEMES[newTheme].url);
     }
-  }, []);
+  }, [onThemeChange]);
 
   const toggleExpand = useCallback(() => {
     const next = !isExpanded;
@@ -280,7 +311,8 @@ const LeafletMap = ({
     <div className={`${className} relative ring-[3px] ring-black/80 ring-inset rounded-lg shadow-[inset_0_0_12px_rgba(0,0,0,0.6)]`}>
       <div ref={mapElementRef} className="h-full w-full" />
 
-      {/* Map controls */}
+      {/* Map controls - only show if not hidden */}
+      {!hideControls && (
       <div className="absolute top-2 left-2 z-[1000] flex flex-col gap-1.5">
         {/* Theme toggle */}
         <div className="relative">
@@ -321,6 +353,7 @@ const LeafletMap = ({
           </button>
         )}
       </div>
+      )}
 
       {/* OSM badge */}
       <div className="absolute bottom-1 left-1 z-[1000] rounded bg-background/70 px-1.5 py-0.5 text-[10px] text-muted-foreground backdrop-blur-sm">

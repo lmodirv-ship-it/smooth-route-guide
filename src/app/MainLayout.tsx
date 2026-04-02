@@ -12,6 +12,7 @@ import GlobalContactFooter from "@/components/GlobalContactFooter";
 import { useVisibility } from "@/hooks/useVisibility";
 import VisitorCounter from "@/components/VisitorCounter";
 import DriverTopBarControls from "@/components/driver/DriverTopBarControls";
+import { DriverMapControlsProvider, useDriverMapControls } from "@/contexts/DriverMapControlsContext";
 import logo from "@/assets/hn-driver-badge.png";
 import partnerHibaEco from "@/assets/partner-hiba-eco.png";
 import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
@@ -25,7 +26,19 @@ const PARTNER_SITES = [
   { name: "Slava Call Hiba", url: "https://slavacall-hiba.com", logo: partnerSlavacall },
 ];
 
-const MainLayout = () => {
+const DriverTopBarControlsWithContext = () => {
+  const { mapTheme, setMapTheme, mapExpanded, toggleMapExpanded } = useDriverMapControls();
+  return (
+    <DriverTopBarControls
+      mapTheme={mapTheme}
+      onMapThemeChange={setMapTheme}
+      mapExpanded={mapExpanded}
+      onMapExpandToggle={toggleMapExpanded}
+    />
+  );
+};
+
+const MainLayoutInner = () => {
   const { isVisible } = useVisibility();
   const location = useLocation();
   const isDriverPage = location.pathname.startsWith("/driver");
@@ -77,7 +90,7 @@ const MainLayout = () => {
 
         {/* Right: Driver controls or accent dot */}
         <div className="px-3 shrink-0">
-          {isDriverPage ? <DriverTopBarControls /> : (
+          {isDriverPage ? <DriverTopBarControlsWithContext /> : (
             <div className="w-2 h-2 rounded-full bg-primary/50 animate-pulse" />
           )}
         </div>
@@ -92,5 +105,11 @@ const MainLayout = () => {
     </>
   );
 };
+
+const MainLayout = () => (
+  <DriverMapControlsProvider>
+    <MainLayoutInner />
+  </DriverMapControlsProvider>
+);
 
 export default MainLayout;

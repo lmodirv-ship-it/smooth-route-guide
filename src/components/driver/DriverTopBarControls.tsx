@@ -1,17 +1,26 @@
 import { useNavigate } from "react-router-dom";
-import { Settings, Volume2, Radar } from "lucide-react";
+import { Settings, Palette, Maximize2, Minimize2 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useUserReference } from "@/hooks/useUserReference";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { TILE_THEMES, type ThemeKey } from "@/components/LeafletMap";
 
-const DriverTopBarControls = () => {
+interface DriverTopBarControlsProps {
+  mapTheme?: ThemeKey;
+  onMapThemeChange?: (theme: ThemeKey) => void;
+  mapExpanded?: boolean;
+  onMapExpandToggle?: () => void;
+}
+
+const DriverTopBarControls = ({ mapTheme = "light", onMapThemeChange, mapExpanded, onMapExpandToggle }: DriverTopBarControlsProps) => {
   const navigate = useNavigate();
   const { driverCode, userCode } = useUserReference();
   const refCode = driverCode || userCode;
   const [avatar, setAvatar] = useState<string | null>(null);
   const [rating, setRating] = useState(0);
   const [isOnline, setIsOnline] = useState(false);
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -23,7 +32,6 @@ const DriverTopBarControls = () => {
         setAvatar(profile.avatar_url);
         setRating(Number(profile.avg_rating || 0));
       }
-      // Check if driver has GPS (simple online check)
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           () => mounted && setIsOnline(true),
@@ -52,6 +60,41 @@ const DriverTopBarControls = () => {
       {rating > 0 && <span className="text-[10px] text-amber-400">{"★".repeat(Math.min(Math.round(rating), 5))}</span>}
 
       <div className="w-px h-4 bg-border/40" />
+
+      {/* Map theme toggle */}
+      <div className="relative">
+        <button
+          onClick={() => setShowThemeMenu(!showThemeMenu)}
+          className="p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-muted transition-all"
+          title="مظهر الخريطة"
+        >
+          <Palette className="w-3.5 h-3.5" />
+        </button>
+        {showThemeMenu && (
+          <div className="absolute top-8 right-0 bg-popover rounded-xl border border-border shadow-xl p-1.5 min-w-[100px] z-[9999]">
+            {(Object.keys(TILE_THEMES) as ThemeKey[]).map((key) => (
+              <button
+                key={key}
+                onClick={() => { onMapThemeChange?.(key); setShowThemeMenu(false); }}
+                className={`w-full text-right px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  mapTheme === key ? "bg-primary/20 text-primary" : "text-foreground hover:bg-secondary/50"
+                }`}
+              >
+                {TILE_THEMES[key].label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Map expand toggle */}
+      <button
+        onClick={onMapExpandToggle}
+        className="p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-muted transition-all"
+        title={mapExpanded ? "تصغير" : "توسيع"}
+      >
+        {mapExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+      </button>
 
       {/* Settings */}
       <button onClick={() => navigate("/driver/settings")}
