@@ -137,7 +137,22 @@ const CCDashboard = () => {
     return map[status] || { label: status, color: "text-muted-foreground", bg: "bg-muted", dot: "bg-muted-foreground" };
   };
 
-  if (loading) return (
+  const filteredPipelineOrders = recentOrders.filter(o => {
+    if (pipelineFilter === "all") return true;
+    return o.status === pipelineFilter;
+  });
+
+  const handleOrderAction = async (orderId: string, newStatus: string, extra?: Record<string, any>) => {
+    const updates: Record<string, any> = { status: newStatus, updated_at: new Date().toISOString(), ...extra };
+    const { error } = await supabase.from("delivery_orders").update(updates).eq("id", orderId);
+    if (error) {
+      toast({ title: "خطأ", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "تم تحديث الطلب ✅" });
+      fetchAll();
+    }
+  };
+
     <div className="flex justify-center items-center py-32 min-h-[60vh]">
       <div className="flex flex-col items-center gap-4">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
