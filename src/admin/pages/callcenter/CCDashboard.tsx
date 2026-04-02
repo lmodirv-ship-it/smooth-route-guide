@@ -516,6 +516,9 @@ const CCDashboard = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* In-App Call Dialog */}
+      <InAppCallDialog call={inAppCall} />
     </div>
   );
 };
