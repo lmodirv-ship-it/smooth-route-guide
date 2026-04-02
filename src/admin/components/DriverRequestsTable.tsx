@@ -98,6 +98,8 @@ const DriverRequestsTable = () => {
         pickup: ride.pickup || "—",
         destination: ride.destination || "—",
         amount: Number(ride.price || 0),
+        distance: ride.distance ? Number(ride.distance) : null,
+        estimatedTime: ride.estimated_time ?? null,
         status: ride.status,
         createdAt: ride.created_at,
       };
