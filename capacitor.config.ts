@@ -4,10 +4,6 @@ const config: CapacitorConfig = {
   appId: "com.hndriver.app",
   appName: "HN Driver",
   webDir: "dist",
-  server: {
-    url: "https://smooth-route-guide.lovable.app",
-    cleartext: true,
-  },
   android: {
     backgroundColor: "#111827",
     allowMixedContent: true,
