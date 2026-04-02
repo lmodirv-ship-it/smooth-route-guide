@@ -26,7 +26,19 @@ const PARTNER_SITES = [
   { name: "Slava Call Hiba", url: "https://slavacall-hiba.com", logo: partnerSlavacall },
 ];
 
-const MainLayout = () => {
+const DriverTopBarControlsWithContext = () => {
+  const { mapTheme, setMapTheme, mapExpanded, toggleMapExpanded } = useDriverMapControls();
+  return (
+    <DriverTopBarControls
+      mapTheme={mapTheme}
+      onMapThemeChange={setMapTheme}
+      mapExpanded={mapExpanded}
+      onMapExpandToggle={toggleMapExpanded}
+    />
+  );
+};
+
+const MainLayoutInner = () => {
   const { isVisible } = useVisibility();
   const location = useLocation();
   const isDriverPage = location.pathname.startsWith("/driver");
@@ -93,5 +105,11 @@ const MainLayout = () => {
     </>
   );
 };
+
+const MainLayout = () => (
+  <DriverMapControlsProvider>
+    <MainLayoutInner />
+  </DriverMapControlsProvider>
+);
 
 export default MainLayout;
