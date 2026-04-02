@@ -16,6 +16,7 @@ import CompleteProfile from "@/pages/CompleteProfile";
 import NotFound from "@/pages/NotFound";
 
 import DriverDelivery from "@/pages/driver/DriverDelivery";
+import DeliveryDriverTracking from "@/pages/driver/DeliveryDriverTracking";
 import DriverHistory from "@/pages/DriverHistory";
 import DriverNotifications from "@/pages/DriverNotifications";
 import DriverSettings from "@/pages/DriverSettings";
@@ -81,6 +82,7 @@ const DriverDeliveryApp = () => (
 
             {/* Delivery Driver pages */}
             <Route path="/delivery" element={<RequireRole allowed={["delivery"]}><><DeliveryDriverLayout /><DriverDelivery /></></RequireRole>} />
+            <Route path="/delivery/tracking" element={<RequireRole allowed={["delivery"]}><DeliveryDriverTracking /></RequireRole>} />
             <Route path="/delivery/history" element={<RequireRole allowed={["delivery"]}><><DeliveryDriverLayout /><DriverHistory /></></RequireRole>} />
             <Route path="/delivery/notifications" element={<RequireRole allowed={["delivery"]}><><DeliveryDriverLayout /><DriverNotifications /></></RequireRole>} />
             <Route path="/delivery/settings" element={<RequireRole allowed={["delivery"]}><><DeliveryDriverLayout /><DriverSettings /></></RequireRole>} />
