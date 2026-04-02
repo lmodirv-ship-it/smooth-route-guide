@@ -8,11 +8,24 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import {
   User, Phone, Mail, Calendar, Shield, Wallet, Car, MapPin,
   KeyRound, Save, Loader2, Eye, EyeOff, Copy, Check,
-  Star, Ban, CheckCircle, History, ShieldAlert
+  Star, Ban, CheckCircle, History, ShieldAlert, UserPlus, Trash2
 } from "lucide-react";
+
+type AppRole = Database["public"]["Enums"]["app_role"];
+
+const ALL_ROLES: { key: AppRole; label: string; icon: string }[] = [
+  { key: "admin", label: "مسؤول", icon: "🔴" },
+  { key: "moderator", label: "مشرف", icon: "🛡️" },
+  { key: "agent", label: "مركز اتصال", icon: "📞" },
+  { key: "driver", label: "سائق ركاب", icon: "🚗" },
+  { key: "delivery", label: "سائق توصيل", icon: "🏍️" },
+  { key: "store_owner", label: "صاحب محل", icon: "🏪" },
+  { key: "user", label: "عميل", icon: "👤" },
+];
 
 interface ClientDetailProps {
   clientId: string | null;
@@ -369,6 +382,74 @@ export default function ClientDetailSheet({ clientId, open, onOpenChange, onClie
                 </div>
               </>
             )}
+
+            {/* Role Management */}
+            <Separator />
+            <div className="space-y-3">
+              <p className="text-sm font-bold text-foreground flex items-center gap-2">
+                <UserPlus className="w-4 h-4 text-primary" /> إدارة الأدوار والصلاحيات
+              </p>
+              
+              {/* Current Roles */}
+              <div className="flex flex-wrap gap-2">
+                {roles.map(role => {
+                  const info = ALL_ROLES.find(r => r.key === role);
+                  return (
+                    <Badge key={role} variant="secondary" className="text-xs flex items-center gap-1 pr-1">
+                      <span>{info?.icon} {info?.label || role}</span>
+                      {role !== "user" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 hover:bg-destructive/20 rounded-full ml-1"
+                          onClick={async () => {
+                            const { error } = await supabase.from("user_roles").delete().eq("user_id", clientId!).eq("role", role as AppRole);
+                            if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
+                            setRoles(prev => prev.filter(r => r !== role));
+                            toast({ title: `تم إزالة دور "${info?.label || role}"` });
+                            onClientUpdated?.();
+                          }}
+                        >
+                          <Trash2 className="w-3 h-3 text-destructive" />
+                        </Button>
+                      )}
+                    </Badge>
+                  );
+                })}
+              </div>
+
+              {/* Add Role Buttons */}
+              <div className="grid grid-cols-2 gap-2">
+                {ALL_ROLES.filter(r => !roles.includes(r.key)).map(r => (
+                  <Button
+                    key={r.key}
+                    variant="outline"
+                    size="sm"
+                    className="text-xs justify-start gap-2 h-9"
+                    onClick={async () => {
+                      const { error } = await supabase.from("user_roles").insert({ user_id: clientId!, role: r.key });
+                      if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
+                      // Auto-create driver record if needed
+                      if (r.key === "driver" || r.key === "delivery") {
+                        const { data: ex } = await supabase.from("drivers").select("id").eq("user_id", clientId!).maybeSingle();
+                        if (!ex) {
+                          await supabase.from("drivers").insert({
+                            user_id: clientId!,
+                            status: "inactive",
+                            driver_type: r.key === "delivery" ? "delivery" : "ride",
+                          });
+                        }
+                      }
+                      setRoles(prev => [...prev, r.key]);
+                      toast({ title: `✅ تم تعيين كـ "${r.label}"` });
+                      onClientUpdated?.();
+                    }}
+                  >
+                    <span>{r.icon}</span> تعيين كـ {r.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
           <div className="text-center py-20 text-muted-foreground">لم يتم العثور على العميل</div>
