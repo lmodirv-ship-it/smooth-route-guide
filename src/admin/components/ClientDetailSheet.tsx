@@ -71,14 +71,11 @@ export default function ClientDetailSheet({ clientId, open, onOpenChange, onClie
     setPasswordMode(false);
     setNewPassword("");
 
-    const [profileRes, walletRes, tripsRes, deliveryRes, complaintsRes, rolesRes, driverRes] = await Promise.all([
+    // Phase 1: Load essential data first (profile + roles + wallet)
+    const [profileRes, rolesRes, walletRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", id).single(),
-      supabase.from("wallet").select("balance").eq("user_id", id).maybeSingle(),
-      supabase.from("trips").select("*").eq("user_id", id).order("created_at", { ascending: false }).limit(10),
-      supabase.from("delivery_orders").select("id", { count: "exact", head: true }).eq("user_id", id),
-      supabase.from("complaints").select("*").eq("user_id", id).order("created_at", { ascending: false }).limit(5),
       supabase.from("user_roles").select("role").eq("user_id", id),
-      supabase.from("drivers").select("*").eq("user_id", id).maybeSingle(),
+      supabase.from("wallet").select("balance").eq("user_id", id).maybeSingle(),
     ]);
 
     const p = profileRes.data;
@@ -90,15 +87,23 @@ export default function ClientDetailSheet({ clientId, open, onOpenChange, onClie
       setIsSuspended(p.is_suspended || false);
       setIsConfirmed(p.is_confirmed || false);
     }
-
+    setRoles((rolesRes.data || []).map((r: any) => r.role));
     setWalletBalance(walletRes.data?.balance ?? 0);
+    setLoading(false);
+
+    // Phase 2: Load secondary data in background
+    const [tripsRes, deliveryRes, complaintsRes, driverRes] = await Promise.all([
+      supabase.from("trips").select("id, status, fare, start_location, created_at").eq("user_id", id).order("created_at", { ascending: false }).limit(10),
+      supabase.from("delivery_orders").select("id", { count: "exact", head: true }).eq("user_id", id),
+      supabase.from("complaints").select("id, category, status, description, created_at").eq("user_id", id).order("created_at", { ascending: false }).limit(5),
+      supabase.from("drivers").select("id, driver_code, driver_type, status, rating, current_lat, current_lng").eq("user_id", id).maybeSingle(),
+    ]);
+
     setTrips(tripsRes.data || []);
     setTripCount(tripsRes.data?.length || 0);
     setDeliveryCount(deliveryRes.count ?? 0);
     setComplaints(complaintsRes.data || []);
-    setRoles((rolesRes.data || []).map((r: any) => r.role));
     setDriverInfo(driverRes.data);
-    setLoading(false);
   };
 
   const handleSaveProfile = async () => {
