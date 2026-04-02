@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CreditCard, Wallet, Banknote, Star, Search, Loader2, CheckCircle, XCircle, Clock, TrendingUp } from "lucide-react";
+import { CreditCard, Wallet, Banknote, Star, Search, Loader2, CheckCircle, XCircle, Clock, TrendingUp, MapPin, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ const statusColors: Record<string, string> = {
   completed: "bg-green-500/20 text-green-400",
   pending: "bg-yellow-500/20 text-yellow-400",
   failed: "bg-red-500/20 text-red-400",
+  active: "bg-green-500/20 text-green-400",
 };
 
 const statusIcons: Record<string, any> = {
@@ -23,9 +24,11 @@ const PaymentManagement = () => {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [walletRequests, setWalletRequests] = useState<any[]>([]);
   const [stars, setStars] = useState<any[]>([]);
+  const [pendingSubs, setPendingSubs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [stats, setStats] = useState({ total: 0, completed: 0, pending: 0, revenue: 0 });
+  const [activating, setActivating] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -33,16 +36,18 @@ const PaymentManagement = () => {
 
   const loadData = async () => {
     setLoading(true);
-    const [txnRes, walletRes, starsRes] = await Promise.all([
+    const [txnRes, walletRes, starsRes, subsRes] = await Promise.all([
       supabase.from("payment_transactions").select("*").order("created_at", { ascending: false }).limit(100),
       supabase.from("wallet_transactions").select("*").order("created_at", { ascending: false }).limit(100),
       supabase.from("reward_stars").select("*").order("stars", { ascending: false }).limit(50),
+      supabase.from("driver_subscriptions").select("*, driver_packages(name_ar, price, duration_days)").in("status", ["pending"]).order("created_at", { ascending: false }).limit(50),
     ]);
 
     const txns = txnRes.data || [];
     setTransactions(txns);
     setWalletRequests(walletRes.data || []);
     setStars(starsRes.data || []);
+    setPendingSubs(subsRes.data || []);
 
     setStats({
       total: txns.length,
@@ -56,6 +61,29 @@ const PaymentManagement = () => {
   const filteredTxns = transactions.filter((t: any) =>
     !search || t.payment_method?.includes(search) || t.status?.includes(search) || t.id?.includes(search)
   );
+
+  const activateSubscription = async (sub: any) => {
+    setActivating(sub.id);
+    try {
+      await supabase.from("driver_subscriptions").update({
+        status: "active",
+        payment_status: "completed",
+      }).eq("id", sub.id);
+
+      // Also mark the related payment transaction as completed
+      await supabase.from("payment_transactions").update({
+        status: "completed",
+        completed_at: new Date().toISOString(),
+      }).eq("reference_type", "driver_subscription").eq("user_id", sub.user_id).eq("status", "pending");
+
+      toast({ title: "✅ تم تفعيل الاشتراك بنجاح" });
+      loadData();
+    } catch (err: any) {
+      toast({ title: "❌ خطأ", description: err.message, variant: "destructive" });
+    } finally {
+      setActivating(null);
+    }
+  };
 
   const grantStars = async (userId: string, amount: number) => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -100,6 +128,14 @@ const PaymentManagement = () => {
       <Tabs defaultValue="transactions">
         <TabsList className="w-full justify-start">
           <TabsTrigger value="transactions">المعاملات</TabsTrigger>
+          <TabsTrigger value="pending-subs" className="relative">
+            اشتراكات معلقة
+            {pendingSubs.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-[10px] rounded-full flex items-center justify-center font-bold">
+                {pendingSubs.length}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="wallet">المحفظة</TabsTrigger>
           <TabsTrigger value="stars">النجوم والمكافآت</TabsTrigger>
         </TabsList>
@@ -129,7 +165,7 @@ const PaymentManagement = () => {
                       <td className="p-2 font-bold">{Number(t.amount).toFixed(2)} DH</td>
                       <td className="p-2">
                         <Badge variant="outline" className="gap-1">
-                          {t.payment_method === "cash" ? "💵" : t.payment_method === "wallet" ? "👛" : "💎"}
+                          {t.payment_method === "cash" ? "💵" : t.payment_method === "wallet" ? "👛" : t.payment_method === "agency_transfer" ? "📍" : t.payment_method === "bank_transfer" ? "🏦" : "💎"}
                           {t.payment_method}
                         </Badge>
                       </td>
@@ -146,6 +182,45 @@ const PaymentManagement = () => {
             </table>
             {filteredTxns.length === 0 && <p className="text-center text-muted-foreground py-8">لا توجد معاملات</p>}
           </div>
+        </TabsContent>
+
+        {/* Pending Subscriptions Tab */}
+        <TabsContent value="pending-subs" className="space-y-4">
+          <p className="text-sm text-muted-foreground text-right">
+            الاشتراكات المعلقة في انتظار تأكيد الدفع (تحويل وكالة أو نقد). تأكد من استلام الوصل عبر الدردشة ثم اضغط "تفعيل".
+          </p>
+          {pendingSubs.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">لا توجد اشتراكات معلقة 🎉</p>
+          ) : (
+            <div className="space-y-3">
+              {pendingSubs.map((sub: any) => (
+                <div key={sub.id} className="glass-card rounded-xl p-4 flex items-center justify-between" dir="rtl">
+                  <div className="space-y-1">
+                    <p className="font-bold text-foreground">
+                      {sub.driver_packages?.name_ar || "باقة"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {sub.driver_packages?.duration_days} يوم — {Number(sub.amount_paid).toFixed(2)} DH
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Badge variant="outline">{sub.payment_method === "agency_transfer" ? "📍 وكالة" : sub.payment_method === "cash" ? "💵 نقد" : sub.payment_method}</Badge>
+                      <span>المستخدم: {sub.user_id?.slice(0, 8)}</span>
+                      <span>{new Date(sub.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => activateSubscription(sub)}
+                    disabled={activating === sub.id}
+                    className="gap-2"
+                    size="sm"
+                  >
+                    {activating === sub.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                    تفعيل
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="wallet" className="space-y-4">

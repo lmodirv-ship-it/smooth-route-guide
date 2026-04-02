@@ -30,12 +30,18 @@ const PayPalSettings = () => {
     bankSwift: "",
     enabled: true,
   });
+  const [agencySettings, setAgencySettings] = useState({
+    firstName: "",
+    lastName: "",
+    enabled: true,
+  });
 
   useEffect(() => {
     const load = async () => {
-      const [paypalRes, bankRes] = await Promise.all([
+      const [paypalRes, bankRes, agencyRes] = await Promise.all([
         supabase.from("app_settings").select("value").eq("key", "paypal_settings").maybeSingle(),
         supabase.from("app_settings").select("value").eq("key", "bank_transfer_settings").maybeSingle(),
+        supabase.from("app_settings").select("value").eq("key", "agency_transfer_settings").maybeSingle(),
       ]);
       if (paypalRes.data?.value) {
         const v = paypalRes.data.value as Record<string, unknown>;
@@ -59,6 +65,14 @@ const PayPalSettings = () => {
           bankCity: String(b.bankCity ?? ""),
           bankSwift: String(b.bankSwift ?? ""),
           enabled: b.enabled !== false,
+        });
+      }
+      if (agencyRes.data?.value) {
+        const a = agencyRes.data.value as Record<string, unknown>;
+        setAgencySettings({
+          firstName: String(a.firstName ?? ""),
+          lastName: String(a.lastName ?? ""),
+          enabled: a.enabled !== false,
         });
       }
       setLoading(false);
@@ -87,6 +101,7 @@ const PayPalSettings = () => {
       await Promise.all([
         saveToAppSettings("paypal_settings", { ...settings }),
         saveToAppSettings("bank_transfer_settings", { ...bankSettings }),
+        saveToAppSettings("agency_transfer_settings", { ...agencySettings }),
       ]);
       toast({ title: "✅ تم حفظ جميع إعدادات الدفع بنجاح" });
     } catch (err: any) {
@@ -198,6 +213,45 @@ const PayPalSettings = () => {
               value={bankSettings.bankCity}
               onChange={e => setBankSettings(s => ({ ...s, bankCity: e.target.value }))}
               placeholder="طنجة"
+              className="bg-secondary/60 border-border"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ===== Agency Transfer Settings ===== */}
+      <div className="glass-card rounded-xl p-6 space-y-5 border-2 border-accent/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Switch checked={agencySettings.enabled} onCheckedChange={v => setAgencySettings(s => ({ ...s, enabled: v }))} />
+            <Badge variant={agencySettings.enabled ? "default" : "secondary"}>
+              {agencySettings.enabled ? "مفعّل" : "معطّل"}
+            </Badge>
+          </div>
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            📍 تحويل عبر وكالة (Wafacash, Cash Plus...)
+          </h2>
+        </div>
+        <p className="text-sm text-muted-foreground text-right">
+          الاسم الذي سيظهر للمستخدمين ليحولوا المبلغ عبر وكالة التحويل
+        </p>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground block text-right">الاسم العائلي</label>
+            <Input
+              value={agencySettings.lastName}
+              onChange={e => setAgencySettings(s => ({ ...s, lastName: e.target.value }))}
+              placeholder="العائلي"
+              className="bg-secondary/60 border-border"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground block text-right">الاسم الشخصي</label>
+            <Input
+              value={agencySettings.firstName}
+              onChange={e => setAgencySettings(s => ({ ...s, firstName: e.target.value }))}
+              placeholder="الاسم"
               className="bg-secondary/60 border-border"
             />
           </div>
