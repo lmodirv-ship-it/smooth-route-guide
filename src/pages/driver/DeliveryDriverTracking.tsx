@@ -122,6 +122,11 @@ const DeliveryDriverTracking = () => {
       // Get customer ref code
       const { data: profile } = await supabase.from("profiles").select("user_code").eq("id", data.user_id).single();
       if (profile) setCustomerRefCode((profile as any).user_code || null);
+      // Get store phone
+      if (data.store_id) {
+        const { data: store } = await supabase.from("stores").select("phone").eq("id", data.store_id).single();
+        setStorePhone(store?.phone || null);
+      }
     }
     setLoading(false);
   }, [orderId]);
