@@ -59,6 +59,7 @@ const DeliveryDriverTracking = () => {
   const [order, setOrder] = useState<OrderData | null>(null);
   const [driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [customerRefCode, setCustomerRefCode] = useState<string | null>(null);
+  const [storePhone, setStorePhone] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [panelOpen, setPanelOpen] = useState(false);
