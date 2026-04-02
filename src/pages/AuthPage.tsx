@@ -18,8 +18,6 @@ import {
   useAuthReady,
 } from "@/hooks/useAuthReady";
 import logo from "@/assets/hn-driver-badge.png";
-import FaceAuthGate from "@/components/FaceAuthGate";
-import FaceRegisterPrompt from "@/components/FaceRegisterPrompt";
 
 type RoleId = "driver" | "client" | "delivery" | "admin" | "agent" | "store_owner";
 type StoredRole = RoleId | "user";
