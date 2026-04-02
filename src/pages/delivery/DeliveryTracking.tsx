@@ -81,7 +81,7 @@ const DeliveryTracking = () => {
   // Driver location tracking
   useEffect(() => {
     if (!order?.driver_id) {
-      setDriverLocation(null); setDriverRefCode(null); setDriverRating(null); setDriverPhone(null);
+      setDriverLocation(null); setDriverRefCode(null); setDriverRating(null); setDriverPhone(null); setDriverUserId(null);
       return;
     }
     const fetchDriver = async () => {
