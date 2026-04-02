@@ -2538,6 +2538,7 @@ export type Database = {
           last_seen_at: string | null
           name: string
           phone: string | null
+          referral_code: string | null
           user_code: string | null
         }
         Insert: {
@@ -2551,6 +2552,7 @@ export type Database = {
           last_seen_at?: string | null
           name?: string
           phone?: string | null
+          referral_code?: string | null
           user_code?: string | null
         }
         Update: {
@@ -2564,6 +2566,7 @@ export type Database = {
           last_seen_at?: string | null
           name?: string
           phone?: string | null
+          referral_code?: string | null
           user_code?: string | null
         }
         Relationships: []
@@ -2700,6 +2703,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          referral_code: string
+          referred_id: string
+          referrer_id: string
+          reward_amount: number
+          reward_given: boolean | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code: string
+          referred_id: string
+          referrer_id: string
+          reward_amount?: number
+          reward_given?: boolean | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code?: string
+          referred_id?: string
+          referrer_id?: string
+          reward_amount?: number
+          reward_given?: boolean | null
+          status?: string
+        }
+        Relationships: []
       }
       reward_stars: {
         Row: {
