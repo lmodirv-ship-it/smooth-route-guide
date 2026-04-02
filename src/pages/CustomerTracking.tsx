@@ -55,6 +55,7 @@ const CustomerTracking = () => {
   const [driverPhone, setDriverPhone] = useState<string | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
+  const inAppCall = useInAppCall();
 
   useEffect(() => {
     if (!rideId) return;
