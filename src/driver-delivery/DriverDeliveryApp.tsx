@@ -16,6 +16,7 @@ import CompleteProfile from "@/pages/CompleteProfile";
 import NotFound from "@/pages/NotFound";
 
 import DriverDelivery from "@/pages/driver/DriverDelivery";
+import DeliveryDriverTracking from "@/pages/driver/DeliveryDriverTracking";
 import DriverHistory from "@/pages/DriverHistory";
 import DriverNotifications from "@/pages/DriverNotifications";
 import DriverSettings from "@/pages/DriverSettings";
