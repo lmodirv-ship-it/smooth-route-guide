@@ -78,6 +78,13 @@ const AdminDrivers = () => {
               {f === "all" ? "الكل" : f === "active" ? "نشط" : "غير نشط"}
             </button>
           ))}
+          <div className="w-px h-6 bg-border" />
+          {(["all", "ride", "delivery", "both"] as const).map(f => (
+            <button key={f} onClick={() => setTypeFilter(f)}
+              className={`text-xs px-3 py-2 rounded-lg transition-colors ${typeFilter === f ? "bg-info/20 text-info border border-info/30" : "bg-secondary text-muted-foreground"}`}>
+              {f === "all" ? "كل الأنواع" : f === "ride" ? "🚗 ركاب" : f === "delivery" ? "🏍️ توصيل" : "الكل"}
+            </button>
+          ))}
         </div>
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold text-foreground">إدارة السائقين</h1>
