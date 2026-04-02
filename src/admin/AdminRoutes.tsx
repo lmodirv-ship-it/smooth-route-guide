@@ -116,6 +116,7 @@ export const adminRouteElements = (
       <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
       <Route path="payments" element={<PaymentManagement />} />
       <Route path="paypal-settings" element={<PayPalSettings />} />
+      <Route path="paypal-live" element={<PayPalLivePayments />} />
       <Route path="coupons" element={<CouponsManagement />} />
     </Route>
 
