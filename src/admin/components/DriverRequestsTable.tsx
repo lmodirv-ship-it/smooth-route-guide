@@ -217,7 +217,7 @@ const DriverRequestsTable = () => {
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                   <td colSpan={10} className="p-8 text-center text-muted-foreground">
                     <span className="inline-flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       جاري تحميل الطلبات...
