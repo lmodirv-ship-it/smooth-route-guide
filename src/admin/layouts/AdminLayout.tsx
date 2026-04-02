@@ -349,10 +349,17 @@ const AdminLayout = () => {
                 <div className="w-px h-6 bg-border" />
               </>
             )}
-            <FaceGuard onLock={handleFaceLock} />
+            <FaceGuard onLock={handleFaceLock} disabled={!cameraEnabled} />
             <GlobalLogoutButton />
             <VisitorCounter />
             <LanguageSwitcher />
+            <button
+              onClick={() => setCameraEnabled(prev => !prev)}
+              className={`p-2 rounded-lg transition-colors ${cameraEnabled ? "hover:bg-secondary text-success" : "hover:bg-secondary text-muted-foreground"}`}
+              title={cameraEnabled ? "إيقاف الكاميرا" : "تشغيل الكاميرا"}
+            >
+              {cameraEnabled ? <Camera className="w-5 h-5" /> : <CameraOff className="w-5 h-5" />}
+            </button>
             <button className="p-2 relative hover:bg-secondary rounded-lg transition-colors">
               <Bell className="w-5 h-5 text-muted-foreground" />
               {pendingCount > 0 && <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-destructive animate-pulse" />}
