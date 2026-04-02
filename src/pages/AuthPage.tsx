@@ -11,7 +11,6 @@ import { toast } from "@/hooks/use-toast";
 import {
   getAuthTimeoutMessage,
   getUserRolesWithTimeout,
-  hasFaceProfileWithTimeout,
   isServiceTimeoutError,
   signInWithPasswordWithTimeout,
   signUpWithTimeout,
