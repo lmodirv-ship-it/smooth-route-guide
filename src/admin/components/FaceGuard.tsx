@@ -24,6 +24,15 @@ const FaceGuard = ({ onLock, disabled = false }: { onLock: () => void; disabled?
   const [minimized, setMinimized] = useState(false);
   const [failCount, setFailCount] = useState(0);
 
+  // When disabled, stop camera and hide
+  useEffect(() => {
+    if (disabled) {
+      stopCamera();
+    }
+  }, [disabled, stopCamera]);
+
+  if (disabled) return null;
+
   // Load face-api models
   useEffect(() => {
     const loadModels = async () => {
