@@ -103,6 +103,13 @@ const CCDashboard = () => {
     setLoading(false);
   }, []);
 
+  // Check for escalated orders (pending > 5 min without driver)
+  const escalatedOrders = recentOrders.filter(o => {
+    if (o.status !== "pending") return false;
+    const ageMs = Date.now() - new Date(o.created_at).getTime();
+    return ageMs > 5 * 60 * 1000; // 5 minutes
+  });
+
   useEffect(() => {
     fetchAll();
     const ch = supabase.channel("cc-dash-realtime")
@@ -111,7 +118,9 @@ const CCDashboard = () => {
       .on("postgres_changes", { event: "*", schema: "public", table: "complaints" }, fetchAll)
       .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, fetchAll)
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    // Re-check escalation every 30 seconds
+    const escalationTimer = setInterval(fetchAll, 30000);
+    return () => { supabase.removeChannel(ch); clearInterval(escalationTimer); };
   }, [fetchAll]);
 
   const statCards = [
