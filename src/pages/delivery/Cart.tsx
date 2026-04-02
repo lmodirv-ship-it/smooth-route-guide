@@ -95,7 +95,7 @@ const Cart = () => {
           delivery_fee: deliveryFee,
           total_price: grandTotal,
           delivery_type: "standard",
-          delivery_address: deliveryAddress,
+          delivery_address: finalAddress,
           delivery_lat: customerLat,
           delivery_lng: customerLng,
           pickup_address: store?.address || "",
