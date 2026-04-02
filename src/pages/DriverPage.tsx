@@ -270,7 +270,7 @@ const DriverPage = () => {
   return (
     <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background overflow-hidden" dir={dir} onClick={() => unlockAudio()}>
       {/* Map */}
-      <div className="relative flex-1 min-h-0">
+      <div className="relative flex-1 min-h-0 border-x-4 border-black/90 shadow-[inset_4px_0_8px_rgba(0,0,0,0.3),-4px_0_8px_rgba(0,0,0,0.3),inset_-4px_0_8px_rgba(0,0,0,0.3),4px_0_8px_rgba(0,0,0,0.3)]">
         <LeafletMap center={driverLocation || DEFAULT_LOCATION} zoom={14} showMarker driverLocation={driverLocation} route={route} className="w-full h-full" hideControls externalTheme={mapTheme} externalExpanded={mapExpanded} />
 
         {/* Radius indicator */}
