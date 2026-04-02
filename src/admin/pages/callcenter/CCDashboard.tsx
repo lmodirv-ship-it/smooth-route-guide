@@ -518,7 +518,19 @@ const CCDashboard = () => {
       </AlertDialog>
 
       {/* In-App Call Dialog */}
-      <InAppCallDialog call={inAppCall} />
+      <InAppCallDialog
+        incomingCall={inAppCall.incomingCall}
+        activeCall={inAppCall.activeCall}
+        localStream={inAppCall.localStream}
+        remoteStream={inAppCall.remoteStream}
+        isMuted={inAppCall.isMuted}
+        isVideoEnabled={inAppCall.isVideoEnabled}
+        busy={inAppCall.busy}
+        onAccept={inAppCall.acceptCall}
+        onEnd={inAppCall.endCall}
+        onToggleMute={inAppCall.toggleMute}
+        onToggleVideo={inAppCall.toggleVideo}
+      />
     </div>
   );
 };
