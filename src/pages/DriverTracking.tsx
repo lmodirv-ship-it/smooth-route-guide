@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Phone, Navigation, CheckCircle, XCircle, MapPin, Clock, Car, Send, ChevronUp, ChevronDown, PhoneCall } from "lucide-react";
@@ -201,17 +201,36 @@ const DriverTracking = () => {
     [smoothedDriver, targetPosition]
   );
 
+  // Throttle route updates to avoid OSRM rate limits (429)
+  const lastRouteFetchRef = useRef<number>(0);
+  const [throttledDriverPos, setThrottledDriverPos] = useState(smoothedDriver);
+
+  useEffect(() => {
+    if (!smoothedDriver) return;
+    const now = Date.now();
+    if (!throttledDriverPos || now - lastRouteFetchRef.current > 30000) {
+      setThrottledDriverPos(smoothedDriver);
+      lastRouteFetchRef.current = now;
+    }
+  }, [smoothedDriver]);
+
+  useEffect(() => {
+    if (smoothedDriver) {
+      setThrottledDriverPos(smoothedDriver);
+      lastRouteFetchRef.current = Date.now();
+    }
+  }, [ride?.status]);
+
   const mapRoute = useMemo(() => {
     if (!ride) return null;
-    // Always show driver → target route for real-time navigation
-    if (smoothedDriver && targetPosition) {
-      return { pickup: smoothedDriver, destination: targetPosition };
+    if (throttledDriverPos && targetPosition) {
+      return { pickup: throttledDriverPos, destination: targetPosition };
     }
     if (ride.pickup_lat && ride.pickup_lng && ride.destination_lat && ride.destination_lng) {
       return { pickup: { lat: ride.pickup_lat, lng: ride.pickup_lng }, destination: { lat: ride.destination_lat, lng: ride.destination_lng } };
     }
     return null;
-  }, [ride, smoothedDriver, targetPosition]);
+  }, [ride, throttledDriverPos, targetPosition]);
 
   const handleStatusUpdate = async (newStatus: string) => {
     if (!rideId || updating) return;
