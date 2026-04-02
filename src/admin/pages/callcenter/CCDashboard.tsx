@@ -13,7 +13,20 @@ import carImg from "@/assets/icons/car-real.png";
 import alertImg from "@/assets/icons/alert-real.png";
 import phoneImg from "@/assets/icons/phone-real.png";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const CCDashboard = () => {
   const navigate = useNavigate();
