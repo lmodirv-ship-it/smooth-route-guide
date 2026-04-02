@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Loader2, Save, RefreshCw, CreditCard, ExternalLink, CheckCircle, XCircle } from "lucide-react";
+import { Eye, EyeOff, Loader2, Save, RefreshCw, CreditCard, ExternalLink, Building2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -22,16 +22,23 @@ const PayPalSettings = () => {
     returnUrl: "",
     cancelUrl: "",
   });
+  const [bankSettings, setBankSettings] = useState({
+    bankName: "",
+    accountNumber: "",
+    accountHolder: "",
+    bankCity: "",
+    bankSwift: "",
+    enabled: true,
+  });
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase
-        .from("app_settings")
-        .select("value")
-        .eq("key", "paypal_settings")
-        .maybeSingle();
-      if (data?.value) {
-        const v = data.value as Record<string, unknown>;
+      const [paypalRes, bankRes] = await Promise.all([
+        supabase.from("app_settings").select("value").eq("key", "paypal_settings").maybeSingle(),
+        supabase.from("app_settings").select("value").eq("key", "bank_transfer_settings").maybeSingle(),
+      ]);
+      if (paypalRes.data?.value) {
+        const v = paypalRes.data.value as Record<string, unknown>;
         setSettings({
           clientId: String(v.clientId ?? ""),
           secretKey: String(v.secretKey ?? ""),
@@ -43,10 +50,32 @@ const PayPalSettings = () => {
           cancelUrl: String(v.cancelUrl ?? ""),
         });
       }
+      if (bankRes.data?.value) {
+        const b = bankRes.data.value as Record<string, unknown>;
+        setBankSettings({
+          bankName: String(b.bankName ?? ""),
+          accountNumber: String(b.accountNumber ?? ""),
+          accountHolder: String(b.accountHolder ?? ""),
+          bankCity: String(b.bankCity ?? ""),
+          bankSwift: String(b.bankSwift ?? ""),
+          enabled: b.enabled !== false,
+        });
+      }
       setLoading(false);
     };
     load();
   }, []);
+
+  const saveToAppSettings = async (key: string, value: Record<string, unknown>) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const jsonValue = value as unknown as Record<string, string | number | boolean>;
+    const { data: existing } = await supabase.from("app_settings").select("id").eq("key", key).maybeSingle();
+    if (existing) {
+      await supabase.from("app_settings").update({ value: jsonValue, updated_at: new Date().toISOString(), updated_by: user?.id }).eq("key", key);
+    } else {
+      await supabase.from("app_settings").insert({ key, value: jsonValue, updated_by: user?.id });
+    }
+  };
 
   const handleSave = async () => {
     if (!settings.clientId.trim()) {
@@ -55,26 +84,11 @@ const PayPalSettings = () => {
     }
     setSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const payload = { ...settings };
-
-      const { data: existing } = await supabase
-        .from("app_settings")
-        .select("id")
-        .eq("key", "paypal_settings")
-        .maybeSingle();
-
-      if (existing) {
-        await supabase
-          .from("app_settings")
-          .update({ value: payload, updated_at: new Date().toISOString(), updated_by: user?.id })
-          .eq("key", "paypal_settings");
-      } else {
-        await supabase
-          .from("app_settings")
-          .insert({ key: "paypal_settings", value: payload, updated_by: user?.id });
-      }
-      toast({ title: "✅ تم حفظ إعدادات PayPal بنجاح" });
+      await Promise.all([
+        saveToAppSettings("paypal_settings", { ...settings }),
+        saveToAppSettings("bank_transfer_settings", { ...bankSettings }),
+      ]);
+      toast({ title: "✅ تم حفظ جميع إعدادات الدفع بنجاح" });
     } catch (err: any) {
       toast({ title: "❌ فشل الحفظ", description: err?.message, variant: "destructive" });
     } finally {
@@ -113,10 +127,84 @@ const PayPalSettings = () => {
         </Button>
         <div className="flex items-center gap-3">
           <CreditCard className="w-6 h-6 text-blue-500" />
-          <h1 className="text-xl font-bold text-foreground">إعدادات PayPal</h1>
+          <h1 className="text-xl font-bold text-foreground">إعدادات الدفع</h1>
         </div>
       </div>
 
+      {/* ===== Bank Transfer Settings ===== */}
+      <div className="glass-card rounded-xl p-6 space-y-5 border-2 border-primary/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Switch checked={bankSettings.enabled} onCheckedChange={v => setBankSettings(s => ({ ...s, enabled: v }))} />
+            <Badge variant={bankSettings.enabled ? "default" : "secondary"}>
+              {bankSettings.enabled ? "مفعّل" : "معطّل"}
+            </Badge>
+          </div>
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-primary" />
+            🏦 حسابك البنكي (لاستقبال التحويلات)
+          </h2>
+        </div>
+        <p className="text-sm text-muted-foreground text-right">
+          هذا هو الحساب الذي سيظهر للسائقين والمستخدمين لتحويل المبالغ إليه
+        </p>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground block text-right">اسم البنك</label>
+          <Input
+            value={bankSettings.bankName}
+            onChange={e => setBankSettings(s => ({ ...s, bankName: e.target.value }))}
+            placeholder="مثال: CIH Bank, Attijariwafa Bank..."
+            className="bg-secondary/60 border-border"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground block text-right">رقم الحساب البنكي (RIB)</label>
+          <Input
+            value={bankSettings.accountNumber}
+            onChange={e => setBankSettings(s => ({ ...s, accountNumber: e.target.value }))}
+            placeholder="230 780 XXXXXXXX XX"
+            className="bg-secondary/60 border-border font-mono"
+            dir="ltr"
+            maxLength={30}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground block text-right">اسم صاحب الحساب</label>
+          <Input
+            value={bankSettings.accountHolder}
+            onChange={e => setBankSettings(s => ({ ...s, accountHolder: e.target.value }))}
+            placeholder="الاسم الكامل كما يظهر في البنك"
+            className="bg-secondary/60 border-border"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground block text-right">SWIFT / BIC (اختياري)</label>
+            <Input
+              value={bankSettings.bankSwift}
+              onChange={e => setBankSettings(s => ({ ...s, bankSwift: e.target.value }))}
+              placeholder="CIHMMAMC"
+              className="bg-secondary/60 border-border font-mono"
+              dir="ltr"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground block text-right">المدينة</label>
+            <Input
+              value={bankSettings.bankCity}
+              onChange={e => setBankSettings(s => ({ ...s, bankCity: e.target.value }))}
+              placeholder="طنجة"
+              className="bg-secondary/60 border-border"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ===== PayPal Settings ===== */}
       {/* Status */}
       <div className="glass-card rounded-xl p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -135,7 +223,7 @@ const PayPalSettings = () => {
 
       {/* API Credentials */}
       <div className="glass-card rounded-xl p-6 space-y-5">
-        <h2 className="text-lg font-bold text-foreground text-right">🔑 بيانات API</h2>
+        <h2 className="text-lg font-bold text-foreground text-right">🔑 بيانات PayPal API</h2>
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground block text-right">Client ID</label>
@@ -167,20 +255,11 @@ const PayPalSettings = () => {
               {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
-          <p className="text-xs text-muted-foreground text-right">
-            يُحفظ مشفراً ولا يظهر للمستخدمين
-          </p>
         </div>
 
         <div className="flex items-center justify-between border-t border-border pt-4">
-          <Switch
-            checked={settings.sandboxMode}
-            onCheckedChange={v => setSettings(s => ({ ...s, sandboxMode: v }))}
-          />
-          <label className="text-sm text-foreground">
-            🧪 وضع Sandbox (اختبار)
-            <span className="block text-xs text-muted-foreground">فعّل هذا أثناء التطوير وأوقفه في الإنتاج</span>
-          </label>
+          <Switch checked={settings.sandboxMode} onCheckedChange={v => setSettings(s => ({ ...s, sandboxMode: v }))} />
+          <label className="text-sm text-foreground">🧪 وضع Sandbox (اختبار)</label>
         </div>
       </div>
 
@@ -205,38 +284,21 @@ const PayPalSettings = () => {
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground block text-right">اسم العلامة التجارية</label>
-          <Input
-            value={settings.brandName}
-            onChange={e => setSettings(s => ({ ...s, brandName: e.target.value }))}
-            placeholder="HN Driver"
-            className="bg-secondary/60 border-border"
-          />
+          <Input value={settings.brandName} onChange={e => setSettings(s => ({ ...s, brandName: e.target.value }))} placeholder="HN Driver" className="bg-secondary/60 border-border" />
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground block text-right">رابط العودة بعد الدفع (اختياري)</label>
-          <Input
-            value={settings.returnUrl}
-            onChange={e => setSettings(s => ({ ...s, returnUrl: e.target.value }))}
-            placeholder="https://yoursite.com/payment-success"
-            className="bg-secondary/60 border-border text-xs"
-            dir="ltr"
-          />
+          <Input value={settings.returnUrl} onChange={e => setSettings(s => ({ ...s, returnUrl: e.target.value }))} placeholder="https://yoursite.com/payment-success" className="bg-secondary/60 border-border text-xs" dir="ltr" />
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground block text-right">رابط الإلغاء (اختياري)</label>
-          <Input
-            value={settings.cancelUrl}
-            onChange={e => setSettings(s => ({ ...s, cancelUrl: e.target.value }))}
-            placeholder="https://yoursite.com/payment-cancel"
-            className="bg-secondary/60 border-border text-xs"
-            dir="ltr"
-          />
+          <Input value={settings.cancelUrl} onChange={e => setSettings(s => ({ ...s, cancelUrl: e.target.value }))} placeholder="https://yoursite.com/payment-cancel" className="bg-secondary/60 border-border text-xs" dir="ltr" />
         </div>
       </div>
 
-      {/* Test & Links */}
+      {/* Test */}
       <div className="glass-card rounded-xl p-6 space-y-4">
         <h2 className="text-lg font-bold text-foreground text-right">🧪 اختبار الاتصال</h2>
         <div className="flex gap-3 flex-wrap">
@@ -244,20 +306,13 @@ const PayPalSettings = () => {
             {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
             اختبار الاتصال
           </Button>
-          <a
-            href="https://developer.paypal.com/dashboard/applications"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href="https://developer.paypal.com/dashboard/applications" target="_blank" rel="noopener noreferrer">
             <Button variant="outline" className="gap-2">
               <ExternalLink className="w-4 h-4" />
               PayPal Developer Dashboard
             </Button>
           </a>
         </div>
-        <p className="text-xs text-muted-foreground text-right">
-          اضغط "اختبار الاتصال" للتحقق من صحة Client ID و Secret Key
-        </p>
       </div>
     </div>
   );
