@@ -4,10 +4,18 @@ import { Eye, EyeOff, Mail, Lock, Loader2, ShieldCheck, Sparkles, ScanFace } fro
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import FaceAuthGate from "@/components/FaceAuthGate";
 import FaceRegisterPrompt from "@/components/FaceRegisterPrompt";
+import {
+  getAuthTimeoutMessage,
+  getUserRolesWithTimeout,
+  hasFaceProfileWithTimeout,
+  isServiceTimeoutError,
+  signInWithPasswordWithTimeout,
+  signOutWithTimeout,
+  useAuthReady,
+} from "@/hooks/useAuthReady";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -22,25 +30,47 @@ const AdminLogin = () => {
   const [hasFaceProfile, setHasFaceProfile] = useState(false);
   const [checkingFace, setCheckingFace] = useState(false);
   const [loginMode, setLoginMode] = useState<"password" | "face">("password");
+  const { ready, session } = useAuthReady();
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setChecking(false); return; }
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id);
-      const isAdmin = (roles || []).some((r) => r.role === "admin");
-      if (isAdmin) {
-        navigate("/admin", { replace: true });
-      } else {
-        await supabase.auth.signOut();
-        setChecking(false);
+    let mounted = true;
+
+    if (!ready) {
+      setChecking(true);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    if (!session) {
+      setChecking(false);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    void (async () => {
+      try {
+        const roles = await getUserRolesWithTimeout(session.user.id);
+        if (!mounted) return;
+
+        if (roles.some((currentRole) => currentRole === "admin")) {
+          navigate("/admin", { replace: true });
+          return;
+        }
+
+        await signOutWithTimeout();
+      } catch {
+        if (!mounted) return;
+      } finally {
+        if (mounted) setChecking(false);
       }
+    })();
+
+    return () => {
+      mounted = false;
     };
-    checkSession();
-  }, [navigate]);
+  }, [navigate, ready, session]);
 
   // Check if face profile exists when email changes
   const checkFaceProfile = useCallback(async (emailValue: string) => {
@@ -49,13 +79,13 @@ const AdminLogin = () => {
       return;
     }
     setCheckingFace(true);
-    const { data } = await supabase
-      .from("face_auth_profiles")
-      .select("id")
-      .eq("email", emailValue.toLowerCase().trim())
-      .maybeSingle();
-    setHasFaceProfile(!!data);
-    setCheckingFace(false);
+    try {
+      setHasFaceProfile(await hasFaceProfileWithTimeout(emailValue));
+    } catch {
+      setHasFaceProfile(false);
+    } finally {
+      setCheckingFace(false);
+    }
   }, []);
 
   const handleEmailBlur = () => {
@@ -99,34 +129,32 @@ const AdminLogin = () => {
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await signInWithPasswordWithTimeout({ email, password });
       if (error) throw error;
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", data.user.id);
-      const isAdmin = (roles || []).some((r) => r.role === "admin");
+
+      const roles = await getUserRolesWithTimeout(data.user.id);
+      const isAdmin = roles.some((currentRole) => currentRole === "admin");
       if (!isAdmin) {
-        await supabase.auth.signOut();
+        await signOutWithTimeout();
         toast({ title: "غير مصرح", description: "هذا الحساب ليس لديه صلاحيات المسؤول", variant: "destructive" });
         setLoading(false);
         return;
       }
       toast({ title: "تم تسجيل الدخول بنجاح ✅" });
-      // Check if face profile exists, suggest registration
-      const { data: faceProfile } = await supabase
-        .from("face_auth_profiles")
-        .select("id")
-        .eq("email", email.toLowerCase().trim())
-        .maybeSingle();
-      if (!faceProfile) {
-        setShowFaceRegister(true);
-        return;
+      try {
+        const faceProfileExists = await hasFaceProfileWithTimeout(email);
+        if (!faceProfileExists) {
+          setShowFaceRegister(true);
+          return;
+        }
+      } catch {
+        // Face registration is optional; never block admin access on it.
       }
       navigate("/admin", { replace: true });
     } catch (err: any) {
       let msg = err?.message || "حدث خطأ غير متوقع";
       if (msg.includes("Invalid login credentials")) msg = "بريد أو كلمة مرور غير صحيحة";
+      if (isServiceTimeoutError(err)) msg = getAuthTimeoutMessage("login");
       toast({ title: "خطأ", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);

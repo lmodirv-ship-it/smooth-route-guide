@@ -8,7 +8,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  getAuthTimeoutMessage,
+  getUserRolesWithTimeout,
+  hasFaceProfileWithTimeout,
+  isServiceTimeoutError,
+  signInWithPasswordWithTimeout,
+  signUpWithTimeout,
+  useAuthReady,
+} from "@/hooks/useAuthReady";
 import logo from "@/assets/hn-driver-badge.png";
 import FaceAuthGate from "@/components/FaceAuthGate";
 import FaceRegisterPrompt from "@/components/FaceRegisterPrompt";
@@ -53,40 +61,47 @@ const AuthPage = () => {
   const [faceCheckActive, setFaceCheckActive] = useState(false);
   const [faceVerified, setFaceVerified] = useState(false);
   const [showFaceRegister, setShowFaceRegister] = useState(false);
+  const { ready, session } = useAuthReady();
 
   useEffect(() => {
+    let mounted = true;
+
+    if (!ready || !session) {
+      return () => {
+        mounted = false;
+      };
+    }
+
     const syncSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      try {
+        const roles = await getUserRolesWithTimeout(session.user.id);
+        if (!mounted) return;
 
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id);
+        const userRoles = roles as StoredRole[];
 
-      const userRoles = (roles || []).map((r) => r.role as StoredRole);
+        if (role && userRoles.includes(role as StoredRole)) {
+          localStorage.setItem("hn_user_role", role);
+          navigate(roleDashboard[role] || roleDashboard.user, { replace: true });
+          return;
+        }
 
-      // If user entered from a specific role page and has that role, redirect there
-      if (role && userRoles.includes(role as StoredRole)) {
-        localStorage.setItem("hn_user_role", role);
-        navigate(roleDashboard[role] || roleDashboard.user, { replace: true });
-        return;
+        const savedRole = localStorage.getItem("hn_user_role") as StoredRole | null;
+        const firstRole = userRoles[0] ?? savedRole ?? "user";
+        navigate(roleDashboard[firstRole] || roleDashboard.user, { replace: true });
+      } catch {
+        if (!mounted) return;
+        const savedRole = (localStorage.getItem("hn_user_role") as StoredRole | null) ?? null;
+        const fallbackRole = role || savedRole || "user";
+        navigate(roleDashboard[fallbackRole] || roleDashboard.user, { replace: true });
       }
-
-      const firstRole = userRoles[0] ?? "user";
-      navigate(roleDashboard[firstRole] || roleDashboard.user, { replace: true });
     };
 
     void syncSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        void syncSession();
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    return () => {
+      mounted = false;
+    };
+  }, [navigate, ready, role, session]);
 
   // Do not auto-open face auth on blur; keep login non-blocking.
   const handleEmailBlur = () => {
@@ -105,17 +120,16 @@ const AuthPage = () => {
     setLoading(true);
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await signInWithPasswordWithTimeout({ email, password });
         if (error) throw error;
         toast({ title: "تم تسجيل الدخول بنجاح ✅" });
-        // Prompt face registration if not registered
-        const { data: faceProfile } = await supabase
-          .from("face_auth_profiles")
-          .select("id")
-          .eq("email", email.toLowerCase().trim())
-          .maybeSingle();
-        if (!faceProfile) {
-          setShowFaceRegister(true);
+        try {
+          const faceProfileExists = await hasFaceProfileWithTimeout(email);
+          if (!faceProfileExists) {
+            setShowFaceRegister(true);
+          }
+        } catch {
+          // Face registration is optional; never block password login on it.
         }
       } else {
         if (!name) {
@@ -125,7 +139,7 @@ const AuthPage = () => {
         }
 
         const redirectTo = `https://www.hn-driver.com/login`;
-        const { error } = await supabase.auth.signUp({
+        const { error } = await signUpWithTimeout({
           email,
           password,
           options: {
@@ -148,6 +162,7 @@ const AuthPage = () => {
       if (msg.includes("User already registered")) msg = "هذا البريد مسجل مسبقاً";
       if (msg.includes("Password should be at least")) msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
       if (msg.includes("password") && msg.includes("characters")) msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+      if (isServiceTimeoutError(err)) msg = getAuthTimeoutMessage(isLogin ? "login" : "signup");
       toast({ title: "خطأ", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);

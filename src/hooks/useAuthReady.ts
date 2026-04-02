@@ -1,8 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 export const AUTH_TIMEOUT_MS = 8000;
+
+type SignInWithPasswordArgs = {
+  email: string;
+  password: string;
+};
+
+type SignUpArgs = Parameters<typeof supabase.auth.signUp>[0];
 
 export async function withTimeout<T>(
   promise: PromiseLike<T>,
@@ -39,7 +46,20 @@ export function isServiceTimeoutError(error: unknown) {
   );
 }
 
-export async function getSessionWithTimeout(timeoutMs = AUTH_TIMEOUT_MS): Promise<Session | null> {
+export function getAuthTimeoutMessage(action: "session" | "login" | "signup" | "roles" = "session") {
+  switch (action) {
+    case "login":
+      return "خدمة تسجيل الدخول بطيئة حالياً. أعد المحاولة خلال لحظات.";
+    case "signup":
+      return "خدمة إنشاء الحساب بطيئة حالياً. أعد المحاولة خلال لحظات.";
+    case "roles":
+      return "تعذر التحقق من صلاحيات الحساب حالياً. أعد المحاولة خلال لحظات.";
+    default:
+      return "تعذر التحقق من حالة الجلسة حالياً. أعد المحاولة خلال لحظات.";
+  }
+}
+
+export async function getSessionWithTimeoutResult(timeoutMs = AUTH_TIMEOUT_MS): Promise<{ session: Session | null; timedOut: boolean }> {
   try {
     const { data, error } = await withTimeout(
       supabase.auth.getSession(),
@@ -47,33 +67,130 @@ export async function getSessionWithTimeout(timeoutMs = AUTH_TIMEOUT_MS): Promis
       "AUTH_TIMEOUT"
     );
 
-    if (error) return null;
-    return data.session ?? null;
+    if (error) {
+      return { session: null, timedOut: isServiceTimeoutError(error) };
+    }
+
+    return { session: data.session ?? null, timedOut: false };
+  } catch (error) {
+    return { session: null, timedOut: isServiceTimeoutError(error) };
+  }
+}
+
+export async function getSessionWithTimeout(timeoutMs = AUTH_TIMEOUT_MS): Promise<Session | null> {
+  const { session } = await getSessionWithTimeoutResult(timeoutMs);
+  return session;
+}
+
+export async function getUserRolesWithTimeout(userId: string, timeoutMs = AUTH_TIMEOUT_MS): Promise<string[]> {
+  const { data, error } = await withTimeout(
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId),
+    timeoutMs,
+    "ROLES_TIMEOUT"
+  );
+
+  if (error) throw error;
+
+  return (data ?? [])
+    .map((row) => row.role)
+    .filter((role) => typeof role === "string" && role.length > 0) as string[];
+}
+
+export async function hasFaceProfileWithTimeout(email: string, timeoutMs = 3000): Promise<boolean> {
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail) return false;
+
+  const { data, error } = await withTimeout(
+    supabase
+      .from("face_auth_profiles")
+      .select("id")
+      .eq("email", normalizedEmail)
+      .maybeSingle(),
+    timeoutMs,
+    "PROFILE_TIMEOUT"
+  );
+
+  if (error) throw error;
+  return !!data;
+}
+
+export function signInWithPasswordWithTimeout(
+  credentials: SignInWithPasswordArgs,
+  timeoutMs = AUTH_TIMEOUT_MS
+) {
+  return withTimeout(
+    supabase.auth.signInWithPassword(credentials),
+    timeoutMs,
+    "LOGIN_TIMEOUT"
+  );
+}
+
+export function signUpWithTimeout(credentials: SignUpArgs, timeoutMs = AUTH_TIMEOUT_MS) {
+  return withTimeout(
+    supabase.auth.signUp(credentials),
+    timeoutMs,
+    "SIGNUP_TIMEOUT"
+  );
+}
+
+export async function signOutWithTimeout(timeoutMs = 4000) {
+  try {
+    await withTimeout(supabase.auth.signOut(), timeoutMs, "SIGNOUT_TIMEOUT");
   } catch {
-    return null;
+    // Sign-out fallback is best-effort only; never block the UI on it.
   }
 }
 
 export function useAuthReady(timeoutMs = AUTH_TIMEOUT_MS) {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
+  const currentSessionRef = useRef<Session | null>(null);
+  const initialSyncCompleteRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
+    currentSessionRef.current = null;
+    initialSyncCompleteRef.current = false;
+
+    const applySession = (nextSession: Session | null, nextTimedOut = false) => {
+      currentSessionRef.current = nextSession;
+      if (!mounted) return;
+      setSession(nextSession);
+      setTimedOut(nextTimedOut && !nextSession);
+      setReady(true);
+    };
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      if (!mounted) return;
-      setSession(nextSession);
-      setReady(true);
+      if (nextSession) {
+        initialSyncCompleteRef.current = true;
+        applySession(nextSession, false);
+        return;
+      }
+
+      if (initialSyncCompleteRef.current) {
+        applySession(null, false);
+      }
     });
 
     void (async () => {
-      const nextSession = await getSessionWithTimeout(timeoutMs);
+      const result = await getSessionWithTimeoutResult(timeoutMs);
       if (!mounted) return;
-      setSession(nextSession);
-      setReady(true);
+
+      initialSyncCompleteRef.current = true;
+
+      if (currentSessionRef.current && !result.session) {
+        setReady(true);
+        setTimedOut(false);
+        return;
+      }
+
+      applySession(result.session, result.timedOut);
     })();
 
     return () => {
@@ -85,6 +202,7 @@ export function useAuthReady(timeoutMs = AUTH_TIMEOUT_MS) {
   return {
     ready,
     session,
+    timedOut,
     user: session?.user ?? null,
     isAuthenticated: !!session?.user,
   };
