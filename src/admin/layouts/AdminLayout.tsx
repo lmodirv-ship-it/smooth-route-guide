@@ -112,6 +112,7 @@ const AdminLayout = () => {
     { path: "/admin/permissions", icon: Shield, label: "إدارة الصلاحيات" },
     { path: "/admin/health-check", icon: Activity, label: "فحص صحة النظام" },
     { path: "/admin/wallet-recharge", icon: Wallet, label: "طلبات شحن المحفظة" },
+    { path: "/admin/payments", icon: CreditCard, label: "💳 إدارة المدفوعات" },
   ];
 
   useEffect(() => {
