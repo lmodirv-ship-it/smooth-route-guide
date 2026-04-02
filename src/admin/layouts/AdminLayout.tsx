@@ -5,7 +5,7 @@ import {
   BarChart3, FileText, Car, Users, TrendingUp, MapPin,
   AlertTriangle, FileCheck, Headphones, Settings, Shield,
   Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog, Percent,
-  ShieldCheck, ShieldOff, Globe, RefreshCw, BrainCircuit, Menu, MessageSquare, MessagesSquare, Package, Palette, Monitor, GitBranch, Database, Wallet, Camera, CameraOff
+  ShieldCheck, ShieldOff, Globe, RefreshCw, BrainCircuit, Menu, MessageSquare, MessagesSquare, Package, Palette, Monitor, GitBranch, Database, Wallet, Camera, CameraOff, CreditCard
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -112,6 +112,7 @@ const AdminLayout = () => {
     { path: "/admin/permissions", icon: Shield, label: "إدارة الصلاحيات" },
     { path: "/admin/health-check", icon: Activity, label: "فحص صحة النظام" },
     { path: "/admin/wallet-recharge", icon: Wallet, label: "طلبات شحن المحفظة" },
+    { path: "/admin/payments", icon: CreditCard, label: "💳 إدارة المدفوعات" },
   ];
 
   useEffect(() => {

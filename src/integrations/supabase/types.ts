@@ -2111,6 +2111,8 @@ export type Database = {
           id: string
           metadata: Json | null
           payment_method: string
+          paypal_order_id: string | null
+          paypal_payer_id: string | null
           provider: string | null
           reference_id: string | null
           reference_type: string | null
@@ -2130,6 +2132,8 @@ export type Database = {
           id?: string
           metadata?: Json | null
           payment_method?: string
+          paypal_order_id?: string | null
+          paypal_payer_id?: string | null
           provider?: string | null
           reference_id?: string | null
           reference_type?: string | null
@@ -2149,6 +2153,8 @@ export type Database = {
           id?: string
           metadata?: Json | null
           payment_method?: string
+          paypal_order_id?: string | null
+          paypal_payer_id?: string | null
           provider?: string | null
           reference_id?: string | null
           reference_type?: string | null
@@ -2557,6 +2563,36 @@ export type Database = {
           },
         ]
       }
+      reward_stars: {
+        Row: {
+          created_at: string
+          id: string
+          level: string
+          stars: number
+          total_earned: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level?: string
+          stars?: number
+          total_earned?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level?: string
+          stars?: number
+          total_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ride_messages: {
         Row: {
           created_at: string
@@ -2921,6 +2957,33 @@ export type Database = {
           target_audience?: string | null
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      star_history: {
+        Row: {
+          created_at: string
+          granted_by: string | null
+          id: string
+          reason: string
+          stars_change: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          reason?: string
+          stars_change: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          reason?: string
+          stars_change?: number
+          user_id?: string
         }
         Relationships: []
       }
@@ -3467,6 +3530,7 @@ export type Database = {
       wallet_transactions: {
         Row: {
           amount: number
+          approved_by: string | null
           balance_after: number
           created_at: string
           description: string | null
@@ -3479,6 +3543,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          approved_by?: string | null
           balance_after?: number
           created_at?: string
           description?: string | null
@@ -3491,6 +3556,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          approved_by?: string | null
           balance_after?: number
           created_at?: string
           description?: string | null

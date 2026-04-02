@@ -3,7 +3,7 @@ import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck, Car, Send, Headphones, UtensilsCrossed,
-  Bell, Search, BarChart3, Menu, X, MessageSquare, Globe, Users, TrendingUp, Wallet,
+  Bell, Search, BarChart3, Menu, X, MessageSquare, Globe, Users, TrendingUp, Wallet, CreditCard,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import logo from "@/assets/hn-driver-badge.png";
@@ -33,6 +33,7 @@ const SupervisorLayout = () => {
     { path: "/supervisor/city-activation", icon: Globe, label: "تنشيط المدن" },
     { path: "/supervisor/messaging", icon: MessageSquare, label: "المحادثات" },
     { path: "/supervisor/wallet-recharge", icon: Wallet, label: "شحن المحفظة" },
+    { path: "/supervisor/payments", icon: CreditCard, label: "💳 المدفوعات" },
     { path: "/supervisor/community", icon: Users, label: "مجتمع HN" },
     { path: "/supervisor/analytics", icon: TrendingUp, label: "تحليلات الزوار" },
   ];
