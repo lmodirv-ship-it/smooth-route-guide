@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, CreditCard, Loader2, Navigation, Wallet } from "lucide-react";
+import { ArrowRight, Loader2, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import LeafletMap from "@/components/LeafletMap";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/context";
+import PaymentMethodSelector, { PaymentMethodType } from "@/components/PaymentMethodSelector";
 
 interface RideDraft {
   pickup: string;
@@ -34,7 +35,7 @@ const ClientBooking = () => {
   const location = useLocation();
   const { t, dir } = useI18n();
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "wallet">("cash");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>("cash");
   const { drivers: nearbyDrivers } = useNearbyDrivers();
 
   const ride = ((location.state as { ride?: RideDraft } | null)?.ride) ?? DEFAULT_RIDE;
@@ -112,14 +113,7 @@ const ClientBooking = () => {
 
           <div className="glass-card rounded-xl p-4 mb-4">
             <p className="text-sm text-foreground font-bold mb-3">{t.customer.paymentMethodTitle}</p>
-            <div className="flex gap-3">
-              {([ ["cash", t.customer.cashLabel, CreditCard], ["wallet", t.customer.walletLabel, Wallet]] as const).map(([key, label, Icon]) => (
-                <button key={key} onClick={() => setPaymentMethod(key as any)}
-                  className={`flex-1 p-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${paymentMethod === key ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}>
-                  <Icon className="w-4 h-4" /><span className="text-sm">{label}</span>
-                </button>
-              ))}
-            </div>
+            <PaymentMethodSelector selected={paymentMethod} onChange={setPaymentMethod} compact />
           </div>
 
           <Button onClick={handleConfirmBooking} disabled={loading}
