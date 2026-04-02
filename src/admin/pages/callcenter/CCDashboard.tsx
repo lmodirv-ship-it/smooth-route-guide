@@ -37,6 +37,7 @@ const ORDER_STAGES = [
   { key: "delivered", label: "تسليم", icon: "🎉" },
 ];
 
+const CCDashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     newOrders: 0, confirmed: 0, readyForPickup: 0, inTransit: 0,
