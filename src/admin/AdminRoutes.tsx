@@ -40,6 +40,7 @@ import PermissionsManagement from "@/admin/pages/PermissionsManagement";
 import SystemHealthCheck from "@/admin/pages/SystemHealthCheck";
 import PaymentManagement from "@/admin/pages/PaymentManagement";
 import PayPalSettings from "@/admin/pages/PayPalSettings";
+import PayPalLivePayments from "@/admin/pages/PayPalLivePayments";
 import CouponsManagement from "@/admin/pages/CouponsManagement";
 
 // Supervisor layout & pages
