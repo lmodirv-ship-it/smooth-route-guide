@@ -452,6 +452,7 @@ const DriverTracking = () => {
         onEnd={inAppCall.endCall}
         onToggleMute={inAppCall.toggleMute}
         onToggleVideo={inAppCall.toggleVideo}
+        busy={inAppCall.busy}
       />
     </div>
   );
