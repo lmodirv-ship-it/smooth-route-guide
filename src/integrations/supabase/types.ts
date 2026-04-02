@@ -926,6 +926,109 @@ export type Database = {
           },
         ]
       }
+      coupon_usages: {
+        Row: {
+          coupon_id: string
+          created_at: string
+          discount_amount: number
+          id: string
+          order_id: string | null
+          trip_id: string | null
+          user_id: string
+        }
+        Insert: {
+          coupon_id: string
+          created_at?: string
+          discount_amount?: number
+          id?: string
+          order_id?: string | null
+          trip_id?: string | null
+          user_id: string
+        }
+        Update: {
+          coupon_id?: string
+          created_at?: string
+          discount_amount?: number
+          id?: string
+          order_id?: string | null
+          trip_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_usages_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupon_usages_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupon_usages_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coupons: {
+        Row: {
+          applies_to: string | null
+          code: string
+          created_at: string
+          created_by: string | null
+          current_uses: number | null
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          max_discount: number | null
+          max_uses: number | null
+          min_order_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          applies_to?: string | null
+          code: string
+          created_at?: string
+          created_by?: string | null
+          current_uses?: number | null
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_discount?: number | null
+          max_uses?: number | null
+          min_order_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          applies_to?: string | null
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          current_uses?: number | null
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_discount?: number | null
+          max_uses?: number | null
+          min_order_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customer_packages: {
         Row: {
           created_at: string
@@ -2504,7 +2607,11 @@ export type Database = {
           created_at: string
           driver_id: string
           id: string
+          order_id: string | null
+          rated_by: string | null
+          rating_type: string
           score: number
+          trip_id: string | null
           user_id: string
         }
         Insert: {
@@ -2512,7 +2619,11 @@ export type Database = {
           created_at?: string
           driver_id: string
           id?: string
+          order_id?: string | null
+          rated_by?: string | null
+          rating_type?: string
           score: number
+          trip_id?: string | null
           user_id: string
         }
         Update: {
@@ -2520,7 +2631,11 @@ export type Database = {
           created_at?: string
           driver_id?: string
           id?: string
+          order_id?: string | null
+          rated_by?: string | null
+          rating_type?: string
           score?: number
+          trip_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -2536,6 +2651,20 @@ export type Database = {
             columns: ["driver_id"]
             isOneToOne: false
             referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ratings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ratings_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
             referencedColumns: ["id"]
           },
         ]
