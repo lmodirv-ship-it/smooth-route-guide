@@ -38,6 +38,10 @@ const CCDashboard = () => {
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pipelineFilter, setPipelineFilter] = useState("all");
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
 
   const fetchAll = useCallback(async () => {
     const today = new Date().toISOString().slice(0, 10);
