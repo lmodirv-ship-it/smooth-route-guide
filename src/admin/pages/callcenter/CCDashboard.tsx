@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Loader2, Bell, ArrowRight, Eye, Headphones, Zap
+  Loader2, Bell, ArrowRight, Eye, Headphones, Zap, CheckCircle, Send, XCircle, Clock, Truck, Package, Phone, Store, MapPin, User
 } from "lucide-react";
 import packageImg from "@/assets/icons/package-real.png";
 import checkImg from "@/assets/icons/check-real.png";
@@ -13,7 +13,29 @@ import carImg from "@/assets/icons/car-real.png";
 import alertImg from "@/assets/icons/alert-real.png";
 import phoneImg from "@/assets/icons/phone-real.png";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+const ORDER_STAGES = [
+  { key: "pending", label: "بانتظار", icon: "⏳" },
+  { key: "confirmed", label: "مؤكد", icon: "✅" },
+  { key: "ready_for_driver", label: "للسائق", icon: "🏍️" },
+  { key: "driver_assigned", label: "تعيين", icon: "📍" },
+  { key: "picked_up", label: "استلام", icon: "📦" },
+  { key: "delivered", label: "تسليم", icon: "🎉" },
+];
 
 const CCDashboard = () => {
   const navigate = useNavigate();
@@ -25,6 +47,10 @@ const CCDashboard = () => {
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pipelineFilter, setPipelineFilter] = useState("all");
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
 
   const fetchAll = useCallback(async () => {
     const today = new Date().toISOString().slice(0, 10);
@@ -42,7 +68,7 @@ const CCDashboard = () => {
       supabase.from("drivers").select("id", { count: "exact", head: true }),
       supabase.from("complaints").select("id", { count: "exact", head: true }).eq("status", "open"),
       supabase.from("call_logs").select("id", { count: "exact", head: true }).gte("created_at", today),
-      supabase.from("delivery_orders").select("*").order("created_at", { ascending: false }).limit(8),
+      supabase.from("delivery_orders").select("*").order("created_at", { ascending: false }).limit(50),
       supabase.from("alerts").select("*").eq("status", "active").order("created_at", { ascending: false }).limit(5),
     ]);
 
@@ -98,17 +124,32 @@ const CCDashboard = () => {
 
   const getStatusInfo = (status) => {
     const map = {
-      pending: { label: "جديد", color: "text-amber-400", bg: "bg-amber-500/20", dot: "bg-amber-400" },
+      pending: { label: "بانتظار التأكيد", color: "text-amber-400", bg: "bg-amber-500/20", dot: "bg-amber-400" },
       confirmed: { label: "مؤكد", color: "text-blue-400", bg: "bg-blue-500/20", dot: "bg-blue-400" },
-      preparing: { label: "تحضير", color: "text-orange-400", bg: "bg-orange-500/20", dot: "bg-orange-400" },
-      ready: { label: "جاهز", color: "text-purple-400", bg: "bg-purple-500/20", dot: "bg-purple-400" },
-      driver_assigned: { label: "سائق معيّن", color: "text-cyan-400", bg: "bg-cyan-500/20", dot: "bg-cyan-400" },
+      ready_for_driver: { label: "جاهز للسائق", color: "text-purple-400", bg: "bg-purple-500/20", dot: "bg-purple-400" },
+      driver_assigned: { label: "تم التعيين", color: "text-cyan-400", bg: "bg-cyan-500/20", dot: "bg-cyan-400" },
       picked_up: { label: "تم الاستلام", color: "text-teal-400", bg: "bg-teal-500/20", dot: "bg-teal-400" },
       in_transit: { label: "في الطريق", color: "text-sky-400", bg: "bg-sky-500/20", dot: "bg-sky-400" },
-      delivered: { label: "مكتمل", color: "text-emerald-400", bg: "bg-emerald-500/20", dot: "bg-emerald-400" },
+      delivered: { label: "تم التسليم", color: "text-emerald-400", bg: "bg-emerald-500/20", dot: "bg-emerald-400" },
       cancelled: { label: "ملغي", color: "text-red-400", bg: "bg-red-500/20", dot: "bg-red-400" },
     };
     return map[status] || { label: status, color: "text-muted-foreground", bg: "bg-muted", dot: "bg-muted-foreground" };
+  };
+
+  const filteredPipelineOrders = recentOrders.filter(o => {
+    if (pipelineFilter === "all") return true;
+    return o.status === pipelineFilter;
+  });
+
+  const handleOrderAction = async (orderId: string, newStatus: string, extra?: Record<string, any>) => {
+    const updates: Record<string, any> = { status: newStatus, updated_at: new Date().toISOString(), ...extra };
+    const { error } = await supabase.from("delivery_orders").update(updates).eq("id", orderId);
+    if (error) {
+      toast({ title: "خطأ", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "تم تحديث الطلب ✅" });
+      fetchAll();
+    }
   };
 
   if (loading) return (
@@ -214,67 +255,141 @@ const CCDashboard = () => {
         </motion.div>
       )}
 
-      {/* Recent Orders */}
+      {/* ───────── Order Pipeline Management ───────── */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-[10px] rounded-lg gap-1 text-primary hover:text-primary hover:bg-primary/10 h-7 px-2"
-            onClick={() => navigate("/call-center/delivery")}
-          >
-            <Eye className="w-3 h-3" />
-            الكل
+          <Button size="sm" variant="ghost" className="text-[10px] rounded-lg gap-1 text-primary hover:text-primary hover:bg-primary/10 h-7 px-2" onClick={() => navigate("/call-center/delivery")}>
+            <Eye className="w-3 h-3" />عرض الكل
           </Button>
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
             <img src={packageImg} alt="طلبات" className="w-5 h-5 object-contain" />
-            آخر الطلبات
+            إدارة الطلبات
           </h2>
         </div>
 
+        {/* Pipeline filter tabs */}
+        <div className="flex flex-wrap gap-1.5 mb-3 justify-end">
+          {[
+            { key: "all", label: "الكل", icon: "📋" },
+            { key: "pending", label: "بانتظار التأكيد", icon: "⏳" },
+            { key: "confirmed", label: "مؤكد", icon: "✅" },
+            { key: "ready_for_driver", label: "جاهز للسائق", icon: "🏍️" },
+            { key: "driver_assigned", label: "تم التعيين", icon: "📍" },
+            { key: "picked_up", label: "تم الاستلام", icon: "📦" },
+            { key: "delivered", label: "تم التسليم", icon: "🎉" },
+          ].map(t => (
+            <button
+              key={t.key}
+              onClick={() => setPipelineFilter(t.key)}
+              className={`text-[10px] px-2.5 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1 ${
+                pipelineFilter === t.key
+                  ? "bg-primary/20 text-primary border border-primary/30"
+                  : "bg-white/[0.04] text-muted-foreground border border-white/[0.06] hover:bg-white/[0.08]"
+              }`}
+            >
+              <span>{t.icon}</span>{t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Orders table with actions */}
         <div className="rounded-2xl bg-gradient-to-b from-black/30 to-black/10 border border-white/[0.06] overflow-hidden backdrop-blur-sm">
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/[0.08]">
-                <th className="p-3 text-right text-sm font-bold text-foreground/80">إجراء</th>
-                <th className="p-3 text-right text-sm font-bold text-foreground/80">السعر</th>
-                <th className="p-3 text-center text-sm font-bold text-foreground/80">الحالة</th>
-                <th className="p-3 text-right text-sm font-bold text-foreground/80">المطعم</th>
-                <th className="p-3 text-center text-sm font-bold text-foreground/80">الوقت</th>
-                <th className="p-3 text-right text-sm font-bold text-foreground/80">الزبون</th>
+                <th className="p-3 text-center text-[11px] font-bold text-foreground/80">إجراء</th>
+                <th className="p-3 text-center text-[11px] font-bold text-foreground/80">المرحلة</th>
+                <th className="p-3 text-right text-[11px] font-bold text-foreground/80">السعر</th>
+                <th className="p-3 text-center text-[11px] font-bold text-foreground/80">الحالة</th>
+                <th className="p-3 text-right text-[11px] font-bold text-foreground/80">المطعم</th>
+                <th className="p-3 text-center text-[11px] font-bold text-foreground/80">الوقت</th>
+                <th className="p-3 text-right text-[11px] font-bold text-foreground/80">الزبون</th>
               </tr>
             </thead>
             <tbody>
-              {recentOrders.length === 0 && (
-                <tr><td colSpan={6} className="p-10 text-center text-muted-foreground/50 text-sm">لا توجد طلبات بعد</td></tr>
+              {filteredPipelineOrders.length === 0 && (
+                <tr><td colSpan={7} className="p-10 text-center text-muted-foreground/50 text-sm">لا توجد طلبات مطابقة</td></tr>
               )}
-              {recentOrders.map(o => {
+              {filteredPipelineOrders.map(o => {
                 const si = getStatusInfo(o.status);
                 return (
                   <tr
                     key={o.id}
-                    className="border-b border-white/[0.05] last:border-0 hover:bg-white/[0.03] transition-colors cursor-pointer"
-                    onClick={() => navigate("/call-center/delivery")}
+                    className={`border-b border-white/[0.05] last:border-0 hover:bg-white/[0.03] transition-colors cursor-pointer ${selectedOrder?.id === o.id ? "bg-primary/5" : ""}`}
+                    onClick={() => setSelectedOrder(o)}
                   >
-                    <td className="p-3">
-                      <button className="w-7 h-7 rounded-lg bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors">
-                        <Eye className="w-3.5 h-3.5 text-primary" />
-                      </button>
+                    {/* Action buttons */}
+                    <td className="p-2 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        {o.status === "pending" && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleOrderAction(o.id, "confirmed"); }}
+                            className="px-2 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 text-[9px] font-bold hover:bg-emerald-500/30 transition-colors"
+                            title="تأكيد الطلب"
+                          >✅ تأكيد</button>
+                        )}
+                        {o.status === "confirmed" && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleOrderAction(o.id, "ready_for_driver"); }}
+                            className="px-2 py-1 rounded-lg bg-blue-500/20 text-blue-400 text-[9px] font-bold hover:bg-blue-500/30 transition-colors"
+                            title="إرسال للسائق"
+                          >🏍️ للسائق</button>
+                        )}
+                        {["pending", "confirmed", "ready_for_driver"].includes(o.status) && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setSelectedOrder(o); setCancelDialogOpen(true); }}
+                            className="px-1.5 py-1 rounded-lg bg-red-500/20 text-red-400 text-[9px] font-bold hover:bg-red-500/30 transition-colors"
+                            title="إلغاء"
+                          >✕</button>
+                        )}
+                        {!["pending", "confirmed", "ready_for_driver"].includes(o.status) && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setSelectedOrder(o); }}
+                            className="w-7 h-7 rounded-lg bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-primary" />
+                          </button>
+                        )}
+                      </div>
                     </td>
-                    <td className="p-3 text-primary font-bold text-sm">{o.estimated_price || 0} DH</td>
+                    {/* Progress pipeline */}
+                    <td className="p-2">
+                      <div className="flex items-center gap-0.5 justify-center">
+                        {ORDER_STAGES.map((stage, i) => {
+                          const stageIdx = ORDER_STAGES.findIndex(s => s.key === o.status);
+                          const isActive = i <= stageIdx;
+                          const isCurrent = i === stageIdx;
+                          return (
+                            <div key={stage.key} className="flex items-center gap-0.5">
+                              <div
+                                className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] transition-all ${
+                                  isCurrent ? "bg-primary text-primary-foreground scale-110 ring-2 ring-primary/30" :
+                                  isActive ? "bg-emerald-500/30 text-emerald-400" : "bg-white/[0.06] text-muted-foreground/40"
+                                }`}
+                                title={stage.label}
+                              >{stage.icon}</div>
+                              {i < ORDER_STAGES.length - 1 && (
+                                <div className={`w-2 h-0.5 rounded ${isActive ? "bg-emerald-500/40" : "bg-white/[0.06]"}`} />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </td>
+                    <td className="p-3 text-primary font-bold text-sm">{o.total_price || o.estimated_price || 0} DH</td>
                     <td className="p-3 text-center">
-                      <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-bold ${si.bg} ${si.color} border border-white/[0.06]`}>
-                        <span className={`w-2 h-2 rounded-full ${si.dot}`} />
+                      <span className={`inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-full font-bold ${si.bg} ${si.color} border border-white/[0.06]`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${si.dot}`} />
                         {si.label}
                       </span>
                     </td>
-                    <td className="p-3 text-foreground/80 text-sm font-medium">{o.store_name || "—"}</td>
-                    <td className="p-3 text-center text-muted-foreground/60 text-sm">
+                    <td className="p-3 text-foreground/80 text-xs font-medium">{o.store_name || "—"}</td>
+                    <td className="p-3 text-center text-muted-foreground/60 text-xs">
                       {new Date(o.created_at).toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" })}
                     </td>
                     <td className="p-3 text-right">
-                      <p className="text-sm font-bold text-foreground/90">{o.userName}</p>
-                      <p className="text-xs text-muted-foreground/50">{o.userPhone}</p>
+                      <p className="text-xs font-bold text-foreground/90">{o.userName}</p>
+                      <p className="text-[10px] text-muted-foreground/50">{o.userPhone}</p>
                     </td>
                   </tr>
                 );
@@ -283,6 +398,113 @@ const CCDashboard = () => {
           </table>
         </div>
       </div>
+
+      {/* Selected Order Detail Panel */}
+      {selectedOrder && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl bg-gradient-to-b from-black/40 to-black/20 border border-primary/20 p-5 backdrop-blur-sm"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <Button size="sm" variant="ghost" onClick={() => setSelectedOrder(null)} className="text-muted-foreground text-xs">✕ إغلاق</Button>
+            <h3 className="text-sm font-bold text-foreground">تفاصيل الطلب #{selectedOrder.id.slice(0, 8)}</h3>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 text-right">
+            <div className="rounded-xl bg-white/[0.04] p-3 border border-white/[0.06]">
+              <p className="text-[10px] text-muted-foreground mb-1">الزبون</p>
+              <p className="text-xs font-bold text-foreground">{selectedOrder.userName}</p>
+              <p className="text-[10px] text-muted-foreground">{selectedOrder.userPhone}</p>
+            </div>
+            <div className="rounded-xl bg-white/[0.04] p-3 border border-white/[0.06]">
+              <p className="text-[10px] text-muted-foreground mb-1">المطعم</p>
+              <p className="text-xs font-bold text-foreground">{selectedOrder.store_name || "—"}</p>
+            </div>
+            <div className="rounded-xl bg-white/[0.04] p-3 border border-white/[0.06]">
+              <p className="text-[10px] text-muted-foreground mb-1">العنوان</p>
+              <p className="text-xs font-bold text-foreground">{selectedOrder.delivery_address || "—"}</p>
+            </div>
+            <div className="rounded-xl bg-white/[0.04] p-3 border border-white/[0.06]">
+              <p className="text-[10px] text-muted-foreground mb-1">المبلغ</p>
+              <p className="text-xs font-bold text-primary">{selectedOrder.total_price || selectedOrder.estimated_price || 0} DH</p>
+            </div>
+          </div>
+
+          {/* Stage progress bar */}
+          <div className="rounded-xl bg-white/[0.04] p-4 border border-white/[0.06] mb-4">
+            <div className="flex items-center justify-between gap-1">
+              {ORDER_STAGES.map((stage, i) => {
+                const stageIdx = ORDER_STAGES.findIndex(s => s.key === selectedOrder.status);
+                const isActive = i <= stageIdx;
+                const isCurrent = i === stageIdx;
+                return (
+                  <div key={stage.key} className="flex items-center gap-1 flex-1">
+                    <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all ${
+                        isCurrent ? "bg-primary text-primary-foreground scale-110 ring-2 ring-primary/30 shadow-lg shadow-primary/20" :
+                        isActive ? "bg-emerald-500/20 text-emerald-400" : "bg-white/[0.06] text-muted-foreground/30"
+                      }`}>{stage.icon}</div>
+                      <span className={`text-[8px] font-bold whitespace-nowrap ${isCurrent ? "text-primary" : isActive ? "text-emerald-400/70" : "text-muted-foreground/30"}`}>{stage.label}</span>
+                    </div>
+                    {i < ORDER_STAGES.length - 1 && (
+                      <div className={`h-0.5 flex-1 rounded ${isActive ? "bg-emerald-500/40" : "bg-white/[0.06]"}`} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Action buttons for selected order */}
+          <div className="flex flex-wrap gap-2 justify-end">
+            {selectedOrder.status === "pending" && (
+              <Button size="sm" onClick={() => handleOrderAction(selectedOrder.id, "confirmed")} className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs">
+                <CheckCircle className="w-3.5 h-3.5" />تأكيد الطلب
+              </Button>
+            )}
+            {selectedOrder.status === "confirmed" && (
+              <Button size="sm" onClick={() => handleOrderAction(selectedOrder.id, "ready_for_driver")} className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs">
+                <Send className="w-3.5 h-3.5" />إرسال للسائق
+              </Button>
+            )}
+            {["pending", "confirmed", "ready_for_driver"].includes(selectedOrder.status) && (
+              <Button size="sm" variant="outline" onClick={() => setCancelDialogOpen(true)} className="gap-1.5 border-destructive text-destructive rounded-xl text-xs">
+                <XCircle className="w-3.5 h-3.5" />إلغاء الطلب
+              </Button>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Cancel Dialog */}
+      <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>إلغاء الطلب</AlertDialogTitle>
+            <AlertDialogDescription>هل تريد إلغاء هذا الطلب؟ سيتم إبلاغ الزبون.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <Textarea
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+            placeholder="سبب الإلغاء (اختياري)..."
+            className="mt-2"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel>تراجع</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground"
+              onClick={() => {
+                if (selectedOrder) {
+                  handleOrderAction(selectedOrder.id, "cancelled", { cancel_reason: cancelReason || "ملغي من مركز الاتصال" });
+                }
+                setCancelDialogOpen(false);
+                setCancelReason("");
+              }}
+            >تأكيد الإلغاء</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
