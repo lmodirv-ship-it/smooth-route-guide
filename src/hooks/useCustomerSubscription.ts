@@ -20,9 +20,31 @@ export function useCustomerSubscription() {
   const [trialDaysLeft, setTrialDaysLeft] = useState(0);
 
   useEffect(() => {
+    const SUBSCRIPTION_START_DATE = new Date("2026-04-05T00:00:00Z");
     const fetch = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
+
+      // Before April 5, 2026 — everything is free
+      if (Date.now() < SUBSCRIPTION_START_DATE.getTime()) {
+        const daysLeft = Math.max(0, Math.ceil((SUBSCRIPTION_START_DATE.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+        setIsInTrial(true);
+        setTrialDaysLeft(daysLeft);
+        setSubs([{
+          id: "pre-launch",
+          subscription_type: "credits",
+          status: "free",
+          credits_remaining: 999,
+          credits_total: 999,
+          starts_at: new Date().toISOString(),
+          expires_at: SUBSCRIPTION_START_DATE.toISOString(),
+          package_name: "مجاني حتى 5 أبريل",
+        }]);
+        const walletRes = await supabase.from("wallet").select("balance").eq("user_id", user.id).maybeSingle();
+        setWalletBalance(walletRes.data?.balance || 0);
+        setLoading(false);
+        return;
+      }
 
       const now = new Date().toISOString();
 
