@@ -1,0 +1,25 @@
+/**
+ * Capacitor config for Client App (separate APK)
+ * App ID: com.hndriver.client
+ */
+{
+  "appId": "com.hndriver.client",
+  "appName": "HN Client - زبون",
+  "webDir": "dist-client",
+  "server": {
+    "url": "https://871f3759-73ef-4579-8f08-9a7c52b1611d.lovableproject.com?forceHideBadge=true",
+    "cleartext": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "backgroundColor": "#0A0A0A",
+      "showSpinner": true,
+      "spinnerColor": "#3B82F6"
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#0A0A0A"
+    }
+  }
+}
