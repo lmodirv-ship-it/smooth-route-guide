@@ -56,10 +56,6 @@ const AuthPage = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [faceCheckActive, setFaceCheckActive] = useState(false);
-  const [faceVerified, setFaceVerified] = useState(false);
-  const [showFaceRegister, setShowFaceRegister] = useState(false);
-  const { ready, session } = useAuthReady();
 
   useEffect(() => {
     let mounted = true;
