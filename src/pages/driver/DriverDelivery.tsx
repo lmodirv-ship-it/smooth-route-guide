@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Bike, CheckCircle, Clock, MapPin, Navigation, Package,
+  Bike, CheckCircle, Clock, MapPin, Navigation, Package, Phone,
   Store, XCircle, Radar, Wallet, TrendingUp, Crown, Loader2,
   Star, Settings, Volume2,
 } from "lucide-react";
