@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Loader2, Bell, ArrowRight, Eye, Headphones, Zap, CheckCircle, Send, XCircle, Clock, Truck, Package, Phone, Store, MapPin, User
+  Loader2, Bell, ArrowRight, Eye, Headphones, Zap, CheckCircle, Send, XCircle, Clock, Truck, Package, Phone, Store, MapPin, User, PhoneCall
 } from "lucide-react";
 import packageImg from "@/assets/icons/package-real.png";
 import checkImg from "@/assets/icons/check-real.png";
@@ -27,6 +27,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useInAppCall } from "@/hooks/useInAppCall";
+import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 const ORDER_STAGES = [
   { key: "pending", label: "بانتظار", icon: "⏳" },
@@ -51,6 +53,7 @@ const CCDashboard = () => {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  const inAppCall = useInAppCall();
 
   const fetchAll = useCallback(async () => {
     const today = new Date().toISOString().slice(0, 10);
@@ -416,6 +419,14 @@ const CCDashboard = () => {
               <p className="text-[10px] text-muted-foreground mb-1">الزبون</p>
               <p className="text-xs font-bold text-foreground">{selectedOrder.userName}</p>
               <p className="text-[10px] text-muted-foreground">{selectedOrder.userPhone}</p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-2 w-full gap-1.5 text-[10px] h-7 rounded-lg border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+                onClick={() => inAppCall.startCall({ id: selectedOrder.user_id, name: selectedOrder.userName || "زبون" })}
+              >
+                <PhoneCall className="w-3 h-3" />اتصل بالزبون
+              </Button>
             </div>
             <div className="rounded-xl bg-white/[0.04] p-3 border border-white/[0.06]">
               <p className="text-[10px] text-muted-foreground mb-1">المطعم</p>
@@ -505,6 +516,21 @@ const CCDashboard = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* In-App Call Dialog */}
+      <InAppCallDialog
+        incomingCall={inAppCall.incomingCall}
+        activeCall={inAppCall.activeCall}
+        localStream={inAppCall.localStream}
+        remoteStream={inAppCall.remoteStream}
+        isMuted={inAppCall.isMuted}
+        isVideoEnabled={inAppCall.isVideoEnabled}
+        busy={inAppCall.busy}
+        onAccept={inAppCall.acceptCall}
+        onEnd={inAppCall.endCall}
+        onToggleMute={inAppCall.toggleMute}
+        onToggleVideo={inAppCall.toggleVideo}
+      />
     </div>
   );
 };
