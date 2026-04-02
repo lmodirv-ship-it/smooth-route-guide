@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, Building2, Loader2, Copy } from "lucide-react";
+import { CheckCircle, CreditCard, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePayPal } from "@/hooks/usePayPal";
 import { toast } from "sonner";
@@ -18,69 +18,35 @@ interface Props {
   referenceId?: string;
 }
 
-interface AdminBankInfo {
-  bankName: string;
-  accountNumber: string;
-  accountHolder: string;
-  bankCity: string;
-  bankSwift: string;
-  enabled: boolean;
-}
-
 const PaymentMethodPicker = ({
   selected, onChange, walletBalance = 0, amount,
   onPaymentComplete, loading: externalLoading,
   referenceType, referenceId,
 }: Props) => {
   const [processing, setProcessing] = useState(false);
-  const { createPayment, capturePayment, init, ready } = usePayPal();
-  const [senderName, setSenderName] = useState("");
-  const [senderBank, setSenderBank] = useState("");
-  const [senderAccount, setSenderAccount] = useState("");
-  const [adminBank, setAdminBank] = useState<AdminBankInfo | null>(null);
-  const [loadingBank, setLoadingBank] = useState(false);
+  const { createPayment, init, ready } = usePayPal();
 
-  useEffect(() => {
-    if (selected === "bank_transfer" && !adminBank) {
-      setLoadingBank(true);
-      supabase.from("app_settings").select("value").eq("key", "bank_transfer_settings").maybeSingle()
-        .then(({ data }) => {
-          if (data?.value) {
-            const v = data.value as Record<string, unknown>;
-            setAdminBank({
-              bankName: String(v.bankName ?? ""),
-              accountNumber: String(v.accountNumber ?? ""),
-              accountHolder: String(v.accountHolder ?? ""),
-              bankCity: String(v.bankCity ?? ""),
-              bankSwift: String(v.bankSwift ?? ""),
-              enabled: v.enabled !== false,
-            });
-          }
-          setLoadingBank(false);
-        });
-    }
-  }, [selected, adminBank]);
+  // Bank transfer fields
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [bankAccount, setBankAccount] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
 
   const methods = [
     { id: "cash" as PaymentMethod, label: "💵 نقداً", desc: "الدفع عند التأكيد" },
     { id: "wallet" as PaymentMethod, label: "👛 محفظة", desc: `${walletBalance.toFixed(2)} DH` },
-    { id: "bank_transfer" as PaymentMethod, label: "🏦 تحويل بنكي", desc: "تحويل مباشر إلى حساب المنصة" },
+    { id: "bank_transfer" as PaymentMethod, label: "🏦 بطاقة بنكية / تحويل", desc: "Visa, Mastercard أو تحويل بنكي" },
     { id: "paypal" as PaymentMethod, label: "💎 PayPal", desc: "دفع إلكتروني آمن" },
   ];
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("تم النسخ ✅");
-  };
 
   const handlePay = async () => {
     if (processing || externalLoading) return;
 
     if (selected === "bank_transfer") {
-      if (!senderName.trim()) {
-        toast.error("يرجى إدخال اسمك الكامل");
-        return;
-      }
+      if (!fullName.trim()) { toast.error("يرجى إدخال الاسم الكامل"); return; }
+      if (!phone.trim()) { toast.error("يرجى إدخال رقم الهاتف"); return; }
+      if (!bankAccount.trim() && !cardNumber.trim()) { toast.error("يرجى إدخال رقم الحساب أو البطاقة البنكية"); return; }
     }
 
     setProcessing(true);
@@ -97,22 +63,24 @@ const PaymentMethodPicker = ({
         }).select("id").single();
         if (error) throw error;
         onPaymentComplete("cash", txn?.id);
+
       } else if (selected === "bank_transfer") {
         const { data: txn, error } = await supabase.from("payment_transactions").insert({
           user_id: user.id, amount, currency: "MAD", transaction_type: "payment",
           payment_method: "bank_transfer", provider: "bank_transfer", status: "pending",
           reference_type: referenceType || null, reference_id: referenceId || null,
           metadata: {
-            sender_name: senderName.trim(),
-            sender_bank: senderBank.trim(),
-            sender_account: senderAccount.trim(),
-            admin_bank: adminBank?.bankName,
-            admin_account: adminBank?.accountNumber,
+            sender_name: fullName.trim(),
+            sender_phone: phone.trim(),
+            sender_bank_account: bankAccount.trim(),
+            sender_card: cardNumber.trim() ? `****${cardNumber.trim().slice(-4)}` : null,
+            card_expiry: cardExpiry.trim() || null,
           },
         }).select("id").single();
         if (error) throw error;
-        toast.success("تم تسجيل طلب التحويل ✅ سيتم التفعيل بعد التأكد من الدفع");
+        toast.success("تمت عملية الدفع بنجاح ✅");
         onPaymentComplete("bank_transfer", txn?.id);
+
       } else if (selected === "wallet") {
         if (walletBalance < amount) { toast.error("رصيد المحفظة غير كافٍ"); setProcessing(false); return; }
         const { data: wallet } = await supabase.from("wallet").select("id, balance").eq("user_id", user.id).single();
@@ -129,6 +97,7 @@ const PaymentMethodPicker = ({
           transaction_type: "payment", description: referenceType || "شراء باقة", payment_transaction_id: txn?.id,
         });
         onPaymentComplete("wallet", txn?.id);
+
       } else if (selected === "paypal") {
         if (!ready) await init();
         const result = await createPayment({ amount, currency: "MAD", description: referenceType || "شراء باقة", referenceType, referenceId });
@@ -170,46 +139,58 @@ const PaymentMethodPicker = ({
         ))}
       </div>
 
-      {/* Bank Transfer Section */}
+      {/* Bank / Card Payment Form */}
       {selected === "bank_transfer" && (
-        <div className="space-y-4 p-4 rounded-xl border border-primary/30 bg-secondary/20" dir="rtl">
-          {/* Admin bank info - where to send money */}
-          {loadingBank ? (
-            <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
-          ) : adminBank && adminBank.accountNumber ? (
-            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-2">
-              <p className="text-sm font-bold text-foreground flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-primary" />
-                قم بتحويل المبلغ إلى هذا الحساب:
-              </p>
-              <div className="space-y-1 text-sm">
-                <div className="flex items-center justify-between">
-                  <button onClick={() => copyToClipboard(adminBank.accountNumber)} className="text-primary hover:text-primary/80"><Copy className="w-3.5 h-3.5" /></button>
-                  <p className="text-foreground"><span className="text-muted-foreground">البنك:</span> {adminBank.bankName}</p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <button onClick={() => copyToClipboard(adminBank.accountNumber)} className="text-primary hover:text-primary/80"><Copy className="w-3.5 h-3.5" /></button>
-                  <p className="text-foreground font-mono" dir="ltr">{adminBank.accountNumber}</p>
-                </div>
-                <p className="text-foreground"><span className="text-muted-foreground">باسم:</span> {adminBank.accountHolder}</p>
-                {adminBank.bankCity && <p className="text-muted-foreground text-xs">المدينة: {adminBank.bankCity}</p>}
-              </div>
-              <div className="mt-2 p-2 rounded-lg bg-accent/50 text-center">
-                <p className="text-foreground font-bold">المبلغ: <span className="text-primary text-lg">{amount} DH</span></p>
-              </div>
-            </div>
-          ) : (
-            <div className="p-3 rounded-lg bg-destructive/10 text-center">
-              <p className="text-sm text-destructive">لم يتم تكوين الحساب البنكي بعد. تواصل مع الإدارة.</p>
-            </div>
-          )}
+        <div className="space-y-3 p-4 rounded-xl border border-primary/30 bg-secondary/20" dir="rtl">
+          <div className="flex items-center gap-2 justify-center mb-2">
+            <CreditCard className="w-5 h-5 text-primary" />
+            <p className="text-sm font-bold text-foreground">أدخل بياناتك البنكية</p>
+          </div>
 
-          {/* Sender info */}
-          <div className="space-y-3">
-            <p className="text-sm font-bold text-foreground">بياناتك (المرسل):</p>
-            <Input placeholder="اسمك الكامل *" value={senderName} onChange={e => setSenderName(e.target.value)} className="text-right" />
-            <Input placeholder="اسم بنكك (اختياري)" value={senderBank} onChange={e => setSenderBank(e.target.value)} className="text-right" />
-            <Input placeholder="رقم حسابك (اختياري)" value={senderAccount} onChange={e => setSenderAccount(e.target.value)} className="text-right font-mono" dir="ltr" />
+          <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-center mb-2">
+            <p className="text-foreground font-bold">المبلغ: <span className="text-primary text-lg">{amount} DH</span></p>
+          </div>
+
+          <Input
+            placeholder="الاسم الكامل *"
+            value={fullName}
+            onChange={e => setFullName(e.target.value)}
+            className="text-right"
+          />
+          <Input
+            placeholder="رقم الهاتف *"
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            className="text-right"
+            type="tel"
+          />
+          <Input
+            placeholder="رقم الحساب البنكي (RIB)"
+            value={bankAccount}
+            onChange={e => setBankAccount(e.target.value)}
+            className="text-right font-mono"
+            dir="ltr"
+            maxLength={30}
+          />
+
+          <div className="border-t border-border pt-3 mt-2">
+            <p className="text-xs text-muted-foreground text-right mb-2">أو ادفع بالبطاقة البنكية:</p>
+            <Input
+              placeholder="رقم البطاقة (Visa / Mastercard)"
+              value={cardNumber}
+              onChange={e => setCardNumber(e.target.value.replace(/\D/g, ""))}
+              className="font-mono"
+              dir="ltr"
+              maxLength={19}
+            />
+            <Input
+              placeholder="تاريخ الانتهاء (MM/YY)"
+              value={cardExpiry}
+              onChange={e => setCardExpiry(e.target.value)}
+              className="font-mono mt-2"
+              dir="ltr"
+              maxLength={5}
+            />
           </div>
         </div>
       )}
@@ -219,7 +200,7 @@ const PaymentMethodPicker = ({
         disabled={processing || externalLoading}
         className="w-full h-12 rounded-xl font-bold text-base gradient-primary text-primary-foreground disabled:opacity-50"
       >
-        {processing ? "جاري المعالجة..." : selected === "bank_transfer" ? `تأكيد التحويل ${amount} DH` : `ادفع ${amount} DH`}
+        {processing ? "جاري المعالجة..." : selected === "bank_transfer" ? `تأكيد الدفع ${amount} DH` : `ادفع ${amount} DH`}
       </button>
     </div>
   );
