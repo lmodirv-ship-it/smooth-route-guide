@@ -130,7 +130,7 @@ const AuthPage = () => {
           return;
         }
 
-        const redirectTo = `${window.location.origin}/login`;
+        const redirectTo = `https://www.hn-driver.com/login`;
         const { error } = await supabase.auth.signUp({
           email,
           password,

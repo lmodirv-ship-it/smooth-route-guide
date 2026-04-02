@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { emailSchema, getSafeWindowOrigin, sanitizeEmail } from "@/lib/inputSecurity";
+import { emailSchema, sanitizeEmail } from "@/lib/inputSecurity";
+import { OFFICIAL_URL } from "@/config/domain";
 import logo from "@/assets/hn-driver-badge.png";
 
 type RecoveryMethod = "email" | "whatsapp" | "messenger";
@@ -33,7 +34,7 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-        redirectTo: `${getSafeWindowOrigin()}/reset-password`,
+        redirectTo: `${OFFICIAL_URL}/reset-password`,
       });
       if (error) throw error;
       setEmail(cleanEmail);
