@@ -219,6 +219,45 @@ const PayPalSettings = () => {
         </div>
       </div>
 
+      {/* ===== Agency Transfer Settings ===== */}
+      <div className="glass-card rounded-xl p-6 space-y-5 border-2 border-accent/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Switch checked={agencySettings.enabled} onCheckedChange={v => setAgencySettings(s => ({ ...s, enabled: v }))} />
+            <Badge variant={agencySettings.enabled ? "default" : "secondary"}>
+              {agencySettings.enabled ? "مفعّل" : "معطّل"}
+            </Badge>
+          </div>
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            📍 تحويل عبر وكالة (Wafacash, Cash Plus...)
+          </h2>
+        </div>
+        <p className="text-sm text-muted-foreground text-right">
+          الاسم الذي سيظهر للمستخدمين ليحولوا المبلغ عبر وكالة التحويل
+        </p>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground block text-right">الاسم العائلي</label>
+            <Input
+              value={agencySettings.lastName}
+              onChange={e => setAgencySettings(s => ({ ...s, lastName: e.target.value }))}
+              placeholder="العائلي"
+              className="bg-secondary/60 border-border"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground block text-right">الاسم الشخصي</label>
+            <Input
+              value={agencySettings.firstName}
+              onChange={e => setAgencySettings(s => ({ ...s, firstName: e.target.value }))}
+              placeholder="الاسم"
+              className="bg-secondary/60 border-border"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* ===== PayPal Settings ===== */}
       {/* Status */}
       <div className="glass-card rounded-xl p-4 flex items-center justify-between">
