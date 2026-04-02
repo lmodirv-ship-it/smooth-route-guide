@@ -117,14 +117,6 @@ const AuthPage = () => {
         const { error } = await signInWithPasswordWithTimeout({ email, password });
         if (error) throw error;
         toast({ title: "تم تسجيل الدخول بنجاح ✅" });
-        try {
-          const faceProfileExists = await hasFaceProfileWithTimeout(email);
-          if (!faceProfileExists) {
-            setShowFaceRegister(true);
-          }
-        } catch {
-          // Face registration is optional; never block password login on it.
-        }
       } else {
         if (!name) {
           toast({ title: "يرجى إدخال الاسم", variant: "destructive" });
