@@ -255,8 +255,10 @@ const DriverRequestsTable = () => {
                       </div>
                     </td>
                     <td className="p-4 align-middle text-foreground max-w-[220px] truncate">{request.pickup}</td>
-                    <td className="p-4 align-middle text-foreground max-w-[220px] truncate">{request.destination}</td>
-                    <td className="p-4 align-middle text-primary font-semibold">{request.amount.toFixed(0)} DH</td>
+                     <td className="p-4 align-middle text-foreground max-w-[220px] truncate">{request.destination}</td>
+                     <td className="p-4 align-middle text-sm text-foreground">{request.distance ? `${request.distance.toFixed(1)} كم` : "—"}</td>
+                     <td className="p-4 align-middle text-sm text-foreground">{request.estimatedTime ? `${request.estimatedTime} د` : "—"}</td>
+                     <td className="p-4 align-middle text-primary font-semibold">{request.amount.toFixed(0)} DH</td>
                     <td className="p-4 align-middle">
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-xs ${statusMeta.className}`}>
                         {statusMeta.label}
