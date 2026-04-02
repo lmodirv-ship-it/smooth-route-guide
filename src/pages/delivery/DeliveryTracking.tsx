@@ -38,9 +38,11 @@ const DeliveryTracking = () => {
   const [driverRefCode, setDriverRefCode] = useState<string | null>(null);
   const [driverRating, setDriverRating] = useState<number | null>(null);
   const [driverPhone, setDriverPhone] = useState<string | null>(null);
+  const [driverUserId, setDriverUserId] = useState<string | null>(null);
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
   const [throttledDriverPos, setThrottledDriverPos] = useState<{ lat: number; lng: number } | null>(null);
   const lastRouteFetchRef = useRef(0);
+  const inAppCall = useInAppCall();
 
   useEffect(() => {
     const fetchOrder = async () => {
