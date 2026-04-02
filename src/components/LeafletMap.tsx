@@ -204,16 +204,18 @@ const LeafletMap = ({
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     if (showMarker && !driverLocation) {
+      const icon = nearbyDrivers.length > 0 || !driverLocation ? customerIcon : defaultIcon;
       if (!staticMarkerRef.current) {
-        staticMarkerRef.current = L.marker(markerPos, { icon: defaultIcon }).addTo(mapInstanceRef.current);
+        staticMarkerRef.current = L.marker(markerPos, { icon }).addTo(mapInstanceRef.current);
       } else {
         staticMarkerRef.current.setLatLng(markerPos);
+        staticMarkerRef.current.setIcon(icon);
       }
     } else if (staticMarkerRef.current) {
       staticMarkerRef.current.remove();
       staticMarkerRef.current = null;
     }
-  }, [driverLocation, markerPos, showMarker]);
+  }, [driverLocation, markerPos, showMarker, nearbyDrivers.length]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;
