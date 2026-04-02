@@ -427,6 +427,7 @@ export function useInAppCall() {
           direction: "incoming",
           status: "ringing",
         });
+        startRingtone();
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "call_sessions" }, async (payload: any) => {
         const row = payload.new;
