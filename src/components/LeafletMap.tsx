@@ -24,6 +24,15 @@ const driverIcon = L.divIcon({
   iconAnchor: [22, 22],
 });
 
+const motorcycleIcon = L.divIcon({
+  className: "",
+  html: `<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(16,185,129,0.5)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="17" r="3"/><circle cx="19" cy="17" r="3"/><path d="M9 17h6"/><path d="M19 17l-2-7h-4l-4 4"/><path d="M13 10V6l-3 4"/></svg>
+  </div>`,
+  iconSize: [44, 44],
+  iconAnchor: [22, 22],
+});
+
 const carIcon = L.divIcon({
   className: "",
   html: `<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1e293b,#334155);border:2px solid #F97316;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.4)">
@@ -103,16 +112,14 @@ interface LeafletMapProps {
   nearbyDrivers?: NearbyDriverMarker[];
   route?: RoutePoints | null;
   onMapClick?: (latlng: { lat: number; lng: number }) => void;
-  /** Allow parent to control expanded state */
   expandable?: boolean;
   onExpandChange?: (expanded: boolean) => void;
-  /** Hide internal map controls (theme/expand buttons) */
   hideControls?: boolean;
-  /** External theme control */
   externalTheme?: ThemeKey;
   onThemeChange?: (theme: ThemeKey) => void;
-  /** External expand control */
   externalExpanded?: boolean;
+  /** Icon type for the driver marker: 'car' (default) or 'motorcycle' */
+  driverIconType?: "car" | "motorcycle";
   children?: React.ReactNode;
 }
 
@@ -132,6 +139,7 @@ const LeafletMap = ({
   externalTheme,
   onThemeChange,
   externalExpanded,
+  driverIconType = "car",
   children,
 }: LeafletMapProps) => {
   const mapElementRef = useRef<HTMLDivElement | null>(null);
@@ -252,9 +260,10 @@ const LeafletMap = ({
     if (!mapInstanceRef.current) return;
     if (driverLocation) {
       const position: L.LatLngExpression = [driverLocation.lat, driverLocation.lng];
+      const icon = driverIconType === "motorcycle" ? motorcycleIcon : driverIcon;
       if (!driverMarkerRef.current) {
-        driverMarkerRef.current = L.marker(position, { icon: driverIcon }).addTo(mapInstanceRef.current);
-        driverMarkerRef.current.bindPopup("موقع السائق");
+        driverMarkerRef.current = L.marker(position, { icon }).addTo(mapInstanceRef.current);
+        driverMarkerRef.current.bindPopup(driverIconType === "motorcycle" ? "موقع سائق التوصيل" : "موقع السائق");
       } else {
         driverMarkerRef.current.setLatLng(position);
       }
