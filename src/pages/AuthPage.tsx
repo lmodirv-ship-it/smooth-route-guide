@@ -100,11 +100,7 @@ const AuthPage = () => {
       return;
     }
 
-    // If login mode and face not yet verified, trigger face check
-    if (isLogin && !faceVerified && !faceCheckActive) {
-      setFaceCheckActive(true);
-      return;
-    }
+    // Face verification is optional here; password login should never be blocked.
 
     setLoading(true);
     try {

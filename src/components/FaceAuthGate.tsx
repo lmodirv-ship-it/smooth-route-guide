@@ -473,15 +473,20 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
           </div>
         </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => scanFace()}
-          className="text-primary"
-        >
-          <Camera className="w-4 h-4 mr-1" />
-          إعادة المسح
-        </Button>
+        <div className="flex items-center justify-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => scanFace()}
+            className="text-primary"
+          >
+            <Camera className="w-4 h-4 mr-1" />
+            إعادة المسح
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleSkip} className="border-border">
+            تخطي
+          </Button>
+        </div>
       </div>
     </motion.div>
   );
