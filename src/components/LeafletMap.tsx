@@ -139,6 +139,7 @@ const LeafletMap = ({
   externalTheme,
   onThemeChange,
   externalExpanded,
+  driverIconType = "car",
   children,
 }: LeafletMapProps) => {
   const mapElementRef = useRef<HTMLDivElement | null>(null);
