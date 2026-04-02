@@ -393,6 +393,7 @@ const DriverDelivery = () => {
                       <TableHead className="text-right text-xs font-bold">Reference</TableHead>
                       <TableHead className="text-right text-xs font-bold">⭐</TableHead>
                       <TableHead className="text-right text-xs font-bold">المتجر</TableHead>
+                      <TableHead className="text-center text-xs font-bold">📞</TableHead>
                       <TableHead className="text-right text-xs font-bold">المسافة</TableHead>
                       <TableHead className="text-right text-xs font-bold">الوقت</TableHead>
                       <TableHead className="text-right text-xs font-bold">الثمن</TableHead>
@@ -416,6 +417,17 @@ const DriverDelivery = () => {
                           </TableCell>
                           <TableCell className="text-right text-xs text-foreground truncate max-w-[100px]">
                             {order.store_name || "—"}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {(order as any).store_phone ? (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); window.open(`tel:${(order as any).store_phone}`); }}
+                                className="w-7 h-7 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 flex items-center justify-center mx-auto transition-colors"
+                                title={`اتصل بالمطعم: ${(order as any).store_phone}`}
+                              >
+                                <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                              </button>
+                            ) : <span className="text-muted-foreground/40 text-xs">—</span>}
                           </TableCell>
                           <TableCell className="text-right text-xs text-muted-foreground">
                             {order.distKm != null ? `${order.distKm} كم` : "—"}
