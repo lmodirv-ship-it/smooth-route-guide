@@ -118,8 +118,8 @@ const CCDashboard = () => {
       .on("postgres_changes", { event: "*", schema: "public", table: "complaints" }, fetchAll)
       .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, fetchAll)
       .subscribe();
-    // Re-check escalation every 30 seconds
-    const escalationTimer = setInterval(fetchAll, 30000);
+    // Re-check escalation every 40 seconds
+    const escalationTimer = setInterval(fetchAll, 40000);
     return () => { supabase.removeChannel(ch); clearInterval(escalationTimer); };
   }, [fetchAll]);
 
