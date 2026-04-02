@@ -260,9 +260,10 @@ const LeafletMap = ({
     if (!mapInstanceRef.current) return;
     if (driverLocation) {
       const position: L.LatLngExpression = [driverLocation.lat, driverLocation.lng];
+      const icon = driverIconType === "motorcycle" ? motorcycleIcon : driverIcon;
       if (!driverMarkerRef.current) {
-        driverMarkerRef.current = L.marker(position, { icon: driverIcon }).addTo(mapInstanceRef.current);
-        driverMarkerRef.current.bindPopup("موقع السائق");
+        driverMarkerRef.current = L.marker(position, { icon }).addTo(mapInstanceRef.current);
+        driverMarkerRef.current.bindPopup(driverIconType === "motorcycle" ? "موقع سائق التوصيل" : "موقع السائق");
       } else {
         driverMarkerRef.current.setLatLng(position);
       }
