@@ -26,6 +26,7 @@ interface OrderData {
   id: string;
   status: string;
   store_name: string | null;
+  store_id: string | null;
   pickup_address: string | null;
   delivery_address: string | null;
   pickup_lat: number | null;
