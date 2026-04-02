@@ -214,7 +214,7 @@ const DriverDelivery = () => {
         distance: order?.distKm || null,
         estimated_time: order?.etaMin || null,
       })
-      .eq("id", orderId).eq("status", "ready_for_driver");
+      .eq("id", orderId).in("status", ["pending", "ready_for_driver"]);
     if (error) {
       toast({ title: "خطأ", description: "تم قبول الطلب من سائق آخر", variant: "destructive" });
     } else {
