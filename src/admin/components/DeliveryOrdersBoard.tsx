@@ -151,7 +151,7 @@ const DeliveryOrdersBoard = ({ title }: { title: string }) => {
 
   const stats = useMemo(() => ({
     total: orders.length,
-    pending: orders.filter((o) => o.status === "pending_call_center").length,
+    pending: orders.filter((o) => o.status === "pending" || o.status === "pending_call_center").length,
     live: orders.filter((o) => ["confirmed", "ready_for_driver", "driver_assigned", "on_the_way_to_vendor", "picked_up", "on_the_way_to_customer"].includes(o.status)).length,
     done: orders.filter((o) => ["delivered", "completed"].includes(o.status)).length,
   }), [orders]);
