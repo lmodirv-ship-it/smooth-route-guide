@@ -68,7 +68,7 @@ const CCDashboard = () => {
       supabase.from("drivers").select("id", { count: "exact", head: true }),
       supabase.from("complaints").select("id", { count: "exact", head: true }).eq("status", "open"),
       supabase.from("call_logs").select("id", { count: "exact", head: true }).gte("created_at", today),
-      supabase.from("delivery_orders").select("*").order("created_at", { ascending: false }).limit(8),
+      supabase.from("delivery_orders").select("*").order("created_at", { ascending: false }).limit(50),
       supabase.from("alerts").select("*").eq("status", "active").order("created_at", { ascending: false }).limit(5),
     ]);
 
