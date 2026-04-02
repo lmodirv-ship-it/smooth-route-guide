@@ -54,8 +54,8 @@ interface RideRow {
   price: number | null;
   status: string;
   created_at: string;
-  passenger_name?: string;
   passenger_reference?: string;
+  passenger_rating?: number;
 }
 
 const DriverPage = () => {
@@ -67,7 +67,7 @@ const DriverPage = () => {
   const [accepting, setAccepting] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [todayStats, setTodayStats] = useState({ trips: 0, earnings: 0, rating: 0 });
-  const [driverName, setDriverName] = useState("السائق");
+  const [driverRating, setDriverRating] = useState(0);
   const [driverAvatar, setDriverAvatar] = useState<string | null>(null);
   const [activeRideId, setActiveRideId] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -83,9 +83,9 @@ const DriverPage = () => {
     const fetchStats = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: profile } = await supabase.from("profiles").select("name, avatar_url").eq("id", user.id).single();
-      if (profile?.name) setDriverName(profile.name);
+      const { data: profile } = await supabase.from("profiles").select("name, avatar_url, avg_rating").eq("id", user.id).single();
       if (profile?.avatar_url) setDriverAvatar(profile.avatar_url);
+      setDriverRating(Number(profile?.avg_rating) || 0);
 
       const { data: activeRides } = await supabase.from("ride_requests").select("id, status")
         .eq("driver_id", user.id).in("status", ["accepted", "in_progress", "arriving"]).limit(1);
@@ -142,18 +142,18 @@ const DriverPage = () => {
       .order("created_at", { ascending: false });
     if (!error && data) {
       const riderIds = Array.from(new Set(data.map((order: any) => order.user_id).filter(Boolean)));
-      let riderMap = new Map<string, { name: string | null; user_code: string | null }>();
+      let riderMap = new Map<string, { user_code: string | null; avg_rating: number }>();
 
       if (riderIds.length > 0) {
         const { data: riders } = await supabase
           .from("profiles")
-          .select("id, name, user_code")
+          .select("id, user_code, avg_rating")
           .in("id", riderIds);
 
         riderMap = new Map(
-          (riders || []).map((rider) => [
+          (riders || []).map((rider: any) => [
             rider.id,
-            { name: rider.name, user_code: (rider as any).user_code || null },
+            { user_code: rider.user_code || null, avg_rating: Number(rider.avg_rating) || 0 },
           ])
         );
       }
@@ -162,8 +162,8 @@ const DriverPage = () => {
         const rider = riderMap.get(order.user_id);
         return {
           ...order,
-          passenger_name: rider?.name?.trim() || "زبون",
           passenger_reference: rider?.user_code || `#${order.id.slice(0, 6).toUpperCase()}`,
+          passenger_rating: rider?.avg_rating || 0,
         };
       });
 
@@ -275,10 +275,10 @@ const DriverPage = () => {
             <div className="flex items-center gap-2">
               <img src={driverLogo} alt="HN" className="w-8 h-8 rounded-full shadow-lg border border-white/20" />
               <div>
-                <p className="text-white font-bold text-sm">{driverName}</p>
-                <p className="text-emerald-400 text-[11px]">
-                  {refCode && <span className="font-mono mr-1">[{refCode}]</span>}
-                  {t.driver.connected}
+                <p className="text-white font-bold text-sm font-mono">{refCode || "—"}</p>
+                <p className="text-emerald-400 text-[11px] flex items-center gap-1">
+                  {driverRating > 0 && <>{"⭐".repeat(Math.min(Math.round(driverRating), 5))} <span className="text-white/70">{driverRating}</span></>}
+                  {!driverRating && t.driver.connected}
                 </p>
               </div>
             </div>
@@ -304,7 +304,7 @@ const DriverPage = () => {
             <Avatar className="w-14 h-14 border-[3px] border-primary shadow-xl shadow-primary/30">
               <AvatarImage src={driverAvatar || undefined} />
               <AvatarFallback className="bg-primary text-primary-foreground font-bold text-lg">
-                {driverName?.charAt(0)?.toUpperCase() || "S"}
+                {refCode?.charAt(0)?.toUpperCase() || "S"}
               </AvatarFallback>
             </Avatar>
             <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-400 border-[3px] border-black flex items-center justify-center">
@@ -368,10 +368,10 @@ const DriverPage = () => {
             </div>
             <div className="rounded-xl border border-border bg-card">
               <Table>
-                <TableHeader>
+                 <TableHeader>
                   <TableRow>
                     <TableHead className="text-right text-xs font-bold">Reference</TableHead>
-                    <TableHead className="text-right text-xs font-bold">الزبون</TableHead>
+                    <TableHead className="text-right text-xs font-bold">⭐</TableHead>
                     <TableHead className="text-right text-xs font-bold">الثمن</TableHead>
                     <TableHead className="text-center text-xs font-bold">قبول</TableHead>
                   </TableRow>
@@ -388,11 +388,8 @@ const DriverPage = () => {
                         <TableCell className="font-mono text-xs font-semibold text-primary">
                           {order.passenger_reference || "—"}
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium text-foreground">{order.passenger_name || "زبون"}</span>
-                            <span className="text-[11px] text-muted-foreground truncate">{order.pickup || "نقطة الالتقاط"}</span>
-                          </div>
+                        <TableCell className="text-right text-xs text-amber-400">
+                          {order.passenger_rating ? `${"★".repeat(Math.min(Math.round(order.passenger_rating), 5))}` : "—"}
                         </TableCell>
                         <TableCell className="text-right text-sm font-bold text-foreground">
                           {order.totalPrice} DH
