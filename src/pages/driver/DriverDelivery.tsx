@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import LeafletMap from "@/components/LeafletMap";
+import { useDemandHeatmap } from "@/hooks/useDemandHeatmap";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
 import { useDriverSubscription } from "@/hooks/useDriverSubscription";
 import { useDriverMapControls } from "@/contexts/DriverMapControlsContext";
