@@ -78,6 +78,7 @@ const DriverPage = () => {
   const { isExpired: subscriptionExpired, daysLeft: subDaysLeft } = useDriverSubscription();
   const { driverCode, userCode } = useUserReference();
   const refCode = driverCode || userCode;
+  const { mapTheme, mapExpanded } = useDriverMapControls();
 
   // Fetch stats & check active ride
   useEffect(() => {
