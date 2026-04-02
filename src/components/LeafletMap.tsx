@@ -300,15 +300,41 @@ const LeafletMap = ({
     L.marker(pickupLatLng, { icon: pickupIcon }).bindPopup("نقطة الانطلاق").addTo(layer);
     L.marker(destLatLng, { icon: destinationIcon }).bindPopup("الوجهة").addTo(layer);
 
-    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${pickup.lng},${pickup.lat};${destination.lng},${destination.lat}?overview=full&geometries=geojson`;
+    // Multiple OSRM servers for failover
+    const osrmServers = [
+      `https://routing.openstreetmap.de/routed-car/route/v1/driving/${pickup.lng},${pickup.lat};${destination.lng},${destination.lat}?overview=full&geometries=geojson`,
+      `https://router.project-osrm.org/route/v1/driving/${pickup.lng},${pickup.lat};${destination.lng},${destination.lat}?overview=full&geometries=geojson`,
+    ];
 
-    let retries = 0;
-    const maxRetries = 3;
+    let serverIdx = 0;
+
+    const drawRealRoute = (coords: L.LatLngExpression[]) => {
+      L.polyline(coords, { color: routeColor, weight: 5, opacity: 0.9 }).addTo(layer);
+      try {
+        const bounds = L.latLngBounds(coords);
+        if (bounds.isValid() && map.getContainer()?.offsetWidth > 0) {
+          map.fitBounds(bounds.pad(0.2));
+        }
+      } catch {}
+    };
 
     const fetchRoute = () => {
-      fetch(osrmUrl)
+      if (serverIdx >= osrmServers.length) {
+        // All servers failed - draw smooth interpolated path as last resort
+        const midLat = (pickup.lat + destination.lat) / 2 + (Math.random() - 0.5) * 0.005;
+        const midLng = (pickup.lng + destination.lng) / 2 + (Math.random() - 0.5) * 0.005;
+        const interpolated: L.LatLngExpression[] = [pickupLatLng, [midLat, midLng], destLatLng];
+        L.polyline(interpolated, { color: routeColor, weight: 4, opacity: 0.7, dashArray: "8, 6" }).addTo(layer);
+        try {
+          const bounds = L.latLngBounds([pickupLatLng, destLatLng]);
+          if (bounds.isValid() && map.getContainer()?.offsetWidth > 0) map.fitBounds(bounds.pad(0.3));
+        } catch {}
+        return;
+      }
+
+      fetch(osrmServers[serverIdx], { signal: AbortSignal.timeout(8000) })
         .then((res) => {
-          if (res.status === 429) throw new Error("rate_limited");
+          if (!res.ok) throw new Error("http_error");
           return res.json();
         })
         .then((data) => {
@@ -316,29 +342,14 @@ const LeafletMap = ({
             const coords = data.routes[0].geometry.coordinates.map(
               (c: [number, number]) => [c[1], c[0]] as L.LatLngExpression
             );
-            L.polyline(coords, { color: routeColor, weight: 5, opacity: 0.9 }).addTo(layer);
-            try {
-              const bounds = L.latLngBounds(coords as L.LatLngExpression[]);
-              if (bounds.isValid() && map.getContainer()?.offsetWidth > 0) {
-                map.fitBounds(bounds.pad(0.2));
-              }
-            } catch {}
+            drawRealRoute(coords);
+          } else {
+            throw new Error("no_routes");
           }
         })
         .catch(() => {
-          retries++;
-          if (retries <= maxRetries) {
-            setTimeout(fetchRoute, retries * 2000);
-          } else {
-            // Only fall back to dashed line after all retries exhausted
-            L.polyline([pickupLatLng, destLatLng], { color: routeColor, weight: 4, opacity: 0.6, dashArray: "10, 8" }).addTo(layer);
-            try {
-              const bounds = L.latLngBounds([pickupLatLng, destLatLng]);
-              if (bounds.isValid() && map.getContainer()?.offsetWidth > 0) {
-                map.fitBounds(bounds.pad(0.3));
-              }
-            } catch {}
-          }
+          serverIdx++;
+          setTimeout(fetchRoute, 1000);
         });
     };
 
