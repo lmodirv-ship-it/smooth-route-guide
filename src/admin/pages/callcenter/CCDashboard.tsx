@@ -124,14 +124,13 @@ const CCDashboard = () => {
 
   const getStatusInfo = (status) => {
     const map = {
-      pending: { label: "جديد", color: "text-amber-400", bg: "bg-amber-500/20", dot: "bg-amber-400" },
+      pending: { label: "بانتظار التأكيد", color: "text-amber-400", bg: "bg-amber-500/20", dot: "bg-amber-400" },
       confirmed: { label: "مؤكد", color: "text-blue-400", bg: "bg-blue-500/20", dot: "bg-blue-400" },
-      preparing: { label: "تحضير", color: "text-orange-400", bg: "bg-orange-500/20", dot: "bg-orange-400" },
-      ready: { label: "جاهز", color: "text-purple-400", bg: "bg-purple-500/20", dot: "bg-purple-400" },
-      driver_assigned: { label: "سائق معيّن", color: "text-cyan-400", bg: "bg-cyan-500/20", dot: "bg-cyan-400" },
+      ready_for_driver: { label: "جاهز للسائق", color: "text-purple-400", bg: "bg-purple-500/20", dot: "bg-purple-400" },
+      driver_assigned: { label: "تم التعيين", color: "text-cyan-400", bg: "bg-cyan-500/20", dot: "bg-cyan-400" },
       picked_up: { label: "تم الاستلام", color: "text-teal-400", bg: "bg-teal-500/20", dot: "bg-teal-400" },
       in_transit: { label: "في الطريق", color: "text-sky-400", bg: "bg-sky-500/20", dot: "bg-sky-400" },
-      delivered: { label: "مكتمل", color: "text-emerald-400", bg: "bg-emerald-500/20", dot: "bg-emerald-400" },
+      delivered: { label: "تم التسليم", color: "text-emerald-400", bg: "bg-emerald-500/20", dot: "bg-emerald-400" },
       cancelled: { label: "ملغي", color: "text-red-400", bg: "bg-red-500/20", dot: "bg-red-400" },
     };
     return map[status] || { label: status, color: "text-muted-foreground", bg: "bg-muted", dot: "bg-muted-foreground" };
