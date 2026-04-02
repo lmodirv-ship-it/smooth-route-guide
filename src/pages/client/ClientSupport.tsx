@@ -8,7 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/context";
 import { useInAppCall } from "@/hooks/useInAppCall";
-import { InAppCallDialog } from "@/components/calls/InAppCallDialog";
+import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 const ClientSupport = () => {
   const navigate = useNavigate();
