@@ -65,6 +65,8 @@ const DeliveryDriverTracking = () => {
   const [loading, setLoading] = useState(true);
   const [panelOpen, setPanelOpen] = useState(false);
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
+  const [showRating, setShowRating] = useState(false);
+  const [driverId, setDriverId] = useState<string | null>(null);
   const { dir } = useI18n();
   const inAppCall = useInAppCall();
 
