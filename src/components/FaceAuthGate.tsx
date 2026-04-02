@@ -52,9 +52,12 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
     loadModels();
   }, []);
 
-  // Lookup face descriptor via edge function
+  // Lookup face descriptor via edge function — with 8s timeout to prevent infinite loading
   useEffect(() => {
     if (!email) return;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
     const lookup = async () => {
       try {
         const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
@@ -64,6 +67,7 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: email.toLowerCase().trim() }),
+            signal: controller.signal,
           }
         );
         const data = await res.json();
@@ -72,14 +76,22 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
           setHasProfile(true);
         } else {
           setHasProfile(false);
-          onSkip(); // No face registered, proceed normally
+          onSkip();
         }
       } catch {
+        // Timeout or network error — skip face auth gracefully
         setHasProfile(false);
         onSkip();
+      } finally {
+        clearTimeout(timeoutId);
       }
     };
     lookup();
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, [email]);
 
   // Start camera when descriptor is loaded
