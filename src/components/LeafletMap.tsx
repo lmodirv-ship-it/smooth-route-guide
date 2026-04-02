@@ -17,20 +17,29 @@ const defaultIcon = L.icon({
 
 const driverIcon = L.divIcon({
   className: "",
-  html: `<div style="width:40px;height:40px;border-radius:50%;background:#F97316;border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.4)">
-    <div style="width:12px;height:12px;border-radius:50%;background:#fff"></div>
+  html: `<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#F97316,#ea580c);border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(249,115,22,0.5)">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10l-2.7-3.6A2 2 0 0 0 13.7 5H6.3a2 2 0 0 0-1.6.9L2 9.5 .5 11.1C.2 11.4 0 11.7 0 12v4c0 .6.4 1 1 1h1"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
   </div>`,
-  iconSize: [40, 40],
-  iconAnchor: [20, 20],
+  iconSize: [44, 44],
+  iconAnchor: [22, 22],
 });
 
 const carIcon = L.divIcon({
   className: "",
-  html: `<div style="width:32px;height:32px;border-radius:50%;background:#1a1d2e;border:2px solid #F97316;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.4)">
-    <div style="width:10px;height:10px;border-radius:50%;background:#F97316"></div>
+  html: `<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1e293b,#334155);border:2px solid #F97316;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.4)">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10l-2.7-3.6A2 2 0 0 0 13.7 5H6.3a2 2 0 0 0-1.6.9L2 9.5 .5 11.1C.2 11.4 0 11.7 0 12v4c0 .6.4 1 1 1h1"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
   </div>`,
-  iconSize: [32, 32],
-  iconAnchor: [16, 16],
+  iconSize: [36, 36],
+  iconAnchor: [18, 18],
+});
+
+const customerIcon = L.divIcon({
+  className: "",
+  html: `<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#2563eb);border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(59,130,246,0.5)">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+  </div>`,
+  iconSize: [36, 36],
+  iconAnchor: [18, 18],
 });
 
 const pickupIcon = L.divIcon({
