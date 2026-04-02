@@ -30,6 +30,11 @@ const PayPalSettings = () => {
     bankSwift: "",
     enabled: true,
   });
+  const [agencySettings, setAgencySettings] = useState({
+    firstName: "",
+    lastName: "",
+    enabled: true,
+  });
 
   useEffect(() => {
     const load = async () => {
