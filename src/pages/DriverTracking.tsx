@@ -364,7 +364,7 @@ const DriverTracking = () => {
                   <Button
                     variant="outline"
                     className="w-full h-11 rounded-xl gap-2 border-border"
-                    onClick={() => inAppCall.startCall(ride.user_id)}
+                    onClick={() => inAppCall.startCall({ id: ride.user_id, name: clientRefCode || "الزبون" })}
                     disabled={inAppCall.busy}
                   >
                     <PhoneCall className="w-4 h-4 text-blue-500" /> اتصال بالزبون (داخلي)
