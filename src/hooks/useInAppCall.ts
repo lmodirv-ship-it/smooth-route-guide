@@ -487,6 +487,7 @@ export function useInAppCall() {
                 direction: "incoming",
                 status: "ringing",
               });
+              startRingtone();
             }
             return;
           }
