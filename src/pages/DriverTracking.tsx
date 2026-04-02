@@ -385,13 +385,27 @@ const DriverTracking = () => {
             >
               {updating ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : nextAction.label}
             </Button>
+
+            {/* In-app call button */}
+            {ride.user_id && (
+              <Button
+                variant="outline"
+                className="w-full h-11 rounded-xl gap-2 border-blue-500/30 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
+                onClick={() => inAppCall.startCall(ride.user_id)}
+                disabled={inAppCall.busy}
+              >
+                <PhoneCall className="w-4 h-4" /> اتصال بالزبون
+              </Button>
+            )}
+
+            {/* Cancel button */}
             <Button
               onClick={() => setCancelDialogOpen(true)}
               disabled={updating}
-              variant="ghost"
-              className="w-full h-10 rounded-xl text-destructive hover:bg-destructive/10 text-sm gap-1"
+              variant="outline"
+              className="w-full h-10 rounded-xl border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 text-sm gap-1 font-bold"
             >
-              <XCircle className="w-4 h-4" /> إلغاء
+              <XCircle className="w-4 h-4" /> إلغاء الرحلة
             </Button>
           </div>
         )}
