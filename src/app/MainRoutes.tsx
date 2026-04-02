@@ -41,6 +41,7 @@ const AgentHub = lazy(() => import("@/pages/ai/AgentHub"));
 const AIAssistant = lazy(() => import("@/pages/AIAssistant"));
 const CommunityChat = lazy(() => import("@/pages/CommunityChat"));
 const MyStore = lazy(() => import("@/pages/delivery/MyStore"));
+const StoreSubscription = lazy(() => import("@/pages/delivery/StoreSubscription"));
 
 // ─── All other pages — lazy loaded for performance ───
 const DriverPage = lazy(() => import("@/pages/DriverPage"));
@@ -137,6 +138,7 @@ export const mainRouteElements = (
       <Route path="/delivery/cart" element={<RequireRole allowed={["client"]}><LazyPage component={Cart} /></RequireRole>} />
       <Route path="/delivery/store/:id" element={<RequireRole allowed={["client"]}><LazyPage component={StoreDetail} /></RequireRole>} />
       <Route path="/delivery/my-store" element={<RequireRole allowed={["store_owner"]}><LazyPage component={MyStore} /></RequireRole>} />
+      <Route path="/delivery/store-subscription" element={<RequireRole allowed={["store_owner"]}><LazyPage component={StoreSubscription} /></RequireRole>} />
       <Route path="/delivery/order/:id" element={<RequireRole allowed={["client"]}><LazyPage component={OrderTracking} /></RequireRole>} />
       <Route path="/delivery/order" element={<RequireRole allowed={["client"]}><LazyPage component={OrderTracking} /></RequireRole>} />
       <Route path="/delivery/:category" element={<RequireRole allowed={["client"]}><LazyPage component={DeliveryCategory} /></RequireRole>} />
