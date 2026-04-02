@@ -332,10 +332,39 @@ const DriverDelivery = () => {
           </div>
 
           {enrichedOrders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <Radar className="w-10 h-10 text-muted-foreground/30 mb-2 animate-pulse" />
-              <p className="text-muted-foreground text-sm font-medium">جارٍ البحث عن طلبات توصيل...</p>
-              <p className="text-muted-foreground/60 text-xs mt-1">نطاق البحث: {MAX_RADIUS_KM} كم</p>
+            <div className="px-3 py-2">
+              <div className="flex items-center justify-between mb-2 px-1">
+                <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full font-bold">0 طلب</span>
+                <h3 className="font-bold text-foreground text-sm flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-pulse" />
+                  طلبات توصيل جديدة
+                </h3>
+              </div>
+              <div className="rounded-xl border border-border bg-card">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-right text-xs font-bold">Reference</TableHead>
+                      <TableHead className="text-right text-xs font-bold">⭐</TableHead>
+                      <TableHead className="text-right text-xs font-bold">المتجر</TableHead>
+                      <TableHead className="text-right text-xs font-bold">المسافة</TableHead>
+                      <TableHead className="text-right text-xs font-bold">الوقت</TableHead>
+                      <TableHead className="text-right text-xs font-bold">الثمن</TableHead>
+                      <TableHead className="text-center text-xs font-bold">قبول</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-6">
+                        <div className="flex flex-col items-center gap-1">
+                          <Radar className="w-6 h-6 text-muted-foreground/30 animate-pulse" />
+                          <p className="text-muted-foreground text-xs">في انتظار طلبات جديدة...</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           ) : (
             <div className="px-3 py-2">
