@@ -124,12 +124,14 @@ const RideAssign = () => {
                       <span className="text-xs font-mono text-muted-foreground">{req.id.slice(0, 8)}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                    <span className="text-warning">{req.time}</span>
-                    <span>•</span>
-                    <MapPin className="w-3 h-3 text-success" /> {req.pickup}
-                    <Navigation className="w-3 h-3 text-destructive" /> {req.dest}
-                  </div>
+                   <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                     <span className="text-warning">{req.time}</span>
+                     <span>•</span>
+                     <MapPin className="w-3 h-3 text-success" /> {req.pickup}
+                     <Navigation className="w-3 h-3 text-destructive" /> {req.dest}
+                     {req.distance && <><span>•</span><span className="text-info">{Number(req.distance).toFixed(1)} كم</span></>}
+                     {req.estimated_time && <><span>•</span><span className="text-info">{req.estimated_time} د</span></>}
+                   </div>
                   {selectedRequest === req.id && (
                     <div className="mt-2 pt-2 border-t border-border flex gap-2">
                       <Button size="sm" variant="outline" className="text-warning border-warning/30 rounded-lg text-xs flex-1">

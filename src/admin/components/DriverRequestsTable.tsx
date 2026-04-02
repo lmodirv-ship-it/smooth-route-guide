@@ -63,7 +63,7 @@ const DriverRequestsTable = () => {
 
     let deliveryQuery = supabase
       .from("delivery_orders")
-      .select("id, order_code, pickup_address, delivery_address, estimated_price, total_price, delivery_fee, status, created_at, user_id")
+      .select("id, order_code, pickup_address, delivery_address, estimated_price, total_price, delivery_fee, status, created_at, user_id, distance, estimated_time")
       .in("status", ["pending", "confirmed", "ready_for_driver", "driver_assigned", "on_the_way_to_vendor", "picked_up", "on_the_way_to_customer"])
       .order("created_at", { ascending: false })
       .limit(50);
