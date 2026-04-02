@@ -236,75 +236,25 @@ const DriverDelivery = () => {
         </div>
       )}
 
-      {/* Active order progress */}
+      {/* Active order banner → go to tracking */}
       {activeOrder && (
-        <div className="shrink-0 bg-emerald-500/5 border-t border-emerald-500/30 p-3 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-emerald-400 font-bold">{activeOrder.total_price || activeOrder.estimated_price} DH</span>
-            <h3 className="font-bold text-foreground text-sm">{activeOrder.store_name || "طلب توصيل"}</h3>
-          </div>
-
-          {/* Status stepper */}
-          <div className="flex items-center justify-between relative">
-            <div className="absolute top-3 right-3 left-3 h-0.5 bg-border" />
-            <div className="absolute top-3 right-3 h-0.5 bg-emerald-500 transition-all"
-              style={{ width: `${Math.max(0, (currentStepIdx / (STATUS_FLOW.length - 1)) * 100)}%` }} />
-            {STATUS_FLOW.map((step, idx) => {
-              const StepIcon = step.icon;
-              const done = idx <= currentStepIdx;
-              const current = idx === currentStepIdx;
-              return (
-                <div key={step.key} className="relative z-10 flex flex-col items-center gap-1">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center border-2 transition-all ${
-                    done ? "bg-emerald-500 border-emerald-500" : current ? "bg-background border-emerald-500" : "bg-background border-border"
-                  }`}>
-                    <StepIcon className={`w-3 h-3 ${done ? "text-white" : "text-muted-foreground"}`} />
-                  </div>
-                  <span className={`text-[9px] whitespace-nowrap ${current ? "text-emerald-400 font-bold" : "text-muted-foreground"}`}>
-                    {step.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Addresses */}
-          <div className="flex items-center gap-3 text-xs">
-            <Store className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-            <span className="text-foreground truncate">{activeOrder.pickup_address || "—"}</span>
-            <span className="text-muted-foreground">→</span>
-            <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-            <span className="text-foreground truncate">{activeOrder.delivery_address || "—"}</span>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex gap-2">
-            {activeOrder.status === "driver_assigned" && (
-              <Button size="sm" onClick={() => setStatus("on_the_way_to_vendor")} className="flex-1 h-9 bg-gradient-to-r from-cyan-500 to-blue-500 text-white gap-1">
-                <Navigation className="w-3.5 h-3.5" />في الطريق للمطعم
-              </Button>
-            )}
-            {activeOrder.status === "on_the_way_to_vendor" && (
-              <Button size="sm" onClick={() => setStatus("picked_up")} className="flex-1 h-9 bg-gradient-to-r from-amber-500 to-orange-500 text-white gap-1">
-                <Store className="w-3.5 h-3.5" />تم الاستلام
-              </Button>
-            )}
-            {activeOrder.status === "picked_up" && (
-              <Button size="sm" onClick={() => setStatus("on_the_way_to_customer")} className="flex-1 h-9 bg-gradient-to-r from-emerald-500 to-teal-500 text-white gap-1">
-                <Bike className="w-3.5 h-3.5" />في الطريق للزبون
-              </Button>
-            )}
-            {activeOrder.status === "on_the_way_to_customer" && (
-              <Button size="sm" onClick={() => setStatus("delivered")} className="flex-1 h-9 bg-gradient-to-r from-emerald-500 to-green-500 text-white gap-1">
-                <CheckCircle className="w-3.5 h-3.5" />تم التسليم ✅
-              </Button>
-            )}
-            {!["delivered", "cancelled"].includes(activeOrder.status) && (
-              <Button size="sm" variant="outline" onClick={() => setStatus("cancelled")} className="h-9 border-destructive/50 text-destructive">
-                <XCircle className="w-3.5 h-3.5" />
-              </Button>
-            )}
-          </div>
+        <div className="shrink-0 bg-emerald-500/10 border-t border-emerald-500/30 p-3">
+          <button
+            onClick={() => navigate(`/delivery/tracking?id=${activeOrder.id}`)}
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all"
+          >
+            <div className="flex items-center gap-2">
+              <Bike className="w-5 h-5 text-emerald-400 animate-pulse" />
+              <div className="text-right">
+                <p className="text-foreground font-bold text-sm">{activeOrder.store_name || "طلب توصيل نشط"}</p>
+                <p className="text-muted-foreground text-xs">{STATUS_FLOW.find(s => s.key === activeOrder.status)?.label || activeOrder.status}</p>
+              </div>
+            </div>
+            <div className="text-left">
+              <span className="text-emerald-400 font-bold">{activeOrder.total_price || activeOrder.estimated_price || "—"} DH</span>
+              <p className="text-xs text-emerald-400">اضغط للمتابعة →</p>
+            </div>
+          </button>
         </div>
       )}
 
