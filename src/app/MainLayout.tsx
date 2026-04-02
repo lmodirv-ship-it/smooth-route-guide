@@ -58,6 +58,15 @@ const MainLayoutInner = () => {
           <div className="w-px h-5 bg-border/40" />
           {isVisible("logout_btn") && <GlobalLogoutButton />}
           {isVisible("language_switcher") && <LanguageSwitcher />}
+          {isVisible("community_btn") && !isCommunityPage && (
+            <button
+              onClick={() => navigate("/community")}
+              className="p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-emerald-500 hover:text-white transition-all"
+              title="مجتمع HN"
+            >
+              <Users className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         {/* Separator */}
