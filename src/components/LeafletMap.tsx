@@ -309,7 +309,7 @@ const LeafletMap = ({
           const coords = data.routes[0].geometry.coordinates.map(
             (c: [number, number]) => [c[1], c[0]] as L.LatLngExpression
           );
-          L.polyline(coords, { color: "#10b981", weight: 5, opacity: 0.9 }).addTo(layer);
+          L.polyline(coords, { color: routeColor, weight: 5, opacity: 0.9 }).addTo(layer);
           try {
             const bounds = L.latLngBounds(coords as L.LatLngExpression[]);
             if (bounds.isValid() && map.getContainer()?.offsetWidth > 0) {
