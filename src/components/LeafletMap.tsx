@@ -327,7 +327,7 @@ const LeafletMap = ({
           }
         } catch {}
       });
-  }, [route]);
+  }, [route, routeColor]);
 
   return (
     <div className={`${className} relative ring-[3px] ring-black/80 ring-inset rounded-lg shadow-[inset_0_0_12px_rgba(0,0,0,0.6)]`}>
