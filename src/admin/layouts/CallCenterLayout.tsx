@@ -4,7 +4,7 @@ import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import {
   BarChart3, Phone, Car, Users, Search, AlertTriangle, FileText,
   Headphones, BarChart, Shield, Bell, PhoneCall, PlusCircle, Clock,
-  Menu, X, UtensilsCrossed, Download, MapPin, Map, Brain, MessageSquare, Wallet
+  Menu, X, UtensilsCrossed, Download, MapPin, Map, Brain, MessageSquare, Wallet, CreditCard
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/i18n/context";
