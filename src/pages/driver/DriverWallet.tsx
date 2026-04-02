@@ -101,11 +101,22 @@ const DriverWallet = () => {
             </div>
             <Input placeholder="مبلغ آخر" type="number" value={depositAmount || ""} onChange={e => setDepositAmount(Number(e.target.value))}
               className="bg-secondary border-border rounded-xl mb-3" />
+            <p className="text-xs text-muted-foreground mb-3 text-right">💳 طرق الدفع: 💵 نقد | 👛 محفظة | 💎 PayPal</p>
             <Button className="w-full gradient-primary text-primary-foreground rounded-xl" onClick={async () => {
               if (!depositAmount || depositAmount <= 0) { toast.error("اختر مبلغاً"); return; }
               const { data: { user } } = await supabase.auth.getUser();
               if (!user) return;
               await supabase.from("wallet_recharge_requests").insert({ user_id: user.id, amount: depositAmount });
+              await supabase.from("payment_transactions").insert({
+                user_id: user.id,
+                amount: depositAmount,
+                currency: "MAD",
+                transaction_type: "topup",
+                payment_method: "cash",
+                provider: "cash",
+                status: "pending",
+                reference_type: "wallet_topup",
+              });
               toast.success("تم إرسال طلب الإيداع — سيتواصل معك فريق الدعم");
               setShowDeposit(false);
             }}>إرسال طلب الإيداع</Button>
