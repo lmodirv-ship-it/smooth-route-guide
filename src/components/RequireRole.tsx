@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ShieldOff } from "lucide-react";
+import { Loader2, RefreshCw, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROLE_DASHBOARD } from "@/lib/routes";
+import {
+  getAuthTimeoutMessage,
+  getUserRolesWithTimeout,
+  isServiceTimeoutError,
+  signOutWithTimeout,
+  useAuthReady,
+} from "@/hooks/useAuthReady";
 
 type AppRole = "admin" | "moderator" | "user" | "driver" | "agent" | "delivery" | "store_owner" | "smart_admin_assistant";
 
@@ -75,60 +81,83 @@ function bestDashboard(roles: AppRole[]): string {
   return ROLE_DASHBOARD.user || "/customer";
 }
 
+function loginRouteForAllowed(allowed?: string[]) {
+  if (allowed?.some((entry) => entry === "admin")) return "/admin/login";
+  if (allowed?.some((entry) => ["agent", "call_center"].includes(entry))) return "/call-center/login";
+  if (allowed?.some((entry) => entry === "moderator")) return "/supervisor/login";
+  return "/login";
+}
+
 const RequireRole = ({ children, allowed }: RequireRoleProps) => {
-  const [state, setState] = useState<"loading" | "ok" | "no-auth" | "wrong-role">("loading");
+  const [state, setState] = useState<"loading" | "ok" | "no-auth" | "wrong-role" | "service-error">("loading");
   const [userRoles, setUserRoles] = useState<AppRole[]>([]);
+  const [retryKey, setRetryKey] = useState(0);
+  const { ready, session, timedOut } = useAuthReady();
+  const loginRoute = loginRouteForAllowed(allowed);
 
   useEffect(() => {
     let mounted = true;
 
-    const check = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        if (mounted) setState("no-auth");
-        return;
+    if (!ready) {
+      setState("loading");
+      return () => {
+        mounted = false;
+      };
+    }
+
+    if (timedOut && !session) {
+      setUserRoles([]);
+      setState("service-error");
+      return () => {
+        mounted = false;
+      };
+    }
+
+    if (!session) {
+      setUserRoles([]);
+      setState("no-auth");
+      return () => {
+        mounted = false;
+      };
+    }
+
+    if (!allowed || allowed.length === 0) {
+      setState("ok");
+      return () => {
+        mounted = false;
+      };
+    }
+
+    setState("loading");
+
+    void (async () => {
+      try {
+        const roles = (await getUserRolesWithTimeout(session.user.id)) as AppRole[];
+        if (!mounted) return;
+
+        setUserRoles(roles);
+
+        if (roles.length === 0) {
+          setState("wrong-role");
+          return;
+        }
+
+        const hasAccess = roles.some((dbRole) =>
+          allowed.some((label) => dbRoleSatisfies(dbRole, label))
+        );
+
+        setState(hasAccess ? "ok" : "wrong-role");
+      } catch (error) {
+        if (!mounted) return;
+        setUserRoles([]);
+        setState(isServiceTimeoutError(error) ? "service-error" : "wrong-role");
       }
-
-      // No role requirement — just need auth
-      if (!allowed || allowed.length === 0) {
-        if (mounted) setState("ok");
-        return;
-      }
-
-      // Fetch ALL roles for this user (supports multi-role accounts)
-      const { data: rolesData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id);
-
-      const roles = (rolesData || []).map((r) => r.role as AppRole);
-
-      if (!mounted) return;
-
-      if (roles.length === 0) {
-        setState("no-auth");
-        return;
-      }
-
-      setUserRoles(roles);
-
-      const hasAccess = roles.some((dbRole) =>
-        allowed.some((label) => dbRoleSatisfies(dbRole, label))
-      );
-      setState(hasAccess ? "ok" : "wrong-role");
-    };
-
-    check();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      if (mounted) check();
-    });
+    })();
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
     };
-  }, [allowed]);
+  }, [allowed, ready, retryKey, session, timedOut]);
 
   if (state === "loading") {
     return (
@@ -141,20 +170,43 @@ const RequireRole = ({ children, allowed }: RequireRoleProps) => {
     );
   }
 
-  // Redirect to the appropriate login page based on context
   if (state === "no-auth") {
-    const isAdminRoute = allowed?.some((a) => ["admin"].includes(a));
-    const isCallCenterRoute = allowed?.some((a) => ["agent", "call_center"].includes(a));
-    if (isAdminRoute) return <Navigate to="/admin/login" replace />;
-    if (isCallCenterRoute) return <Navigate to="/call-center/login" replace />;
-    return <Navigate to="/login" replace />;
+    return <Navigate to={loginRoute} replace />;
+  }
+
+  if (state === "service-error") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
+        <div className="text-center space-y-4 max-w-md px-6">
+          <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mx-auto">
+            <RefreshCw className="w-10 h-10 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">تعذر التحقق الآن</h1>
+          <p className="text-muted-foreground">{getAuthTimeoutMessage("roles")}</p>
+          <div className="flex gap-3 justify-center pt-4">
+            <Button variant="outline" onClick={() => setRetryKey((value) => value + 1)} className="border-border">
+              إعادة المحاولة
+            </Button>
+            <Button
+              onClick={async () => {
+                await signOutWithTimeout();
+                localStorage.removeItem("hn_user_role");
+                window.location.href = loginRoute;
+              }}
+              className="bg-primary text-primary-foreground"
+            >
+              تسجيل الدخول
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (state === "wrong-role") {
     const redirectTo = bestDashboard(userRoles);
 
-    // For restricted areas (admin/agent) show an explicit "unauthorized" UI
-    if (allowed?.some((a) => ["admin", "agent", "call_center"].includes(a))) {
+    if (allowed?.some((entry) => ["admin", "agent", "call_center", "moderator"].includes(entry))) {
       return (
         <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
           <div className="text-center space-y-4 max-w-md px-6">
@@ -169,9 +221,9 @@ const RequireRole = ({ children, allowed }: RequireRoleProps) => {
               </Button>
               <Button
                 onClick={async () => {
-                  await supabase.auth.signOut();
+                  await signOutWithTimeout();
                   localStorage.removeItem("hn_user_role");
-                  window.location.href = "/login";
+                  window.location.href = loginRoute;
                 }}
                 className="bg-primary text-primary-foreground"
               >

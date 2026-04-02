@@ -1,42 +1,55 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
 import { dashboardForRole } from "@/lib/routes";
+import { getUserRolesWithTimeout, useAuthReady } from "@/hooks/useAuthReady";
 import splashLogo from "@/assets/designs/iindex.jpeg";
 
 const Splash = () => {
   const navigate = useNavigate();
   const [phase, setPhase] = useState(0);
+  const [canContinue, setCanContinue] = useState(false);
+  const { ready, session } = useAuthReady(4500);
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(1), 300);
     const t2 = setTimeout(() => setPhase(2), 1200);
-    const t3 = setTimeout(async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const savedRole = localStorage.getItem("hn_user_role");
-
-        if (!session) {
-          navigate(savedRole ? `/auth/${savedRole}` : "/welcome", { replace: true });
-          return;
-        }
-
-        const { data: roles } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", session.user.id)
-          .limit(1);
-
-        const role = roles?.[0]?.role || savedRole || "user";
-        navigate(dashboardForRole(role), { replace: true });
-      } catch {
-        navigate("/welcome", { replace: true });
-      }
-    }, 3500);
+    const t3 = setTimeout(() => setCanContinue(true), 3500);
 
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, [navigate]);
+  }, []);
+
+  useEffect(() => {
+    if (!canContinue || !ready) return;
+
+    let cancelled = false;
+
+    const resolveDestination = async () => {
+      const savedRole = localStorage.getItem("hn_user_role");
+
+      if (!session) {
+        if (!cancelled) {
+          navigate(savedRole ? `/auth/${savedRole}` : "/welcome", { replace: true });
+        }
+        return;
+      }
+
+      try {
+        const roles = await getUserRolesWithTimeout(session.user.id);
+        if (cancelled) return;
+        navigate(dashboardForRole(roles[0] || savedRole || "user"), { replace: true });
+      } catch {
+        if (cancelled) return;
+        navigate(dashboardForRole(savedRole || "user"), { replace: true });
+      }
+    };
+
+    void resolveDestination();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [canContinue, navigate, ready, session]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background relative overflow-hidden">

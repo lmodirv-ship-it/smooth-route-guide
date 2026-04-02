@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Car, User, Headphones, Shield, LogOut, Download, Package, Store as StoreIcon } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { dashboardForRole, ROLE_LABELS } from "@/lib/routes";
+import { getUserRolesWithTimeout, signOutWithTimeout, useAuthReady } from "@/hooks/useAuthReady";
 import { useI18n } from "@/i18n/context";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import logo from "@/assets/hn-driver-badge.png";
@@ -18,41 +18,48 @@ const Welcome = () => {
   const [checking, setChecking] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ email?: string | null; phone?: string | null } | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const { ready, session } = useAuthReady();
 
   useEffect(() => {
-    const syncSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setCurrentUser(null);
-        setUserRole(null);
-        return;
-      }
+    let mounted = true;
 
-      setCurrentUser({
-        email: session.user.email,
-        phone: session.user.phone,
-      });
+    if (!ready) {
+      return () => {
+        mounted = false;
+      };
+    }
 
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .limit(1);
+    if (!session) {
+      setCurrentUser(null);
+      setUserRole(null);
+      return () => {
+        mounted = false;
+      };
+    }
 
-      setUserRole(roles?.[0]?.role ?? null);
-    };
-
-    void syncSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      void syncSession();
+    setCurrentUser({
+      email: session.user.email,
+      phone: session.user.phone,
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    void (async () => {
+      try {
+        const roles = await getUserRolesWithTimeout(session.user.id);
+        if (!mounted) return;
+        setUserRole(roles[0] ?? null);
+      } catch {
+        if (!mounted) return;
+        setUserRole(localStorage.getItem("hn_user_role"));
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [ready, session]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await signOutWithTimeout();
     localStorage.removeItem("hn_user_role");
     setCurrentUser(null);
     setUserRole(null);
@@ -63,22 +70,20 @@ const Welcome = () => {
     setChecking(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      if (!ready || !session) {
         navigate(`/auth/${roleId}`);
         return;
       }
 
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .limit(1);
-
-      const dbRole = roles?.[0]?.role ?? null;
-      if (dbRole && dbRole !== "user") {
-        navigate(dashboardForRole(dbRole));
-        return;
+      try {
+        const roles = await getUserRolesWithTimeout(session.user.id);
+        const dbRole = roles[0] ?? null;
+        if (dbRole && dbRole !== "user") {
+          navigate(dashboardForRole(dbRole));
+          return;
+        }
+      } catch {
+        // Fall back to the selected role if the roles table is temporarily slow.
       }
 
       navigate(dashboardForRole(roleId));

@@ -4,9 +4,17 @@ import { Eye, EyeOff, Mail, Lock, Loader2, Headphones } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import FaceAuthGate from "@/components/FaceAuthGate";
 import FaceRegisterPrompt from "@/components/FaceRegisterPrompt";
+import {
+  getAuthTimeoutMessage,
+  getUserRolesWithTimeout,
+  hasFaceProfileWithTimeout,
+  isServiceTimeoutError,
+  signInWithPasswordWithTimeout,
+  signOutWithTimeout,
+  useAuthReady,
+} from "@/hooks/useAuthReady";
 
 const CallCenterLogin = () => {
   const navigate = useNavigate();
@@ -18,27 +26,48 @@ const CallCenterLogin = () => {
   const [faceCheckActive, setFaceCheckActive] = useState(false);
   const [faceVerified, setFaceVerified] = useState(false);
   const [showFaceRegister, setShowFaceRegister] = useState(false);
+  const { ready, session } = useAuthReady();
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setChecking(false); return; }
+    let mounted = true;
 
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id);
+    if (!ready) {
+      setChecking(true);
+      return () => {
+        mounted = false;
+      };
+    }
 
-      const hasAccess = (roles || []).some((r) => r.role === "agent" || r.role === "admin");
-      if (hasAccess) {
-        navigate("/call-center", { replace: true });
-      } else {
-        await supabase.auth.signOut();
-        setChecking(false);
+    if (!session) {
+      setChecking(false);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    void (async () => {
+      try {
+        const roles = await getUserRolesWithTimeout(session.user.id);
+        if (!mounted) return;
+
+        const hasAccess = roles.some((currentRole) => currentRole === "agent" || currentRole === "admin");
+        if (hasAccess) {
+          navigate("/call-center", { replace: true });
+          return;
+        }
+
+        await signOutWithTimeout();
+      } catch {
+        if (!mounted) return;
+      } finally {
+        if (mounted) setChecking(false);
       }
+    })();
+
+    return () => {
+      mounted = false;
     };
-    checkSession();
-  }, [navigate]);
+  }, [navigate, ready, session]);
 
   const handleEmailBlur = () => {
     if (email && email.includes("@") && !faceVerified) {
@@ -59,17 +88,13 @@ const CallCenterLogin = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await signInWithPasswordWithTimeout({ email, password });
       if (error) throw error;
 
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", data.user.id);
-
-      const hasAccess = (roles || []).some((r) => r.role === "agent" || r.role === "admin");
+      const roles = await getUserRolesWithTimeout(data.user.id);
+      const hasAccess = roles.some((currentRole) => currentRole === "agent" || currentRole === "admin");
       if (!hasAccess) {
-        await supabase.auth.signOut();
+        await signOutWithTimeout();
         toast({
           title: "غير مصرح",
           description: "ليس لديك صلاحية الدخول إلى مركز الاتصال",
@@ -80,12 +105,17 @@ const CallCenterLogin = () => {
       }
 
       toast({ title: "تم تسجيل الدخول بنجاح ✅" });
-      const { data: fp } = await supabase.from("face_auth_profiles").select("id").eq("email", email.toLowerCase().trim()).maybeSingle();
-      if (!fp) { setShowFaceRegister(true); return; }
+      try {
+        const faceProfileExists = await hasFaceProfileWithTimeout(email);
+        if (!faceProfileExists) { setShowFaceRegister(true); return; }
+      } catch {
+        // Face registration is optional; never block call-center access on it.
+      }
       navigate("/call-center", { replace: true });
     } catch (err: any) {
       let msg = err?.message || "حدث خطأ غير متوقع";
       if (msg.includes("Invalid login credentials")) msg = "بريد أو كلمة مرور غير صحيحة";
+      if (isServiceTimeoutError(err)) msg = getAuthTimeoutMessage("login");
       toast({ title: "خطأ", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
