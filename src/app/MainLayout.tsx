@@ -12,6 +12,7 @@ import GlobalContactFooter from "@/components/GlobalContactFooter";
 import { useVisibility } from "@/hooks/useVisibility";
 import VisitorCounter from "@/components/VisitorCounter";
 import DriverTopBarControls from "@/components/driver/DriverTopBarControls";
+import { DriverMapControlsProvider, useDriverMapControls } from "@/contexts/DriverMapControlsContext";
 import logo from "@/assets/hn-driver-badge.png";
 import partnerHibaEco from "@/assets/partner-hiba-eco.png";
 import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
