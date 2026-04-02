@@ -42,7 +42,9 @@ const DriverTopBarControlsWithContext = () => {
 const MainLayoutInner = () => {
   const { isVisible } = useVisibility();
   const location = useLocation();
+  const navigate = useNavigate();
   const isDriverPage = location.pathname.startsWith("/driver");
+  const isCommunityPage = location.pathname.includes("community");
 
   return (
     <>
