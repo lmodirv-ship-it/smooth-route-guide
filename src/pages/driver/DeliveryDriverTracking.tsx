@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -190,13 +190,33 @@ const DeliveryDriverTracking = () => {
     return null;
   }, [order?.delivery_lat, order?.delivery_lng]);
 
+  // Throttled route: only update pickup point every 30s to avoid OSRM rate limits
+  const lastRouteFetchRef = useRef<number>(0);
+  const [throttledDriverPos, setThrottledDriverPos] = useState(smoothedDriver);
+
+  useEffect(() => {
+    if (!smoothedDriver) return;
+    const now = Date.now();
+    // Always update on first position or when status changes
+    if (!throttledDriverPos || now - lastRouteFetchRef.current > 30000) {
+      setThrottledDriverPos(smoothedDriver);
+      lastRouteFetchRef.current = now;
+    }
+  }, [smoothedDriver, order?.status]);
+
+  // Reset throttled position on status change to force route re-fetch
+  useEffect(() => {
+    if (smoothedDriver) {
+      setThrottledDriverPos(smoothedDriver);
+      lastRouteFetchRef.current = Date.now();
+    }
+  }, [order?.status]);
+
   const mapRoute = useMemo(() => {
-    // Show route from driver to current target
-    if (smoothedDriver && targetPosition) return { pickup: smoothedDriver, destination: targetPosition };
-    // Fallback: store → customer
+    if (throttledDriverPos && targetPosition) return { pickup: throttledDriverPos, destination: targetPosition };
     if (storePosition && customerPosition) return { pickup: storePosition, destination: customerPosition };
     return null;
-  }, [smoothedDriver, storePosition, customerPosition, targetPosition]);
+  }, [throttledDriverPos, storePosition, customerPosition, targetPosition]);
 
   // Blue when heading to store, green when heading to customer
   const routeColor = useMemo(() => {
