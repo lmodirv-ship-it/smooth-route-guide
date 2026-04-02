@@ -419,6 +419,14 @@ const CCDashboard = () => {
               <p className="text-[10px] text-muted-foreground mb-1">الزبون</p>
               <p className="text-xs font-bold text-foreground">{selectedOrder.userName}</p>
               <p className="text-[10px] text-muted-foreground">{selectedOrder.userPhone}</p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-2 w-full gap-1.5 text-[10px] h-7 rounded-lg border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+                onClick={() => inAppCall.startCall({ id: selectedOrder.user_id, name: selectedOrder.userName || "زبون" })}
+              >
+                <PhoneCall className="w-3 h-3" />اتصل بالزبون
+              </Button>
             </div>
             <div className="rounded-xl bg-white/[0.04] p-3 border border-white/[0.06]">
               <p className="text-[10px] text-muted-foreground mb-1">المطعم</p>
