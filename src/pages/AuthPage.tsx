@@ -88,11 +88,9 @@ const AuthPage = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Trigger face auth when email is entered on login
+  // Do not auto-open face auth on blur; keep login non-blocking.
   const handleEmailBlur = () => {
-    if (isLogin && email && email.includes("@") && !faceVerified) {
-      setFaceCheckActive(true);
-    }
+    return;
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {

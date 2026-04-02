@@ -134,14 +134,28 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
     }
   };
 
-  const stopCamera = () => {
+  const stopCamera = useCallback(() => {
     if (landmarkIntervalRef.current) {
       clearInterval(landmarkIntervalRef.current);
       landmarkIntervalRef.current = null;
     }
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
-  };
+  }, []);
+
+  const handleSkip = useCallback(() => {
+    stopCamera();
+    setHasProfile(false);
+    onSkip();
+  }, [onSkip, stopCamera]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      handleSkip();
+    }, 12000);
+
+    return () => clearTimeout(timeoutId);
+  }, [handleSkip]);
 
   // Real-time face landmark drawing
   const startLandmarkTracking = () => {
