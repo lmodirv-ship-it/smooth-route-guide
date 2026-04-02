@@ -368,10 +368,10 @@ const DriverPage = () => {
             </div>
             <div className="rounded-xl border border-border bg-card">
               <Table>
-                <TableHeader>
+                 <TableHeader>
                   <TableRow>
                     <TableHead className="text-right text-xs font-bold">Reference</TableHead>
-                    <TableHead className="text-right text-xs font-bold">الزبون</TableHead>
+                    <TableHead className="text-right text-xs font-bold">⭐</TableHead>
                     <TableHead className="text-right text-xs font-bold">الثمن</TableHead>
                     <TableHead className="text-center text-xs font-bold">قبول</TableHead>
                   </TableRow>
@@ -388,11 +388,8 @@ const DriverPage = () => {
                         <TableCell className="font-mono text-xs font-semibold text-primary">
                           {order.passenger_reference || "—"}
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium text-foreground">{order.passenger_name || "زبون"}</span>
-                            <span className="text-[11px] text-muted-foreground truncate">{order.pickup || "نقطة الالتقاط"}</span>
-                          </div>
+                        <TableCell className="text-right text-xs text-amber-400">
+                          {order.passenger_rating ? `${"★".repeat(Math.min(Math.round(order.passenger_rating), 5))}` : "—"}
                         </TableCell>
                         <TableCell className="text-right text-sm font-bold text-foreground">
                           {order.totalPrice} DH
