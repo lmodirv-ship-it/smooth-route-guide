@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Package, CheckCircle, Bike, MapPin, Clock, Store, Phone, Headphones, Navigation, User, XCircle, Star, Route as RouteIcon } from "lucide-react";
@@ -37,6 +37,8 @@ const DeliveryTracking = () => {
   const [driverRating, setDriverRating] = useState<number | null>(null);
   const [driverPhone, setDriverPhone] = useState<string | null>(null);
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
+  const [throttledDriverPos, setThrottledDriverPos] = useState<{ lat: number; lng: number } | null>(null);
+  const lastRouteFetchRef = useRef(0);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -105,6 +107,16 @@ const DeliveryTracking = () => {
 
   const smoothedDriver = useSmoothedPosition(driverLocation);
 
+  // Throttle driver position for OSRM route fetching (every 30s)
+  useEffect(() => {
+    if (!smoothedDriver) return;
+    const now = Date.now();
+    if (!throttledDriverPos || now - lastRouteFetchRef.current > 30000) {
+      setThrottledDriverPos(smoothedDriver);
+      lastRouteFetchRef.current = now;
+    }
+  }, [smoothedDriver, throttledDriverPos]);
+
   const pickupPos = useMemo(() => {
     if (order?.pickup_lat && order?.pickup_lng) return { lat: Number(order.pickup_lat), lng: Number(order.pickup_lng) };
     return null;
@@ -123,11 +135,19 @@ const DeliveryTracking = () => {
     return pickupPos;
   }, [order, pickupPos, deliveryPos]);
 
+  // Use throttled position for route to avoid OSRM rate limits
   const mapRoute = useMemo(() => {
-    if (smoothedDriver && targetPos) return { pickup: smoothedDriver, destination: targetPos };
+    if (throttledDriverPos && targetPos) return { pickup: throttledDriverPos, destination: targetPos };
     if (pickupPos && deliveryPos) return { pickup: pickupPos, destination: deliveryPos };
     return null;
-  }, [smoothedDriver, targetPos, pickupPos, deliveryPos]);
+  }, [throttledDriverPos, targetPos, pickupPos, deliveryPos]);
+
+  // Route color: blue → to restaurant, green → to customer
+  const routeColor = useMemo(() => {
+    if (!order) return "#3b82f6";
+    const toCustomer = ["picked_up", "on_the_way_to_customer"];
+    return toCustomer.includes(order.status) ? "#10b981" : "#3b82f6";
+  }, [order?.status]);
 
   const distToTarget = useMemo(() => {
     if (!smoothedDriver || !targetPos) return null;
@@ -185,21 +205,20 @@ const DeliveryTracking = () => {
 
   return (
     <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background overflow-hidden" dir="rtl">
-      {/* ─── Map Section (top) ─── */}
-      <div className="flex-1 relative min-h-[40%]">
-        {/* Glossy black borders */}
-        <div className="absolute top-0 bottom-0 left-0 w-1 z-[1002] bg-gradient-to-b from-zinc-700 via-zinc-900 to-zinc-700 shadow-[0_0_6px_rgba(0,0,0,0.8)]" />
-        <div className="absolute top-0 bottom-0 right-0 w-1 z-[1002] bg-gradient-to-b from-zinc-700 via-zinc-900 to-zinc-700 shadow-[0_0_6px_rgba(0,0,0,0.8)]" />
-
+      {/* ═══ القسم الأول: الخريطة مع مسار حقيقي ═══ */}
+      <div className="h-[50%] relative">
         <LeafletMap
           center={mapCenter}
           zoom={14}
           className="w-full h-full"
-          showMarker={!!targetPos && !smoothedDriver}
-          markerPosition={targetPos || undefined}
+          showMarker={!!deliveryPos}
+          markerPosition={deliveryPos || undefined}
           driverLocation={smoothedDriver}
           driverIconType="motorcycle"
           route={mapRoute}
+          routeColor={routeColor}
+          expandable={false}
+          hideControls
         />
 
         {/* Back button */}
@@ -241,20 +260,45 @@ const DeliveryTracking = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
           />
         </div>
+
+        {/* Map legend */}
+        <div className="absolute bottom-5 right-3 z-[1001] bg-card/90 backdrop-blur-xl rounded-xl p-2 border border-border shadow-lg">
+          <div className="space-y-1 text-[10px]">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 border border-white" />
+              <span className="text-foreground/80">السائق</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-red-400 to-red-600 border border-white" />
+              <span className="text-foreground/80">المطعم</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border border-white" />
+              <span className="text-foreground/80">موقعك</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* ─── Bottom Panel ─── */}
-      <div className="shrink-0 bg-card border-t border-border max-h-[55%] overflow-y-auto">
+      {/* ═══ القسم الثاني: معلومات الطلب ═══ */}
+      <div className="h-[50%] bg-card border-t-2 border-primary/20 overflow-y-auto">
         {/* Status progress steps */}
         {!isCancelled && (
           <div className="px-4 pt-3 pb-2">
             <div className="flex items-center gap-0.5">
               {steps.map((step, i) => (
-                <div key={step.key} className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
-                  i <= currentStep ? "bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.4)]" : "bg-muted"
-                }`} />
+                <div key={step.key} className="flex flex-col items-center flex-1">
+                  <div className={`h-1.5 w-full rounded-full transition-all duration-500 ${
+                    i <= currentStep ? "bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.4)]" : "bg-muted"
+                  }`} />
+                </div>
               ))}
             </div>
+            {/* Current step label */}
+            <p className="text-center text-xs font-bold text-primary mt-2 flex items-center justify-center gap-1.5">
+              {(() => { const StepIcon = steps[currentStep]?.icon; return StepIcon ? <StepIcon className="w-3.5 h-3.5" /> : null; })()}
+              {steps[currentStep]?.label}
+            </p>
           </div>
         )}
 
@@ -262,7 +306,7 @@ const DeliveryTracking = () => {
         <div className="px-4 py-3 space-y-3">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-mono">#{order.id?.slice(0, 8)}</span>
+            <span className="text-xs text-muted-foreground font-mono">#{order.order_code || order.id?.slice(0, 8)}</span>
             <span className="text-lg font-black text-primary">{order.total_price || order.estimated_price || "—"} DH</span>
           </div>
 
@@ -312,8 +356,8 @@ const DeliveryTracking = () => {
               )}
               <RouteIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               {order.delivery_address && (
-                <div className="flex-1 flex items-center gap-2 p-2 rounded-lg bg-destructive/8 border border-destructive/10">
-                  <div className="w-2 h-2 rounded-full bg-destructive shrink-0" />
+                <div className="flex-1 flex items-center gap-2 p-2 rounded-lg bg-blue-500/8 border border-blue-500/10">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
                   <span className="text-foreground/70 truncate">{order.delivery_address}</span>
                 </div>
               )}
