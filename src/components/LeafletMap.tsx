@@ -307,12 +307,22 @@ const LeafletMap = ({
             (c: [number, number]) => [c[1], c[0]] as L.LatLngExpression
           );
           L.polyline(coords, { color: "#10b981", weight: 5, opacity: 0.9 }).addTo(layer);
-          map.fitBounds(L.latLngBounds(coords as L.LatLngExpression[]).pad(0.2));
+          try {
+            const bounds = L.latLngBounds(coords as L.LatLngExpression[]);
+            if (bounds.isValid() && map.getContainer()?.offsetWidth > 0) {
+              map.fitBounds(bounds.pad(0.2));
+            }
+          } catch {}
         }
       })
       .catch(() => {
         L.polyline([pickupLatLng, destLatLng], { color: "#10b981", weight: 4, opacity: 0.8, dashArray: "10, 8" }).addTo(layer);
-        map.fitBounds(L.latLngBounds([pickupLatLng, destLatLng]).pad(0.3));
+        try {
+          const bounds = L.latLngBounds([pickupLatLng, destLatLng]);
+          if (bounds.isValid() && map.getContainer()?.offsetWidth > 0) {
+            map.fitBounds(bounds.pad(0.3));
+          }
+        } catch {}
       });
   }, [route]);
 

@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, Navigation, CheckCircle, XCircle, MapPin, Clock, Car, Send, ChevronUp, ChevronDown } from "lucide-react";
+import { Phone, Navigation, CheckCircle, XCircle, MapPin, Clock, Car, Send, ChevronUp, ChevronDown, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
@@ -10,6 +10,8 @@ import CancelRideDialog from "@/components/CancelRideDialog";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 import { usePricingSettings } from "@/hooks/usePricingSettings";
 import { useI18n } from "@/i18n/context";
+import { useInAppCall } from "@/hooks/useInAppCall";
+import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = (v: number) => (v * Math.PI) / 180;
