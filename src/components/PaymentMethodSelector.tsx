@@ -44,7 +44,7 @@ const PaymentMethodSelector = ({ selected, onChange, walletBalance = 0, compact 
             <div><p className="text-sm text-foreground font-medium">{m.label}</p><p className="text-xs text-muted-foreground">{m.desc}</p></div>
             <div className={`w-10 h-10 rounded-full bg-secondary flex items-center justify-center`}>
               {m.id === "paypal" ? (
-                <span className="font-bold text-blue-500 text-xs">PP</span>
+                <span className="font-bold text-info text-xs">PP</span>
               ) : (
                 <m.icon className={`w-5 h-5 ${m.color}`} />
               )}
