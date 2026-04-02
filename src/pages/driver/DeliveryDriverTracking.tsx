@@ -243,7 +243,7 @@ const DeliveryDriverTracking = () => {
       await supabase.from("delivery_orders").update(updates).eq("id", orderId);
       if (newStatus === "delivered") {
         toast({ title: "تم التسليم بنجاح ✅" });
-        navigate("/delivery");
+        setShowRating(true); // Show rating dialog before navigating
       }
     } catch (err: any) { console.error(err); }
     finally { setUpdating(false); }
