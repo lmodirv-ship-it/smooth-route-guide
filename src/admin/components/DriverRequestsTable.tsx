@@ -16,6 +16,8 @@ interface DriverRequestRow {
   pickup: string;
   destination: string;
   amount: number;
+  distance: number | null;
+  estimatedTime: number | null;
   status: string;
   createdAt: string;
 }
