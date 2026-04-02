@@ -170,7 +170,7 @@ const DriverSupport = () => {
         callDuration={inAppCall.callDuration}
         connectionQuality={inAppCall.connectionQuality}
         onAccept={inAppCall.acceptCall}
-        onReject={inAppCall.endCall}
+        
         onEnd={inAppCall.endCall}
         onToggleMute={inAppCall.toggleMute}
         onToggleVideo={inAppCall.toggleVideo}
