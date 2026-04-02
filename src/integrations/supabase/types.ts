@@ -1086,8 +1086,10 @@ export type Database = {
           delivery_lat: number | null
           delivery_lng: number | null
           delivery_type: string
+          distance: number | null
           driver_id: string | null
           estimated_price: number | null
+          estimated_time: number | null
           final_price: number | null
           id: string
           items: Json | null
@@ -1119,8 +1121,10 @@ export type Database = {
           delivery_lat?: number | null
           delivery_lng?: number | null
           delivery_type?: string
+          distance?: number | null
           driver_id?: string | null
           estimated_price?: number | null
+          estimated_time?: number | null
           final_price?: number | null
           id?: string
           items?: Json | null
@@ -1152,8 +1156,10 @@ export type Database = {
           delivery_lat?: number | null
           delivery_lng?: number | null
           delivery_type?: string
+          distance?: number | null
           driver_id?: string | null
           estimated_price?: number | null
+          estimated_time?: number | null
           final_price?: number | null
           id?: string
           items?: Json | null
@@ -2634,6 +2640,7 @@ export type Database = {
           destination_lng: number | null
           distance: number | null
           driver_id: string | null
+          estimated_time: number | null
           id: string
           pickup: string
           pickup_lat: number | null
@@ -2656,6 +2663,7 @@ export type Database = {
           destination_lng?: number | null
           distance?: number | null
           driver_id?: string | null
+          estimated_time?: number | null
           id?: string
           pickup?: string
           pickup_lat?: number | null
@@ -2678,6 +2686,7 @@ export type Database = {
           destination_lng?: number | null
           distance?: number | null
           driver_id?: string | null
+          estimated_time?: number | null
           id?: string
           pickup?: string
           pickup_lat?: number | null

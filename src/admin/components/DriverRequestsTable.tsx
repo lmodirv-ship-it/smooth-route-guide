@@ -16,6 +16,8 @@ interface DriverRequestRow {
   pickup: string;
   destination: string;
   amount: number;
+  distance: number | null;
+  estimatedTime: number | null;
   status: string;
   createdAt: string;
 }
@@ -49,7 +51,7 @@ const DriverRequestsTable = () => {
 
     let rideQuery = supabase
       .from("ride_requests")
-      .select("id, pickup, destination, price, status, created_at, user_id")
+      .select("id, pickup, destination, price, status, created_at, user_id, distance, estimated_time")
       .in("status", ["pending", "accepted"])
       .order("created_at", { ascending: false })
       .limit(50);
@@ -63,7 +65,7 @@ const DriverRequestsTable = () => {
 
     let deliveryQuery = supabase
       .from("delivery_orders")
-      .select("id, order_code, pickup_address, delivery_address, estimated_price, total_price, delivery_fee, status, created_at, user_id")
+      .select("id, order_code, pickup_address, delivery_address, estimated_price, total_price, delivery_fee, status, created_at, user_id, distance, estimated_time")
       .in("status", ["pending", "confirmed", "ready_for_driver", "driver_assigned", "on_the_way_to_vendor", "picked_up", "on_the_way_to_customer"])
       .order("created_at", { ascending: false })
       .limit(50);
@@ -96,6 +98,8 @@ const DriverRequestsTable = () => {
         pickup: ride.pickup || "—",
         destination: ride.destination || "—",
         amount: Number(ride.price || 0),
+        distance: ride.distance ? Number(ride.distance) : null,
+        estimatedTime: ride.estimated_time ?? null,
         status: ride.status,
         createdAt: ride.created_at,
       };
@@ -112,6 +116,8 @@ const DriverRequestsTable = () => {
         pickup: order.pickup_address || "—",
         destination: order.delivery_address || "—",
         amount: Number(order.total_price ?? order.estimated_price ?? order.delivery_fee ?? 0),
+        distance: order.distance ? Number(order.distance) : null,
+        estimatedTime: order.estimated_time ?? null,
         status: order.status,
         createdAt: order.created_at,
       };
@@ -201,6 +207,8 @@ const DriverRequestsTable = () => {
                 <th className="p-4 font-medium text-muted-foreground">العميل</th>
                 <th className="p-4 font-medium text-muted-foreground">الانطلاق</th>
                 <th className="p-4 font-medium text-muted-foreground">الوجهة</th>
+                <th className="p-4 font-medium text-muted-foreground">المسافة</th>
+                <th className="p-4 font-medium text-muted-foreground">الوقت المتوقع</th>
                 <th className="p-4 font-medium text-muted-foreground">المبلغ</th>
                 <th className="p-4 font-medium text-muted-foreground">الحالة</th>
                 <th className="p-4 font-medium text-muted-foreground">الوقت</th>
@@ -209,7 +217,7 @@ const DriverRequestsTable = () => {
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                   <td colSpan={10} className="p-8 text-center text-muted-foreground">
                     <span className="inline-flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       جاري تحميل الطلبات...
@@ -220,7 +228,7 @@ const DriverRequestsTable = () => {
 
               {!loading && filteredRequests.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={10} className="p-8 text-center text-muted-foreground">
                     لا توجد طلبات ظاهرة حالياً
                   </td>
                 </tr>
@@ -247,8 +255,10 @@ const DriverRequestsTable = () => {
                       </div>
                     </td>
                     <td className="p-4 align-middle text-foreground max-w-[220px] truncate">{request.pickup}</td>
-                    <td className="p-4 align-middle text-foreground max-w-[220px] truncate">{request.destination}</td>
-                    <td className="p-4 align-middle text-primary font-semibold">{request.amount.toFixed(0)} DH</td>
+                     <td className="p-4 align-middle text-foreground max-w-[220px] truncate">{request.destination}</td>
+                     <td className="p-4 align-middle text-sm text-foreground">{request.distance ? `${request.distance.toFixed(1)} كم` : "—"}</td>
+                     <td className="p-4 align-middle text-sm text-foreground">{request.estimatedTime ? `${request.estimatedTime} د` : "—"}</td>
+                     <td className="p-4 align-middle text-primary font-semibold">{request.amount.toFixed(0)} DH</td>
                     <td className="p-4 align-middle">
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-xs ${statusMeta.className}`}>
                         {statusMeta.label}

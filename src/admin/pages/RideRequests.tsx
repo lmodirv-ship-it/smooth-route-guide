@@ -11,6 +11,7 @@ import { useAdminGeo } from "@/admin/contexts/AdminGeoContext";
 interface RideRequest {
   id: string; pickup: string; destination: string; price: number | null;
   status: string; created_at: string; user_id: string;
+  distance: number | null; estimated_time: number | null;
 }
 
 const AdminRideRequests = () => {
@@ -117,11 +118,13 @@ const AdminRideRequests = () => {
       <div className="glass-card rounded-xl overflow-hidden">
         <div className="overflow-auto">
           <table className="w-full text-sm">
-            <thead>
+             <thead>
               <tr className="border-b border-border text-right">
                 <th className="p-4 text-muted-foreground font-medium">إجراءات</th>
                 <th className="p-4 text-muted-foreground font-medium">الحالة</th>
                 <th className="p-4 text-muted-foreground font-medium">السعر</th>
+                <th className="p-4 text-muted-foreground font-medium">المسافة</th>
+                <th className="p-4 text-muted-foreground font-medium">الوقت المتوقع</th>
                 <th className="p-4 text-muted-foreground font-medium">الوقت</th>
                 <th className="p-4 text-muted-foreground font-medium">الوجهة</th>
                 <th className="p-4 text-muted-foreground font-medium">نقطة الانطلاق</th>
@@ -129,7 +132,7 @@ const AdminRideRequests = () => {
             </thead>
             <tbody>
               {requests.length === 0 && (
-                <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">لا توجد طلبات</td></tr>
+                <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">لا توجد طلبات</td></tr>
               )}
               {requests.map((req) => (
                 <motion.tr key={req.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -151,7 +154,9 @@ const AdminRideRequests = () => {
                     )}
                   </td>
                   <td className="p-4"><span className={`text-xs px-2 py-1 rounded-full ${statusColor(req.status)} bg-secondary`}>{statusLabel(req.status)}</span></td>
-                  <td className="p-4 text-primary font-semibold">{req.price || 0} ر.س</td>
+                  <td className="p-4 text-primary font-semibold">{req.price || 0} DH</td>
+                  <td className="p-4 text-foreground text-sm">{req.distance ? `${Number(req.distance).toFixed(1)} كم` : "—"}</td>
+                  <td className="p-4 text-foreground text-sm">{req.estimated_time ? `${req.estimated_time} د` : "—"}</td>
                   <td className="p-4 text-muted-foreground text-xs">{new Date(req.created_at).toLocaleString("ar-SA", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}</td>
                   <td className="p-4 text-foreground truncate max-w-[200px]">{req.destination || "—"}</td>
                   <td className="p-4 text-foreground truncate max-w-[200px]">{req.pickup || "—"}</td>
