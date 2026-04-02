@@ -112,16 +112,14 @@ interface LeafletMapProps {
   nearbyDrivers?: NearbyDriverMarker[];
   route?: RoutePoints | null;
   onMapClick?: (latlng: { lat: number; lng: number }) => void;
-  /** Allow parent to control expanded state */
   expandable?: boolean;
   onExpandChange?: (expanded: boolean) => void;
-  /** Hide internal map controls (theme/expand buttons) */
   hideControls?: boolean;
-  /** External theme control */
   externalTheme?: ThemeKey;
   onThemeChange?: (theme: ThemeKey) => void;
-  /** External expand control */
   externalExpanded?: boolean;
+  /** Icon type for the driver marker: 'car' (default) or 'motorcycle' */
+  driverIconType?: "car" | "motorcycle";
   children?: React.ReactNode;
 }
 
