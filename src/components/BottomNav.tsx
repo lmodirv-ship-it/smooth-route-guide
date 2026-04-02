@@ -73,7 +73,7 @@ const BottomNav = ({ role }: BottomNavProps) => {
       className="shrink-0 border-t border-border/30 bg-card/95 backdrop-blur-xl safe-area-bottom"
       dir={dir}
     >
-      <div className="grid grid-cols-5 gap-2 px-2 py-2">
+      <div className={`grid gap-2 px-2 py-2 ${items.length <= 3 ? `grid-cols-${items.length}` : 'grid-cols-5'}`}>
         {items.map((item) => {
           const isActive =
             location.pathname === item.path ||

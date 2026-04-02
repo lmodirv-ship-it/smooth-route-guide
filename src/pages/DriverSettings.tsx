@@ -110,7 +110,7 @@ const DriverSettings = () => {
         </motion.div>
       ))}
 
-      <div className="px-4 mt-6">
+      <div className="px-4 mt-6 pb-4">
         <button
           onClick={logout}
           className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors"
@@ -119,6 +119,8 @@ const DriverSettings = () => {
           <LogOut className="w-5 h-5" />
         </button>
       </div>
+
+      <BottomNav role="driver" />
     </div>
   );
 };
