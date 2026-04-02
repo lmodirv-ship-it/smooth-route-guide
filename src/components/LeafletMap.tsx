@@ -79,7 +79,8 @@ const TILE_THEMES = {
   },
 };
 
-type ThemeKey = keyof typeof TILE_THEMES;
+export type ThemeKey = keyof typeof TILE_THEMES;
+export { TILE_THEMES };
 
 interface NearbyDriverMarker {
   id: string;
