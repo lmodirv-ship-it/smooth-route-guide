@@ -116,6 +116,12 @@ export function useInAppCall() {
     resetPeer();
     setIncomingCall(null);
     setActiveCall(null);
+    setCallDuration(0);
+    setConnectionQuality("good");
+    if (callTimerRef.current) { clearInterval(callTimerRef.current); callTimerRef.current = null; }
+    stopRingtone();
+    stopDialTone();
+    playEndTone();
   }, [resetPeer]);
 
   const updateSession = useCallback(async (callId: string, patch: Record<string, unknown>) => {
