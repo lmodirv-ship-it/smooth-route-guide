@@ -2,6 +2,7 @@
  * Main Application Layout — wraps customer, driver, and delivery interfaces.
  */
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Users } from "lucide-react";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
