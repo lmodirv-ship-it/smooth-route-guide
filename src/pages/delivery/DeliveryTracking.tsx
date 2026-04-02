@@ -327,10 +327,16 @@ const DeliveryTracking = () => {
           {hasDriver && (
             <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
               <div className="flex items-center gap-2">
-                {driverPhone && (
-                  <a href={`tel:${driverPhone}`} className="w-9 h-9 rounded-full bg-blue-500/15 flex items-center justify-center border border-blue-500/25">
-                    <Phone className="w-4 h-4 text-blue-400" />
-                  </a>
+                {driverUserId && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-9 w-9 rounded-full p-0 border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20"
+                    onClick={() => inAppCall.startCall({ id: driverUserId, name: driverRefCode || "السائق" })}
+                    disabled={inAppCall.busy}
+                  >
+                    <PhoneCall className="w-4 h-4 text-blue-500" />
+                  </Button>
                 )}
               </div>
               <div className="text-right flex items-center gap-2">
