@@ -156,14 +156,33 @@ const LeafletMap = ({
     return mapCenter;
   }, [markerPosition, mapCenter]);
 
+  // Sync external theme
+  useEffect(() => {
+    if (externalTheme && externalTheme !== theme) {
+      setTheme(externalTheme);
+      if (tileLayerRef.current && mapInstanceRef.current) {
+        tileLayerRef.current.setUrl(TILE_THEMES[externalTheme].url);
+      }
+    }
+  }, [externalTheme]);
+
+  // Sync external expanded
+  useEffect(() => {
+    if (externalExpanded !== undefined && externalExpanded !== isExpanded) {
+      setIsExpanded(externalExpanded);
+      setTimeout(() => mapInstanceRef.current?.invalidateSize(), 350);
+    }
+  }, [externalExpanded]);
+
   // Switch tile theme
   const switchTheme = useCallback((newTheme: ThemeKey) => {
     setTheme(newTheme);
     setShowThemeMenu(false);
+    onThemeChange?.(newTheme);
     if (tileLayerRef.current && mapInstanceRef.current) {
       tileLayerRef.current.setUrl(TILE_THEMES[newTheme].url);
     }
-  }, []);
+  }, [onThemeChange]);
 
   const toggleExpand = useCallback(() => {
     const next = !isExpanded;
