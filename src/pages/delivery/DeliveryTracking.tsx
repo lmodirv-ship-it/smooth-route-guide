@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Package, CheckCircle, Bike, MapPin, Clock, Store, Phone, Headphones, Navigation, User, XCircle, Star, Route as RouteIcon } from "lucide-react";
+import { ArrowRight, Package, CheckCircle, Bike, MapPin, Clock, Store, Phone, PhoneCall, Headphones, Navigation, User, XCircle, Star, Route as RouteIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import LeafletMap from "@/components/LeafletMap";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
+import { useInAppCall } from "@/hooks/useInAppCall";
+import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = (v: number) => (v * Math.PI) / 180;
@@ -36,9 +38,11 @@ const DeliveryTracking = () => {
   const [driverRefCode, setDriverRefCode] = useState<string | null>(null);
   const [driverRating, setDriverRating] = useState<number | null>(null);
   const [driverPhone, setDriverPhone] = useState<string | null>(null);
+  const [driverUserId, setDriverUserId] = useState<string | null>(null);
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
   const [throttledDriverPos, setThrottledDriverPos] = useState<{ lat: number; lng: number } | null>(null);
   const lastRouteFetchRef = useRef(0);
+  const inAppCall = useInAppCall();
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -77,7 +81,7 @@ const DeliveryTracking = () => {
   // Driver location tracking
   useEffect(() => {
     if (!order?.driver_id) {
-      setDriverLocation(null); setDriverRefCode(null); setDriverRating(null); setDriverPhone(null);
+      setDriverLocation(null); setDriverRefCode(null); setDriverRating(null); setDriverPhone(null); setDriverUserId(null);
       return;
     }
     const fetchDriver = async () => {
@@ -87,6 +91,7 @@ const DeliveryTracking = () => {
       if (!driver) return;
       if (driver.driver_code) setDriverRefCode(driver.driver_code);
       if (driver.rating) setDriverRating(Number(driver.rating));
+      if (driver.user_id) setDriverUserId(driver.user_id);
       if (driver.current_lat && driver.current_lng) {
         setDriverLocation({ lat: Number(driver.current_lat), lng: Number(driver.current_lng) });
       }
@@ -322,10 +327,16 @@ const DeliveryTracking = () => {
           {hasDriver && (
             <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
               <div className="flex items-center gap-2">
-                {driverPhone && (
-                  <a href={`tel:${driverPhone}`} className="w-9 h-9 rounded-full bg-blue-500/15 flex items-center justify-center border border-blue-500/25">
-                    <Phone className="w-4 h-4 text-blue-400" />
-                  </a>
+                {driverUserId && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-9 w-9 rounded-full p-0 border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20"
+                    onClick={() => inAppCall.startCall({ id: driverUserId, name: driverRefCode || "السائق" })}
+                    disabled={inAppCall.busy}
+                  >
+                    <PhoneCall className="w-4 h-4 text-blue-500" />
+                  </Button>
                 )}
               </div>
               <div className="text-right flex items-center gap-2">
@@ -433,6 +444,19 @@ const DeliveryTracking = () => {
           )}
         </div>
       </div>
+      <InAppCallDialog
+        incomingCall={inAppCall.incomingCall}
+        activeCall={inAppCall.activeCall}
+        localStream={inAppCall.localStream}
+        remoteStream={inAppCall.remoteStream}
+        isMuted={inAppCall.isMuted}
+        isVideoEnabled={inAppCall.isVideoEnabled}
+        busy={inAppCall.busy}
+        onAccept={inAppCall.acceptCall}
+        onEnd={inAppCall.endCall}
+        onToggleMute={inAppCall.toggleMute}
+        onToggleVideo={inAppCall.toggleVideo}
+      />
     </div>
   );
 };
