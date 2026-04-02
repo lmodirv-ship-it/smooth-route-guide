@@ -11,7 +11,7 @@ const CHECK_INTERVAL_MS = 3000;
 
 type GuardState = "loading" | "no-face" | "register" | "monitoring" | "alert" | "locked";
 
-const FaceGuard = ({ onLock }: { onLock: () => void }) => {
+const FaceGuard = ({ onLock, disabled = false }: { onLock: () => void; disabled?: boolean }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
