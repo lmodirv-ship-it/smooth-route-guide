@@ -68,11 +68,12 @@ const PayPalSettings = () => {
 
   const saveToAppSettings = async (key: string, value: Record<string, unknown>) => {
     const { data: { user } } = await supabase.auth.getUser();
+    const jsonValue = value as unknown as Record<string, string | number | boolean>;
     const { data: existing } = await supabase.from("app_settings").select("id").eq("key", key).maybeSingle();
     if (existing) {
-      await supabase.from("app_settings").update({ value, updated_at: new Date().toISOString(), updated_by: user?.id }).eq("key", key);
+      await supabase.from("app_settings").update({ value: jsonValue, updated_at: new Date().toISOString(), updated_by: user?.id }).eq("key", key);
     } else {
-      await supabase.from("app_settings").insert({ key, value, updated_by: user?.id });
+      await supabase.from("app_settings").insert({ key, value: jsonValue, updated_by: user?.id });
     }
   };
 
