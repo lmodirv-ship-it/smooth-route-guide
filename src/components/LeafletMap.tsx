@@ -151,6 +151,7 @@ const LeafletMap = ({
   onThemeChange,
   externalExpanded,
   driverIconType = "car",
+  heatPoints = [],
   children,
 }: LeafletMapProps) => {
   const mapElementRef = useRef<HTMLDivElement | null>(null);
@@ -160,6 +161,7 @@ const LeafletMap = ({
   const staticMarkerRef = useRef<L.Marker | null>(null);
   const driverMarkerRef = useRef<L.Marker | null>(null);
   const routeLayerRef = useRef<L.LayerGroup | null>(null);
+  const heatLayerRef = useRef<L.LayerGroup | null>(null);
 
   const [theme, setTheme] = useState<ThemeKey>("light");
   const [showThemeMenu, setShowThemeMenu] = useState(false);
