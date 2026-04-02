@@ -11,6 +11,7 @@ import { useAdminGeo } from "@/admin/contexts/AdminGeoContext";
 interface RideRequest {
   id: string; pickup: string; destination: string; price: number | null;
   status: string; created_at: string; user_id: string;
+  distance: number | null; estimated_time: number | null;
 }
 
 const AdminRideRequests = () => {
