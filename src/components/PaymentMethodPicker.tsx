@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Banknote, Wallet, CreditCard, CheckCircle } from "lucide-react";
+import { CheckCircle, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePayPal } from "@/hooks/usePayPal";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
-export type PaymentMethod = "cash" | "wallet" | "paypal";
+export type PaymentMethod = "cash" | "wallet" | "paypal" | "bank_transfer";
 
 interface Props {
   selected: PaymentMethod;
@@ -24,15 +25,31 @@ const PaymentMethodPicker = ({
 }: Props) => {
   const [processing, setProcessing] = useState(false);
   const { createPayment, capturePayment, init, ready } = usePayPal();
+  const [bankName, setBankName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountHolder, setAccountHolder] = useState("");
 
   const methods = [
     { id: "cash" as PaymentMethod, label: "💵 نقداً", desc: "الدفع عند التأكيد", color: "text-emerald-400" },
     { id: "wallet" as PaymentMethod, label: "👛 محفظة", desc: `${walletBalance.toFixed(2)} DH`, color: "text-primary" },
+    { id: "bank_transfer" as PaymentMethod, label: "🏦 تحويل بنكي", desc: "تحويل مباشر من حسابك", color: "text-blue-500" },
     { id: "paypal" as PaymentMethod, label: "💎 PayPal", desc: "دفع إلكتروني آمن", color: "text-blue-400" },
   ];
 
   const handlePay = async () => {
     if (processing || externalLoading) return;
+
+    if (selected === "bank_transfer") {
+      if (!bankName.trim() || !accountNumber.trim() || !accountHolder.trim()) {
+        toast.error("يرجى ملء جميع بيانات الحساب البنكي");
+        return;
+      }
+      if (accountNumber.trim().length < 10) {
+        toast.error("رقم الحساب البنكي غير صالح");
+        return;
+      }
+    }
+
     setProcessing(true);
 
     try {
@@ -40,7 +57,6 @@ const PaymentMethodPicker = ({
       if (!user) throw new Error("يجب تسجيل الدخول");
 
       if (selected === "cash") {
-        // Record cash transaction as pending (needs admin/agent approval)
         const { data: txn, error } = await supabase.from("payment_transactions").insert({
           user_id: user.id,
           amount,
@@ -54,13 +70,33 @@ const PaymentMethodPicker = ({
         }).select("id").single();
         if (error) throw error;
         onPaymentComplete("cash", txn?.id);
+      } else if (selected === "bank_transfer") {
+        const { data: txn, error } = await supabase.from("payment_transactions").insert({
+          user_id: user.id,
+          amount,
+          currency: "MAD",
+          transaction_type: "payment",
+          payment_method: "bank_transfer",
+          provider: "bank_transfer",
+          status: "completed",
+          completed_at: new Date().toISOString(),
+          reference_type: referenceType || null,
+          reference_id: referenceId || null,
+          metadata: {
+            bank_name: bankName.trim(),
+            account_number: accountNumber.trim(),
+            account_holder: accountHolder.trim(),
+          },
+        }).select("id").single();
+        if (error) throw error;
+        toast.success("تم تأكيد التحويل البنكي بنجاح ✅");
+        onPaymentComplete("bank_transfer", txn?.id);
       } else if (selected === "wallet") {
         if (walletBalance < amount) {
           toast.error("رصيد المحفظة غير كافٍ");
           setProcessing(false);
           return;
         }
-        // Deduct from wallet
         const { data: wallet } = await supabase.from("wallet")
           .select("id, balance").eq("user_id", user.id).single();
         if (!wallet || Number(wallet.balance) < amount) {
@@ -105,11 +141,9 @@ const PaymentMethodPicker = ({
           referenceId,
         });
         if (result) {
-          // Open PayPal approval URL
           if (result.approveUrl) {
             window.open(result.approveUrl, "_blank");
             toast.info("أكمل الدفع في نافذة PayPal ثم عد هنا");
-            // For now, mark as pending - will be captured via webhook or manual
             onPaymentComplete("paypal", result.transactionId);
           } else {
             onPaymentComplete("paypal", result.transactionId);
@@ -145,12 +179,47 @@ const PaymentMethodPicker = ({
           </button>
         ))}
       </div>
+
+      {/* Bank Transfer Form */}
+      {selected === "bank_transfer" && (
+        <div className="space-y-3 p-4 rounded-xl border border-border bg-secondary/20" dir="rtl">
+          <p className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-primary" />
+            بيانات الحساب البنكي
+          </p>
+          <Input
+            placeholder="اسم البنك (مثال: CIH, Attijariwafa...)"
+            value={bankName}
+            onChange={e => setBankName(e.target.value)}
+            className="text-right"
+          />
+          <Input
+            placeholder="رقم الحساب البنكي (RIB)"
+            value={accountNumber}
+            onChange={e => setAccountNumber(e.target.value)}
+            className="text-right font-mono"
+            maxLength={30}
+          />
+          <Input
+            placeholder="اسم صاحب الحساب"
+            value={accountHolder}
+            onChange={e => setAccountHolder(e.target.value)}
+            className="text-right"
+          />
+          <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+            <p className="text-sm text-foreground font-bold text-center">
+              المبلغ الواجب دفعه: <span className="text-primary text-lg">{amount} DH</span>
+            </p>
+          </div>
+        </div>
+      )}
+
       <button
         onClick={handlePay}
         disabled={processing || externalLoading}
         className="w-full h-12 rounded-xl font-bold text-base gradient-primary text-primary-foreground disabled:opacity-50"
       >
-        {processing ? "جاري المعالجة..." : `ادفع ${amount} DH`}
+        {processing ? "جاري المعالجة..." : selected === "bank_transfer" ? `تأكيد التحويل ${amount} DH` : `ادفع ${amount} DH`}
       </button>
     </div>
   );
