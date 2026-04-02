@@ -228,7 +228,7 @@ const DriverRequestsTable = () => {
 
               {!loading && filteredRequests.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={10} className="p-8 text-center text-muted-foreground">
                     لا توجد طلبات ظاهرة حالياً
                   </td>
                 </tr>
