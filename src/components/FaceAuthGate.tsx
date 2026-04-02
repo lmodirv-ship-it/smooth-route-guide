@@ -134,14 +134,28 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
     }
   };
 
-  const stopCamera = () => {
+  const stopCamera = useCallback(() => {
     if (landmarkIntervalRef.current) {
       clearInterval(landmarkIntervalRef.current);
       landmarkIntervalRef.current = null;
     }
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
-  };
+  }, []);
+
+  const handleSkip = useCallback(() => {
+    stopCamera();
+    setHasProfile(false);
+    onSkip();
+  }, [onSkip, stopCamera]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      handleSkip();
+    }, 12000);
+
+    return () => clearTimeout(timeoutId);
+  }, [handleSkip]);
 
   // Real-time face landmark drawing
   const startLandmarkTracking = () => {
@@ -270,6 +284,9 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
         <div className="text-center space-y-4">
           <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto" />
           <p className="text-muted-foreground">جاري التحقق من الهوية...</p>
+          <Button variant="outline" onClick={handleSkip} className="mx-auto border-border">
+            تخطي والمتابعة بكلمة المرور
+          </Button>
         </div>
       </motion.div>
     );
@@ -456,15 +473,20 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
           </div>
         </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => scanFace()}
-          className="text-primary"
-        >
-          <Camera className="w-4 h-4 mr-1" />
-          إعادة المسح
-        </Button>
+        <div className="flex items-center justify-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => scanFace()}
+            className="text-primary"
+          >
+            <Camera className="w-4 h-4 mr-1" />
+            إعادة المسح
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleSkip} className="border-border">
+            تخطي
+          </Button>
+        </div>
       </div>
     </motion.div>
   );
