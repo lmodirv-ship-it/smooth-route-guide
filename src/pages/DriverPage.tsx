@@ -370,10 +370,12 @@ const DriverPage = () => {
               <Table>
                  <TableHeader>
                   <TableRow>
-                    <TableHead className="text-right text-xs font-bold">Reference</TableHead>
-                    <TableHead className="text-right text-xs font-bold">⭐</TableHead>
-                    <TableHead className="text-right text-xs font-bold">الثمن</TableHead>
-                    <TableHead className="text-center text-xs font-bold">قبول</TableHead>
+                     <TableHead className="text-right text-xs font-bold">Reference</TableHead>
+                     <TableHead className="text-right text-xs font-bold">⭐</TableHead>
+                     <TableHead className="text-right text-xs font-bold">المسافة</TableHead>
+                     <TableHead className="text-right text-xs font-bold">الوقت</TableHead>
+                     <TableHead className="text-right text-xs font-bold">الثمن</TableHead>
+                     <TableHead className="text-center text-xs font-bold">قبول</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -388,10 +390,16 @@ const DriverPage = () => {
                         <TableCell className="font-mono text-xs font-semibold text-primary">
                           {order.passenger_reference || "—"}
                         </TableCell>
-                        <TableCell className="text-right text-xs text-amber-400">
-                          {order.passenger_rating ? `${"★".repeat(Math.min(Math.round(order.passenger_rating), 5))}` : "—"}
-                        </TableCell>
-                        <TableCell className="text-right text-sm font-bold text-foreground">
+                         <TableCell className="text-right text-xs text-amber-400">
+                           {order.passenger_rating ? `${"★".repeat(Math.min(Math.round(order.passenger_rating), 5))}` : "—"}
+                         </TableCell>
+                         <TableCell className="text-right text-xs text-muted-foreground">
+                           {order.totalDistance ? `${order.totalDistance} كم` : "—"}
+                         </TableCell>
+                         <TableCell className="text-right text-xs text-muted-foreground">
+                           {order.eta ? `${order.eta} د` : "—"}
+                         </TableCell>
+                         <TableCell className="text-right text-sm font-bold text-foreground">
                           {order.totalPrice} DH
                         </TableCell>
                         <TableCell className="text-center">
