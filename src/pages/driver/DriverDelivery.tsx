@@ -152,8 +152,13 @@ const DriverDelivery = () => {
     const { error } = await supabase.from("delivery_orders")
       .update({ status: "driver_assigned", driver_id: driverId, accepted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq("id", orderId).eq("status", "ready_for_driver");
-    if (error) toast({ title: "خطأ", description: "تم قبول الطلب من سائق آخر", variant: "destructive" });
-    else toast({ title: "تم قبول الطلب ✅" });
+    if (error) {
+      toast({ title: "خطأ", description: "تم قبول الطلب من سائق آخر", variant: "destructive" });
+    } else {
+      toast({ title: "تم قبول الطلب ✅" });
+      // Navigate to tracking page
+      navigate(`/delivery/tracking?id=${orderId}`);
+    }
     setAccepting(null);
     fetchOrders();
   };
