@@ -2,10 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowRight, User, Phone, Car, FileText, Shield, Bell,
-  Globe, Moon, LogOut, ChevronLeft, HelpCircle, Star
+  Globe, Moon, LogOut, ChevronLeft, HelpCircle, Star,
+  TrendingUp, Clock, Wallet, Route
 } from "lucide-react";
 import { useLogout } from "@/hooks/useLogout";
 import { useI18n } from "@/i18n/context";
+import BottomNav from "@/components/BottomNav";
 
 const DriverSettings = () => {
   const navigate = useNavigate();
@@ -14,12 +16,20 @@ const DriverSettings = () => {
 
   const sections = [
     {
+      title: "الخدمات",
+      items: [
+        { icon: TrendingUp, label: "الأرباح", color: "text-primary", path: "/driver/earnings" },
+        { icon: Clock, label: "السجل", color: "text-info", path: "/driver/history" },
+        { icon: FileText, label: t.driver.documents, color: "text-warning", path: "/driver/documents" },
+        { icon: Wallet, label: "المحفظة", color: "text-success", path: "/driver/wallet" },
+      ],
+    },
+    {
       title: t.driver.accountSection,
       items: [
         { icon: User, label: t.driver.accountData, color: "text-primary" },
         { icon: Phone, label: t.driver.phoneNumber, color: "text-info" },
         { icon: Car, label: t.driver.vehicleData, color: "text-success" },
-        { icon: FileText, label: t.driver.documents, color: "text-warning", path: "/driver/documents" },
       ],
     },
     {
@@ -100,7 +110,7 @@ const DriverSettings = () => {
         </motion.div>
       ))}
 
-      <div className="px-4 mt-6">
+      <div className="px-4 mt-6 pb-4">
         <button
           onClick={logout}
           className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors"
@@ -109,6 +119,8 @@ const DriverSettings = () => {
           <LogOut className="w-5 h-5" />
         </button>
       </div>
+
+      <BottomNav role="driver" />
     </div>
   );
 };
