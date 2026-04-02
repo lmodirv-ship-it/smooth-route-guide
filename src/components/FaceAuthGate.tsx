@@ -35,26 +35,36 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
   const [fallbackLoading, setFallbackLoading] = useState(false);
   const [showPasswordFallback, setShowPasswordFallback] = useState(false);
 
-  // Load face-api models
+  // Load face-api models — with 10s timeout
   useEffect(() => {
     const loadModels = async () => {
       try {
-        await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-          faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
-          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Model load timeout")), 10000)
+        );
+        await Promise.race([
+          Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+            faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
+            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+          ]),
+          timeout,
         ]);
         setModelsLoaded(true);
       } catch {
-        toast.error("فشل تحميل نماذج التعرف على الوجه");
+        toast.error("فشل تحميل نماذج التعرف — سيتم تجاوز الفحص");
+        onSkip();
       }
     };
     loadModels();
   }, []);
 
-  // Lookup face descriptor via edge function
+  // Lookup face descriptor via edge function — with 8s timeout to prevent infinite loading
   useEffect(() => {
     if (!email) return;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
     const lookup = async () => {
       try {
         const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
@@ -64,6 +74,7 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: email.toLowerCase().trim() }),
+            signal: controller.signal,
           }
         );
         const data = await res.json();
@@ -72,14 +83,22 @@ const FaceAuthGate = ({ email, onVerified, onSkip }: FaceAuthGateProps) => {
           setHasProfile(true);
         } else {
           setHasProfile(false);
-          onSkip(); // No face registered, proceed normally
+          onSkip();
         }
       } catch {
+        // Timeout or network error — skip face auth gracefully
         setHasProfile(false);
         onSkip();
+      } finally {
+        clearTimeout(timeoutId);
       }
     };
     lookup();
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, [email]);
 
   // Start camera when descriptor is loaded
