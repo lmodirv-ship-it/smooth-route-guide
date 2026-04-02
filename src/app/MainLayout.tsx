@@ -78,7 +78,7 @@ const MainLayout = () => {
 
         {/* Right: Driver controls or accent dot */}
         <div className="px-3 shrink-0">
-          {isDriverPage ? <DriverTopBarControls /> : (
+          {isDriverPage ? <DriverTopBarControlsWithContext /> : (
             <div className="w-2 h-2 rounded-full bg-primary/50 animate-pulse" />
           )}
         </div>
