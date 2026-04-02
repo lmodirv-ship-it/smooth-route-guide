@@ -54,8 +54,8 @@ interface RideRow {
   price: number | null;
   status: string;
   created_at: string;
-  passenger_name?: string;
   passenger_reference?: string;
+  passenger_rating?: number;
 }
 
 const DriverPage = () => {
