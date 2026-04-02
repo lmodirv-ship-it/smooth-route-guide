@@ -304,7 +304,7 @@ const DriverPage = () => {
             <Avatar className="w-14 h-14 border-[3px] border-primary shadow-xl shadow-primary/30">
               <AvatarImage src={driverAvatar || undefined} />
               <AvatarFallback className="bg-primary text-primary-foreground font-bold text-lg">
-                {driverName?.charAt(0)?.toUpperCase() || "S"}
+                {refCode?.charAt(0)?.toUpperCase() || "S"}
               </AvatarFallback>
             </Avatar>
             <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-400 border-[3px] border-black flex items-center justify-center">
