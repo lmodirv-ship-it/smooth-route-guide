@@ -142,18 +142,18 @@ const DriverPage = () => {
       .order("created_at", { ascending: false });
     if (!error && data) {
       const riderIds = Array.from(new Set(data.map((order: any) => order.user_id).filter(Boolean)));
-      let riderMap = new Map<string, { name: string | null; user_code: string | null }>();
+      let riderMap = new Map<string, { user_code: string | null; avg_rating: number }>();
 
       if (riderIds.length > 0) {
         const { data: riders } = await supabase
           .from("profiles")
-          .select("id, name, user_code")
+          .select("id, user_code, avg_rating")
           .in("id", riderIds);
 
         riderMap = new Map(
-          (riders || []).map((rider) => [
+          (riders || []).map((rider: any) => [
             rider.id,
-            { name: rider.name, user_code: (rider as any).user_code || null },
+            { user_code: rider.user_code || null, avg_rating: Number(rider.avg_rating) || 0 },
           ])
         );
       }
@@ -162,8 +162,8 @@ const DriverPage = () => {
         const rider = riderMap.get(order.user_id);
         return {
           ...order,
-          passenger_name: rider?.name?.trim() || "زبون",
           passenger_reference: rider?.user_code || `#${order.id.slice(0, 6).toUpperCase()}`,
+          passenger_rating: rider?.avg_rating || 0,
         };
       });
 
