@@ -28,7 +28,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const CCDashboard = () => {
+const ORDER_STAGES = [
+  { key: "pending", label: "بانتظار", icon: "⏳" },
+  { key: "confirmed", label: "مؤكد", icon: "✅" },
+  { key: "ready_for_driver", label: "للسائق", icon: "🏍️" },
+  { key: "driver_assigned", label: "تعيين", icon: "📍" },
+  { key: "picked_up", label: "استلام", icon: "📦" },
+  { key: "delivered", label: "تسليم", icon: "🎉" },
+];
+
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     newOrders: 0, confirmed: 0, readyForPickup: 0, inTransit: 0,
