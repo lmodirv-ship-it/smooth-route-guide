@@ -58,6 +58,7 @@ const AdminDrivers = () => {
   const filtered = drivers.filter(d => {
     if (filter === "active" && d.status !== "active") return false;
     if (filter === "inactive" && d.status !== "inactive") return false;
+    if (typeFilter !== "all" && d.driver_type !== typeFilter) return false;
     if (search && !d.name?.includes(search) && !d.license_no.includes(search)) return false;
     return true;
   });
