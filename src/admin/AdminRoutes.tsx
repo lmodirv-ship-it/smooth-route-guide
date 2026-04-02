@@ -38,6 +38,7 @@ import PageManagement from "@/admin/pages/PageManagement";
 import DatabaseManager from "@/admin/pages/DatabaseManager";
 import PermissionsManagement from "@/admin/pages/PermissionsManagement";
 import SystemHealthCheck from "@/admin/pages/SystemHealthCheck";
+import PaymentManagement from "@/admin/pages/PaymentManagement";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
