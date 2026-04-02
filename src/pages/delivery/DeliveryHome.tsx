@@ -448,7 +448,7 @@ const DeliveryHome = () => {
           )}
         </div>
       </div>
-      <RoleSwitcher />
+      
     </>
   );
 };
