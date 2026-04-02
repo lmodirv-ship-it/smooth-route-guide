@@ -264,7 +264,7 @@ const DriverPage = () => {
   }, [tripProgress]);
 
   return (
-    <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background" dir={dir} onClick={() => unlockAudio()}>
+    <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background overflow-hidden" dir={dir} onClick={() => unlockAudio()}>
       {/* Map - takes most of the screen */}
       <div className="relative flex-1 min-h-0">
         <LeafletMap center={driverLocation || DEFAULT_LOCATION} zoom={14} showMarker driverLocation={driverLocation} route={route} className="w-full h-full" />
