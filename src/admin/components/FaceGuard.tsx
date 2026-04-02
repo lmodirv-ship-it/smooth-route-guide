@@ -29,9 +29,7 @@ const FaceGuard = ({ onLock, disabled = false }: { onLock: () => void; disabled?
     if (disabled) {
       stopCamera();
     }
-  }, [disabled, stopCamera]);
-
-  if (disabled) return null;
+  }, [disabled]);
 
   // Load face-api models
   useEffect(() => {
