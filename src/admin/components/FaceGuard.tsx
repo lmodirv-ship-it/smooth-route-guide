@@ -86,12 +86,20 @@ const FaceGuard = ({ onLock, disabled = false }: { onLock: () => void; disabled?
     if (intervalRef.current) clearInterval(intervalRef.current);
   }, []);
 
+  // When disabled, stop camera and hide
   useEffect(() => {
+    if (disabled) {
+      stopCamera();
+    }
+  }, [disabled, stopCamera]);
+
+  useEffect(() => {
+    if (disabled) return;
     if (modelsLoaded && (state === "register" || state === "monitoring")) {
       startCamera();
     }
     return () => stopCamera();
-  }, [modelsLoaded, state, startCamera, stopCamera]);
+  }, [modelsLoaded, state, startCamera, stopCamera, disabled]);
 
   // Detect face from video
   const detectFace = useCallback(async () => {
