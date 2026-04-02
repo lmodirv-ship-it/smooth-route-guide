@@ -308,6 +308,7 @@ export function useInAppCall() {
 
     try {
       setBusy(true);
+      stopRingtone();
       const stream = await ensureMediaStream();
       const connection = await createPeerConnection(incomingCall.callId, incomingCall.peer.id, stream);
 
