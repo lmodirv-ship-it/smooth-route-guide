@@ -120,7 +120,7 @@ const DeliveryDriverTracking = () => {
     if (data) {
       setOrder(data as OrderData);
       // Get customer ref code
-      const { data: profile } = await supabase.from("profiles").select("user_code").eq("id", data.user_id).single();
+      const { data: profile } = await supabase.from("profiles").select("user_code").eq("id", data.user_id).maybeSingle();
       if (profile) setCustomerRefCode((profile as any).user_code || null);
       // Get store phone
       if (data.store_id) {
