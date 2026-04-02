@@ -12,6 +12,7 @@ import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 import { useI18n } from "@/i18n/context";
 import { useInAppCall } from "@/hooks/useInAppCall";
 import InAppCallDialog from "@/components/calls/InAppCallDialog";
+import RatingDialog from "@/components/RatingDialog";
 import { toast } from "@/hooks/use-toast";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
