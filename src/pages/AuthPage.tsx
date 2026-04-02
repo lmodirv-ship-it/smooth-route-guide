@@ -325,25 +325,6 @@ const AuthPage = () => {
         </motion.div>
       )}
 
-      {/* Face Auth Gate */}
-      {faceCheckActive && (
-        <FaceAuthGate
-          email={email}
-          onVerified={() => {
-            setFaceCheckActive(false);
-            setFaceVerified(true);
-          }}
-          onSkip={() => {
-            setFaceCheckActive(false);
-            setFaceVerified(true);
-          }}
-        />
-      )}
-
-      {/* Face Register Prompt */}
-      {showFaceRegister && (
-        <FaceRegisterPrompt onClose={() => setShowFaceRegister(false)} />
-      )}
     </div>
   );
 };
