@@ -263,7 +263,10 @@ const OrderTracking = () => {
                       driver_id: order.driver_id,
                       score: rating,
                       comment: ratingComment.trim() || null,
-                    });
+                      rating_type: 'customer_to_driver',
+                      order_id: order.id,
+                      rated_by: user.id,
+                    } as any);
                     setRatingSubmitted(true);
                     toast({ title: "شكرًا على تقييمك! ⭐" });
                   } catch { 
