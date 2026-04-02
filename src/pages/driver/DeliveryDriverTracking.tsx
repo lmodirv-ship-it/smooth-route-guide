@@ -500,6 +500,22 @@ const DeliveryDriverTracking = () => {
         callDuration={inAppCall.callDuration}
         connectionQuality={inAppCall.connectionQuality}
       />
+
+      {/* Rating Dialog for driver to rate customer */}
+      {order && driverId && (
+        <RatingDialog
+          open={showRating}
+          onClose={() => {
+            setShowRating(false);
+            navigate("/delivery");
+          }}
+          targetUserId={order.user_id}
+          driverId={driverId}
+          orderId={order.id}
+          ratingType="driver_to_customer"
+          targetName={customerRefCode ? `الزبون ${customerRefCode}` : "الزبون"}
+        />
+      )}
     </div>
   );
 };
