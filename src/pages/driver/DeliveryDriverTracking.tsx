@@ -348,10 +348,21 @@ const DeliveryDriverTracking = () => {
               className="overflow-hidden px-4 pb-2"
             >
               <div className="space-y-2">
-                {/* Store */}
-                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border">
-                  <Store className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span className="text-sm text-foreground/80 flex-1 truncate">{order.store_name || order.pickup_address || "المطعم"}</span>
+                {/* Store + call restaurant */}
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border flex-1 min-w-0">
+                    <Store className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span className="text-sm text-foreground/80 flex-1 truncate">{order.store_name || order.pickup_address || "المطعم"}</span>
+                  </div>
+                  {storePhone && (
+                    <button
+                      onClick={() => window.open(`tel:${storePhone}`)}
+                      className="shrink-0 w-11 h-11 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 flex items-center justify-center transition-colors"
+                      title={`اتصل بالمطعم: ${storePhone}`}
+                    >
+                      <PhoneCall className="w-4.5 h-4.5 text-emerald-400" />
+                    </button>
+                  )}
                 </div>
                 {/* Delivery address */}
                 <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border">
@@ -364,6 +375,16 @@ const DeliveryDriverTracking = () => {
                     <Package className="w-4 h-4 text-amber-400 shrink-0" />
                     <span className="text-sm font-mono text-foreground/80">{order.order_code}</span>
                   </div>
+                )}
+                {/* Call restaurant button (prominent) */}
+                {storePhone && (
+                  <Button
+                    variant="outline"
+                    className="w-full h-11 rounded-xl gap-2 border-emerald-500/30 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                    onClick={() => window.open(`tel:${storePhone}`)}
+                  >
+                    <PhoneCall className="w-4 h-4" /> اتصال بالمطعم لتأكيد الطلبية
+                  </Button>
                 )}
                 {/* In-app call to customer */}
                 <Button
