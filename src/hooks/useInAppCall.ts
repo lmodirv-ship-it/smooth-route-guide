@@ -208,6 +208,12 @@ export function useInAppCall() {
         if (peer.connectionState === "connected") {
           setActiveCall((prev) => (prev ? { ...prev, status: "active" } : prev));
           setBusy(false);
+          stopRingtone();
+          stopDialTone();
+          // Start call duration timer
+          if (callTimerRef.current) clearInterval(callTimerRef.current);
+          setCallDuration(0);
+          callTimerRef.current = setInterval(() => setCallDuration(d => d + 1), 1000);
           return;
         }
 
