@@ -264,13 +264,13 @@ const DriverPage = () => {
   }, [tripProgress]);
 
   return (
-    <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background" dir={dir} onClick={() => unlockAudio()}>
+    <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background overflow-hidden" dir={dir} onClick={() => unlockAudio()}>
       {/* Map - takes most of the screen */}
       <div className="relative flex-1 min-h-0">
         <LeafletMap center={driverLocation || DEFAULT_LOCATION} zoom={14} showMarker driverLocation={driverLocation} route={route} className="w-full h-full" />
 
-        {/* Top overlay */}
-        <div className="absolute top-0 inset-x-0 z-[1000] bg-gradient-to-b from-black/80 via-black/40 to-transparent px-4 pt-3 pb-10">
+        {/* Top overlay - FIXED */}
+        <div className="absolute top-0 inset-x-0 z-[1000] bg-gradient-to-b from-black/80 via-black/40 to-transparent px-4 pt-3 pb-10 pointer-events-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <img src={driverLogo} alt="HN" className="w-8 h-8 rounded-full shadow-lg border border-white/20" />
@@ -374,7 +374,7 @@ const DriverPage = () => {
       </div>
 
       {/* Incoming Ride Requests */}
-      <div className="shrink-0 bg-background border-t border-border">
+      <div className="shrink-0 max-h-[35vh] overflow-y-auto bg-background border-t border-border">
         {nearbyOrders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Radar className="w-10 h-10 text-muted-foreground/30 mb-2 animate-pulse" />
@@ -392,7 +392,7 @@ const DriverPage = () => {
                 طلبات جديدة
               </h3>
             </div>
-            <div className="max-h-[28vh] overflow-y-auto rounded-xl border border-border bg-card">
+            <div className="rounded-xl border border-border bg-card">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -405,7 +405,6 @@ const DriverPage = () => {
                 <TableBody>
                   {nearbyOrders.map((order) => {
                     const isSelected = selectedOrderId === order.id;
-
                     return (
                       <TableRow
                         key={order.id}
