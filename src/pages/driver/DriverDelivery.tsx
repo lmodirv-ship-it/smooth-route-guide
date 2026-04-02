@@ -146,7 +146,7 @@ const DriverDelivery = () => {
     setActiveOrder(active as DeliveryOrder | null);
     if (!active) {
       let query = supabase.from("delivery_orders").select("*")
-        .eq("status", "ready_for_driver").order("created_at", { ascending: false }).limit(20);
+        .in("status", ["pending", "ready_for_driver"]).order("created_at", { ascending: false }).limit(20);
       if (driverCity) query = query.ilike("city", `%${driverCity}%`);
       const { data: pending } = await query;
 
@@ -158,12 +158,21 @@ const DriverDelivery = () => {
         customerMap = new Map((profiles || []).map((p: any) => [p.id, { user_code: p.user_code, avg_rating: Number(p.avg_rating) || 0 }]));
       }
 
+      // Fetch store phone numbers
+      const storeIds = Array.from(new Set((pending || []).map((o: any) => o.store_id).filter(Boolean)));
+      let storePhoneMap = new Map<string, string>();
+      if (storeIds.length > 0) {
+        const { data: stores } = await supabase.from("stores").select("id, phone").in("id", storeIds);
+        storePhoneMap = new Map((stores || []).map((s: any) => [s.id, s.phone || ""]));
+      }
+
       const enriched = (pending || []).map((order: any) => {
         const customer = customerMap.get(order.user_id);
         return {
           ...order,
           customer_reference: customer?.user_code || `#${order.id.slice(0, 6).toUpperCase()}`,
           customer_rating: customer?.avg_rating || 0,
+          store_phone: storePhoneMap.get(order.store_id) || "",
         };
       });
 
