@@ -20,6 +20,7 @@ interface Driver {
 const AdminDrivers = () => {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | "ride" | "delivery" | "both">("all");
   const [search, setSearch] = useState("");
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [docs, setDocs] = useState<any[]>([]);
