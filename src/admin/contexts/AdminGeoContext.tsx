@@ -54,10 +54,9 @@ export const AdminGeoProvider = ({ children }: { children: ReactNode }) => {
         .select("country, city")
         .eq("is_active", true);
 
-      if (zones) {
-        const uniqueCountries = [...new Set(zones.map(z => z.country))].sort();
-        setCountries(uniqueCountries);
-      }
+      const allZones = zones || [];
+      const uniqueCountries = [...new Set(allZones.map(z => z.country))].sort();
+      setCountries(uniqueCountries);
 
       // Load geo settings from app_settings
       const { data: settings } = await supabase
@@ -66,16 +65,61 @@ export const AdminGeoProvider = ({ children }: { children: ReactNode }) => {
         .eq("key", "geo_settings")
         .maybeSingle();
 
+      let active: string[] = [];
       if (settings?.value) {
         const geo = settings.value as any;
-        const defCountry = geo.defaultCountry || "all";
-        const defCity = geo.defaultCity || "all";
-        const active = geo.activeCountries || [];
-        setDefaultCountry(defCountry);
-        setDefaultCity(defCity);
+        setDefaultCountry(geo.defaultCountry || "all");
+        setDefaultCity(geo.defaultCity || "all");
+        active = geo.activeCountries || [];
         setActiveCountries(active);
-        setSelectedCountry(defCountry);
-        setSelectedCity(defCity);
+      }
+
+      // Try to auto-detect location via browser geolocation
+      const detectLocation = async () => {
+        try {
+          const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+          );
+          const { latitude, longitude } = pos.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=ar&zoom=10`,
+            { headers: { "User-Agent": "HN-Driver-Admin/1.0" } }
+          );
+          if (!res.ok) return null;
+          const data = await res.json();
+          const detectedCountry = data.address?.country || "";
+          const detectedCity = data.address?.city || data.address?.town || data.address?.state || "";
+          return { country: detectedCountry, city: detectedCity };
+        } catch {
+          return null;
+        }
+      };
+
+      const detected = await detectLocation();
+      const availableCountries = active.length > 0 ? uniqueCountries.filter(c => active.includes(c)) : uniqueCountries;
+
+      if (detected) {
+        // Match detected country to available zones
+        const matchedCountry = availableCountries.find(c =>
+          c === detected.country || detected.country.includes(c) || c.includes(detected.country)
+        );
+        if (matchedCountry) {
+          setSelectedCountry(matchedCountry);
+          // Try to match city
+          const zoneCities = allZones.filter(z => z.country === matchedCountry).map(z => z.city);
+          const matchedCity = zoneCities.find(c =>
+            c === detected.city || detected.city.includes(c) || c.includes(detected.city)
+          );
+          setSelectedCity(matchedCity || "all");
+        } else {
+          // Fallback to settings default
+          setSelectedCountry(settings?.value ? (settings.value as any).defaultCountry || "all" : "all");
+          setSelectedCity(settings?.value ? (settings.value as any).defaultCity || "all" : "all");
+        }
+      } else {
+        // No geolocation — use settings defaults
+        setSelectedCountry(settings?.value ? (settings.value as any).defaultCountry || "all" : "all");
+        setSelectedCity(settings?.value ? (settings.value as any).defaultCity || "all" : "all");
       }
 
       setLoading(false);
