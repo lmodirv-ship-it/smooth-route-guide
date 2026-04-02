@@ -380,8 +380,9 @@ export function useInAppCall() {
   useEffect(() => {
     if (!userId) return;
 
+    const channelId = `call-sessions-${userId}-${Date.now()}`;
     const sessionChannel = supabase
-      .channel(`call-sessions-${userId}`)
+      .channel(channelId)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "call_sessions" }, async (payload: any) => {
         const row = payload.new;
         if (row.callee_id !== userId || row.status !== "ringing") return;
