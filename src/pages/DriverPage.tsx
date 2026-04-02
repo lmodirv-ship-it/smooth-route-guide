@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Car, Radar, MapPin, Clock, Route, Loader2, CheckCircle, TrendingUp,
-  Wallet, Star, Navigation, Volume2, Percent, Package, Crown, Phone,
+  Wallet, Star, Navigation, Volume2, Percent, Package, Crown, Phone, Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -266,7 +266,7 @@ const DriverPage = () => {
   }, [tripProgress]);
 
   return (
-    <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background overflow-hidden" dir={dir} onClick={() => unlockAudio()}>
+    <div className="h-dvh flex flex-col bg-background overflow-hidden" dir={dir} onClick={() => unlockAudio()}>
       {/* Map - takes most of the screen */}
       <div className="relative flex-1 min-h-0">
         <LeafletMap center={driverLocation || DEFAULT_LOCATION} zoom={14} showMarker driverLocation={driverLocation} route={route} className="w-full h-full" />
@@ -285,6 +285,13 @@ const DriverPage = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <button onClick={() => navigate("/driver/settings")}
+                className="p-2 rounded-full backdrop-blur-sm border border-white/20 bg-white/10 text-white/80 hover:bg-white/20 transition-all">
+                <Settings className="w-3.5 h-3.5" />
+              </button>
+              <div className="relative">
+                <div className={`w-3 h-3 rounded-full border-2 border-black/60 ${driverLocation ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" : "bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]"}`} />
+              </div>
               <button onClick={() => setSoundEnabled(!soundEnabled)}
                 className={`p-2 rounded-full backdrop-blur-sm border transition-all ${soundEnabled ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400" : "bg-white/10 border-white/20 text-white/40"}`}>
                 <Volume2 className="w-3.5 h-3.5" />
@@ -427,7 +434,7 @@ const DriverPage = () => {
         )}
       </div>
 
-      <BottomNav role="driver" />
+      
     </div>
   );
 };
