@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { startRingtone, stopRingtone, startDialTone, stopDialTone, playEndTone } from "@/lib/callSounds";
 
 export interface CallPeer {
   id: string;
@@ -53,6 +54,9 @@ export function useInAppCall() {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoEnabled, setIsVideoEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [callDuration, setCallDuration] = useState(0);
+  const [connectionQuality, setConnectionQuality] = useState<"good" | "medium" | "poor">("good");
+  const callTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
@@ -112,6 +116,12 @@ export function useInAppCall() {
     resetPeer();
     setIncomingCall(null);
     setActiveCall(null);
+    setCallDuration(0);
+    setConnectionQuality("good");
+    if (callTimerRef.current) { clearInterval(callTimerRef.current); callTimerRef.current = null; }
+    stopRingtone();
+    stopDialTone();
+    playEndTone();
   }, [resetPeer]);
 
   const updateSession = useCallback(async (callId: string, patch: Record<string, unknown>) => {
@@ -198,6 +208,12 @@ export function useInAppCall() {
         if (peer.connectionState === "connected") {
           setActiveCall((prev) => (prev ? { ...prev, status: "active" } : prev));
           setBusy(false);
+          stopRingtone();
+          stopDialTone();
+          // Start call duration timer
+          if (callTimerRef.current) clearInterval(callTimerRef.current);
+          setCallDuration(0);
+          callTimerRef.current = setInterval(() => setCallDuration(d => d + 1), 1000);
           return;
         }
 
@@ -259,6 +275,7 @@ export function useInAppCall() {
           direction: "outgoing",
           status: "ringing",
         });
+        startDialTone();
 
         // Auto-end after 45s if still ringing (no answer)
         const ringingTimeout = setTimeout(() => {
@@ -291,6 +308,7 @@ export function useInAppCall() {
 
     try {
       setBusy(true);
+      stopRingtone();
       const stream = await ensureMediaStream();
       const connection = await createPeerConnection(incomingCall.callId, incomingCall.peer.id, stream);
 
@@ -411,6 +429,7 @@ export function useInAppCall() {
           direction: "incoming",
           status: "ringing",
         });
+        startRingtone();
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "call_sessions" }, async (payload: any) => {
         const row = payload.new;
@@ -470,6 +489,7 @@ export function useInAppCall() {
                 direction: "incoming",
                 status: "ringing",
               });
+              startRingtone();
             }
             return;
           }
@@ -524,6 +544,8 @@ export function useInAppCall() {
     isMuted,
     isVideoEnabled,
     busy,
+    callDuration,
+    connectionQuality,
     isInCall: Boolean(incomingCall || activeCall),
     startCall,
     acceptCall,
