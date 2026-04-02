@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useLogout } from "@/hooks/useLogout";
 import { useI18n } from "@/i18n/context";
+import ReferralCard from "@/components/ReferralCard";
 
 const ClientProfile = () => {
   const navigate = useNavigate();
