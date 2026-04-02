@@ -102,6 +102,12 @@ interface RoutePoints {
   destination: { lat: number; lng: number };
 }
 
+interface HeatPoint {
+  lat: number;
+  lng: number;
+  intensity: number;
+}
+
 interface LeafletMapProps {
   center?: { lat: number; lng: number };
   zoom?: number;
@@ -122,6 +128,8 @@ interface LeafletMapProps {
   externalExpanded?: boolean;
   /** Icon type for the driver marker: 'car' (default) or 'motorcycle' */
   driverIconType?: "car" | "motorcycle";
+  /** Heatmap points for demand visualization */
+  heatPoints?: HeatPoint[];
   children?: React.ReactNode;
 }
 
@@ -143,6 +151,7 @@ const LeafletMap = ({
   onThemeChange,
   externalExpanded,
   driverIconType = "car",
+  heatPoints = [],
   children,
 }: LeafletMapProps) => {
   const mapElementRef = useRef<HTMLDivElement | null>(null);
@@ -152,6 +161,7 @@ const LeafletMap = ({
   const staticMarkerRef = useRef<L.Marker | null>(null);
   const driverMarkerRef = useRef<L.Marker | null>(null);
   const routeLayerRef = useRef<L.LayerGroup | null>(null);
+  const heatLayerRef = useRef<L.LayerGroup | null>(null);
 
   const [theme, setTheme] = useState<ThemeKey>("light");
   const [showThemeMenu, setShowThemeMenu] = useState(false);
@@ -220,6 +230,7 @@ const LeafletMap = ({
     tileLayer.addTo(map);
     nearbyDriversLayerRef.current = L.layerGroup().addTo(map);
     routeLayerRef.current = L.layerGroup().addTo(map);
+    heatLayerRef.current = L.layerGroup().addTo(map);
     mapInstanceRef.current = map;
     tileLayerRef.current = tileLayer;
 
@@ -284,6 +295,24 @@ const LeafletMap = ({
       L.marker([driver.lat, driver.lng], { icon: carIcon }).addTo(layer);
     });
   }, [nearbyDrivers]);
+
+  // Heatmap circles
+  useEffect(() => {
+    const layer = heatLayerRef.current;
+    if (!layer) return;
+    layer.clearLayers();
+    heatPoints.forEach((p) => {
+      const radius = 300 + p.intensity * 500;
+      const color = p.intensity > 0.7 ? "#ef4444" : p.intensity > 0.4 ? "#f59e0b" : "#22c55e";
+      const opacity = 0.12 + p.intensity * 0.25;
+      L.circle([p.lat, p.lng], {
+        radius,
+        color: "transparent",
+        fillColor: color,
+        fillOpacity: opacity,
+      }).addTo(layer);
+    });
+  }, [heatPoints]);
 
   useEffect(() => {
     const layer = routeLayerRef.current;

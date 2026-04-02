@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useLogout } from "@/hooks/useLogout";
 import { useI18n } from "@/i18n/context";
+import ReferralCard from "@/components/ReferralCard";
 
 const ClientProfile = () => {
   const navigate = useNavigate();
@@ -89,6 +90,9 @@ const ClientProfile = () => {
             </div>
           </motion.button>
         ))}
+
+        {/* Referral Card */}
+        <ReferralCard />
 
         <Button variant="outline" className="w-full mt-4 border-destructive/30 text-destructive hover:bg-destructive/10 rounded-xl"
           onClick={logout}>

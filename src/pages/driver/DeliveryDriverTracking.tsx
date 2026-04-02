@@ -12,6 +12,7 @@ import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 import { useI18n } from "@/i18n/context";
 import { useInAppCall } from "@/hooks/useInAppCall";
 import InAppCallDialog from "@/components/calls/InAppCallDialog";
+import RatingDialog from "@/components/RatingDialog";
 import { toast } from "@/hooks/use-toast";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
@@ -64,6 +65,8 @@ const DeliveryDriverTracking = () => {
   const [loading, setLoading] = useState(true);
   const [panelOpen, setPanelOpen] = useState(false);
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
+  const [showRating, setShowRating] = useState(false);
+  const [driverId, setDriverId] = useState<string | null>(null);
   const { dir } = useI18n();
   const inAppCall = useInAppCall();
 
@@ -75,6 +78,7 @@ const DeliveryDriverTracking = () => {
       if (!user) { setLoading(false); return; }
       const { data: driver } = await supabase.from("drivers").select("id").eq("user_id", user.id).single();
       if (!driver) { setLoading(false); return; }
+      setDriverId(driver.id);
       const { data } = await supabase
         .from("delivery_orders").select("id")
         .eq("driver_id", driver.id)
@@ -239,7 +243,7 @@ const DeliveryDriverTracking = () => {
       await supabase.from("delivery_orders").update(updates).eq("id", orderId);
       if (newStatus === "delivered") {
         toast({ title: "تم التسليم بنجاح ✅" });
-        navigate("/delivery");
+        setShowRating(true); // Show rating dialog before navigating
       }
     } catch (err: any) { console.error(err); }
     finally { setUpdating(false); }
@@ -496,6 +500,22 @@ const DeliveryDriverTracking = () => {
         callDuration={inAppCall.callDuration}
         connectionQuality={inAppCall.connectionQuality}
       />
+
+      {/* Rating Dialog for driver to rate customer */}
+      {order && driverId && (
+        <RatingDialog
+          open={showRating}
+          onClose={() => {
+            setShowRating(false);
+            navigate("/delivery");
+          }}
+          targetUserId={order.user_id}
+          driverId={driverId}
+          orderId={order.id}
+          ratingType="driver_to_customer"
+          targetName={customerRefCode ? `الزبون ${customerRefCode}` : "الزبون"}
+        />
+      )}
     </div>
   );
 };

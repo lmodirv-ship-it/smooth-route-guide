@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import LeafletMap from "@/components/LeafletMap";
+import { useDemandHeatmap } from "@/hooks/useDemandHeatmap";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
 import { useDriverSubscription } from "@/hooks/useDriverSubscription";
 import { useDriverMapControls } from "@/contexts/DriverMapControlsContext";
@@ -80,6 +81,7 @@ const DriverDelivery = () => {
   const { location: driverLocation } = useDriverGeolocation(true);
   const { isExpired: subscriptionExpired, daysLeft: subDaysLeft } = useDriverSubscription();
   const { mapTheme, mapExpanded } = useDriverMapControls();
+  const heatPoints = useDemandHeatmap();
   const { driverCode, userCode } = useUserReference();
   const refCode = driverCode || userCode;
   const prevCountRef = useRef(0);
@@ -266,6 +268,7 @@ const DriverDelivery = () => {
           externalTheme={mapTheme}
           externalExpanded={mapExpanded}
           driverIconType="motorcycle"
+          heatPoints={heatPoints}
         />
 
         {/* Radius indicator */}
