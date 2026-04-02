@@ -275,10 +275,10 @@ const DriverPage = () => {
             <div className="flex items-center gap-2">
               <img src={driverLogo} alt="HN" className="w-8 h-8 rounded-full shadow-lg border border-white/20" />
               <div>
-                <p className="text-white font-bold text-sm">{driverName}</p>
-                <p className="text-emerald-400 text-[11px]">
-                  {refCode && <span className="font-mono mr-1">[{refCode}]</span>}
-                  {t.driver.connected}
+                <p className="text-white font-bold text-sm font-mono">{refCode || "—"}</p>
+                <p className="text-emerald-400 text-[11px] flex items-center gap-1">
+                  {driverRating > 0 && <>{"⭐".repeat(Math.min(Math.round(driverRating), 5))} <span className="text-white/70">{driverRating}</span></>}
+                  {!driverRating && t.driver.connected}
                 </p>
               </div>
             </div>
