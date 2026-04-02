@@ -132,7 +132,7 @@ const AdminRideRequests = () => {
             </thead>
             <tbody>
               {requests.length === 0 && (
-                <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">لا توجد طلبات</td></tr>
+                <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">لا توجد طلبات</td></tr>
               )}
               {requests.map((req) => (
                 <motion.tr key={req.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
