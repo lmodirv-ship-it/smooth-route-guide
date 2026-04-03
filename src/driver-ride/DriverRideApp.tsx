@@ -39,6 +39,7 @@ import RequireRole from "@/components/RequireRole";
 import { Users } from "lucide-react";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import ThemeLoader from "@/components/ThemeLoader";
+import TopNavLinks from "@/components/TopNavLinks";
 
 const queryClient = new QueryClient();
 
