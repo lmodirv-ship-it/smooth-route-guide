@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Loader2, Save, RefreshCw, CreditCard, ExternalLink, Building2 } from "lucide-react";
+import { Loader2, Save, RefreshCw, CreditCard, ExternalLink, Building2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
