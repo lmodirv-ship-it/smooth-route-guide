@@ -140,10 +140,10 @@ export default function ClientDetailSheet({ clientId, open, onOpenChange, onClie
           Authorization: `Bearer ${session?.access_token}`,
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
-        body: JSON.stringify({ user_id: clientId, new_password: newPassword }),
+        body: JSON.stringify({ user_id: clientId, new_password: newPassword, send_email: true }),
       });
       if (!res.ok) throw new Error((await res.json()).error || "خطأ");
-      toast({ title: "✅ تم تغيير كلمة المرور" });
+      toast({ title: "✅ تم تغيير كلمة المرور وإرسالها إلى بريد العميل" });
       setPasswordMode(false);
       setNewPassword("");
     } catch (e: any) {
