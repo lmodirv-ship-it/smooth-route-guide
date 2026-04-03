@@ -249,19 +249,19 @@ const DriverTracking = () => {
 
   // Loading / Error / No ride states
   if (loading) return (
-    <div className="h-dvh bg-background flex items-center justify-center" dir={dir}>
+    <div className="h-[calc(100dvh-2.75rem)] bg-background flex items-center justify-center" dir={dir}>
       <div className="text-primary animate-pulse text-lg">جارٍ التحميل...</div>
     </div>
   );
   if (!rideId || (!ride && !error)) return (
-    <div className="h-dvh bg-background flex flex-col items-center justify-center gap-4" dir={dir}>
+    <div className="h-[calc(100dvh-2.75rem)] bg-background flex flex-col items-center justify-center gap-4" dir={dir}>
       <MapPin className="w-14 h-14 text-muted-foreground/30" />
       <p className="text-muted-foreground text-lg">لا توجد رحلة نشطة</p>
       <Button onClick={() => navigate("/driver")} className="rounded-xl">العودة</Button>
     </div>
   );
   if (error || !ride) return (
-    <div className="h-dvh bg-background flex flex-col items-center justify-center gap-4" dir={dir}>
+    <div className="h-[calc(100dvh-2.75rem)] bg-background flex flex-col items-center justify-center gap-4" dir={dir}>
       <XCircle className="w-14 h-14 text-destructive/50" />
       <p className="text-destructive">{error}</p>
       <div className="flex gap-3">
