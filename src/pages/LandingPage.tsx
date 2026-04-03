@@ -472,7 +472,7 @@ export default function LandingPage() {
           {/* ═══ 3 Role Cards — Glowing glass with inner blue light ═══ */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 max-w-4xl mx-auto">
             {[
-              { img: iconClientApp, label: dir === "rtl" ? "العميل" : "Client", desc: dir === "rtl" ? "اطلب رحلة أو توصيل" : "Book a ride or delivery", action: () => navigate("/login") },
+              { img: iconClientApp, label: dir === "rtl" ? "مرحبا بك يا سيدي" : "Welcome!", desc: dir === "rtl" ? "شنو خاصك؟ توصيلة ولا طاقسي؟" : "Need a ride or delivery?", action: () => navigate("/login") },
               { img: iconVtcCar, label: "VTC Taxi", desc: dir === "rtl" ? "سائقون محترفون" : "Professional drivers", action: () => navigate("/auth/driver") },
               { img: iconDeliveryBike, label: "Livraisons Express", desc: dir === "rtl" ? "توصيل سريع" : "Fast delivery", action: () => navigate("/delivery") },
               { img: iconStoreMarketplace, label: dir === "rtl" ? "متجر" : "Store", desc: dir === "rtl" ? "أضف محلك أو تسوّق" : "Add your shop or browse", action: () => setStoreDialogOpen(true) },
