@@ -25,6 +25,7 @@ import FloatingChatButton from "@/components/FloatingChatButton";
 import FaceGuard from "@/admin/components/FaceGuard";
 import SidebarNavButton from "@/admin/components/SidebarNavButton";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
+import { useVisibility } from "@/hooks/useVisibility";
 import { useUserReference } from "@/hooks/useUserReference";
 
 type AiMsg = { role: "user" | "assistant"; content: string };
@@ -55,6 +56,7 @@ async function callAdminAI({ messages, onResult, onError }: {
 
 const AdminLayout = () => {
   const { t, dir } = useI18n();
+  const { isVisible } = useVisibility();
   const { userCode } = useUserReference();
   const location = useLocation();
   const navigate = useNavigate();
@@ -440,7 +442,7 @@ const AdminLayout = () => {
 
     </div>
     
-    <GlobalContactFooter />
+    {isVisible("contact_footer") && <GlobalContactFooter />}
     </AdminGeoProvider>
   );
 };
