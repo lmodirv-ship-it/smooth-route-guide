@@ -16,15 +16,30 @@ export const useDemandHeatmap = () => {
 
   useEffect(() => {
     const fetchDemandData = async () => {
-      // Get orders from last 24 hours with coordinates
+      // Get orders and trips from last 24 hours with coordinates
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const { data: orders } = await supabase
-        .from("delivery_orders")
-        .select("pickup_lat, pickup_lng, delivery_lat, delivery_lng")
-        .gte("created_at", since)
-        .not("pickup_lat", "is", null);
+      const [{ data: orders }, { data: trips }] = await Promise.all([
+        supabase
+          .from("delivery_orders")
+          .select("pickup_lat, pickup_lng, delivery_lat, delivery_lng")
+          .gte("created_at", since)
+          .not("pickup_lat", "is", null),
+        supabase
+          .from("trips")
+          .select("pickup_lat, pickup_lng, destination_lat, destination_lng")
+          .gte("created_at", since)
+          .not("pickup_lat", "is", null),
+      ]);
 
-      if (!orders || orders.length === 0) return;
+      const allPoints: { pLat: number; pLng: number; dLat?: number; dLng?: number }[] = [];
+      (orders || []).forEach(o => {
+        if (o.pickup_lat && o.pickup_lng) allPoints.push({ pLat: o.pickup_lat, pLng: o.pickup_lng, dLat: o.delivery_lat ?? undefined, dLng: o.delivery_lng ?? undefined });
+      });
+      (trips || []).forEach(t => {
+        if (t.pickup_lat && t.pickup_lng) allPoints.push({ pLat: t.pickup_lat, pLng: t.pickup_lng, dLat: t.destination_lat ?? undefined, dLng: t.destination_lng ?? undefined });
+      });
+
+      if (allPoints.length === 0) return;
 
       // Build heatmap from pickup locations (where demand is)
       const pointMap = new Map<string, number>();
