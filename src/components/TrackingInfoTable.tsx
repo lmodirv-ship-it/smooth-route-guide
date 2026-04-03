@@ -101,7 +101,7 @@ const OrderCard = ({ order, idx }: { order: TrackingOrderRow; idx: number }) => 
         </div>
 
         {/* Reference */}
-        <div className="flex flex-col items-center justify-center py-3 px-1">
+        <div className="flex-1 min-w-[75px] flex flex-col items-center justify-center py-3 px-1">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500/20 to-violet-600/10 border border-violet-500/20 flex items-center justify-center mb-1">
             <Hash className="w-4 h-4 text-violet-400" />
           </div>
