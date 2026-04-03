@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   User, Star, Phone, Mail, MapPin, Car, Shield, Edit2, Camera,
   ChevronLeft, ArrowRight, LogOut, Loader2, TrendingUp, Wallet,
-  Percent, Clock, Route, FileText, Package,
+  Percent, Clock, Route, FileText, Package, CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -96,6 +96,7 @@ const DriverProfile = () => {
     { icon: Star, label: "التقييمات", path: "/driver/history", color: "text-warning" },
     { icon: MapPin, label: "حالة السائق", path: "/driver/status", color: "text-success" },
     { icon: Package, label: "الاشتراك والباقات", path: "/driver/subscription", color: "text-amber-400" },
+    { icon: CreditCard, label: "طرق الدفع", path: "/driver/wallet", color: "text-blue-400" },
   ];
 
   if (loading) {

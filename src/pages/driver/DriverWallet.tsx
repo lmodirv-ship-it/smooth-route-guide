@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/context";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import PaymentMethodSelector, { PaymentMethodType } from "@/components/PaymentMethodSelector";
 
 const DriverWallet = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const DriverWallet = () => {
   const [loading, setLoading] = useState(true);
   const [showDeposit, setShowDeposit] = useState(false);
   const [depositAmount, setDepositAmount] = useState(0);
+  const [depositMethod, setDepositMethod] = useState<PaymentMethodType>("cash");
   const [freeTrial, setFreeTrial] = useState(false);
 
   useEffect(() => {
@@ -101,7 +103,8 @@ const DriverWallet = () => {
             </div>
             <Input placeholder="مبلغ آخر" type="number" value={depositAmount || ""} onChange={e => setDepositAmount(Number(e.target.value))}
               className="bg-secondary border-border rounded-xl mb-3" />
-            <p className="text-xs text-muted-foreground mb-3 text-right">💳 طرق الدفع: 💵 نقد | 👛 محفظة | 💎 PayPal</p>
+            <p className="text-sm text-foreground font-bold mb-2">طريقة الدفع</p>
+            <PaymentMethodSelector selected={depositMethod} onChange={setDepositMethod} walletBalance={balance} compact />
             <Button className="w-full gradient-primary text-primary-foreground rounded-xl" onClick={async () => {
               if (!depositAmount || depositAmount <= 0) { toast.error("اختر مبلغاً"); return; }
               const { data: { user } } = await supabase.auth.getUser();
@@ -112,8 +115,8 @@ const DriverWallet = () => {
                 amount: depositAmount,
                 currency: "MAD",
                 transaction_type: "topup",
-                payment_method: "cash",
-                provider: "cash",
+                payment_method: depositMethod,
+                provider: depositMethod,
                 status: "pending",
                 reference_type: "wallet_topup",
               });

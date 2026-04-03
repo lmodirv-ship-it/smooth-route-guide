@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Wallet, ArrowRight, Plus, ArrowDownLeft, ArrowUpRight, Gift, Loader2 } from "lucide-react";
+import { Wallet, ArrowRight, Plus, ArrowDownLeft, ArrowUpRight, Gift, Loader2, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/context";
 import { toast } from "sonner";
+import PaymentMethodSelector, { PaymentMethodType } from "@/components/PaymentMethodSelector";
 
 const ClientWallet = () => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ const ClientWallet = () => {
   const [showRecharge, setShowRecharge] = useState(false);
   const [balance, setBalance] = useState(0);
   const [selectedAmount, setSelectedAmount] = useState(0);
+  const [rechargeMethod, setRechargeMethod] = useState<PaymentMethodType>("cash");
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [freeTrial, setFreeTrial] = useState(false);
@@ -87,6 +89,8 @@ const ClientWallet = () => {
               ))}
             </div>
             <Input placeholder={t.customer.otherAmount} type="number" className="bg-secondary border-border rounded-xl mb-3" />
+            <p className="text-sm text-foreground font-bold mb-2">طريقة الدفع</p>
+            <PaymentMethodSelector selected={rechargeMethod} onChange={setRechargeMethod} walletBalance={balance} compact />
             <Button className="w-full gradient-primary text-primary-foreground rounded-xl" onClick={async () => {
               const input = document.querySelector<HTMLInputElement>('input[type="number"]');
               const val = input?.value ? Number(input.value) : selectedAmount;

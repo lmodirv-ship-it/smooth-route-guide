@@ -52,7 +52,7 @@ const ClientPayment = () => {
       user_id: user.id,
       method_type: method,
       provider: method,
-      label: method === "cash" ? "نقد" : method === "wallet" ? "محفظة" : "PayPal",
+      label: method === "cash" ? "نقد" : method === "wallet" ? "محفظة" : method === "paypal" ? "PayPal" : method === "bank_transfer" ? "تحويل بنكي" : "تحويل وكالة",
       is_default: true,
     }, { onConflict: "user_id,method_type" }).select();
   };
