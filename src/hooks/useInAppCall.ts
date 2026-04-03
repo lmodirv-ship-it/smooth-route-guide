@@ -491,7 +491,21 @@ export function useInAppCall() {
           if (processedSignalsRef.current.has(row.id)) return;
           processedSignalsRef.current.add(row.id);
 
-          if (row.signal_type === "offer" && !incomingCallRef.current) {
+          // Handle offer: either new incoming call or renegotiation on active call
+          if (row.signal_type === "offer") {
+            // Renegotiation: active call exists with peer connection
+            if (pcRef.current && activeCallRef.current && activeCallRef.current.callId === row.call_id) {
+              try {
+                await pcRef.current.setRemoteDescription(new RTCSessionDescription(row.payload as RTCSessionDescriptionInit));
+                const answer = await pcRef.current.createAnswer();
+                await pcRef.current.setLocalDescription(answer);
+                await sendSignal(row.call_id, row.sender_id, "answer", answer as unknown as Record<string, unknown>);
+              } catch (e) { console.error("Renegotiation error:", e); }
+              return;
+            }
+
+            // New incoming call
+            if (incomingCallRef.current) return;
             const callResponse: any = await supabase
               .from("call_sessions" as any)
               .select("id, caller_id, callee_id, status")
