@@ -390,17 +390,17 @@ const DriverDelivery = () => {
                 </h3>
               </div>
               <div className="rounded-xl border border-border bg-card overflow-x-auto scrollbar-hide">
-                <Table className="min-w-[550px]">
+                <Table className="min-w-[560px]">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-right text-xs font-bold">Reference</TableHead>
-                      <TableHead className="text-right text-xs font-bold">⭐</TableHead>
+                      <TableHead className="text-center text-xs font-bold sticky right-0 bg-card z-10">قبول</TableHead>
+                      <TableHead className="text-right text-xs font-bold">الثمن</TableHead>
+                      <TableHead className="text-right text-xs font-bold">الوقت</TableHead>
+                      <TableHead className="text-right text-xs font-bold">المسافة</TableHead>
                       <TableHead className="text-right text-xs font-bold">المتجر</TableHead>
                       <TableHead className="text-center text-xs font-bold">📞</TableHead>
-                      <TableHead className="text-right text-xs font-bold">المسافة</TableHead>
-                      <TableHead className="text-right text-xs font-bold">الوقت</TableHead>
-                      <TableHead className="text-right text-xs font-bold">الثمن</TableHead>
-                      <TableHead className="text-center text-xs font-bold">قبول</TableHead>
+                      <TableHead className="text-right text-xs font-bold">⭐</TableHead>
+                      <TableHead className="text-right text-xs font-bold">Reference</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -412,11 +412,27 @@ const DriverDelivery = () => {
                           className={`cursor-pointer transition-colors ${isSelected ? "bg-muted/50" : ""}`}
                           onClick={() => setSelectedOrderId(order.id === selectedOrderId ? null : order.id)}
                         >
-                          <TableCell className="font-mono text-xs font-semibold text-primary">
-                            {order.customer_reference || order.order_code || order.id.slice(0, 6).toUpperCase()}
+                          <TableCell className="text-center sticky right-0 bg-card z-10">
+                            <Button
+                              size="sm"
+                              className="h-8 min-w-16 bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                acceptOrder(order.id);
+                              }}
+                              disabled={accepting === order.id}
+                            >
+                              {accepting === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "قبول"}
+                            </Button>
                           </TableCell>
-                          <TableCell className="text-right text-xs text-amber-400">
-                            {order.customer_rating ? `${"★".repeat(Math.min(Math.round(order.customer_rating), 5))}` : "—"}
+                          <TableCell className="text-right text-sm font-bold text-foreground">
+                            {order.total_price || order.estimated_price || "—"} DH
+                          </TableCell>
+                          <TableCell className="text-right text-xs text-muted-foreground">
+                            {order.etaMin != null ? `${order.etaMin} د` : "—"}
+                          </TableCell>
+                          <TableCell className="text-right text-xs text-muted-foreground">
+                            {order.distKm != null ? `${order.distKm} كم` : "—"}
                           </TableCell>
                           <TableCell className="text-right text-xs text-foreground truncate max-w-[100px]">
                             {order.store_name || "—"}
@@ -432,27 +448,11 @@ const DriverDelivery = () => {
                               </button>
                             ) : <span className="text-muted-foreground/40 text-xs">—</span>}
                           </TableCell>
-                          <TableCell className="text-right text-xs text-muted-foreground">
-                            {order.distKm != null ? `${order.distKm} كم` : "—"}
+                          <TableCell className="text-right text-xs text-amber-400">
+                            {order.customer_rating ? `${"★".repeat(Math.min(Math.round(order.customer_rating), 5))}` : "—"}
                           </TableCell>
-                          <TableCell className="text-right text-xs text-muted-foreground">
-                            {order.etaMin != null ? `${order.etaMin} د` : "—"}
-                          </TableCell>
-                          <TableCell className="text-right text-sm font-bold text-foreground">
-                            {order.total_price || order.estimated_price || "—"} DH
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Button
-                              size="sm"
-                              className="h-8 min-w-16 bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                acceptOrder(order.id);
-                              }}
-                              disabled={accepting === order.id}
-                            >
-                              {accepting === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "قبول"}
-                            </Button>
+                          <TableCell className="font-mono text-xs font-semibold text-primary">
+                            {order.customer_reference || order.order_code || order.id.slice(0, 6).toUpperCase()}
                           </TableCell>
                         </TableRow>
                       );
