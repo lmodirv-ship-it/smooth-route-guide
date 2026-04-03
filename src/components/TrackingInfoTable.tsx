@@ -83,7 +83,7 @@ const OrderCard = ({ order, idx }: { order: TrackingOrderRow; idx: number }) => 
         </div>
 
         {/* ETA */}
-        <div className="flex flex-col items-center justify-center py-3 px-1">
+        <div className="flex-1 min-w-[75px] flex flex-col items-center justify-center py-3 px-1">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/20 flex items-center justify-center mb-1">
             <Clock className="w-4 h-4 text-blue-500" />
           </div>
