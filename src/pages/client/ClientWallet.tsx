@@ -15,6 +15,7 @@ const ClientWallet = () => {
   const [showRecharge, setShowRecharge] = useState(false);
   const [balance, setBalance] = useState(0);
   const [selectedAmount, setSelectedAmount] = useState(0);
+  const [rechargeMethod, setRechargeMethod] = useState<PaymentMethodType>("cash");
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [freeTrial, setFreeTrial] = useState(false);
