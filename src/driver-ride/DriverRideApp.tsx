@@ -36,7 +36,7 @@ import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import RequireRole from "@/components/RequireRole";
-import FloatingCommunityButton from "@/components/FloatingCommunityButton";
+import { Users } from "lucide-react";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import ThemeLoader from "@/components/ThemeLoader";
 
