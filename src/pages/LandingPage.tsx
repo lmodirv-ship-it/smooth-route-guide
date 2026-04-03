@@ -321,13 +321,13 @@ export default function LandingPage() {
         <HeroPromoFlash />
 
         {/* Hero Content */}
-        <div className="container mx-auto px-4 relative z-10 pt-20 pb-8">
+        <div className="container mx-auto px-4 relative z-10 pt-16 pb-8">
           {/* ═══ Main Welcome Card — Compact with LED border ═══ */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className="relative max-w-xl mx-auto"
+            className="relative max-w-lg mx-auto"
           >
             <div className="hero-tableau">
               {/* Glass reflection */}
@@ -335,7 +335,7 @@ export default function LandingPage() {
                 background: "linear-gradient(135deg, hsl(0 0% 100% / 0.06) 0%, transparent 30%, transparent 100%)",
               }} />
 
-              <div className="relative z-10 flex flex-col items-center py-10 md:py-12 px-6 md:px-10">
+              <div className="relative z-10 flex flex-col items-center py-6 md:py-8 px-5 md:px-8">
                 <motion.div
                   initial={{ opacity: 0, scaleX: 0.4 }}
                   animate={{ opacity: 1, scaleX: 1 }}
@@ -426,8 +426,8 @@ export default function LandingPage() {
                   className="mt-3 text-sm md:text-base text-[hsl(210,15%,50%)] max-w-md text-center leading-relaxed"
                 >
                   {dir === "rtl"
-                    ? "منصة النقل والتوصيل الأقوى عربياً"
-                    : "The most powerful ride & delivery platform"}
+                    ? "منصة النقل والتوصيل والخدمات الأقوى عربياً"
+                    : "The most powerful ride, delivery & services platform"}
                 </motion.p>
 
                 {/* CTA Buttons */}
