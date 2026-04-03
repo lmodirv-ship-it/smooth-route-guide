@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-export const AUTH_TIMEOUT_MS = 8000;
+/** Max time to wait for auth — prevents infinite hanging */
+export const AUTH_TIMEOUT_MS = 6000;
+
+/** Absolute max before force-resolving (safety net) */
+const ABSOLUTE_MAX_MS = 12000;
 
 type SignInWithPasswordArgs = {
   email: string;
@@ -99,24 +103,6 @@ export async function getUserRolesWithTimeout(userId: string, timeoutMs = AUTH_T
     .filter((role) => typeof role === "string" && role.length > 0) as string[];
 }
 
-export async function hasFaceProfileWithTimeout(email: string, timeoutMs = 3000): Promise<boolean> {
-  const normalizedEmail = email.trim().toLowerCase();
-  if (!normalizedEmail) return false;
-
-  const { data, error } = await withTimeout(
-    supabase
-      .from("face_auth_profiles")
-      .select("id")
-      .eq("email", normalizedEmail)
-      .maybeSingle(),
-    timeoutMs,
-    "PROFILE_TIMEOUT"
-  );
-
-  if (error) throw error;
-  return !!data;
-}
-
 export function signInWithPasswordWithTimeout(
   credentials: SignInWithPasswordArgs,
   timeoutMs = AUTH_TIMEOUT_MS
@@ -144,25 +130,40 @@ export async function signOutWithTimeout(timeoutMs = 4000) {
   }
 }
 
+/**
+ * Hook that resolves auth state with an absolute timeout safety net.
+ * NEVER hangs indefinitely — worst case resolves as "no session" after ABSOLUTE_MAX_MS.
+ */
 export function useAuthReady(timeoutMs = AUTH_TIMEOUT_MS) {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
   const currentSessionRef = useRef<Session | null>(null);
   const initialSyncCompleteRef = useRef(false);
+  const readyRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
     currentSessionRef.current = null;
     initialSyncCompleteRef.current = false;
+    readyRef.current = false;
 
     const applySession = (nextSession: Session | null, nextTimedOut = false) => {
       currentSessionRef.current = nextSession;
       if (!mounted) return;
+      readyRef.current = true;
       setSession(nextSession);
       setTimedOut(nextTimedOut && !nextSession);
       setReady(true);
     };
+
+    // ABSOLUTE safety net — force ready after ABSOLUTE_MAX_MS no matter what
+    const absoluteTimer = setTimeout(() => {
+      if (!readyRef.current && mounted) {
+        console.warn("[useAuthReady] Absolute timeout reached, force-resolving as no session");
+        applySession(null, true);
+      }
+    }, ABSOLUTE_MAX_MS);
 
     const {
       data: { subscription },
@@ -186,6 +187,7 @@ export function useAuthReady(timeoutMs = AUTH_TIMEOUT_MS) {
 
       if (currentSessionRef.current && !result.session) {
         setReady(true);
+        readyRef.current = true;
         setTimedOut(false);
         return;
       }
@@ -195,6 +197,7 @@ export function useAuthReady(timeoutMs = AUTH_TIMEOUT_MS) {
 
     return () => {
       mounted = false;
+      clearTimeout(absoluteTimer);
       subscription.unsubscribe();
     };
   }, [timeoutMs]);

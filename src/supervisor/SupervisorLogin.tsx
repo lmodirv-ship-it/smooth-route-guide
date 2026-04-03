@@ -4,12 +4,9 @@ import { Eye, EyeOff, Mail, Lock, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import FaceAuthGate from "@/components/FaceAuthGate";
-import FaceRegisterPrompt from "@/components/FaceRegisterPrompt";
 import {
   getAuthTimeoutMessage,
   getUserRolesWithTimeout,
-  hasFaceProfileWithTimeout,
   isServiceTimeoutError,
   signInWithPasswordWithTimeout,
   signOutWithTimeout,
@@ -23,39 +20,21 @@ const SupervisorLogin = () => {
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [faceCheckActive, setFaceCheckActive] = useState(false);
-  const [faceVerified, setFaceVerified] = useState(false);
-  const [showFaceRegister, setShowFaceRegister] = useState(false);
   const { ready, session } = useAuthReady();
 
   useEffect(() => {
     let mounted = true;
-
-    if (!ready) {
-      setChecking(true);
-      return () => {
-        mounted = false;
-      };
-    }
-
-    if (!session) {
-      setChecking(false);
-      return () => {
-        mounted = false;
-      };
-    }
+    if (!ready) { setChecking(true); return () => { mounted = false; }; }
+    if (!session) { setChecking(false); return () => { mounted = false; }; }
 
     void (async () => {
       try {
         const roles = await getUserRolesWithTimeout(session.user.id);
         if (!mounted) return;
-
-        const hasAccess = roles.some((currentRole) => currentRole === "moderator");
-        if (hasAccess) {
+        if (roles.some((r) => r === "moderator")) {
           navigate("/", { replace: true });
           return;
         }
-
         await signOutWithTimeout();
       } catch {
         if (!mounted) return;
@@ -63,26 +42,13 @@ const SupervisorLogin = () => {
         if (mounted) setChecking(false);
       }
     })();
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [navigate, ready, session]);
-
-  const handleEmailBlur = () => {
-    if (email && email.includes("@") && !faceVerified) {
-      setFaceCheckActive(true);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       toast({ title: "يرجى ملء جميع الحقول", variant: "destructive" });
-      return;
-    }
-    if (!faceVerified && !faceCheckActive) {
-      setFaceCheckActive(true);
       return;
     }
 
@@ -92,25 +58,14 @@ const SupervisorLogin = () => {
       if (error) throw error;
 
       const roles = await getUserRolesWithTimeout(data.user.id);
-      const hasAccess = roles.some((currentRole) => currentRole === "moderator");
-      if (!hasAccess) {
+      if (!roles.some((r) => r === "moderator")) {
         await signOutWithTimeout();
-        toast({
-          title: "غير مصرح",
-          description: "ليس لديك صلاحية الدخول كمشرف",
-          variant: "destructive",
-        });
+        toast({ title: "غير مصرح", description: "ليس لديك صلاحية الدخول كمشرف", variant: "destructive" });
         setLoading(false);
         return;
       }
 
       toast({ title: "تم تسجيل الدخول بنجاح ✅" });
-      try {
-        const faceProfileExists = await hasFaceProfileWithTimeout(email);
-        if (!faceProfileExists) { setShowFaceRegister(true); return; }
-      } catch {
-        // Face registration is optional; never block supervisor access on it.
-      }
       navigate("/", { replace: true });
     } catch (err: any) {
       let msg = err?.message || "حدث خطأ غير متوقع";
@@ -145,14 +100,8 @@ const SupervisorLogin = () => {
           <div className="space-y-2">
             <label className="text-sm text-muted-foreground block">البريد الإلكتروني</label>
             <div className="relative">
-              <Input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onBlur={handleEmailBlur}
-                placeholder="supervisor@example.com"
-                type="email"
-                className="bg-secondary/80 border-border h-12 rounded-xl pr-11"
-              />
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="supervisor@example.com" type="email"
+                className="bg-secondary/80 border-border h-12 rounded-xl pr-11" />
               <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             </div>
           </div>
@@ -160,48 +109,23 @@ const SupervisorLogin = () => {
           <div className="space-y-2">
             <label className="text-sm text-muted-foreground block">كلمة المرور</label>
             <div className="relative">
-              <Input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                type={showPassword ? "text" : "password"}
-                className="bg-secondary/80 border-border h-12 rounded-xl pr-11"
-              />
+              <Input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
+                type={showPassword ? "text" : "password"} className="bg-secondary/80 border-border h-12 rounded-xl pr-11" />
               <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute left-3 top-1/2 -translate-y-1/2"
-              >
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute left-3 top-1/2 -translate-y-1/2">
                 {showPassword ? <EyeOff className="w-5 h-5 text-muted-foreground" /> : <Eye className="w-5 h-5 text-muted-foreground" />}
               </button>
             </div>
           </div>
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full h-12 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg"
-          >
+          <Button type="submit" disabled={loading}
+            className="w-full h-12 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-lg">
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "تسجيل الدخول"}
           </Button>
         </form>
 
-        <p className="text-xs text-center text-muted-foreground">
-          الوصول مقتصر على المشرفين فقط
-        </p>
+        <p className="text-xs text-center text-muted-foreground">الوصول مقتصر على المشرفين فقط</p>
       </div>
-
-      {faceCheckActive && (
-        <FaceAuthGate
-          email={email}
-          onVerified={() => { setFaceCheckActive(false); setFaceVerified(true); }}
-          onSkip={() => { setFaceCheckActive(false); setFaceVerified(true); }}
-        />
-      )}
-      {showFaceRegister && (
-        <FaceRegisterPrompt onClose={() => { setShowFaceRegister(false); navigate("/", { replace: true }); }} />
-      )}
     </div>
   );
 };
