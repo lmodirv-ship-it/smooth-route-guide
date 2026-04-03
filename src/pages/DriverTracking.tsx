@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Phone, Navigation, CheckCircle, XCircle, MapPin, Clock, Car, PhoneCall } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 import TrackingInfoTable from "@/components/TrackingInfoTable";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -236,11 +237,21 @@ const DriverTracking = () => {
     if (!rideId || updating) return;
     setUpdating(true);
     try {
+      if (newStatus === "cancelled") {
+        // Reassign: reset to pending so another driver can pick it up
+        await supabase.from("ride_requests").update({
+          status: "pending",
+          driver_id: null,
+        }).eq("id", rideId);
+        toast({ title: "تم إلغاء الرحلة وإعادة توجيهها لسائق آخر" });
+        navigate("/driver");
+        return;
+      }
       const updates: any = { status: newStatus };
       if (newStatus === "completed" && totalTripPrice) updates.price = totalTripPrice;
       const { error } = await supabase.from("ride_requests").update(updates).eq("id", rideId);
       if (error) throw error;
-      if (newStatus === "completed" || newStatus === "cancelled") navigate("/driver");
+      if (newStatus === "completed") navigate("/driver");
     } catch (err: any) { console.error(err); }
     finally { setUpdating(false); }
   };

@@ -237,13 +237,25 @@ const DeliveryDriverTracking = () => {
     if (!orderId || updating) return;
     setUpdating(true);
     try {
+      if (newStatus === "cancelled") {
+        // Reassign: reset to pending so another driver can pick it up
+        await supabase.from("delivery_orders").update({
+          status: "pending",
+          driver_id: null,
+          cancel_reason: "إلغاء من طرف السائق",
+          updated_at: new Date().toISOString(),
+        }).eq("id", orderId);
+        toast({ title: "تم إلغاء الطلب وإعادة توجيهه لسائق آخر" });
+        navigate("/delivery");
+        return;
+      }
       const updates: any = { status: newStatus, updated_at: new Date().toISOString() };
       if (newStatus === "picked_up") updates.picked_up_at = new Date().toISOString();
       if (newStatus === "delivered") updates.delivered_at = new Date().toISOString();
       await supabase.from("delivery_orders").update(updates).eq("id", orderId);
       if (newStatus === "delivered") {
         toast({ title: "تم التسليم بنجاح ✅" });
-        setShowRating(true); // Show rating dialog before navigating
+        setShowRating(true);
       }
     } catch (err: any) { console.error(err); }
     finally { setUpdating(false); }
