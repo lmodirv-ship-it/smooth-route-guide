@@ -55,6 +55,7 @@ const AuthPage = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const { ready, session } = useAuthReady();
 
   useEffect(() => {
