@@ -64,7 +64,7 @@ const HeroPromoFlash = () => (
       initial={{ opacity: 0, x: 60 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 1.7, duration: 0.8, ease: "easeOut" }}
-      className="hidden lg:block absolute right-2 xl:right-4 2xl:right-10 top-[6%] w-[280px] xl:w-[320px] 2xl:w-[370px] z-10"
+      className="hidden lg:block absolute right-0 xl:right-1 2xl:right-4 top-[6%] w-[300px] xl:w-[350px] 2xl:w-[400px] z-10"
     >
       <FlashSlot images={rightImages} side="right" />
     </motion.div>
