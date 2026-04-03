@@ -103,7 +103,7 @@ const MainLayoutInner = () => {
 
           {/* Driver controls */}
           <div className="shrink-0">
-            {isDriverPage ? <DriverTopBarControlsWithContext /> : (
+            {(isDriverPage || isTrackingPage) ? <DriverTopBarControlsWithContext /> : (
               <div className="w-2 h-2 rounded-full bg-primary/50 animate-pulse" />
             )}
           </div>
