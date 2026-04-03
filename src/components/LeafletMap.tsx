@@ -254,6 +254,19 @@ const LeafletMap = ({
     mapInstanceRef.current.setView(mapCenter, zoom, { animate: false });
   }, [mapCenter, zoom]);
 
+  // Auto-refresh map every 50 seconds
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    const interval = setInterval(() => {
+      map.invalidateSize();
+      if (driverLocation) {
+        map.setView([driverLocation.lat, driverLocation.lng], map.getZoom(), { animate: true });
+      }
+    }, 50000);
+    return () => clearInterval(interval);
+  }, [driverLocation]);
+
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     if (showMarker && !driverLocation) {
