@@ -27,6 +27,7 @@ import iconVtcCar from "@/assets/icon-vtc-car.png";
 import iconDeliveryBike from "@/assets/icon-delivery-bike.png";
 import iconStoreMarketplace from "@/assets/icon-store-marketplace.png";
 import iconClientApp from "@/assets/icon-client-app.png";
+import iconCoupleWelcome from "@/assets/icon-couple-welcome.png";
 import partnerHibaEco from "@/assets/partner-hiba-eco.png";
 import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
 import partnerTanjaPrint from "@/assets/partner-tanja-print.png";
