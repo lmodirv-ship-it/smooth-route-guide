@@ -70,10 +70,11 @@ const OrderCard = ({ order, idx }: { order: TrackingOrderRow; idx: number }) => 
         )}
       </div>
 
-      {/* ─ Metrics grid ─ */}
-      <div className="grid grid-cols-4 divide-x divide-border/30 rtl:divide-x-reverse">
+      {/* ─ Metrics grid (scrollable on small screens) ─ */}
+      <div className="overflow-x-auto scrollbar-hide">
+        <div className="flex min-w-[320px] divide-x divide-border/30 rtl:divide-x-reverse">
         {/* Price */}
-        <div className="flex flex-col items-center justify-center py-3 px-1">
+        <div className="flex-1 min-w-[75px] flex flex-col items-center justify-center py-3 px-1">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/20 flex items-center justify-center mb-1">
             <DollarSign className="w-4 h-4 text-amber-500" />
           </div>
@@ -82,7 +83,7 @@ const OrderCard = ({ order, idx }: { order: TrackingOrderRow; idx: number }) => 
         </div>
 
         {/* ETA */}
-        <div className="flex flex-col items-center justify-center py-3 px-1">
+        <div className="flex-1 min-w-[75px] flex flex-col items-center justify-center py-3 px-1">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/20 flex items-center justify-center mb-1">
             <Clock className="w-4 h-4 text-blue-500" />
           </div>
@@ -91,7 +92,7 @@ const OrderCard = ({ order, idx }: { order: TrackingOrderRow; idx: number }) => 
         </div>
 
         {/* Distance */}
-        <div className="flex flex-col items-center justify-center py-3 px-1">
+        <div className="flex-1 min-w-[75px] flex flex-col items-center justify-center py-3 px-1">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20 flex items-center justify-center mb-1">
             <MapPin className="w-4 h-4 text-primary" />
           </div>
@@ -100,7 +101,7 @@ const OrderCard = ({ order, idx }: { order: TrackingOrderRow; idx: number }) => 
         </div>
 
         {/* Reference */}
-        <div className="flex flex-col items-center justify-center py-3 px-1">
+        <div className="flex-1 min-w-[75px] flex flex-col items-center justify-center py-3 px-1">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500/20 to-violet-600/10 border border-violet-500/20 flex items-center justify-center mb-1">
             <Hash className="w-4 h-4 text-violet-400" />
           </div>
@@ -108,6 +109,7 @@ const OrderCard = ({ order, idx }: { order: TrackingOrderRow; idx: number }) => 
             {order.referenceCode || "—"}
           </span>
           <span className="text-[7px] text-muted-foreground mt-0.5">{order.referenceLabel || "مرجع"}</span>
+        </div>
         </div>
       </div>
 

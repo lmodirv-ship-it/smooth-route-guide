@@ -326,8 +326,8 @@ const DriverPage = () => {
                 طلبات جديدة
               </h3>
             </div>
-            <div className="rounded-xl border border-border bg-card">
-              <Table>
+            <div className="rounded-xl border border-border bg-card overflow-x-auto scrollbar-hide">
+              <Table className="min-w-[480px]">
                  <TableHeader>
                   <TableRow>
                      <TableHead className="text-right text-xs font-bold">Reference</TableHead>
