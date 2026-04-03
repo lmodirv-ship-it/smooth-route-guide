@@ -472,7 +472,7 @@ export default function LandingPage() {
           {/* ═══ 3 Role Cards — Glowing glass with inner blue light ═══ */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 max-w-4xl mx-auto">
             {[
-              { img: iconClientApp, label: dir === "rtl" ? "مرحبا بك يا سيدي" : "Welcome!", desc: dir === "rtl" ? "شنو خاصك؟ توصيلة ولا طاقسي؟" : "Need a ride or delivery?", action: () => navigate("/login") },
+              { img: iconClientApp, label: dir === "rtl" ? "مرحبا يا سيدي" : "Welcome!", desc: dir === "rtl" ? "خاصك توصيلة ولا تقضية؟" : "Need a ride or delivery?", action: () => navigate("/login"), big: true },
               { img: iconVtcCar, label: "VTC Taxi", desc: dir === "rtl" ? "سائقون محترفون" : "Professional drivers", action: () => navigate("/auth/driver") },
               { img: iconDeliveryBike, label: "Livraisons Express", desc: dir === "rtl" ? "توصيل سريع" : "Fast delivery", action: () => navigate("/delivery") },
               { img: iconStoreMarketplace, label: dir === "rtl" ? "متجر" : "Store", desc: dir === "rtl" ? "أضف محلك أو تسوّق" : "Add your shop or browse", action: () => setStoreDialogOpen(true) },
@@ -489,8 +489,8 @@ export default function LandingPage() {
               >
                 <div className="relative z-10 p-5 flex flex-col items-center gap-3 text-center">
                   <img src={cat.img} alt={cat.label} className="w-20 h-20 object-contain drop-shadow-[0_0_14px_hsl(205,80%,55%,0.4)] group-hover:scale-110 transition-transform duration-500" width={512} height={512} loading="lazy" />
-                  <h3 className="text-sm font-bold text-foreground group-hover:text-[hsl(var(--info))] transition-colors tracking-wide">{cat.label}</h3>
-                  <p className="text-[11px] text-muted-foreground">{cat.desc}</p>
+                  <h3 className={`font-bold text-foreground group-hover:text-[hsl(var(--info))] transition-colors tracking-wide ${(cat as any).big ? "text-base md:text-lg" : "text-sm"}`}>{cat.label}</h3>
+                  <p className={`text-muted-foreground ${(cat as any).big ? "text-xs md:text-sm font-semibold" : "text-[11px]"}`}>{cat.desc}</p>
                 </div>
               </motion.div>
             ))}
