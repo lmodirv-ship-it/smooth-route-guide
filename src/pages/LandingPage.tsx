@@ -471,13 +471,14 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          {/* ═══ 3 Role Cards — Glowing glass with inner blue light ═══ */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 max-w-4xl mx-auto">
+          {/* ═══ Role Cards — Glowing glass with inner blue light ═══ */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6 max-w-5xl mx-auto">
             {[
               { img: iconCoupleWelcome, label: dir === "rtl" ? "مرحبا يا سيدي" : "Welcome!", desc: dir === "rtl" ? "خاصك توصيلة ولا تقضية؟" : "Need a ride or delivery?", action: () => navigate("/login"), big: true },
               { img: iconVtcCar, label: dir === "rtl" ? "اعتبرها طوموبيلتك" : "Your personal ride", desc: dir === "rtl" ? "خدم معانا وربح فلوسك" : "Work with us & earn money", action: () => navigate("/auth/driver") },
-              { img: iconDeliveryBike, label: "Livraisons Express", desc: dir === "rtl" ? "توصيل سريع" : "Fast delivery", action: () => navigate("/delivery") },
-              { img: iconStoreMarketplace, label: dir === "rtl" ? "متجر" : "Store", desc: dir === "rtl" ? "أجي يا صاحبي افتح المحل ديالك هنا، بغينا نتغداو عندك" : "Come open your shop here, we want to eat at your place!", action: () => setStoreDialogOpen(true) },
+              { img: iconDeliveryBike, label: "Livraisons Express", desc: dir === "rtl" ? "توصيل سريع وموثوق" : "Fast & reliable delivery", action: () => navigate("/delivery") },
+              { img: iconRestaurant, label: dir === "rtl" ? "مطعم" : "Restaurant", desc: dir === "rtl" ? "أجي يا صاحبي افتح المحل ديالك هنا، بغينا نتغداو عندك" : "Open your restaurant here!", action: () => setStoreDialogOpen(true) },
+              { img: iconStoreMarketplace, label: dir === "rtl" ? "متجر" : "Store", desc: dir === "rtl" ? "أجي يا صاحبي افتح المحل ديالك هنا" : "Open your shop here!", action: () => setStoreDialogOpen(true) },
             ].map((cat, i) => (
               <motion.div
                 key={cat.label}
@@ -490,9 +491,9 @@ export default function LandingPage() {
                 className="group relative rounded-2xl cursor-pointer overflow-hidden signage-3d-box"
               >
                 <div className="relative z-10 p-5 flex flex-col items-center gap-3 text-center">
-                  <img src={cat.img} alt={cat.label} className="w-20 h-20 object-contain drop-shadow-[0_0_14px_hsl(205,80%,55%,0.4)] group-hover:scale-110 transition-transform duration-500" width={512} height={512} loading="lazy" />
-                  <h3 className={`font-bold text-foreground group-hover:text-[hsl(var(--info))] transition-colors tracking-wide ${(cat as any).big ? "text-base md:text-lg" : "text-sm"}`}>{cat.label}</h3>
-                  <p className={`text-muted-foreground ${(cat as any).big ? "text-xs md:text-sm font-semibold" : "text-[11px]"}`}>{cat.desc}</p>
+                  <img src={cat.img} alt={cat.label} className="w-24 h-24 object-contain drop-shadow-[0_0_14px_hsl(205,80%,55%,0.4)] group-hover:scale-110 transition-transform duration-500" width={512} height={512} loading="lazy" />
+                  <h3 className={`font-bold text-foreground group-hover:text-[hsl(var(--info))] transition-colors tracking-wide ${(cat as any).big ? "text-base md:text-xl" : "text-sm md:text-base"}`}>{cat.label}</h3>
+                  <p className={`text-muted-foreground leading-snug ${(cat as any).big ? "text-sm md:text-base font-semibold" : "text-xs md:text-sm"}`}>{cat.desc}</p>
                 </div>
               </motion.div>
             ))}
