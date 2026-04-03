@@ -129,7 +129,7 @@ export default function ClientDetailSheet({ clientId, open, onOpenChange, onClie
   };
 
   const handleChangePassword = async () => {
-    if (savingPassword || newPassword.length < 6 || !clientId) return;
+    if (savingPassword || !newPassword || !clientId) return;
     setSavingPassword(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
