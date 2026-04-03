@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, DollarSign, Calendar, ArrowUpRight, Percent, Store, Car, Bike, Search } from "lucide-react";
+import { TrendingUp, DollarSign, Calendar, ArrowUpRight, Percent, Store, Car, Bike, Search, FileDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const COMMISSION_RATE = 0.05;
 
