@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Wallet, ArrowRight, Plus, ArrowDownLeft, ArrowUpRight, Gift, Loader2 } from "lucide-react";
+import { Wallet, ArrowRight, Plus, ArrowDownLeft, ArrowUpRight, Gift, Loader2, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/context";
 import { toast } from "sonner";
+import PaymentMethodSelector, { PaymentMethodType } from "@/components/PaymentMethodSelector";
 
 const ClientWallet = () => {
   const navigate = useNavigate();
