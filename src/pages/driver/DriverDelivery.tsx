@@ -353,16 +353,16 @@ const DriverDelivery = () => {
                 </h3>
               </div>
               <div className="rounded-xl border border-border bg-card overflow-x-auto scrollbar-hide">
-                <Table className="min-w-[500px]">
+                <Table className="min-w-[520px]">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-right text-xs font-bold">Reference</TableHead>
-                      <TableHead className="text-right text-xs font-bold">⭐</TableHead>
-                      <TableHead className="text-right text-xs font-bold">المتجر</TableHead>
-                      <TableHead className="text-right text-xs font-bold">المسافة</TableHead>
-                      <TableHead className="text-right text-xs font-bold">الوقت</TableHead>
+                      <TableHead className="text-center text-xs font-bold sticky right-0 bg-card z-10">قبول</TableHead>
                       <TableHead className="text-right text-xs font-bold">الثمن</TableHead>
-                      <TableHead className="text-center text-xs font-bold">قبول</TableHead>
+                      <TableHead className="text-right text-xs font-bold">الوقت</TableHead>
+                      <TableHead className="text-right text-xs font-bold">المسافة</TableHead>
+                      <TableHead className="text-right text-xs font-bold">المتجر</TableHead>
+                      <TableHead className="text-right text-xs font-bold">⭐</TableHead>
+                      <TableHead className="text-right text-xs font-bold">Reference</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
