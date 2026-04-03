@@ -74,7 +74,7 @@ const OrderCard = ({ order, idx }: { order: TrackingOrderRow; idx: number }) => 
       <div className="overflow-x-auto scrollbar-hide">
         <div className="flex min-w-[320px] divide-x divide-border/30 rtl:divide-x-reverse">
         {/* Price */}
-        <div className="flex flex-col items-center justify-center py-3 px-1">
+        <div className="flex-1 min-w-[75px] flex flex-col items-center justify-center py-3 px-1">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/20 flex items-center justify-center mb-1">
             <DollarSign className="w-4 h-4 text-amber-500" />
           </div>
