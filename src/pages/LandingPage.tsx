@@ -321,7 +321,7 @@ export default function LandingPage() {
         <HeroPromoFlash />
 
         {/* Hero Content */}
-        <div className="container mx-auto px-4 relative z-10 pt-20 pb-8">
+        <div className="container mx-auto px-4 relative z-10 pt-16 pb-8">
           {/* ═══ Main Welcome Card — Compact with LED border ═══ */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 30 }}
