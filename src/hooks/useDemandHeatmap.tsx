@@ -41,17 +41,13 @@ export const useDemandHeatmap = () => {
 
       if (allPoints.length === 0) return;
 
-      // Build heatmap from pickup locations (where demand is)
       const pointMap = new Map<string, number>();
-      orders.forEach((o) => {
-        if (o.pickup_lat && o.pickup_lng) {
-          // Round to ~500m grid cells
-          const key = `${(Math.round(o.pickup_lat * 200) / 200).toFixed(3)},${(Math.round(o.pickup_lng * 200) / 200).toFixed(3)}`;
-          pointMap.set(key, (pointMap.get(key) || 0) + 1);
-        }
-        if (o.delivery_lat && o.delivery_lng) {
-          const key = `${(Math.round(o.delivery_lat * 200) / 200).toFixed(3)},${(Math.round(o.delivery_lng * 200) / 200).toFixed(3)}`;
-          pointMap.set(key, (pointMap.get(key) || 0) + 0.5);
+      allPoints.forEach((o) => {
+        const key = `${(Math.round(o.pLat * 200) / 200).toFixed(3)},${(Math.round(o.pLng * 200) / 200).toFixed(3)}`;
+        pointMap.set(key, (pointMap.get(key) || 0) + 1);
+        if (o.dLat && o.dLng) {
+          const dKey = `${(Math.round(o.dLat * 200) / 200).toFixed(3)},${(Math.round(o.dLng * 200) / 200).toFixed(3)}`;
+          pointMap.set(dKey, (pointMap.get(dKey) || 0) + 0.5);
         }
       });
 
