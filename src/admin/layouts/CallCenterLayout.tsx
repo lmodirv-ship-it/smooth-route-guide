@@ -242,7 +242,7 @@ const CallCenterLayout = () => {
 
     <AgentFacePresence />
     <FloatingChatButton />
-    <FloatingCommunityButton communityPath="/call-center/community" />
+    
     <GlobalContactFooter />
     </>
     </CallCenterContext.Provider>
