@@ -22,25 +22,26 @@ const FlashSlot = ({ images, side }: { images: string[]; side: "left" | "right" 
   const xDir = side === "left" ? -60 : 60;
 
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl border border-primary/20 shadow-[0_0_30px_hsl(var(--primary)/0.15)]" style={{ aspectRatio: "3/4" }}>
+    <div className="relative w-full overflow-hidden rounded-2xl border-2 border-primary/30 shadow-[0_0_40px_hsl(var(--primary)/0.25),0_8px_32px_rgba(0,0,0,0.4)]" style={{ aspectRatio: "9/14" }}>
       <AnimatePresence mode="wait">
         <motion.img
           key={`${side}-${index}`}
           src={images[index]}
           alt="HN Promo"
           className="absolute inset-0 w-full h-full object-cover"
-          initial={{ opacity: 0, x: xDir, scale: 1.1 }}
+          initial={{ opacity: 0, x: xDir, scale: 1.15 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={{ opacity: 0, x: -xDir, scale: 0.95 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          exit={{ opacity: 0, x: -xDir, scale: 0.9 }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
         />
       </AnimatePresence>
-      {/* Glow overlay */}
-      <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+      {/* Glow border effect */}
+      <div className="absolute inset-0 pointer-events-none rounded-2xl border border-primary/10 shadow-[inset_0_0_20px_rgba(0,0,0,0.3)]" />
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/30 via-transparent to-transparent" />
       {/* Dots */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
         {images.map((_, i) => (
-          <span key={i} className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${i === index ? "bg-primary scale-125 shadow-[0_0_6px_hsl(var(--primary)/0.8)]" : "bg-white/40"}`} />
+          <span key={i} className={`w-2 h-2 rounded-full transition-all duration-300 ${i === index ? "bg-primary scale-125 shadow-[0_0_8px_hsl(var(--primary)/0.8)]" : "bg-white/40"}`} />
         ))}
       </div>
     </div>
