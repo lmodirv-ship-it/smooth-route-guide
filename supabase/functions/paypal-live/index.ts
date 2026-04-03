@@ -110,6 +110,7 @@ serve(async (req) => {
 
     // ── Get PayPal access token ──
     const getAccessToken = async (): Promise<string> => {
+      console.log("PayPal env:", env, "baseUrl:", baseUrl, "clientId length:", clientId.length, "secret length:", secret.length);
       const tokenRes = await fetch(`${baseUrl}/v1/oauth2/token`, {
         method: "POST",
         headers: {
@@ -118,7 +119,9 @@ serve(async (req) => {
         },
         body: "grant_type=client_credentials",
       });
-      const tokenData = await tokenRes.json();
+      const tokenText = await tokenRes.text();
+      console.log("PayPal token response status:", tokenRes.status, "body:", tokenText.substring(0, 200));
+      const tokenData = JSON.parse(tokenText);
       if (!tokenData.access_token) {
         throw new Error("PayPal authentication failed");
       }
