@@ -89,6 +89,8 @@ const ClientWallet = () => {
               ))}
             </div>
             <Input placeholder={t.customer.otherAmount} type="number" className="bg-secondary border-border rounded-xl mb-3" />
+            <p className="text-sm text-foreground font-bold mb-2">طريقة الدفع</p>
+            <PaymentMethodSelector selected={rechargeMethod} onChange={setRechargeMethod} walletBalance={balance} compact />
             <Button className="w-full gradient-primary text-primary-foreground rounded-xl" onClick={async () => {
               const input = document.querySelector<HTMLInputElement>('input[type="number"]');
               const val = input?.value ? Number(input.value) : selectedAmount;
