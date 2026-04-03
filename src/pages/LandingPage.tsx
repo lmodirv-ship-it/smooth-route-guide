@@ -335,7 +335,7 @@ export default function LandingPage() {
                 background: "linear-gradient(135deg, hsl(0 0% 100% / 0.06) 0%, transparent 30%, transparent 100%)",
               }} />
 
-              <div className="relative z-10 flex flex-col items-center py-10 md:py-12 px-6 md:px-10">
+              <div className="relative z-10 flex flex-col items-center py-6 md:py-8 px-5 md:px-8">
                 <motion.div
                   initial={{ opacity: 0, scaleX: 0.4 }}
                   animate={{ opacity: 1, scaleX: 1 }}
