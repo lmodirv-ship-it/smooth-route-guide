@@ -115,8 +115,8 @@ const DriverWallet = () => {
                 amount: depositAmount,
                 currency: "MAD",
                 transaction_type: "topup",
-                payment_method: "cash",
-                provider: "cash",
+                payment_method: depositMethod,
+                provider: depositMethod,
                 status: "pending",
                 reference_type: "wallet_topup",
               });
