@@ -295,6 +295,7 @@ const DeliveryDriverTracking = () => {
           driverIconType="motorcycle"
           route={mapRoute}
           routeColor={routeColor}
+          hideControls
         />
 
         {/* Top floating: distance + ETA */}
