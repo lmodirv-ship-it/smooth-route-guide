@@ -438,15 +438,6 @@ const AdminLayout = () => {
         )}
       </AnimatePresence>
 
-      {!aiOpen && (
-        <motion.button
-          initial={{ scale: 0 }} animate={{ scale: 1 }}
-          onClick={() => setAiOpen(true)}
-          className="fixed left-6 bottom-6 z-50 w-14 h-14 rounded-full gradient-primary glow-primary flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
-        >
-          <Bot className="w-6 h-6 text-primary-foreground" />
-        </motion.button>
-      )}
     </div>
     
     <GlobalContactFooter />
