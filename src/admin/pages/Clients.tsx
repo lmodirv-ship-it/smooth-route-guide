@@ -135,9 +135,7 @@ const AdminClients = () => {
                 </td>
                 {/* التعبئة / الرصيد */}
                 <td className="p-4">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs font-bold ${getBalanceBg(client.walletBalance || 0)} ${getBalanceColor(client.walletBalance || 0)}`}>
-                    {client.walletBalance} DH
-                  </span>
+                  <BalanceBars balance={client.walletBalance || 0} />
                 </td>
                 <td className="p-4 text-foreground">{client.tripCount}</td>
                 <td className="p-4">
