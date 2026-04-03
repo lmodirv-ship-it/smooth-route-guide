@@ -20,6 +20,7 @@ import { useI18n } from "@/i18n/context";
 import { useDriverSubscription } from "@/hooks/useDriverSubscription";
 import driverLogo from "@/assets/hn-driver-badge.png";
 import { useUserReference } from "@/hooks/useUserReference";
+import { useDemandHeatmap } from "@/hooks/useDemandHeatmap";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 const MAX_RADIUS_KM = 10;
