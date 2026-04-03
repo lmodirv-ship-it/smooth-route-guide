@@ -1,18 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { encode as encodeHex } from "https://deno.land/std@0.208.0/encoding/hex.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-async function hashPassword(password: string): Promise<string> {
-  // Use Web Crypto API to create a hash, then format for GoTrue compatibility
-  // GoTrue uses bcrypt, but we can't easily do bcrypt in Edge Functions
-  // Instead, try the admin API first, and if it fails due to HIBP/weakness,
-  // use a workaround: set a strong temp password, then update via SQL
-  return password;
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -31,7 +22,6 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const dbUrl = Deno.env.get("SUPABASE_DB_URL")!;
 
     // Verify caller is admin
     const callerClient = createClient(supabaseUrl, anonKey, {
@@ -85,27 +75,28 @@ Deno.serve(async (req) => {
       });
     }
 
-    // If GoTrue rejected it (HIBP/weak/short), use direct DB approach
-    // Import bcrypt for Deno to hash the password
-    const { hash } = await import("https://deno.land/x/bcrypt@v0.4.1/mod.ts");
-    const hashedPassword = await hash(new_password);
+    // If GoTrue rejected it (HIBP/weak/short), use SQL with crypt() function
+    const dbUrl = Deno.env.get("SUPABASE_DB_URL");
+    if (!dbUrl) {
+      return new Response(JSON.stringify({ error: "DB_URL غير متوفر" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    // Connect to DB and update password directly
     const { default: postgres } = await import("https://deno.land/x/postgresjs@v3.4.4/mod.js");
     const sql = postgres(dbUrl);
     
     try {
+      // Use PostgreSQL's crypt() + gen_salt() from pgcrypto extension (built-in on Supabase)
       await sql`
         UPDATE auth.users 
-        SET encrypted_password = ${hashedPassword},
-            password_hash = '',
+        SET encrypted_password = extensions.crypt(${new_password}, extensions.gen_salt('bf')),
             updated_at = now()
         WHERE id = ${user_id}::uuid
       `;
+    } finally {
       await sql.end();
-    } catch (dbErr) {
-      await sql.end();
-      throw new Error("فشل تحديث كلمة المرور في قاعدة البيانات: " + dbErr.message);
     }
 
     return new Response(JSON.stringify({ success: true, message: "تم تغيير كلمة المرور بنجاح" }), {
