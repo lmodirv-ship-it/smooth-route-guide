@@ -131,13 +131,14 @@ export function useInAppCall() {
   const sendSignal = useCallback(async (callId: string, recipientId: string, signalType: string, payload: Record<string, unknown> = {}) => {
     if (!userIdRef.current) return;
 
-    await supabase.from("call_signals" as any).insert({
+    const { error } = await supabase.from("call_signals" as any).insert({
       call_id: callId,
       sender_id: userIdRef.current,
       recipient_id: recipientId,
       signal_type: signalType,
       payload,
     } as any);
+    if (error) console.error("sendSignal error:", signalType, error.message);
   }, []);
 
   const ensureMediaStream = useCallback(async (withVideo = false) => {
@@ -312,22 +313,32 @@ export function useInAppCall() {
       const stream = await ensureMediaStream();
       const connection = await createPeerConnection(incomingCall.callId, incomingCall.peer.id, stream);
 
-      const offerResponse: any = await supabase
-        .from("call_signals" as any)
-        .select("payload")
-        .eq("call_id", incomingCall.callId)
-        .eq("signal_type", "offer")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // Poll for offer signal (may arrive slightly after session insert)
+      let offerPayload: RTCSessionDescriptionInit | null = null;
+      for (let attempt = 0; attempt < 8; attempt++) {
+        const offerResponse: any = await supabase
+          .from("call_signals" as any)
+          .select("payload")
+          .eq("call_id", incomingCall.callId)
+          .eq("signal_type", "offer")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-      const offerSignal = offerResponse.data as { payload?: RTCSessionDescriptionInit } | null;
+        const offerSignal = offerResponse.data as { payload?: RTCSessionDescriptionInit } | null;
+        if (offerSignal?.payload) {
+          offerPayload = offerSignal.payload;
+          break;
+        }
+        // Wait 500ms before retrying
+        await new Promise(r => setTimeout(r, 500));
+      }
 
-      if (!offerSignal?.payload) {
+      if (!offerPayload) {
         throw new Error("offer_missing");
       }
 
-      await connection.setRemoteDescription(new RTCSessionDescription(offerSignal.payload as RTCSessionDescriptionInit));
+      await connection.setRemoteDescription(new RTCSessionDescription(offerPayload));
 
       const { data: queuedCandidates } = await supabase
         .from("call_signals" as any)
@@ -391,6 +402,7 @@ export function useInAppCall() {
 
   const toggleVideo = useCallback(async () => {
     if (!localStream) return;
+    const currentCall = activeCallRef.current;
     const videoTracks = localStream.getVideoTracks();
     if (videoTracks.length > 0) {
       // Toggle existing video tracks
@@ -398,7 +410,7 @@ export function useInAppCall() {
       videoTracks.forEach(t => { t.enabled = newEnabled; });
       setIsVideoEnabled(newEnabled);
     } else {
-      // Add video track
+      // Add video track and renegotiate
       try {
         const videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 320, height: 240 } });
         videoStream.getVideoTracks().forEach(t => {
@@ -406,11 +418,18 @@ export function useInAppCall() {
           pcRef.current?.addTrack(t, localStream);
         });
         setIsVideoEnabled(true);
+
+        // Renegotiate so remote peer receives video
+        if (pcRef.current && currentCall) {
+          const offer = await pcRef.current.createOffer();
+          await pcRef.current.setLocalDescription(offer);
+          await sendSignal(currentCall.callId, currentCall.peer.id, "offer", offer as unknown as Record<string, unknown>);
+        }
       } catch {
         toast.error("تعذر تشغيل الكاميرا");
       }
     }
-  }, [localStream]);
+  }, [localStream, sendSignal]);
 
   useEffect(() => {
     if (!userId) return;
@@ -472,7 +491,21 @@ export function useInAppCall() {
           if (processedSignalsRef.current.has(row.id)) return;
           processedSignalsRef.current.add(row.id);
 
-          if (row.signal_type === "offer" && !incomingCallRef.current) {
+          // Handle offer: either new incoming call or renegotiation on active call
+          if (row.signal_type === "offer") {
+            // Renegotiation: active call exists with peer connection
+            if (pcRef.current && activeCallRef.current && activeCallRef.current.callId === row.call_id) {
+              try {
+                await pcRef.current.setRemoteDescription(new RTCSessionDescription(row.payload as RTCSessionDescriptionInit));
+                const answer = await pcRef.current.createAnswer();
+                await pcRef.current.setLocalDescription(answer);
+                await sendSignal(row.call_id, row.sender_id, "answer", answer as unknown as Record<string, unknown>);
+              } catch (e) { console.error("Renegotiation error:", e); }
+              return;
+            }
+
+            // New incoming call
+            if (incomingCallRef.current) return;
             const callResponse: any = await supabase
               .from("call_sessions" as any)
               .select("id, caller_id, callee_id, status")
@@ -502,9 +535,11 @@ export function useInAppCall() {
           }
 
           if (row.signal_type === "answer") {
-            await pcRef.current.setRemoteDescription(new RTCSessionDescription(row.payload as RTCSessionDescriptionInit));
-            await flushPendingCandidates();
-            setActiveCall((prev) => (prev ? { ...prev, status: "connecting" } : prev));
+            try {
+              await pcRef.current.setRemoteDescription(new RTCSessionDescription(row.payload as RTCSessionDescriptionInit));
+              await flushPendingCandidates();
+              setActiveCall((prev) => (prev ? { ...prev, status: "connecting" } : prev));
+            } catch (e) { console.error("setRemoteDescription error:", e); }
             return;
           }
 
