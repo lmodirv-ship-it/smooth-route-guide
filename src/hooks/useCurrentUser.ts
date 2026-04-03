@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+/**
+ * Provides the current user ID.
+ * Uses getSession() instead of getUser() to avoid extra auth lock contention.
+ */
 export function useCurrentUser() {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -8,9 +12,10 @@ export function useCurrentUser() {
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getUser().then(({ data }) => {
+    // Use getSession (cached, no network call) instead of getUser (network call)
+    supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
-      setUserId(data.user?.id || null);
+      setUserId(data.session?.user?.id || null);
       setLoading(false);
     });
 

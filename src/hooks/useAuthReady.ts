@@ -3,10 +3,10 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 /** Max time to wait for auth — prevents infinite hanging */
-export const AUTH_TIMEOUT_MS = 6000;
+export const AUTH_TIMEOUT_MS = 15000;
 
 /** Absolute max before force-resolving (safety net) */
-const ABSOLUTE_MAX_MS = 12000;
+const ABSOLUTE_MAX_MS = 25000;
 
 type SignInWithPasswordArgs = {
   email: string;

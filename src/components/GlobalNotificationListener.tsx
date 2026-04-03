@@ -144,36 +144,35 @@ const GlobalNotificationListener = () => {
       channels = nextChannels;
     };
 
-    const setup = async () => {
+    // Only setup channels when auth state changes — never call getUser() eagerly
+    // to avoid lock contention on startup
+    const setupFromSession = async (userId: string) => {
       const version = ++setupVersion;
       await removeChannels();
 
-      const { data: { user } } = await supabase.auth.getUser();
       if (disposed || version !== setupVersion) return;
 
-      if (!user) {
-        userIdRef.current = null;
-        return;
-      }
-
-      userIdRef.current = user.id;
+      userIdRef.current = userId;
 
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", user.id);
+        .eq("user_id", userId);
 
       if (disposed || version !== setupVersion) return;
 
       const userRoles = (roles || []).map((roleRow) => roleRow.role);
-      await buildChannels(user.id, userRoles, version);
+      await buildChannels(userId, userRoles, version);
     };
 
-    void setup();
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      userIdRef.current = session?.user?.id ?? null;
-      void setup();
+      if (session?.user?.id) {
+        userIdRef.current = session.user.id;
+        void setupFromSession(session.user.id);
+      } else {
+        userIdRef.current = null;
+        void removeChannels();
+      }
     });
 
     return () => {
