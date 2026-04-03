@@ -50,19 +50,23 @@ const MainLayoutInner = () => {
   return (
     <>
       {isVisible("notification_listener") && <GlobalNotificationListener />}
-      <div className="fixed top-0 left-0 right-0 z-[60] flex items-center h-11 bg-background/90 backdrop-blur-xl border-b border-border/40">
-        {/* Left: Logo + Logout + Language */}
-        <div className="flex items-center gap-2 px-3 shrink-0">
-          <img src={logo} alt="HN" className="w-8 h-8 rounded-full shadow-md" />
-          <div className="w-px h-5 bg-border/40" />
+      <div className="fixed top-0 left-0 right-0 z-[60] h-11 bg-background/90 backdrop-blur-xl border-b border-border/40 overflow-x-auto overflow-y-hidden scrollbar-hide">
+        <div className="flex items-center h-full min-w-max px-3 gap-2">
+          {/* Logo */}
+          <img src={logo} alt="HN" className="w-8 h-8 rounded-full shadow-md shrink-0" />
+          <div className="w-px h-5 bg-border/40 shrink-0" />
+          
+          {/* Visitor counter */}
           <VisitorCounter />
-          <div className="w-px h-5 bg-border/40" />
+          <div className="w-px h-5 bg-border/40 shrink-0" />
+          
+          {/* Logout + Language */}
           {isVisible("logout_btn") && <GlobalLogoutButton />}
           {isVisible("language_switcher") && <LanguageSwitcher />}
           {isVisible("community_btn") && !isCommunityPage && (
             <button
               onClick={() => navigate("/community")}
-              className="p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-emerald-500 hover:text-white transition-all"
+              className="p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-emerald-500 hover:text-white transition-all shrink-0"
               title="مجتمع HN"
             >
               <Users className="w-3.5 h-3.5" />
@@ -70,46 +74,38 @@ const MainLayoutInner = () => {
           )}
           {isVisible("floating_chat_btn") && <FloatingChatButton />}
           {isVisible("voice_order_btn") && <VoiceOrderButton />}
-          <div className="w-px h-5 bg-border/40" />
+          <div className="w-px h-5 bg-border/40 shrink-0" />
+          
+          {/* Nav links */}
           <TopNavLinks />
-        </div>
+          <div className="w-px h-5 bg-border/40 shrink-0" />
 
-        {/* Separator */}
-        <div className="w-px h-6 bg-border/50 shrink-0" />
-
-        {/* Center: Scrolling partner sites with logos */}
-        {isVisible("partner_bar") && (
-          <div className="flex-1 overflow-hidden mx-3 relative">
-            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background/90 to-transparent z-10 pointer-events-none" />
-            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background/90 to-transparent z-10 pointer-events-none" />
-            
-            <div className="flex animate-marquee whitespace-nowrap items-center">
-              {[...PARTNER_SITES, ...PARTNER_SITES, ...PARTNER_SITES].map((site, i) => (
+          {/* Partner bar */}
+          {isVisible("partner_bar") && (
+            <div className="flex items-center gap-0 shrink-0">
+              {PARTNER_SITES.map((site, i) => (
                 <a
                   key={i}
                   href={site.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center text-xs text-muted-foreground hover:text-primary transition-all duration-300 group shrink-0 -ml-2 first:ml-0 hover:z-10"
+                  className="inline-flex items-center shrink-0 -ml-1.5 first:ml-0 hover:z-10 group"
                 >
-                  <div className="w-8 h-8 rounded-full border-2 border-background group-hover:border-primary/60 transition-all duration-300 overflow-hidden flex items-center justify-center bg-secondary shadow-md group-hover:shadow-[0_0_12px_hsl(32,95%,55%,0.4)] group-hover:scale-125">
+                  <div className="w-7 h-7 rounded-full border-2 border-background group-hover:border-primary/60 transition-all duration-300 overflow-hidden flex items-center justify-center bg-secondary shadow-md group-hover:shadow-[0_0_10px_hsl(32,95%,55%,0.4)] group-hover:scale-110">
                     <img src={site.logo} alt={site.name} className="w-full h-full object-cover" loading="lazy" />
                   </div>
                 </a>
               ))}
             </div>
-          </div>
-        )}
-        {!isVisible("partner_bar") && <div className="flex-1" />}
-
-        {/* Separator */}
-        <div className="w-px h-6 bg-border/50 shrink-0" />
-
-        {/* Right: Driver controls or accent dot */}
-        <div className="px-3 shrink-0">
-          {isDriverPage ? <DriverTopBarControlsWithContext /> : (
-            <div className="w-2 h-2 rounded-full bg-primary/50 animate-pulse" />
           )}
+          <div className="w-px h-5 bg-border/40 shrink-0" />
+
+          {/* Driver controls */}
+          <div className="shrink-0">
+            {isDriverPage ? <DriverTopBarControlsWithContext /> : (
+              <div className="w-2 h-2 rounded-full bg-primary/50 animate-pulse" />
+            )}
+          </div>
         </div>
       </div>
       {/* Spacer for fixed bar */}
