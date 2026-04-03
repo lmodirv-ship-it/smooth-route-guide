@@ -97,6 +97,7 @@ const AdminApp = () => (
             </Route>
 
             {/* Redirect /admin/* to root (standalone mode) */}
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/*" element={<Navigate to="/" replace />} />
 
             {/* Call Center */}
