@@ -295,41 +295,12 @@ const DeliveryDriverTracking = () => {
           driverIconType="motorcycle"
           route={mapRoute}
           routeColor={routeColor}
+          hideControls
         />
 
-        {/* Top floating: distance + ETA */}
-        {distanceToTarget != null && etaMinutes != null && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1001] bg-card/95 backdrop-blur-xl px-5 py-2.5 rounded-2xl text-sm flex items-center gap-4 border border-border shadow-xl">
-            <span className="flex items-center gap-1.5 font-bold text-foreground">
-              <MapPin className="w-4 h-4 text-primary" />{distanceToTarget.toFixed(1)} كم
-            </span>
-            <div className="w-px h-5 bg-border" />
-            <span className="flex items-center gap-1.5 font-bold text-foreground">
-              <Clock className="w-4 h-4 text-blue-500" />{etaMinutes} د
-            </span>
-          </div>
-        )}
+        {/* Distance/ETA shown in bottom panel only */}
 
-        {/* Back button */}
-        <button
-          onClick={() => navigate("/delivery")}
-          className="absolute top-4 right-4 z-[1001] w-10 h-10 bg-card/90 backdrop-blur-xl rounded-full flex items-center justify-center border border-border shadow-lg"
-        >
-          <Navigation className="w-5 h-5 text-foreground" />
-        </button>
-
-        {/* Customer ref */}
-        {customerRefCode && (
-          <div className="absolute top-4 left-4 z-[1001] bg-primary/90 backdrop-blur-xl px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
-            <span className="text-primary-foreground text-xs font-mono font-bold">{customerRefCode}</span>
-          </div>
-        )}
-
-        {/* Target label */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1001] bg-card/90 backdrop-blur-xl px-4 py-2 rounded-xl text-xs flex items-center gap-2 border border-border shadow-lg">
-          <Store className="w-3.5 h-3.5 text-primary shrink-0" />
-          <span className="text-foreground font-medium truncate max-w-[200px]">{targetLabel}</span>
-        </div>
+        {/* Back button + target label removed from map — controls in top bar */}
 
         {/* Progress bar */}
         <div className="absolute bottom-0 left-0 right-0 z-[1002] h-1.5 bg-muted/50">

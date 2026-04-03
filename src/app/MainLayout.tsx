@@ -45,6 +45,7 @@ const MainLayoutInner = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isDriverPage = location.pathname.startsWith("/driver");
+  const isTrackingPage = location.pathname.includes("tracking");
   const isCommunityPage = location.pathname.includes("community");
 
   return (
@@ -102,7 +103,7 @@ const MainLayoutInner = () => {
 
           {/* Driver controls */}
           <div className="shrink-0">
-            {isDriverPage ? <DriverTopBarControlsWithContext /> : (
+            {(isDriverPage || isTrackingPage) ? <DriverTopBarControlsWithContext /> : (
               <div className="w-2 h-2 rounded-full bg-primary/50 animate-pulse" />
             )}
           </div>

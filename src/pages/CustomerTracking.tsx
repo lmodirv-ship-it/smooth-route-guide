@@ -188,86 +188,12 @@ const CustomerTracking = () => {
           markerPosition={targetPos || undefined}
           driverLocation={smoothedDriver}
           route={mapRoute}
+          hideControls
         />
 
-        {/* ── Status pill ── */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1001]">
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="bg-card/95 backdrop-blur-xl text-foreground px-4 py-2 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-xl border border-border"
-          >
-            <div className={`w-2.5 h-2.5 rounded-full ${isActive ? "bg-primary animate-pulse" : isCancelled ? "bg-destructive" : "bg-emerald-500"}`} />
-            {STATUS_STEPS[currentStepIdx]?.icon || "❓"} {STATUS_STEPS[currentStepIdx]?.label || ride.status}
-          </motion.div>
-        </div>
+        {/* All floating UI removed — map is clean. Info shown in bottom panel */}
 
-        {/* ── Back button ── */}
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => navigate("/customer")}
-          className="absolute top-3 right-3 z-[1001] w-9 h-9 bg-card/90 backdrop-blur-xl rounded-xl flex items-center justify-center border border-border shadow-lg"
-        >
-          <Navigation className="w-4 h-4 text-foreground" />
-        </motion.button>
-
-        {/* ── Driver info floating card ── */}
-        <AnimatePresence>
-          {ride.driver_id && driverRefCode && ride.status !== "pending" && (
-            <motion.div
-              initial={{ x: -80, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -80, opacity: 0 }}
-              className="absolute top-3 left-3 z-[1001] bg-card/95 backdrop-blur-xl rounded-2xl p-2 border border-border shadow-xl max-w-[140px]"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 border border-primary/20 flex items-center justify-center">
-                  <Car className="w-4 h-4 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold text-foreground truncate">{driverName || "السائق"}</p>
-                  <p className="text-[9px] font-mono text-primary">{driverRefCode}</p>
-                </div>
-              </div>
-              {(driverRating || vehicleInfo) && (
-                <div className="mt-1.5 pt-1.5 border-t border-border/40 space-y-0.5">
-                  {driverRating && (
-                    <div className="flex items-center gap-1">
-                      <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                      <span className="text-[9px] font-bold text-foreground">{driverRating.toFixed(1)}</span>
-                    </div>
-                  )}
-                  {vehicleInfo && (
-                    <p className="text-[8px] text-muted-foreground truncate">{vehicleInfo}</p>
-                  )}
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ── Distance + ETA floating ── */}
-        <AnimatePresence>
-          {distToTarget != null && ride.status !== "pending" && (
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 20, opacity: 0 }}
-              className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1001] flex items-center gap-2"
-            >
-              <div className="bg-card/95 backdrop-blur-xl px-3 py-2 rounded-xl text-xs flex items-center gap-2 border border-border shadow-xl">
-                <MapPin className="w-3.5 h-3.5 text-primary" />
-                <span className="font-bold text-foreground">{distToTarget.toFixed(1)} كم</span>
-              </div>
-              {etaMinutes && (
-                <div className="bg-card/95 backdrop-blur-xl px-3 py-2 rounded-xl text-xs flex items-center gap-2 border border-border shadow-xl">
-                  <Clock className="w-3.5 h-3.5 text-blue-500" />
-                  <span className="font-bold text-foreground">{etaMinutes} د</span>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Distance/ETA now shown only in bottom panel TrackingInfoTable */}
 
         {/* Progress bar */}
         <div className="absolute bottom-0 left-0 right-0 z-[1002] h-1.5 bg-muted/50">
