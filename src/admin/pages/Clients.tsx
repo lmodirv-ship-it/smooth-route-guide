@@ -10,6 +10,7 @@ import ClientDetailSheet from "@/admin/components/ClientDetailSheet";
 interface Client {
   id: string; name: string; email: string | null; phone: string | null;
   created_at: string; tripCount?: number; walletBalance?: number; user_code?: string | null;
+  roles?: string[];
 }
 
 const AdminClients = () => {
