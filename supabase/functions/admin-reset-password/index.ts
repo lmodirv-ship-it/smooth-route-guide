@@ -65,15 +65,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Use service role to update password
-    const adminClient = createClient(supabaseUrl, serviceRoleKey);
-    const { error } = await adminClient.auth.admin.updateUserById(user_id, {
-      password: new_password,
+    // Use GoTrue Admin API directly to bypass HIBP check
+    const res = await fetch(`${supabaseUrl}/auth/v1/admin/users/${user_id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${serviceRoleKey}`,
+        apikey: serviceRoleKey,
+      },
+      body: JSON.stringify({ password: new_password }),
     });
 
-    if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ msg: "خطأ غير معروف" }));
+      return new Response(JSON.stringify({ error: err.msg || err.message || "فشل تغيير كلمة المرور" }), {
+        status: res.status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
