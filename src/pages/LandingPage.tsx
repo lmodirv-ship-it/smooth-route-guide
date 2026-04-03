@@ -426,8 +426,8 @@ export default function LandingPage() {
                   className="mt-3 text-sm md:text-base text-[hsl(210,15%,50%)] max-w-md text-center leading-relaxed"
                 >
                   {dir === "rtl"
-                    ? "منصة النقل والتوصيل الأقوى عربياً"
-                    : "The most powerful ride & delivery platform"}
+                    ? "منصة النقل والتوصيل والخدمات الأقوى عربياً"
+                    : "The most powerful ride, delivery & services platform"}
                 </motion.p>
 
                 {/* CTA Buttons */}
