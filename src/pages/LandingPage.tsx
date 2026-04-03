@@ -21,6 +21,7 @@ import AdsSection from "@/components/AdsSection";
 import SignupPopup from "@/components/SignupPopup";
 import SignupBanner from "@/components/SignupBanner";
 // VisitorCounter already imported above
+import HeroPromoFlash from "@/components/HeroPromoFlash";
 import logo from "@/assets/hn-driver-badge.png";
 import iconVtcCar from "@/assets/icon-vtc-car.png";
 import iconDeliveryBike from "@/assets/icon-delivery-bike.png";
@@ -313,6 +314,9 @@ export default function LandingPage() {
           <motion.div className="absolute top-1/3 h-[1.5px] w-40" style={{ background: "linear-gradient(90deg, transparent, hsl(280 60% 60% / 0.6), transparent)" }} animate={{ x: ["-200px", "120vw"] }} transition={{ duration: 6, repeat: Infinity, ease: "linear", repeatDelay: 4 }} />
           <motion.div className="absolute bottom-1/4 h-[1px] w-56" style={{ background: "linear-gradient(90deg, transparent, hsl(40 90% 60% / 0.7), hsl(32 95% 50% / 0.3), transparent)" }} animate={{ x: ["120vw", "-300px"] }} transition={{ duration: 4.5, repeat: Infinity, ease: "linear", repeatDelay: 2.5 }} />
         </div>
+
+        {/* Promo Flash Banners — Left & Right */}
+        <HeroPromoFlash />
 
         {/* Hero Content */}
         <div className="container mx-auto px-4 relative z-10 pt-20 pb-8">
