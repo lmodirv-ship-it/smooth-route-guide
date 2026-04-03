@@ -254,7 +254,7 @@ const LeafletMap = ({
     mapInstanceRef.current.setView(mapCenter, zoom, { animate: false });
   }, [mapCenter, zoom]);
 
-  // Auto-refresh map every 50 seconds
+  // Auto-refresh map every 60 seconds
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -263,7 +263,7 @@ const LeafletMap = ({
       if (driverLocation) {
         map.setView([driverLocation.lat, driverLocation.lng], map.getZoom(), { animate: true });
       }
-    }, 50000);
+    }, 60000);
     return () => clearInterval(interval);
   }, [driverLocation]);
 
