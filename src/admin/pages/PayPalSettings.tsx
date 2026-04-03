@@ -11,7 +11,6 @@ const PayPalSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
-  const [showSecret, setShowSecret] = useState(false);
   const [settings, setSettings] = useState({
     clientId: "",
     secretKey: "",
