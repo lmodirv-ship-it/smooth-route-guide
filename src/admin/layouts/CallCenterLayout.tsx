@@ -195,6 +195,7 @@ const CallCenterLayout = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <AgentFacePresence />
             <GlobalLogoutButton />
             <VisitorCounter />
             <LanguageSwitcher />
@@ -240,8 +241,6 @@ const CallCenterLayout = () => {
       onToggleVideo={callCenter.toggleVideo}
       onAddNote={callCenter.addCallNote}
     />
-
-    <AgentFacePresence />
     
     <GlobalContactFooter />
     </>
