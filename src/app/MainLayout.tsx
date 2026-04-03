@@ -45,6 +45,7 @@ const MainLayoutInner = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isDriverPage = location.pathname.startsWith("/driver");
+  const isTrackingPage = location.pathname.includes("tracking");
   const isCommunityPage = location.pathname.includes("community");
 
   return (
