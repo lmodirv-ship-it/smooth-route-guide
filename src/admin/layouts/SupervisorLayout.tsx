@@ -20,6 +20,7 @@ import { useVisibility } from "@/hooks/useVisibility";
 
 const SupervisorLayout = () => {
   const { t, dir } = useI18n();
+  const { isVisible } = useVisibility();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

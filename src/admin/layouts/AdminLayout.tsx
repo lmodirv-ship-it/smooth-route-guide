@@ -56,6 +56,7 @@ async function callAdminAI({ messages, onResult, onError }: {
 
 const AdminLayout = () => {
   const { t, dir } = useI18n();
+  const { isVisible } = useVisibility();
   const { userCode } = useUserReference();
   const location = useLocation();
   const navigate = useNavigate();
