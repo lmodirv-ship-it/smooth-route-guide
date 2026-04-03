@@ -126,7 +126,7 @@ const AuthPage = () => {
         }
 
         const redirectTo = `https://www.hn-driver.com/login`;
-        const { error } = await signUpWithTimeout({
+        const { data: signUpData, error } = await signUpWithTimeout({
           email,
           password,
           options: {
@@ -134,6 +134,24 @@ const AuthPage = () => {
             data: { name, phone, requested_role: role },
           },
         });
+
+        if (error) throw error;
+
+        // Process referral code if provided
+        if (referralCode.trim() && signUpData?.user) {
+          const { data: referrerProfile } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("referral_code", referralCode.trim().toUpperCase())
+            .single();
+          if (referrerProfile) {
+            await supabase.from("referrals").insert({
+              referrer_id: referrerProfile.id,
+              referred_id: signUpData.user.id,
+              referral_code: referralCode.trim().toUpperCase(),
+            });
+          }
+        }
 
         if (error) throw error;
 
