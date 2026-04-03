@@ -57,13 +57,19 @@ const RideDriverLayout = () => {
           <div className="text-xs text-muted-foreground bg-primary/10 px-2 py-0.5 rounded-full">سائق ركاب</div>
         </div>
         <div className="flex items-center gap-2">
+          <FloatingChatButton />
+          <button
+            onClick={() => window.location.href = "/community"}
+            className="p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-emerald-500 hover:text-white transition-all"
+            title="مجتمع HN"
+          >
+            <Users className="w-3.5 h-3.5" />
+          </button>
           <LanguageSwitcher />
           <GlobalLogoutButton />
         </div>
       </div>
       <div className="h-12" />
-      <FloatingChatButton />
-      <FloatingCommunityButton />
     </>
   );
 };
