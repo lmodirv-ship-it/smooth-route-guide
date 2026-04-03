@@ -95,6 +95,14 @@ const AdminClients = () => {
                 </td>
                 <td className="p-4 text-primary font-semibold">{client.walletBalance} DH</td>
                 <td className="p-4 text-foreground">{client.tripCount}</td>
+                <td className="p-4">
+                  <div className="flex flex-wrap gap-1">
+                    {(client.roles || []).map(r => {
+                      const roleLabels: Record<string, string> = { user: "عميل", admin: "مسؤول", moderator: "مشرف", agent: "مركز اتصال", driver: "سائق ركاب", delivery: "سائق توصيل", store_owner: "صاحب محل" };
+                      return <Badge key={r} variant="secondary" className="text-[10px]">{roleLabels[r] || r}</Badge>;
+                    })}
+                  </div>
+                </td>
                 <td className="p-4 text-muted-foreground">{client.phone || "—"}</td>
                 <td className="p-4 text-muted-foreground">{client.email || "—"}</td>
                 <td className="p-4 text-foreground font-medium">{client.name || "—"}</td>
