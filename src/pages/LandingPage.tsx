@@ -327,7 +327,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, scale: 0.9, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className="relative max-w-2xl mx-auto"
+            className="relative max-w-xl mx-auto"
           >
             <div className="hero-tableau">
               {/* Glass reflection */}
@@ -492,8 +492,8 @@ export default function LandingPage() {
               >
                 <div className="relative z-10 p-5 flex flex-col items-center gap-3 text-center">
                   <img src={cat.img} alt={cat.label} className="w-24 h-24 object-contain drop-shadow-[0_0_14px_hsl(205,80%,55%,0.4)] group-hover:scale-110 transition-transform duration-500" width={512} height={512} loading="lazy" />
-                  <h3 className={`font-bold text-foreground group-hover:text-[hsl(var(--info))] transition-colors tracking-wide ${(cat as any).big ? "text-base md:text-xl" : "text-sm md:text-base"}`}>{cat.label}</h3>
-                  <p className={`text-muted-foreground leading-snug ${(cat as any).big ? "text-sm md:text-base font-semibold" : "text-xs md:text-sm"}`}>{cat.desc}</p>
+                  <h3 className={`font-bold text-foreground group-hover:text-[hsl(var(--info))] transition-colors tracking-wide ${(cat as any).big ? "text-lg md:text-2xl" : "text-base md:text-lg"}`}>{cat.label}</h3>
+                  <p className={`text-muted-foreground leading-snug ${(cat as any).big ? "text-base md:text-lg font-semibold" : "text-sm md:text-base"}`}>{cat.desc}</p>
                 </div>
               </motion.div>
             ))}
