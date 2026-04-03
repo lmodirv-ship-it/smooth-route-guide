@@ -472,7 +472,7 @@ export default function LandingPage() {
           </motion.div>
 
           {/* ═══ Role Cards — Glowing glass with inner blue light ═══ */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4 max-w-5xl mx-auto">
             {[
               { img: iconCoupleWelcome, label: dir === "rtl" ? "مرحبا يا سيدي" : "Welcome!", desc: dir === "rtl" ? "خاصك توصيلة ولا تقضية؟" : "Need a ride or delivery?", action: () => navigate("/login"), big: true },
               { img: iconVtcCar, label: dir === "rtl" ? "اعتبرها طوموبيلتك" : "Your personal ride", desc: dir === "rtl" ? "خدم معانا وربح فلوسك" : "Work with us & earn money", action: () => navigate("/auth/driver") },
