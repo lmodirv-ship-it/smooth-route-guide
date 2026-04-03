@@ -980,6 +980,10 @@ export default function LandingPage() {
 
       {/* ─── Ads Section ─── */}
       <AdsSection />
+
+      {/* ─── Signup Conversion Components ─── */}
+      <SignupPopup />
+      <SignupBanner />
     </div>
   );
 }
