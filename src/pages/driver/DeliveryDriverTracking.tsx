@@ -300,21 +300,7 @@ const DeliveryDriverTracking = () => {
 
         {/* Distance/ETA shown in bottom panel only */}
 
-        {/* Back button */}
-        <button
-          onClick={() => navigate("/delivery")}
-          className="absolute top-4 right-4 z-[1001] w-10 h-10 bg-card/90 backdrop-blur-xl rounded-full flex items-center justify-center border border-border shadow-lg"
-        >
-          <Navigation className="w-5 h-5 text-foreground" />
-        </button>
-
-        {/* Customer ref shown in bottom panel */}
-
-        {/* Target label */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1001] bg-card/90 backdrop-blur-xl px-4 py-2 rounded-xl text-xs flex items-center gap-2 border border-border shadow-lg">
-          <Store className="w-3.5 h-3.5 text-primary shrink-0" />
-          <span className="text-foreground font-medium truncate max-w-[200px]">{targetLabel}</span>
-        </div>
+        {/* Back button + target label removed from map — controls in top bar */}
 
         {/* Progress bar */}
         <div className="absolute bottom-0 left-0 right-0 z-[1002] h-1.5 bg-muted/50">
