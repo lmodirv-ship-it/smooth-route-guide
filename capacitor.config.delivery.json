@@ -1,13 +1,14 @@
 /**
  * Capacitor config for Delivery Driver App (separate APK)
  * App ID: com.hndriver.delivery
+ * OTA: loads from production server — updates appear automatically
  */
 {
   "appId": "com.hndriver.delivery",
   "appName": "HN Delivery - توصيل",
   "webDir": "dist-driver-delivery",
   "server": {
-    "url": "https://871f3759-73ef-4579-8f08-9a7c52b1611d.lovableproject.com?forceHideBadge=true",
+    "url": "https://delivery.hn-driver.com",
     "cleartext": true
   },
   "plugins": {

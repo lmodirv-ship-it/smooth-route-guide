@@ -1,13 +1,14 @@
 /**
  * Capacitor config for Client App (separate APK)
  * App ID: com.hndriver.client
+ * OTA: loads from production server — updates appear automatically
  */
 {
   "appId": "com.hndriver.client",
   "appName": "HN Client - زبون",
   "webDir": "dist-client",
   "server": {
-    "url": "https://871f3759-73ef-4579-8f08-9a7c52b1611d.lovableproject.com?forceHideBadge=true",
+    "url": "https://client.hn-driver.com",
     "cleartext": true
   },
   "plugins": {

@@ -1,13 +1,14 @@
 /**
  * Capacitor config for Ride Driver App (separate APK)
  * App ID: com.hndriver.ride
+ * OTA: loads from production server — updates appear automatically
  */
 {
   "appId": "com.hndriver.ride",
   "appName": "HN Driver - سائق",
   "webDir": "dist-driver-ride",
   "server": {
-    "url": "https://871f3759-73ef-4579-8f08-9a7c52b1611d.lovableproject.com?forceHideBadge=true",
+    "url": "https://driver.hn-driver.com",
     "cleartext": true
   },
   "plugins": {
