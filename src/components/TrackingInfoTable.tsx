@@ -92,7 +92,7 @@ const OrderCard = ({ order, idx }: { order: TrackingOrderRow; idx: number }) => 
         </div>
 
         {/* Distance */}
-        <div className="flex flex-col items-center justify-center py-3 px-1">
+        <div className="flex-1 min-w-[75px] flex flex-col items-center justify-center py-3 px-1">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20 flex items-center justify-center mb-1">
             <MapPin className="w-4 h-4 text-primary" />
           </div>
