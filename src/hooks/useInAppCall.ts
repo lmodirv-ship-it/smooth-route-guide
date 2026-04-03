@@ -402,6 +402,7 @@ export function useInAppCall() {
 
   const toggleVideo = useCallback(async () => {
     if (!localStream) return;
+    const currentCall = activeCallRef.current;
     const videoTracks = localStream.getVideoTracks();
     if (videoTracks.length > 0) {
       // Toggle existing video tracks
@@ -409,7 +410,7 @@ export function useInAppCall() {
       videoTracks.forEach(t => { t.enabled = newEnabled; });
       setIsVideoEnabled(newEnabled);
     } else {
-      // Add video track
+      // Add video track and renegotiate
       try {
         const videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 320, height: 240 } });
         videoStream.getVideoTracks().forEach(t => {
@@ -417,11 +418,18 @@ export function useInAppCall() {
           pcRef.current?.addTrack(t, localStream);
         });
         setIsVideoEnabled(true);
+
+        // Renegotiate so remote peer receives video
+        if (pcRef.current && currentCall) {
+          const offer = await pcRef.current.createOffer();
+          await pcRef.current.setLocalDescription(offer);
+          await sendSignal(currentCall.callId, currentCall.peer.id, "offer", offer as unknown as Record<string, unknown>);
+        }
       } catch {
         toast.error("تعذر تشغيل الكاميرا");
       }
     }
-  }, [localStream]);
+  }, [localStream, sendSignal]);
 
   useEffect(() => {
     if (!userId) return;
