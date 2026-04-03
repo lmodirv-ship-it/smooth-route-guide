@@ -18,6 +18,7 @@ const DriverWallet = () => {
   const [loading, setLoading] = useState(true);
   const [showDeposit, setShowDeposit] = useState(false);
   const [depositAmount, setDepositAmount] = useState(0);
+  const [depositMethod, setDepositMethod] = useState<PaymentMethodType>("cash");
   const [freeTrial, setFreeTrial] = useState(false);
 
   useEffect(() => {
