@@ -5,6 +5,7 @@ import {
   Bike, CheckCircle, Clock, MapPin, Navigation, Package,
   Store, XCircle, PhoneCall,
 } from "lucide-react";
+import TrackingInfoTable from "@/components/TrackingInfoTable";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
