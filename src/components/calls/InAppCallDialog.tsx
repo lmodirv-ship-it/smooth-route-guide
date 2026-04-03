@@ -82,7 +82,7 @@ export default function InAppCallDialog({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[130] flex items-center justify-center bg-background/80 backdrop-blur-xl p-4"
+            className="fixed inset-0 z-[12000] flex items-center justify-center bg-background/80 backdrop-blur-xl p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.88, y: 30 }}
@@ -167,7 +167,7 @@ export default function InAppCallDialog({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.94 }}
             transition={{ type: "spring", damping: 22, stiffness: 300 }}
-            className="fixed bottom-28 right-4 z-[131] w-[22rem] max-w-[calc(100vw-2rem)] rounded-[1.8rem] bg-card border border-border shadow-[0_12px_40px_rgba(0,0,0,0.25)] p-5"
+            className="fixed bottom-28 right-4 z-[12001] w-[22rem] max-w-[calc(100vw-2rem)] rounded-[1.8rem] bg-card border border-border shadow-[0_12px_40px_rgba(0,0,0,0.25)] p-5"
             dir="rtl"
           >
             <div className="flex items-center gap-3">

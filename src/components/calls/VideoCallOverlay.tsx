@@ -58,7 +58,7 @@ export default function VideoCallOverlay({
       initial={{ opacity: 0, scale: 0.8, x: 0, y: 0 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.8 }}
-      className={`fixed top-16 right-4 z-[135] ${size} rounded-2xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-border/30 bg-black transition-all duration-300 cursor-grab active:cursor-grabbing`}
+      className={`fixed top-16 right-4 z-[12002] ${size} rounded-2xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-border/30 bg-black transition-all duration-300 cursor-grab active:cursor-grabbing`}
     >
       {/* Remote video (full area) */}
       {hasRemoteVideo ? (
