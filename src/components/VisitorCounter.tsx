@@ -90,9 +90,9 @@ const VisitorCounter = () => {
       {items.map((item, i) => (
         <div
           key={i}
-          className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/60 border border-border/40 text-xs font-semibold tabular-nums"
+          className="group inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/60 border border-border/40 text-xs font-semibold tabular-nums cursor-default"
         >
-          <item.icon className={`w-3 h-3 ${item.color}`} />
+          <item.icon className={`w-3 h-3 ${item.color} transition-transform duration-500 group-hover:rotate-[360deg]`} />
           <span className={item.color}>{isLoading ? "..." : item.value.toLocaleString()}</span>
         </div>
       ))}
