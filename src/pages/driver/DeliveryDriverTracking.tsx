@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Bike, CheckCircle, Clock, MapPin, Navigation, Package,
   Store, XCircle, ChevronUp, ChevronDown, PhoneCall,
