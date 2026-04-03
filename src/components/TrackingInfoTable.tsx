@@ -110,6 +110,7 @@ const OrderCard = ({ order, idx }: { order: TrackingOrderRow; idx: number }) => 
           </span>
           <span className="text-[7px] text-muted-foreground mt-0.5">{order.referenceLabel || "مرجع"}</span>
         </div>
+        </div>
       </div>
 
       {/* ─ Action bar ─ */}
