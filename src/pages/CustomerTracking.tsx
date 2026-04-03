@@ -188,6 +188,7 @@ const CustomerTracking = () => {
           markerPosition={targetPos || undefined}
           driverLocation={smoothedDriver}
           route={mapRoute}
+          hideControls
         />
 
         {/* ── Status pill ── */}
