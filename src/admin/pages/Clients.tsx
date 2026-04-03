@@ -84,7 +84,7 @@ const AdminClients = () => {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">لا يوجد عملاء</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">لا يوجد عملاء</td></tr>}
             {filtered.map(client => (
               <motion.tr key={client.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
