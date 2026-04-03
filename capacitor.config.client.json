@@ -8,7 +8,7 @@
   "appName": "HN Client - زبون",
   "webDir": "dist-client",
   "server": {
-    "url": "https://client.hn-driver.com",
+    "url": "https://www.hn-driver.com",
     "cleartext": true
   },
   "plugins": {
