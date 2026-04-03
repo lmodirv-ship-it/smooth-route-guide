@@ -535,9 +535,11 @@ export function useInAppCall() {
           }
 
           if (row.signal_type === "answer") {
-            await pcRef.current.setRemoteDescription(new RTCSessionDescription(row.payload as RTCSessionDescriptionInit));
-            await flushPendingCandidates();
-            setActiveCall((prev) => (prev ? { ...prev, status: "connecting" } : prev));
+            try {
+              await pcRef.current.setRemoteDescription(new RTCSessionDescription(row.payload as RTCSessionDescriptionInit));
+              await flushPendingCandidates();
+              setActiveCall((prev) => (prev ? { ...prev, status: "connecting" } : prev));
+            } catch (e) { console.error("setRemoteDescription error:", e); }
             return;
           }
 
