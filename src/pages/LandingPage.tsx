@@ -23,9 +23,10 @@ import SignupBanner from "@/components/SignupBanner";
 // VisitorCounter already imported above
 import HeroPromoFlash from "@/components/HeroPromoFlash";
 import logo from "@/assets/hn-driver-badge.png";
-import iconVtcCar from "@/assets/icon-vtc-car.png";
-import iconDeliveryBike from "@/assets/icon-delivery-bike.png";
+import iconVtcCar from "@/assets/icon-vtc-car-hn.png";
+import iconDeliveryBike from "@/assets/icon-delivery-bike-hn.png";
 import iconStoreMarketplace from "@/assets/icon-store-marketplace.png";
+import iconRestaurant from "@/assets/icon-restaurant.png";
 import iconClientApp from "@/assets/icon-client-app.png";
 import iconCoupleWelcome from "@/assets/icon-couple-welcome.png";
 import partnerHibaEco from "@/assets/partner-hiba-eco.png";
