@@ -1,7 +1,8 @@
-import { MapPin, Clock, Phone, PhoneCall, Route, DollarSign, Hash, Store, User, Navigation } from "lucide-react";
+import { MapPin, Clock, Phone, PhoneCall, DollarSign, Hash, Store, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export interface TrackingInfoTableProps {
+export interface TrackingOrderRow {
+  id?: string;
   distanceKm: number | null;
   etaMinutes: number | null;
   price: number | string | null;
@@ -11,6 +12,7 @@ export interface TrackingInfoTableProps {
   referenceLabel?: string;
   storeName?: string | null;
   storePhone?: string | null;
+  orderCode?: string | null;
   onCallClient?: () => void;
   onCallStore?: () => void;
   callDisabled?: boolean;
@@ -18,188 +20,158 @@ export interface TrackingInfoTableProps {
   onNextAction?: () => void;
   onCancel?: () => void;
   updating?: boolean;
-  orderCode?: string | null;
 }
 
-const TrackingInfoTable = ({
-  distanceKm,
-  etaMinutes,
-  price,
-  pickupLabel,
-  destinationLabel,
-  referenceCode,
-  referenceLabel = "رمز العميل",
-  storeName,
-  storePhone,
-  onCallClient,
-  onCallStore,
-  callDisabled,
-  nextAction,
-  onNextAction,
-  onCancel,
-  updating,
-  orderCode,
-}: TrackingInfoTableProps) => {
+export interface TrackingInfoTableProps extends TrackingOrderRow {
+  /** For multi-order support pass extra rows */
+  extraOrders?: TrackingOrderRow[];
+}
+
+const TrackingInfoTable = (props: TrackingInfoTableProps) => {
+  const allOrders: TrackingOrderRow[] = [props, ...(props.extraOrders || [])];
+
   return (
     <div className="space-y-2">
-      {/* ── Unified Info Table ── */}
-      <div className="rounded-xl border border-border overflow-hidden bg-card/60 backdrop-blur-sm">
-        <table className="w-full text-sm">
+      <div className="rounded-xl border border-border overflow-hidden bg-card/60 backdrop-blur-sm overflow-x-auto">
+        <table className="w-full text-xs" dir="rtl">
+          <thead>
+            <tr className="bg-muted/40 border-b border-border">
+              <th className="px-2 py-2 text-right text-muted-foreground font-semibold whitespace-nowrap">
+                <div className="flex items-center gap-1"><MapPin className="w-3 h-3 text-primary" />المسار</div>
+              </th>
+              <th className="px-2 py-2 text-center text-muted-foreground font-semibold whitespace-nowrap">
+                <div className="flex items-center justify-center gap-1"><MapPin className="w-3 h-3 text-primary" />كم</div>
+              </th>
+              <th className="px-2 py-2 text-center text-muted-foreground font-semibold whitespace-nowrap">
+                <div className="flex items-center justify-center gap-1"><Clock className="w-3 h-3 text-blue-500" />الوقت</div>
+              </th>
+              <th className="px-2 py-2 text-center text-muted-foreground font-semibold whitespace-nowrap">
+                <div className="flex items-center justify-center gap-1"><DollarSign className="w-3 h-3 text-amber-500" />السعر</div>
+              </th>
+              <th className="px-2 py-2 text-center text-muted-foreground font-semibold whitespace-nowrap">
+                <div className="flex items-center justify-center gap-1"><Hash className="w-3 h-3 text-violet-400" />المرجع</div>
+              </th>
+              <th className="px-2 py-2 text-center text-muted-foreground font-semibold whitespace-nowrap">
+                اتصال
+              </th>
+              <th className="px-2 py-2 text-center text-muted-foreground font-semibold whitespace-nowrap">
+                إجراء
+              </th>
+            </tr>
+          </thead>
           <tbody>
-            {/* Route row */}
-            <tr className="border-b border-border/50">
-              <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">
-                <div className="flex items-center gap-1.5">
-                  <Navigation className="w-3.5 h-3.5 text-emerald-400" />
-                  المسار
-                </div>
-              </td>
-              <td className="px-3 py-2.5 text-foreground">
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/15 truncate max-w-[100px]">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                    {pickupLabel}
-                  </span>
-                  <Route className="w-3 h-3 text-muted-foreground shrink-0" />
-                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-destructive/10 border border-destructive/15 truncate max-w-[100px]">
-                    <div className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0" />
-                    {destinationLabel}
-                  </span>
-                </div>
-              </td>
-            </tr>
-
-            {/* Distance */}
-            <tr className="border-b border-border/50">
-              <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">
-                <div className="flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-primary" />
-                  المسافة
-                </div>
-              </td>
-              <td className="px-3 py-2.5">
-                <span className="text-foreground font-bold">{distanceKm?.toFixed(1) || "—"} كم</span>
-              </td>
-            </tr>
-
-            {/* ETA */}
-            <tr className="border-b border-border/50">
-              <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">
-                <div className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-blue-500" />
-                  الوقت المتوقع
-                </div>
-              </td>
-              <td className="px-3 py-2.5">
-                <span className="text-foreground font-bold">{etaMinutes || "—"} دقيقة</span>
-              </td>
-            </tr>
-
-            {/* Price */}
-            <tr className="border-b border-border/50">
-              <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">
-                <div className="flex items-center gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5 text-amber-500" />
-                  السعر
-                </div>
-              </td>
-              <td className="px-3 py-2.5">
-                <span className="text-primary font-black text-base">{price || "—"} DH</span>
-              </td>
-            </tr>
-
-            {/* Reference code */}
-            {referenceCode && (
-              <tr className="border-b border-border/50">
-                <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">
-                  <div className="flex items-center gap-1.5">
-                    <Hash className="w-3.5 h-3.5 text-violet-400" />
-                    {referenceLabel}
-                  </div>
-                </td>
-                <td className="px-3 py-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-foreground bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 text-xs">
-                      {referenceCode}
+            {allOrders.map((order, idx) => (
+              <tr key={order.id || idx} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
+                {/* Route */}
+                <td className="px-2 py-2.5">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="flex items-center gap-1 text-[10px]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 inline-block" />
+                      <span className="truncate max-w-[80px]">{order.pickupLabel}</span>
                     </span>
-                    {onCallClient && (
+                    <span className="flex items-center gap-1 text-[10px]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-destructive shrink-0 inline-block" />
+                      <span className="truncate max-w-[80px]">{order.destinationLabel}</span>
+                    </span>
+                  </div>
+                </td>
+
+                {/* Distance */}
+                <td className="px-2 py-2.5 text-center">
+                  <span className="text-foreground font-bold">{order.distanceKm?.toFixed(1) || "—"}</span>
+                </td>
+
+                {/* ETA */}
+                <td className="px-2 py-2.5 text-center">
+                  <span className="text-foreground font-bold">{order.etaMinutes || "—"}<span className="text-[9px] text-muted-foreground mr-0.5">د</span></span>
+                </td>
+
+                {/* Price */}
+                <td className="px-2 py-2.5 text-center">
+                  <span className="text-primary font-black">{order.price || "—"}<span className="text-[9px] text-muted-foreground mr-0.5">DH</span></span>
+                </td>
+
+                {/* Reference */}
+                <td className="px-2 py-2.5 text-center">
+                  <div className="flex flex-col items-center gap-0.5">
+                    {order.referenceCode ? (
+                      <span className="font-mono font-bold text-[10px] text-foreground bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">
+                        {order.referenceCode}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                    {order.storeName && (
+                      <span className="text-[9px] text-muted-foreground truncate max-w-[60px]" title={order.storeName}>
+                        <Store className="w-2.5 h-2.5 inline-block mr-0.5 text-emerald-400" />{order.storeName}
+                      </span>
+                    )}
+                  </div>
+                </td>
+
+                {/* Call buttons */}
+                <td className="px-2 py-2.5 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    {order.onCallClient && (
                       <button
-                        onClick={onCallClient}
-                        disabled={callDisabled}
-                        className="w-8 h-8 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 flex items-center justify-center transition-colors"
+                        onClick={order.onCallClient}
+                        disabled={order.callDisabled}
+                        className="w-7 h-7 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 flex items-center justify-center transition-colors"
+                        title="اتصال"
                       >
-                        <PhoneCall className="w-3.5 h-3.5 text-blue-400" />
+                        <PhoneCall className="w-3 h-3 text-blue-400" />
                       </button>
+                    )}
+                    {order.storePhone && order.onCallStore && (
+                      <button
+                        onClick={order.onCallStore}
+                        className="w-7 h-7 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 flex items-center justify-center transition-colors"
+                        title="اتصال بالمطعم"
+                      >
+                        <Phone className="w-3 h-3 text-emerald-400" />
+                      </button>
+                    )}
+                    {!order.onCallClient && !order.storePhone && (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </div>
+                </td>
+
+                {/* Actions */}
+                <td className="px-2 py-2.5 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    {order.nextAction && order.onNextAction && (
+                      <Button
+                        size="sm"
+                        onClick={order.onNextAction}
+                        disabled={order.updating}
+                        className={`h-7 px-2 text-[10px] rounded-lg bg-gradient-to-r ${order.nextAction.colors} text-white font-bold shadow-md`}
+                      >
+                        {order.updating ? (
+                          <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <><CheckCircle className="w-3 h-3 ml-0.5" />{order.nextAction.label}</>
+                        )}
+                      </Button>
+                    )}
+                    {order.onCancel && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={order.onCancel}
+                        disabled={order.updating}
+                        className="h-7 px-2 text-[10px] rounded-lg border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 font-bold"
+                      >
+                        <XCircle className="w-3 h-3 ml-0.5" />إلغاء
+                      </Button>
                     )}
                   </div>
                 </td>
               </tr>
-            )}
-
-            {/* Store */}
-            {storeName && (
-              <tr className="border-b border-border/50">
-                <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">
-                  <div className="flex items-center gap-1.5">
-                    <Store className="w-3.5 h-3.5 text-emerald-400" />
-                    المطعم
-                  </div>
-                </td>
-                <td className="px-3 py-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-foreground font-bold text-xs truncate">{storeName}</span>
-                    {storePhone && onCallStore && (
-                      <button
-                        onClick={onCallStore}
-                        className="w-8 h-8 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 flex items-center justify-center transition-colors"
-                      >
-                        <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            )}
-
-            {/* Order code */}
-            {orderCode && (
-              <tr>
-                <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">
-                  <div className="flex items-center gap-1.5">
-                    <Hash className="w-3.5 h-3.5 text-muted-foreground" />
-                    رقم الطلب
-                  </div>
-                </td>
-                <td className="px-3 py-2.5">
-                  <span className="font-mono text-xs text-foreground/70">{orderCode}</span>
-                </td>
-              </tr>
-            )}
+            ))}
           </tbody>
         </table>
       </div>
-
-      {/* ── Action Buttons ── */}
-      {nextAction && onNextAction && (
-        <Button
-          onClick={onNextAction}
-          disabled={updating}
-          className={`w-full h-14 rounded-2xl bg-gradient-to-r ${nextAction.colors} text-white font-bold text-base shadow-xl gap-2`}
-        >
-          {updating ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : nextAction.label}
-        </Button>
-      )}
-
-      {onCancel && (
-        <Button
-          onClick={onCancel}
-          disabled={updating}
-          variant="outline"
-          className="w-full h-10 rounded-xl border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 text-sm gap-1 font-bold"
-        >
-          إلغاء
-        </Button>
-      )}
     </div>
   );
 };
