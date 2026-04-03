@@ -198,6 +198,13 @@ const CallCenterLayout = () => {
             <GlobalLogoutButton />
             <VisitorCounter />
             <LanguageSwitcher />
+            <button
+              onClick={() => navigate("/call-center/community")}
+              className="p-2 hover:bg-secondary rounded-lg transition-colors"
+              title="مجتمع HN"
+            >
+              <Users className="w-5 h-5 text-primary" />
+            </button>
             <div className="hidden md:flex items-center gap-1.5 bg-success/10 text-success px-3 py-1 rounded-full text-xs">
               <div className={`w-1.5 h-1.5 rounded-full ${agentStatusColor}`} />
               {callCenter.agentStatus === "available" ? t.common.connected :
