@@ -242,7 +242,7 @@ const CallCenterLayout = () => {
       onAddNote={callCenter.addCallNote}
     />
     
-    <GlobalContactFooter />
+    {isVisible("contact_footer") && <GlobalContactFooter />}
     </>
     </CallCenterContext.Provider>
   );

@@ -440,7 +440,7 @@ const AdminLayout = () => {
 
     </div>
     
-    <GlobalContactFooter />
+    {isVisible("contact_footer") && <GlobalContactFooter />}
     </AdminGeoProvider>
   );
 };

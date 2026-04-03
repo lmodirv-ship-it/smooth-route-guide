@@ -159,7 +159,7 @@ const SupervisorLayout = () => {
       </div>
     </div>
     
-    <GlobalContactFooter />
+    {isVisible("contact_footer") && <GlobalContactFooter />}
     </>
   );
 };
