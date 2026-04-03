@@ -131,13 +131,14 @@ export function useInAppCall() {
   const sendSignal = useCallback(async (callId: string, recipientId: string, signalType: string, payload: Record<string, unknown> = {}) => {
     if (!userIdRef.current) return;
 
-    await supabase.from("call_signals" as any).insert({
+    const { error } = await supabase.from("call_signals" as any).insert({
       call_id: callId,
       sender_id: userIdRef.current,
       recipient_id: recipientId,
       signal_type: signalType,
       payload,
     } as any);
+    if (error) console.error("sendSignal error:", signalType, error.message);
   }, []);
 
   const ensureMediaStream = useCallback(async (withVideo = false) => {
