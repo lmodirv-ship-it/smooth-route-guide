@@ -214,6 +214,8 @@ const StoreSubscription = () => {
             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-400" />💵 نقداً — الدفع عند التأكيد</li>
             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-400" />👛 المحفظة — خصم فوري</li>
             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-400" />💎 PayPal — دفع إلكتروني آمن</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-400" />🏦 تحويل بنكي</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-400" />📍 تحويل وكالة (Wafacash / Cash Plus)</li>
           </ul>
         </div>
       </div>
