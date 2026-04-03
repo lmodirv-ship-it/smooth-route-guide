@@ -21,6 +21,7 @@ import AdsSection from "@/components/AdsSection";
 import SignupPopup from "@/components/SignupPopup";
 import SignupBanner from "@/components/SignupBanner";
 // VisitorCounter already imported above
+import HeroPromoFlash from "@/components/HeroPromoFlash";
 import logo from "@/assets/hn-driver-badge.png";
 import iconVtcCar from "@/assets/icon-vtc-car.png";
 import iconDeliveryBike from "@/assets/icon-delivery-bike.png";
