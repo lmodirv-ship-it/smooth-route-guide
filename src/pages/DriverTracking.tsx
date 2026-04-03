@@ -236,11 +236,21 @@ const DriverTracking = () => {
     if (!rideId || updating) return;
     setUpdating(true);
     try {
+      if (newStatus === "cancelled") {
+        // Reassign: reset to pending so another driver can pick it up
+        await supabase.from("ride_requests").update({
+          status: "pending",
+          driver_id: null,
+        }).eq("id", rideId);
+        toast({ title: "تم إلغاء الرحلة وإعادة توجيهها لسائق آخر" });
+        navigate("/driver");
+        return;
+      }
       const updates: any = { status: newStatus };
       if (newStatus === "completed" && totalTripPrice) updates.price = totalTripPrice;
       const { error } = await supabase.from("ride_requests").update(updates).eq("id", rideId);
       if (error) throw error;
-      if (newStatus === "completed" || newStatus === "cancelled") navigate("/driver");
+      if (newStatus === "completed") navigate("/driver");
     } catch (err: any) { console.error(err); }
     finally { setUpdating(false); }
   };
