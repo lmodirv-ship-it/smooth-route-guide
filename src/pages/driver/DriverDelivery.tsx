@@ -147,9 +147,8 @@ const DriverDelivery = () => {
 
     setActiveOrder(active as DeliveryOrder | null);
     if (!active) {
-      let query = supabase.from("delivery_orders").select("*")
+      const query = supabase.from("delivery_orders").select("*")
         .in("status", ["pending", "ready_for_driver"]).order("created_at", { ascending: false }).limit(20);
-      if (driverCity) query = query.ilike("city", `%${driverCity}%`);
       const { data: pending } = await query;
 
       // Enrich with customer references
