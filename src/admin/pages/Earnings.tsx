@@ -177,10 +177,59 @@ const AdminEarnings = () => {
     });
   }, [range, earningsData]);
 
+  const generatePdfReport = useCallback(() => {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString("ar-MA", { year: "numeric", month: "long", day: "numeric" });
+
+    const lines = [
+      "╔══════════════════════════════════════╗",
+      "║     HN GROUPE - تقرير مالي          ║",
+      "╚══════════════════════════════════════╝",
+      "",
+      `التاريخ: ${dateStr}`,
+      `الفترة: ${range === "daily" ? "يومي" : range === "weekly" ? "أسبوعي" : "شهري"}`,
+      "",
+      "═══ ملخص الأرباح ═══",
+      `أرباح اليوم: ${todayTotal.toLocaleString()} د.م`,
+      `أرباح الأسبوع: ${weekTotal.toLocaleString()} د.م`,
+      `أرباح الشهر: ${monthTotal.toLocaleString()} د.م`,
+      "",
+      "═══ عمولات المنصة ═══",
+      `نسبة العمولة: ${platformCommission.rate.toFixed(1)}%`,
+      `من السائقين: ${platformCommission.fromDrivers.toFixed(2)} د.م`,
+      `من التوصيل: ${platformCommission.fromDelivery.toFixed(2)} د.م`,
+      `من الرحلات: ${platformCommission.fromTrips.toFixed(2)} د.م`,
+      `إجمالي العمولات: ${platformCommission.total.toFixed(2)} د.م`,
+      "",
+      "═══ أرباح المطاعم ═══",
+      "الرقم | الاسم | المبيعات | العمولة",
+      ...filteredStores.map(s => `${s.store_code || "—"} | ${s.name} | ${s.revenue.toFixed(2)} | ${s.commission.toFixed(2)} د.م`),
+      "",
+      "═══ أرباح السائقين ═══",
+      "الرقم | الاسم | النوع | الأرباح | العمولة",
+      ...filteredDrivers.map(d => `${d.driver_code || "—"} | ${d.name} | ${d.driver_type === "delivery" ? "توصيل" : "ركاب"} | ${d.revenue.toFixed(2)} | ${d.commission.toFixed(2)} د.م`),
+      "",
+      `── تم إنشاء التقرير: ${now.toLocaleString("ar-MA")} ──`,
+    ];
+
+    const content = lines.join("\n");
+    const blob = new Blob(["\uFEFF" + content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `HN-Report-${now.toISOString().slice(0, 10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: "تم تصدير التقرير بنجاح 📊" });
+  }, [range, todayTotal, weekTotal, monthTotal, platformCommission, filteredStores, filteredDrivers]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div />
+        <Button variant="outline" size="sm" onClick={generatePdfReport} className="gap-2">
+          <FileDown className="w-4 h-4" />
+          تصدير تقرير
+        </Button>
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold text-foreground">تحليل الأرباح</h1>
           <TrendingUp className="w-6 h-6 text-primary" />
