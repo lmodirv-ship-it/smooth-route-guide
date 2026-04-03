@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Bike, CheckCircle, Clock, MapPin, Navigation, Package,
-  Store, XCircle, ChevronUp, ChevronDown, PhoneCall,
+  Store, XCircle, PhoneCall,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
