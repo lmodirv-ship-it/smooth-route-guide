@@ -298,18 +298,7 @@ const DeliveryDriverTracking = () => {
           hideControls
         />
 
-        {/* Top floating: distance + ETA */}
-        {distanceToTarget != null && etaMinutes != null && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1001] bg-card/95 backdrop-blur-xl px-5 py-2.5 rounded-2xl text-sm flex items-center gap-4 border border-border shadow-xl">
-            <span className="flex items-center gap-1.5 font-bold text-foreground">
-              <MapPin className="w-4 h-4 text-primary" />{distanceToTarget.toFixed(1)} كم
-            </span>
-            <div className="w-px h-5 bg-border" />
-            <span className="flex items-center gap-1.5 font-bold text-foreground">
-              <Clock className="w-4 h-4 text-blue-500" />{etaMinutes} د
-            </span>
-          </div>
-        )}
+        {/* Distance/ETA shown in bottom panel only */}
 
         {/* Back button */}
         <button
