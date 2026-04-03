@@ -24,7 +24,7 @@ const PaymentMethodPicker = ({
   referenceType, referenceId,
 }: Props) => {
   const [processing, setProcessing] = useState(false);
-  const { createPayment, init, ready } = usePayPal();
+  const { createPayment } = usePayPal();
 
   // Bank transfer fields
   const [fullName, setFullName] = useState("");
@@ -135,7 +135,7 @@ const PaymentMethodPicker = ({
         onPaymentComplete("wallet", txn?.id);
 
       } else if (selected === "paypal") {
-        if (!ready) await init();
+        
         const result = await createPayment({ amount, currency: "MAD", description: referenceType || "شراء باقة", referenceType, referenceId });
         if (result) {
           if (result.approveUrl) {

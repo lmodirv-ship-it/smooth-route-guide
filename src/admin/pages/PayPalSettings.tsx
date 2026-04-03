@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Loader2, Save, RefreshCw, CreditCard, ExternalLink, Building2 } from "lucide-react";
+import { Loader2, Save, RefreshCw, CreditCard, ExternalLink, Building2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -11,7 +11,6 @@ const PayPalSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
-  const [showSecret, setShowSecret] = useState(false);
   const [settings, setSettings] = useState({
     clientId: "",
     secretKey: "",
@@ -292,23 +291,12 @@ const PayPalSettings = () => {
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground block text-right">Secret Key</label>
-          <div className="relative">
-            <Input
-              type={showSecret ? "text" : "password"}
-              value={settings.secretKey}
-              onChange={e => setSettings(s => ({ ...s, secretKey: e.target.value }))}
-              placeholder="EGBfD4f...Zjna"
-              className="bg-secondary/60 border-border font-mono text-xs pl-10"
-              dir="ltr"
-            />
-            <button
-              type="button"
-              onClick={() => setShowSecret(!showSecret)}
-              className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
+          <div className="bg-secondary/60 border border-border rounded-md px-3 py-2 text-sm text-muted-foreground" dir="ltr">
+            ●●●●●●●●●●●● (محفوظ بأمان في Cloud Secrets)
           </div>
+          <p className="text-xs text-muted-foreground text-right">
+            لتحديث Secret Key، تواصل مع المطور أو عدّله من إعدادات Secrets
+          </p>
         </div>
 
         <div className="flex items-center justify-between border-t border-border pt-4">
