@@ -143,14 +143,15 @@ const OrderCard = ({ order, idx }: { order: TrackingOrderRow; idx: number }) => 
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Action button: Confirm ↔ Cancel */}
+      {/* Action buttons */}
         <AnimatePresence mode="wait">
-          {!confirmed ? (
+          {order.nextAction && !confirmed ? (
             <motion.div
               key="confirm"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
+              className="flex gap-2"
             >
               <Button
                 size="sm"
@@ -167,10 +168,22 @@ const OrderCard = ({ order, idx }: { order: TrackingOrderRow; idx: number }) => 
                   </>
                 )}
               </Button>
+              {order.onCancel && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => order.onCancel?.()}
+                  disabled={order.updating}
+                  className="h-9 px-4 text-xs rounded-xl border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 font-bold shadow-md shadow-destructive/10 gap-1.5"
+                >
+                  <XCircle className="w-4 h-4" />
+                  <span>إلغاء الطلب</span>
+                </Button>
+              )}
             </motion.div>
-          ) : (
+          ) : order.onCancel ? (
             <motion.div
-              key="cancel"
+              key="cancel-only"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -183,10 +196,10 @@ const OrderCard = ({ order, idx }: { order: TrackingOrderRow; idx: number }) => 
                 className="h-9 px-4 text-xs rounded-xl border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 font-bold shadow-md shadow-destructive/10 gap-1.5"
               >
                 <XCircle className="w-4 h-4" />
-                <span>إلغاء الرحلة</span>
+                <span>إلغاء الطلب</span>
               </Button>
             </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
       </div>
     </motion.div>
