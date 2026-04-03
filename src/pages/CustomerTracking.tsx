@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle, Clock, MapPin, Phone, User, Navigation, Car, Route as RouteIcon, XCircle, Star, PhoneCall } from "lucide-react";
+import TrackingInfoTable from "@/components/TrackingInfoTable";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";

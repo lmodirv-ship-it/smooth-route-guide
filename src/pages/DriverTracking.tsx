@@ -358,83 +358,24 @@ const DriverTracking = () => {
           </div>
         </div>
 
-        {/* ── Always-visible info table ── */}
+        {/* ── Info Table + Actions ── */}
         {!isFinished && (
-          <div className="px-4 pb-2 space-y-2">
-            {/* Stats row: distance + ETA */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/30 border border-border">
-                <MapPin className="w-4 h-4 text-primary shrink-0" />
-                <div>
-                  <p className="text-[10px] text-muted-foreground">المسافة</p>
-                  <p className="text-foreground font-bold text-sm">{distanceToTarget?.toFixed(1) || "—"} كم</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/30 border border-border">
-                <Clock className="w-4 h-4 text-blue-500 shrink-0" />
-                <div>
-                  <p className="text-[10px] text-muted-foreground">الوقت المتوقع</p>
-                  <p className="text-foreground font-bold text-sm">{etaMinutes || "—"} دقيقة</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Client reference + call */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border flex-1 min-w-0">
-                <Car className="w-4 h-4 text-emerald-400 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] text-muted-foreground">رمز الزبون</p>
-                  <p className="text-foreground font-mono font-bold text-sm truncate">{clientRefCode || "—"}</p>
-                </div>
-              </div>
-              {ride.user_id && (
-                <button
-                  onClick={() => inAppCall.startCall({ id: ride.user_id, name: clientRefCode || "الزبون" })}
-                  disabled={inAppCall.busy}
-                  className="shrink-0 w-12 h-12 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 flex items-center justify-center transition-colors"
-                  title="اتصال بالزبون"
-                >
-                  <PhoneCall className="w-5 h-5 text-blue-400" />
-                </button>
-              )}
-            </div>
-
-            {/* Route: pickup → destination */}
-            <div className="flex items-center gap-2 text-xs">
-              <div className="flex-1 flex items-center gap-2 p-2 rounded-lg bg-emerald-500/8 border border-emerald-500/10">
-                <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-                <span className="text-foreground/70 truncate">{ride.pickup || "نقطة الانطلاق"}</span>
-              </div>
-              <Navigation className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-              <div className="flex-1 flex items-center gap-2 p-2 rounded-lg bg-destructive/8 border border-destructive/10">
-                <div className="w-2 h-2 rounded-full bg-destructive shrink-0" />
-                <span className="text-foreground/70 truncate">{ride.destination || "الوجهة"}</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Main action button */}
-        {!isFinished && nextAction && (
-          <div className="px-4 pb-3 pt-1 space-y-2">
-            <Button
-              onClick={() => handleStatusUpdate(nextAction.status)}
-              disabled={updating}
-              className={`w-full h-14 rounded-2xl bg-gradient-to-r ${nextAction.colors} text-white font-bold text-base shadow-xl gap-2`}
-            >
-              {updating ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : nextAction.label}
-            </Button>
-
-            {/* Cancel button */}
-            <Button
-              onClick={() => setCancelDialogOpen(true)}
-              disabled={updating}
-              variant="outline"
-              className="w-full h-10 rounded-xl border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 text-sm gap-1 font-bold"
-            >
-              <XCircle className="w-4 h-4" /> إلغاء الرحلة
-            </Button>
+          <div className="px-4 pb-3">
+            <TrackingInfoTable
+              distanceKm={distanceToTarget ?? null}
+              etaMinutes={etaMinutes}
+              price={totalTripPrice || ride.price}
+              pickupLabel={ride.pickup || "نقطة الانطلاق"}
+              destinationLabel={ride.destination || "الوجهة"}
+              referenceCode={clientRefCode}
+              referenceLabel="رمز الزبون"
+              onCallClient={ride.user_id ? () => inAppCall.startCall({ id: ride.user_id, name: clientRefCode || "الزبون" }) : undefined}
+              callDisabled={inAppCall.busy}
+              nextAction={nextAction}
+              onNextAction={nextAction ? () => handleStatusUpdate(nextAction.status) : undefined}
+              onCancel={() => setCancelDialogOpen(true)}
+              updating={updating}
+            />
           </div>
         )}
 
