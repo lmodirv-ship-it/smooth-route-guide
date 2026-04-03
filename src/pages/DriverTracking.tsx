@@ -298,6 +298,7 @@ const DriverTracking = () => {
           markerPosition={targetPosition || undefined}
           driverLocation={smoothedDriver}
           route={mapRoute}
+          hideControls
         />
 
         {/* Top floating: distance + ETA */}
