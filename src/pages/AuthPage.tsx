@@ -137,10 +137,8 @@ const AuthPage = () => {
         if (error) throw error;
 
         toast({
-          title: "تم إنشاء الحساب ✅",
-          description: "تحقق من بريدك الإلكتروني لتأكيد الحساب ثم سجّل الدخول.",
+          title: "تم إنشاء الحساب بنجاح ✅",
         });
-        setIsLogin(true);
       }
     } catch (err: any) {
       let msg = err?.message || "حدث خطأ غير متوقع";
