@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Search, Eye } from "lucide-react";
+import { Users, Search, Eye, Wallet } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,8 @@ interface Client {
   id: string; name: string; email: string | null; phone: string | null;
   created_at: string; tripCount?: number; walletBalance?: number; user_code?: string | null;
   roles?: string[];
+  pendingRechargeCount?: number;
+  pendingRechargeTotal?: number;
 }
 
 const AdminClients = () => {
@@ -23,10 +25,11 @@ const AdminClients = () => {
     const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
     if (!profiles) return;
     const ids = profiles.map(p => p.id);
-    const [tripsRes, walletsRes, rolesRes] = await Promise.all([
+    const [tripsRes, walletsRes, rolesRes, rechargeRes] = await Promise.all([
       supabase.from("trips").select("user_id").in("user_id", ids),
       supabase.from("wallet").select("user_id, balance").in("user_id", ids),
       supabase.from("user_roles").select("user_id, role").in("user_id", ids),
+      supabase.from("wallet_recharge_requests").select("user_id, amount, status").eq("status", "pending").in("user_id", ids),
     ]);
     const tripCountMap = new Map<string, number>();
     tripsRes.data?.forEach(t => tripCountMap.set(t.user_id, (tripCountMap.get(t.user_id) || 0) + 1));
@@ -36,10 +39,18 @@ const AdminClients = () => {
       if (!rolesMap.has(r.user_id)) rolesMap.set(r.user_id, []);
       rolesMap.get(r.user_id)!.push(r.role);
     });
+    const rechargeCountMap = new Map<string, number>();
+    const rechargeTotalMap = new Map<string, number>();
+    rechargeRes.data?.forEach(r => {
+      rechargeCountMap.set(r.user_id, (rechargeCountMap.get(r.user_id) || 0) + 1);
+      rechargeTotalMap.set(r.user_id, (rechargeTotalMap.get(r.user_id) || 0) + (r.amount || 0));
+    });
 
     setClients(profiles.map(p => ({
       ...p, tripCount: tripCountMap.get(p.id) || 0, walletBalance: walletMap.get(p.id) || 0,
       roles: rolesMap.get(p.id) || ["user"],
+      pendingRechargeCount: rechargeCountMap.get(p.id) || 0,
+      pendingRechargeTotal: rechargeTotalMap.get(p.id) || 0,
     })));
   };
 
@@ -54,6 +65,19 @@ const AdminClients = () => {
     if (!search) return true;
     return c.name?.includes(search) || c.email?.includes(search) || c.phone?.includes(search) || c.user_code?.includes(search);
   });
+
+  // Color for wallet balance: green > 50, yellow 10-50, red < 10
+  const getBalanceColor = (balance: number) => {
+    if (balance >= 50) return "text-emerald-500";
+    if (balance >= 10) return "text-amber-500";
+    return "text-destructive";
+  };
+
+  const getBalanceBg = (balance: number) => {
+    if (balance >= 50) return "bg-emerald-500/10 border-emerald-500/30";
+    if (balance >= 10) return "bg-amber-500/10 border-amber-500/30";
+    return "bg-destructive/10 border-destructive/30";
+  };
 
   return (
     <div className="space-y-6">
@@ -74,7 +98,8 @@ const AdminClients = () => {
           <thead>
              <tr className="border-b border-border text-right">
               <th className="p-4 text-muted-foreground font-medium">إجراءات</th>
-              <th className="p-4 text-muted-foreground font-medium">الرصيد</th>
+              <th className="p-4 text-muted-foreground font-medium">طلبات التعبئة</th>
+              <th className="p-4 text-muted-foreground font-medium">التعبئة</th>
               <th className="p-4 text-muted-foreground font-medium">الرحلات</th>
               <th className="p-4 text-muted-foreground font-medium">الدور</th>
               <th className="p-4 text-muted-foreground font-medium">الهاتف</th>
@@ -84,7 +109,7 @@ const AdminClients = () => {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">لا يوجد عملاء</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">لا يوجد عملاء</td></tr>}
             {filtered.map(client => (
               <motion.tr key={client.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
@@ -93,7 +118,26 @@ const AdminClients = () => {
                     <Eye className="w-3 h-3 ml-1" />عرض
                   </Button>
                 </td>
-                <td className="p-4 text-primary font-semibold">{client.walletBalance} DH</td>
+                {/* طلبات التعبئة */}
+                <td className="p-4">
+                  {(client.pendingRechargeCount || 0) > 0 ? (
+                    <button
+                      onClick={() => openDetail(client.id)}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-500 text-[11px] font-bold hover:bg-emerald-500/25 transition-colors cursor-pointer"
+                    >
+                      <Wallet className="w-3 h-3" />
+                      {client.pendingRechargeCount} طلب ({client.pendingRechargeTotal} DH)
+                    </button>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">—</span>
+                  )}
+                </td>
+                {/* التعبئة / الرصيد */}
+                <td className="p-4">
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs font-bold ${getBalanceBg(client.walletBalance || 0)} ${getBalanceColor(client.walletBalance || 0)}`}>
+                    {client.walletBalance} DH
+                  </span>
+                </td>
                 <td className="p-4 text-foreground">{client.tripCount}</td>
                 <td className="p-4">
                   <div className="flex flex-wrap gap-1">
