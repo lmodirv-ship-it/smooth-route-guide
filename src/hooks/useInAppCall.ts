@@ -313,18 +313,28 @@ export function useInAppCall() {
       const stream = await ensureMediaStream();
       const connection = await createPeerConnection(incomingCall.callId, incomingCall.peer.id, stream);
 
-      const offerResponse: any = await supabase
-        .from("call_signals" as any)
-        .select("payload")
-        .eq("call_id", incomingCall.callId)
-        .eq("signal_type", "offer")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // Poll for offer signal (may arrive slightly after session insert)
+      let offerPayload: RTCSessionDescriptionInit | null = null;
+      for (let attempt = 0; attempt < 8; attempt++) {
+        const offerResponse: any = await supabase
+          .from("call_signals" as any)
+          .select("payload")
+          .eq("call_id", incomingCall.callId)
+          .eq("signal_type", "offer")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-      const offerSignal = offerResponse.data as { payload?: RTCSessionDescriptionInit } | null;
+        const offerSignal = offerResponse.data as { payload?: RTCSessionDescriptionInit } | null;
+        if (offerSignal?.payload) {
+          offerPayload = offerSignal.payload;
+          break;
+        }
+        // Wait 500ms before retrying
+        await new Promise(r => setTimeout(r, 500));
+      }
 
-      if (!offerSignal?.payload) {
+      if (!offerPayload) {
         throw new Error("offer_missing");
       }
 
