@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import ClientDetailSheet from "@/admin/components/ClientDetailSheet";
+import BalanceBars from "@/admin/components/BalanceBars";
 
 interface Client {
   id: string; name: string; email: string | null; phone: string | null;
