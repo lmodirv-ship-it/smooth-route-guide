@@ -12,7 +12,7 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import VisitorCounter from "@/components/VisitorCounter";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import FloatingChatButton from "@/components/FloatingChatButton";
-import FloatingCommunityButton from "@/components/FloatingCommunityButton";
+
 import { useI18n } from "@/i18n/context";
 import SidebarNavButton from "@/admin/components/SidebarNavButton";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
