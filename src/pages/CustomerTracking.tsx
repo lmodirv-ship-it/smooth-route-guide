@@ -245,32 +245,17 @@ const CustomerTracking = () => {
           </div>
         </div>
 
-        {/* Pending state */}
-        {ride.status === "pending" && (
-          <div className="text-center py-5 px-4">
-            <div className="w-14 h-14 rounded-full bg-amber-500/15 flex items-center justify-center mx-auto mb-3 border border-amber-500/20">
-              <Navigation className="w-7 h-7 text-amber-400 animate-pulse" />
-            </div>
-            <p className="text-foreground font-bold">جارٍ البحث عن سائق...</p>
-            <p className="text-muted-foreground text-sm mt-1">سيتم تعيين أقرب سائق</p>
-            <Button onClick={() => setCancelDialogOpen(true)} variant="outline"
-              className="mt-4 w-full border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded-xl font-bold gap-2">
-              <XCircle className="w-4 h-4" /> إلغاء الطلب
-            </Button>
-          </div>
-        )}
-
-        {/* Active with driver */}
-        {isActive && ride.status !== "pending" && (
-          <div className="p-4">
+        {/* Always show tracking table for active rides */}
+        {isActive && (
+          <div className="p-3">
             <TrackingInfoTable
               distanceKm={distToTarget ?? null}
               etaMinutes={etaMinutes}
               price={ride.price}
               pickupLabel={ride.pickup || "موقعك"}
               destinationLabel={ride.destination || "الوجهة"}
-              referenceCode={driverRefCode}
-              referenceLabel="رمز السائق"
+              referenceCode={driverRefCode || (ride.status === "pending" ? "⏳" : null)}
+              referenceLabel={ride.status === "pending" ? "الحالة" : "رمز السائق"}
               onCallClient={ride.driver_id ? async () => {
                 const { data: driver } = await supabase.from("drivers").select("user_id").eq("id", ride.driver_id!).single();
                 if (driver) inAppCall.startCall({ id: driver.user_id, name: driverRefCode || "السائق" });
