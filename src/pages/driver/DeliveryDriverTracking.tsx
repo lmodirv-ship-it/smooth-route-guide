@@ -278,7 +278,7 @@ const DeliveryDriverTracking = () => {
     : order.delivery_address || "الزبون";
 
   return (
-    <div className="h-dvh flex flex-col bg-background overflow-hidden" dir={dir}>
+    <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background overflow-hidden" dir={dir}>
       {/* ── Fullscreen Map ── */}
       <div className="flex-1 relative min-h-0">
         {/* Glossy black borders */}
