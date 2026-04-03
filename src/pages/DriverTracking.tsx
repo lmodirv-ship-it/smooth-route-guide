@@ -311,12 +311,7 @@ const DriverTracking = () => {
           <Navigation className="w-5 h-5 text-foreground" />
         </button>
 
-        {/* Client reference floating */}
-        {clientRefCode && (
-          <div className="absolute top-4 left-4 z-[1001] bg-primary/90 backdrop-blur-xl px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
-            <span className="text-primary-foreground text-xs font-mono font-bold">{clientRefCode}</span>
-          </div>
-        )}
+        {/* Client ref shown in bottom panel */}
 
         {/* Progress bar at bottom of map */}
         <div className="absolute bottom-0 left-0 right-0 z-[1001] h-1.5 bg-muted/50">

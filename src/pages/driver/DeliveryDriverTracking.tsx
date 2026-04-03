@@ -308,12 +308,7 @@ const DeliveryDriverTracking = () => {
           <Navigation className="w-5 h-5 text-foreground" />
         </button>
 
-        {/* Customer ref */}
-        {customerRefCode && (
-          <div className="absolute top-4 left-4 z-[1001] bg-primary/90 backdrop-blur-xl px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
-            <span className="text-primary-foreground text-xs font-mono font-bold">{customerRefCode}</span>
-          </div>
-        )}
+        {/* Customer ref shown in bottom panel */}
 
         {/* Target label */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[1001] bg-card/90 backdrop-blur-xl px-4 py-2 rounded-xl text-xs flex items-center gap-2 border border-border shadow-lg">

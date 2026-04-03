@@ -247,28 +247,7 @@ const CustomerTracking = () => {
           )}
         </AnimatePresence>
 
-        {/* ── Distance + ETA floating ── */}
-        <AnimatePresence>
-          {distToTarget != null && ride.status !== "pending" && (
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 20, opacity: 0 }}
-              className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1001] flex items-center gap-2"
-            >
-              <div className="bg-card/95 backdrop-blur-xl px-3 py-2 rounded-xl text-xs flex items-center gap-2 border border-border shadow-xl">
-                <MapPin className="w-3.5 h-3.5 text-primary" />
-                <span className="font-bold text-foreground">{distToTarget.toFixed(1)} كم</span>
-              </div>
-              {etaMinutes && (
-                <div className="bg-card/95 backdrop-blur-xl px-3 py-2 rounded-xl text-xs flex items-center gap-2 border border-border shadow-xl">
-                  <Clock className="w-3.5 h-3.5 text-blue-500" />
-                  <span className="font-bold text-foreground">{etaMinutes} د</span>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Distance/ETA now shown only in bottom panel TrackingInfoTable */}
 
         {/* Progress bar */}
         <div className="absolute bottom-0 left-0 right-0 z-[1002] h-1.5 bg-muted/50">
