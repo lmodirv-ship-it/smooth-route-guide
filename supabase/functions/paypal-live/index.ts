@@ -46,9 +46,9 @@ serve(async (req) => {
     // ── Read secrets (server-side only) ──
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const PAYPAL_CLIENT_ID = Deno.env.get("PAYPAL_CLIENT_ID_LIVE") || "";
-    const PAYPAL_SECRET = Deno.env.get("PAYPAL_SECRET_LIVE") || "";
-    const PAYPAL_ENV = Deno.env.get("PAYPAL_ENV") || "live";
+    const PAYPAL_CLIENT_ID = Deno.env.get("PAYPAL_CLIENT_ID_LIVE") || Deno.env.get("PAYPAL_CLIENT_ID") || "";
+    const PAYPAL_SECRET = Deno.env.get("PAYPAL_SECRET_LIVE") || Deno.env.get("PAYPAL_SECRET_KEY") || "";
+    const PAYPAL_ENV = Deno.env.get("PAYPAL_ENV") || "sandbox";
 
     // Also check app_settings as fallback (admin-configurable)
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
@@ -177,6 +177,10 @@ serve(async (req) => {
           }],
           application_context: {
             brand_name: "HN Driver",
+            return_url: "https://www.hn-driver.com/customer/payment?status=success",
+            cancel_url: "https://www.hn-driver.com/customer/payment?status=cancel",
+            shipping_preference: "NO_SHIPPING",
+            user_action: "PAY_NOW",
           },
         }),
       });
