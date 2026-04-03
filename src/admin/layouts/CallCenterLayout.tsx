@@ -17,6 +17,7 @@ import FloatingChatButton from "@/components/FloatingChatButton";
 import logo from "@/assets/hn-driver-badge.png";
 import SidebarNavButton from "@/admin/components/SidebarNavButton";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
+import { useVisibility } from "@/hooks/useVisibility";
 import AgentFacePresence from "@/call-center/components/AgentFacePresence";
 import CallCenterModal from "@/components/calls/CallCenterModal";
 import { useCallCenter } from "@/hooks/useCallCenter";

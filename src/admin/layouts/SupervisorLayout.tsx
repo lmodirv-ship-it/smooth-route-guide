@@ -16,6 +16,7 @@ import FloatingChatButton from "@/components/FloatingChatButton";
 import { useI18n } from "@/i18n/context";
 import SidebarNavButton from "@/admin/components/SidebarNavButton";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
+import { useVisibility } from "@/hooks/useVisibility";
 
 const SupervisorLayout = () => {
   const { t, dir } = useI18n();

@@ -25,6 +25,7 @@ import FloatingChatButton from "@/components/FloatingChatButton";
 import FaceGuard from "@/admin/components/FaceGuard";
 import SidebarNavButton from "@/admin/components/SidebarNavButton";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
+import { useVisibility } from "@/hooks/useVisibility";
 import { useUserReference } from "@/hooks/useUserReference";
 
 type AiMsg = { role: "user" | "assistant"; content: string };
