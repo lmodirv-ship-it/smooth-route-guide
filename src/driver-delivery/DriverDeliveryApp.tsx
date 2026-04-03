@@ -35,6 +35,7 @@ import RequireRole from "@/components/RequireRole";
 import { Users } from "lucide-react";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import ThemeLoader from "@/components/ThemeLoader";
+import TopNavLinks from "@/components/TopNavLinks";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,8 @@ const DeliveryDriverLayout = () => {
           <div className="text-xs text-muted-foreground bg-emerald-500/10 px-2 py-0.5 rounded-full">سائق توصيل</div>
         </div>
         <div className="flex items-center gap-2">
+          <TopNavLinks />
+          <div className="w-px h-5 bg-border/40" />
           <FloatingChatButton />
           <button
             onClick={() => window.location.href = "/community"}
