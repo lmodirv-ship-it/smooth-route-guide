@@ -238,14 +238,13 @@ const DeliveryDriverTracking = () => {
     setUpdating(true);
     try {
       if (newStatus === "cancelled") {
-        // Reassign: reset to pending so another driver can pick it up
         await supabase.from("delivery_orders").update({
-          status: "pending",
+          status: "cancelled",
           driver_id: null,
           cancel_reason: "إلغاء من طرف السائق",
           updated_at: new Date().toISOString(),
         }).eq("id", orderId);
-        toast({ title: "تم إلغاء الطلب وإعادة توجيهه لسائق آخر" });
+        toast({ title: "تم إلغاء الطلب" });
         navigate("/delivery");
         return;
       }
