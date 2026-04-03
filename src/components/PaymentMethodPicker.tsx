@@ -24,7 +24,7 @@ const PaymentMethodPicker = ({
   referenceType, referenceId,
 }: Props) => {
   const [processing, setProcessing] = useState(false);
-  const { createPayment, init, ready } = usePayPal();
+  const { createPayment } = usePayPal();
 
   // Bank transfer fields
   const [fullName, setFullName] = useState("");
