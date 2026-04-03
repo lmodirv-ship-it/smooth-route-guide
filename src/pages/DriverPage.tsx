@@ -80,6 +80,7 @@ const DriverPage = () => {
   const { driverCode, userCode } = useUserReference();
   const refCode = driverCode || userCode;
   const { mapTheme, mapExpanded } = useDriverMapControls();
+  const heatPoints = useDemandHeatmap();
 
   // Fetch stats & check active ride
   useEffect(() => {
