@@ -5,6 +5,7 @@ import {
   Bike, CheckCircle, Clock, MapPin, Navigation, Package,
   Store, XCircle, PhoneCall,
 } from "lucide-react";
+import TrackingInfoTable from "@/components/TrackingInfoTable";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
@@ -362,94 +363,28 @@ const DeliveryDriverTracking = () => {
           </div>
         </div>
 
-        {/* ── Always-visible info table ── */}
+        {/* ── Info Table + Actions ── */}
         {!isFinished && (
-          <div className="px-4 pb-2 space-y-2">
-            {/* Stats row: distance + ETA */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/30 border border-border">
-                <MapPin className="w-4 h-4 text-primary shrink-0" />
-                <div>
-                  <p className="text-[10px] text-muted-foreground">المسافة</p>
-                  <p className="text-foreground font-bold text-sm">{distanceToTarget?.toFixed(1) || "—"} كم</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/30 border border-border">
-                <Clock className="w-4 h-4 text-blue-500 shrink-0" />
-                <div>
-                  <p className="text-[10px] text-muted-foreground">الوقت المتوقع</p>
-                  <p className="text-foreground font-bold text-sm">{etaMinutes || "—"} دقيقة</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Store + phone */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border flex-1 min-w-0">
-                <Store className="w-4 h-4 text-emerald-400 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] text-muted-foreground">المطعم</p>
-                  <p className="text-foreground font-bold text-sm truncate">{order.store_name || "—"}</p>
-                </div>
-              </div>
-              {storePhone && (
-                <button
-                  onClick={() => window.open(`tel:${storePhone}`)}
-                  className="shrink-0 w-12 h-12 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 flex items-center justify-center transition-colors"
-                  title={`اتصل بالمطعم: ${storePhone}`}
-                >
-                  <PhoneCall className="w-5 h-5 text-emerald-400" />
-                </button>
-              )}
-            </div>
-
-            {/* Customer reference + call */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border flex-1 min-w-0">
-                <Package className="w-4 h-4 text-amber-400 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] text-muted-foreground">رمز الزبون</p>
-                  <p className="text-foreground font-mono font-bold text-sm truncate">{customerRefCode || "—"}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => inAppCall.startCall({ id: order.user_id, name: customerRefCode || "الزبون" })}
-                disabled={inAppCall.busy}
-                className="shrink-0 w-12 h-12 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 flex items-center justify-center transition-colors"
-                title="اتصال بالزبون"
-              >
-                <PhoneCall className="w-5 h-5 text-blue-400" />
-              </button>
-            </div>
-
-            {/* Order code */}
-            {order.order_code && (
-              <div className="flex items-center gap-3 p-2 rounded-xl bg-muted/30 border border-border">
-                <Package className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                <span className="text-xs font-mono text-foreground/70">طلبية: {order.order_code}</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Main action button */}
-        {!isFinished && nextAction && (
-          <div className="px-4 pb-3 pt-1 space-y-2">
-            <Button
-              onClick={() => handleStatusUpdate(nextAction.status)}
-              disabled={updating}
-              className={`w-full h-14 rounded-2xl bg-gradient-to-r ${nextAction.colors} text-white font-bold text-base shadow-xl gap-2`}
-            >
-              {updating ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : nextAction.label}
-            </Button>
-            <Button
-              onClick={() => handleStatusUpdate("cancelled")}
-              disabled={updating}
-              variant="outline"
-              className="w-full h-10 rounded-xl border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 text-sm gap-1 font-bold"
-            >
-              <XCircle className="w-4 h-4" /> إلغاء الطلب
-            </Button>
+          <div className="px-4 pb-3">
+            <TrackingInfoTable
+              distanceKm={distanceToTarget ?? null}
+              etaMinutes={etaMinutes}
+              price={order.total_price || order.estimated_price || order.delivery_fee}
+              pickupLabel={order.pickup_address || "المطعم"}
+              destinationLabel={order.delivery_address || "الزبون"}
+              referenceCode={customerRefCode}
+              referenceLabel="رمز الزبون"
+              storeName={order.store_name}
+              storePhone={storePhone}
+              onCallClient={() => inAppCall.startCall({ id: order.user_id, name: customerRefCode || "الزبون" })}
+              onCallStore={storePhone ? () => window.open(`tel:${storePhone}`) : undefined}
+              callDisabled={inAppCall.busy}
+              nextAction={nextAction}
+              onNextAction={nextAction ? () => handleStatusUpdate(nextAction.status) : undefined}
+              onCancel={() => handleStatusUpdate("cancelled")}
+              updating={updating}
+              orderCode={order.order_code}
+            />
           </div>
         )}
 
