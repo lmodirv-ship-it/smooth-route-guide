@@ -257,11 +257,17 @@ const LeafletMap = ({
   // Auto-refresh map every 60 seconds
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map) return;
+    if (!map || !map.getContainer()) return;
     const interval = setInterval(() => {
-      map.invalidateSize();
-      if (driverLocation) {
-        map.setView([driverLocation.lat, driverLocation.lng], map.getZoom(), { animate: true });
+      try {
+        if (map.getContainer() && map.getPane('mapPane')) {
+          map.invalidateSize();
+          if (driverLocation) {
+            map.setView([driverLocation.lat, driverLocation.lng], map.getZoom(), { animate: true });
+          }
+        }
+      } catch (e) {
+        // Leaflet race condition - safe to ignore
       }
     }, 60000);
     return () => clearInterval(interval);
