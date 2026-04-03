@@ -131,6 +131,34 @@ server {
     gzip on;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript image/svg+xml;
 }
+
+# ─── Driver Ride ───
+server {
+    listen 80;
+    server_name ride.hn-driver.com;
+    root /var/www/driver-ride;
+    index driver-ride.html;
+    location / { try_files $uri $uri/ /driver-ride.html; }
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2|woff|ttf)$ {
+        expires 1y; add_header Cache-Control "public, immutable";
+    }
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript image/svg+xml;
+}
+
+# ─── Driver Delivery ───
+server {
+    listen 80;
+    server_name delivery.hn-driver.com;
+    root /var/www/driver-delivery;
+    index driver-delivery.html;
+    location / { try_files $uri $uri/ /driver-delivery.html; }
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2|woff|ttf)$ {
+        expires 1y; add_header Cache-Control "public, immutable";
+    }
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript image/svg+xml;
+}
 NGINX
 
 sudo ln -sf /etc/nginx/sites-available/hn-driver /etc/nginx/sites-enabled/
