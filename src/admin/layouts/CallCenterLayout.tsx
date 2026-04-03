@@ -242,7 +242,6 @@ const CallCenterLayout = () => {
     />
 
     <AgentFacePresence />
-    <FloatingChatButton />
     
     <GlobalContactFooter />
     </>
