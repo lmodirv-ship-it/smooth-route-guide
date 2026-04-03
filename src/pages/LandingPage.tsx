@@ -27,6 +27,7 @@ import iconVtcCar from "@/assets/icon-vtc-car.png";
 import iconDeliveryBike from "@/assets/icon-delivery-bike.png";
 import iconStoreMarketplace from "@/assets/icon-store-marketplace.png";
 import iconClientApp from "@/assets/icon-client-app.png";
+import iconCoupleWelcome from "@/assets/icon-couple-welcome.png";
 import partnerHibaEco from "@/assets/partner-hiba-eco.png";
 import partnerLavageNizar from "@/assets/partner-lavage-nizar.png";
 import partnerTanjaPrint from "@/assets/partner-tanja-print.png";
@@ -472,10 +473,10 @@ export default function LandingPage() {
           {/* ═══ 3 Role Cards — Glowing glass with inner blue light ═══ */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 max-w-4xl mx-auto">
             {[
-              { img: iconClientApp, label: dir === "rtl" ? "مرحبا يا سيدي" : "Welcome!", desc: dir === "rtl" ? "خاصك توصيلة ولا تقضية؟" : "Need a ride or delivery?", action: () => navigate("/login"), big: true },
+              { img: iconCoupleWelcome, label: dir === "rtl" ? "مرحبا يا سيدي" : "Welcome!", desc: dir === "rtl" ? "خاصك توصيلة ولا تقضية؟" : "Need a ride or delivery?", action: () => navigate("/login"), big: true },
               { img: iconVtcCar, label: dir === "rtl" ? "اعتبرها طوموبيلتك" : "Your personal ride", desc: dir === "rtl" ? "خدم معانا وربح فلوسك" : "Work with us & earn money", action: () => navigate("/auth/driver") },
               { img: iconDeliveryBike, label: "Livraisons Express", desc: dir === "rtl" ? "توصيل سريع" : "Fast delivery", action: () => navigate("/delivery") },
-              { img: iconStoreMarketplace, label: dir === "rtl" ? "متجر" : "Store", desc: dir === "rtl" ? "أضف محلك أو تسوّق" : "Add your shop or browse", action: () => setStoreDialogOpen(true) },
+              { img: iconStoreMarketplace, label: dir === "rtl" ? "متجر" : "Store", desc: dir === "rtl" ? "أجي يا صاحبي افتح المحل ديالك هنا، بغينا نتغداو عندك" : "Come open your shop here, we want to eat at your place!", action: () => setStoreDialogOpen(true) },
             ].map((cat, i) => (
               <motion.div
                 key={cat.label}
