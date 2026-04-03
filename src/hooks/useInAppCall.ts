@@ -338,7 +338,7 @@ export function useInAppCall() {
         throw new Error("offer_missing");
       }
 
-      await connection.setRemoteDescription(new RTCSessionDescription(offerSignal.payload as RTCSessionDescriptionInit));
+      await connection.setRemoteDescription(new RTCSessionDescription(offerPayload));
 
       const { data: queuedCandidates } = await supabase
         .from("call_signals" as any)
