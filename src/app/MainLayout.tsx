@@ -51,8 +51,24 @@ const MainLayoutInner = () => {
   return (
     <>
       {isVisible("notification_listener") && <GlobalNotificationListener />}
-      <div className="fixed top-0 left-0 right-0 z-[60] h-11 bg-background/90 backdrop-blur-xl border-b border-border/40 overflow-x-auto overflow-y-hidden scrollbar-hide">
-        <div className="flex items-center h-full min-w-max px-3 gap-2">
+      <div className="fixed top-0 left-0 right-0 z-[60] h-11 bg-background/90 backdrop-blur-xl border-b border-border/40 group/topbar">
+        {/* Scroll shadow indicators */}
+        <div className="pointer-events-none absolute top-0 bottom-0 left-0 w-6 z-10 bg-gradient-to-r from-background/80 to-transparent opacity-0 transition-opacity" id="topbar-shadow-left" />
+        <div className="pointer-events-none absolute top-0 bottom-0 right-0 w-6 z-10 bg-gradient-to-l from-background/80 to-transparent" id="topbar-shadow-right" />
+        <div
+          className="flex items-center h-full min-w-max px-3 gap-2 overflow-x-auto overflow-y-hidden scrollbar-hide scroll-smooth"
+          ref={(el) => {
+            if (!el) return;
+            const updateShadows = () => {
+              const l = document.getElementById('topbar-shadow-left');
+              const r = document.getElementById('topbar-shadow-right');
+              if (l) l.style.opacity = el.scrollLeft > 5 ? '1' : '0';
+              if (r) r.style.opacity = el.scrollLeft < el.scrollWidth - el.clientWidth - 5 ? '1' : '0';
+            };
+            el.addEventListener('scroll', updateShadows, { passive: true });
+            requestAnimationFrame(updateShadows);
+          }}
+        >
           {/* Logo */}
           <img src={logo} alt="HN" className="w-8 h-8 rounded-full shadow-md shrink-0" />
           <div className="w-px h-5 bg-border/40 shrink-0" />
