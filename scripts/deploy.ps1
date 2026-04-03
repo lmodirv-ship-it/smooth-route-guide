@@ -43,8 +43,10 @@ if (-not $DryRun) {
     } else {
         Write-Ok "No local changes"
     }
-    git pull origin main --rebase 2>$null
-    git push origin main
+    $ErrorActionPreference = "Continue"
+    git pull origin main --rebase 2>&1 | Out-Null
+    git push origin main 2>&1 | Out-Null
+    $ErrorActionPreference = "Stop"
     Write-Ok "Pushed to GitHub"
 } else {
     Write-Ok "[DRY] Would commit and push"
