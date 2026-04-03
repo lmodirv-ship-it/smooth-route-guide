@@ -1,9 +1,9 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Bike, CheckCircle, Clock, MapPin, Navigation, Package,
-  Store, XCircle, ChevronUp, ChevronDown, PhoneCall,
+  Store, XCircle, PhoneCall,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,7 +63,6 @@ const DeliveryDriverTracking = () => {
   const [storePhone, setStorePhone] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [panelOpen, setPanelOpen] = useState(false);
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
   const [showRating, setShowRating] = useState(false);
   const [driverId, setDriverId] = useState<string | null>(null);
@@ -261,12 +260,12 @@ const DeliveryDriverTracking = () => {
 
   // Loading state
   if (loading) return (
-    <div className="h-dvh bg-background flex items-center justify-center" dir={dir}>
+    <div className="h-[calc(100dvh-2.75rem)] bg-background flex items-center justify-center" dir={dir}>
       <div className="text-primary animate-pulse text-lg">جارٍ التحميل...</div>
     </div>
   );
   if (!orderId || !order) return (
-    <div className="h-dvh bg-background flex flex-col items-center justify-center gap-4" dir={dir}>
+    <div className="h-[calc(100dvh-2.75rem)] bg-background flex flex-col items-center justify-center gap-4" dir={dir}>
       <MapPin className="w-14 h-14 text-muted-foreground/30" />
       <p className="text-muted-foreground text-lg">لا توجد طلبية نشطة</p>
       <Button onClick={() => navigate("/delivery")} className="rounded-xl">العودة</Button>
@@ -278,7 +277,7 @@ const DeliveryDriverTracking = () => {
     : order.delivery_address || "الزبون";
 
   return (
-    <div className="h-dvh flex flex-col bg-background overflow-hidden" dir={dir}>
+    <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background overflow-hidden" dir={dir}>
       {/* ── Fullscreen Map ── */}
       <div className="flex-1 relative min-h-0">
         {/* Glossy black borders */}
@@ -363,74 +362,75 @@ const DeliveryDriverTracking = () => {
           </div>
         </div>
 
-        {/* Expandable details */}
-        <button
-          onClick={() => setPanelOpen(!panelOpen)}
-          className="w-full flex items-center justify-center py-1 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {panelOpen ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
-        </button>
-
-        <AnimatePresence>
-          {panelOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden px-4 pb-2"
-            >
-              <div className="space-y-2">
-                {/* Store + call restaurant */}
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border flex-1 min-w-0">
-                    <Store className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span className="text-sm text-foreground/80 flex-1 truncate">{order.store_name || order.pickup_address || "المطعم"}</span>
-                  </div>
-                  {storePhone && (
-                    <button
-                      onClick={() => window.open(`tel:${storePhone}`)}
-                      className="shrink-0 w-11 h-11 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 flex items-center justify-center transition-colors"
-                      title={`اتصل بالمطعم: ${storePhone}`}
-                    >
-                      <PhoneCall className="w-4.5 h-4.5 text-emerald-400" />
-                    </button>
-                  )}
+        {/* ── Always-visible info table ── */}
+        {!isFinished && (
+          <div className="px-4 pb-2 space-y-2">
+            {/* Stats row: distance + ETA */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/30 border border-border">
+                <MapPin className="w-4 h-4 text-primary shrink-0" />
+                <div>
+                  <p className="text-[10px] text-muted-foreground">المسافة</p>
+                  <p className="text-foreground font-bold text-sm">{distanceToTarget?.toFixed(1) || "—"} كم</p>
                 </div>
-                {/* Delivery address */}
-                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border">
-                  <MapPin className="w-4 h-4 text-primary shrink-0" />
-                  <span className="text-sm text-foreground/80 flex-1 truncate">{order.delivery_address || "عنوان الزبون"}</span>
-                </div>
-                {/* Order code */}
-                {order.order_code && (
-                  <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border">
-                    <Package className="w-4 h-4 text-amber-400 shrink-0" />
-                    <span className="text-sm font-mono text-foreground/80">{order.order_code}</span>
-                  </div>
-                )}
-                {/* Call restaurant button (prominent) */}
-                {storePhone && (
-                  <Button
-                    variant="outline"
-                    className="w-full h-11 rounded-xl gap-2 border-emerald-500/30 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                    onClick={() => window.open(`tel:${storePhone}`)}
-                  >
-                    <PhoneCall className="w-4 h-4" /> اتصال بالمطعم لتأكيد الطلبية
-                  </Button>
-                )}
-                {/* In-app call to customer */}
-                <Button
-                  variant="outline"
-                  className="w-full h-11 rounded-xl gap-2 border-blue-500/30 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
-                  onClick={() => inAppCall.startCall({ id: order.user_id, name: customerRefCode || "الزبون" })}
-                  disabled={inAppCall.busy}
-                >
-                  <PhoneCall className="w-4 h-4" /> اتصال بالزبون
-                </Button>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/30 border border-border">
+                <Clock className="w-4 h-4 text-blue-500 shrink-0" />
+                <div>
+                  <p className="text-[10px] text-muted-foreground">الوقت المتوقع</p>
+                  <p className="text-foreground font-bold text-sm">{etaMinutes || "—"} دقيقة</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Store + phone */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border flex-1 min-w-0">
+                <Store className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] text-muted-foreground">المطعم</p>
+                  <p className="text-foreground font-bold text-sm truncate">{order.store_name || "—"}</p>
+                </div>
+              </div>
+              {storePhone && (
+                <button
+                  onClick={() => window.open(`tel:${storePhone}`)}
+                  className="shrink-0 w-12 h-12 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 flex items-center justify-center transition-colors"
+                  title={`اتصل بالمطعم: ${storePhone}`}
+                >
+                  <PhoneCall className="w-5 h-5 text-emerald-400" />
+                </button>
+              )}
+            </div>
+
+            {/* Customer reference + call */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border flex-1 min-w-0">
+                <Package className="w-4 h-4 text-amber-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] text-muted-foreground">رمز الزبون</p>
+                  <p className="text-foreground font-mono font-bold text-sm truncate">{customerRefCode || "—"}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => inAppCall.startCall({ id: order.user_id, name: customerRefCode || "الزبون" })}
+                disabled={inAppCall.busy}
+                className="shrink-0 w-12 h-12 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 flex items-center justify-center transition-colors"
+                title="اتصال بالزبون"
+              >
+                <PhoneCall className="w-5 h-5 text-blue-400" />
+              </button>
+            </div>
+
+            {/* Order code */}
+            {order.order_code && (
+              <div className="flex items-center gap-3 p-2 rounded-xl bg-muted/30 border border-border">
+                <Package className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                <span className="text-xs font-mono text-foreground/70">طلبية: {order.order_code}</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Main action button */}
         {!isFinished && nextAction && (

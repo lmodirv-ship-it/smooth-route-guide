@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { Phone, Navigation, CheckCircle, XCircle, MapPin, Clock, Car, Send, ChevronUp, ChevronDown, PhoneCall } from "lucide-react";
+import { motion } from "framer-motion";
+import { Phone, Navigation, CheckCircle, XCircle, MapPin, Clock, Car, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
@@ -59,7 +59,6 @@ const DriverTracking = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const [panelOpen, setPanelOpen] = useState(false);
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
   const pricing = usePricingSettings();
   const { dir } = useI18n();
@@ -358,45 +357,62 @@ const DriverTracking = () => {
           </div>
         </div>
 
-        {/* Expandable details */}
-        <button
-          onClick={() => setPanelOpen(!panelOpen)}
-          className="w-full flex items-center justify-center py-1 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {panelOpen ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
-        </button>
-
-        <AnimatePresence>
-          {panelOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden px-4 pb-2"
-            >
-              <div className="space-y-2">
-                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border">
-                  <Car className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span className="text-sm text-foreground/80 flex-1 truncate">{ride.pickup || "نقطة الانطلاق"}</span>
+        {/* ── Always-visible info table ── */}
+        {!isFinished && (
+          <div className="px-4 pb-2 space-y-2">
+            {/* Stats row: distance + ETA */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/30 border border-border">
+                <MapPin className="w-4 h-4 text-primary shrink-0" />
+                <div>
+                  <p className="text-[10px] text-muted-foreground">المسافة</p>
+                  <p className="text-foreground font-bold text-sm">{distanceToTarget?.toFixed(1) || "—"} كم</p>
                 </div>
-                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border">
-                  <MapPin className="w-4 h-4 text-primary shrink-0" />
-                  <span className="text-sm text-foreground/80 flex-1 truncate">{ride.destination || "الوجهة"}</span>
-                </div>
-                {ride.user_id && (
-                  <Button
-                    variant="outline"
-                    className="w-full h-11 rounded-xl gap-2 border-border"
-                    onClick={() => inAppCall.startCall({ id: ride.user_id, name: clientRefCode || "الزبون" })}
-                    disabled={inAppCall.busy}
-                  >
-                    <PhoneCall className="w-4 h-4 text-blue-500" /> اتصال بالزبون (داخلي)
-                  </Button>
-                )}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-muted/30 border border-border">
+                <Clock className="w-4 h-4 text-blue-500 shrink-0" />
+                <div>
+                  <p className="text-[10px] text-muted-foreground">الوقت المتوقع</p>
+                  <p className="text-foreground font-bold text-sm">{etaMinutes || "—"} دقيقة</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Client reference + call */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border flex-1 min-w-0">
+                <Car className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] text-muted-foreground">رمز الزبون</p>
+                  <p className="text-foreground font-mono font-bold text-sm truncate">{clientRefCode || "—"}</p>
+                </div>
+              </div>
+              {ride.user_id && (
+                <button
+                  onClick={() => inAppCall.startCall({ id: ride.user_id, name: clientRefCode || "الزبون" })}
+                  disabled={inAppCall.busy}
+                  className="shrink-0 w-12 h-12 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 flex items-center justify-center transition-colors"
+                  title="اتصال بالزبون"
+                >
+                  <PhoneCall className="w-5 h-5 text-blue-400" />
+                </button>
+              )}
+            </div>
+
+            {/* Route: pickup → destination */}
+            <div className="flex items-center gap-2 text-xs">
+              <div className="flex-1 flex items-center gap-2 p-2 rounded-lg bg-emerald-500/8 border border-emerald-500/10">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                <span className="text-foreground/70 truncate">{ride.pickup || "نقطة الانطلاق"}</span>
+              </div>
+              <Navigation className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              <div className="flex-1 flex items-center gap-2 p-2 rounded-lg bg-destructive/8 border border-destructive/10">
+                <div className="w-2 h-2 rounded-full bg-destructive shrink-0" />
+                <span className="text-foreground/70 truncate">{ride.destination || "الوجهة"}</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Main action button */}
         {!isFinished && nextAction && (
@@ -408,18 +424,6 @@ const DriverTracking = () => {
             >
               {updating ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : nextAction.label}
             </Button>
-
-            {/* In-app call button */}
-            {ride.user_id && (
-              <Button
-                variant="outline"
-                className="w-full h-11 rounded-xl gap-2 border-blue-500/30 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
-                onClick={() => inAppCall.startCall({ id: ride.user_id, name: clientRefCode || "الزبون" })}
-                disabled={inAppCall.busy}
-              >
-                <PhoneCall className="w-4 h-4" /> اتصال بالزبون
-              </Button>
-            )}
 
             {/* Cancel button */}
             <Button
