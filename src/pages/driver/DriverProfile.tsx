@@ -241,7 +241,7 @@ const DriverProfile = () => {
         </Button>
       </div>
 
-      <BottomNav role="driver" />
+      
     </div>
   );
 };

@@ -70,6 +70,8 @@ const MainLayoutInner = () => {
           )}
           {isVisible("floating_chat_btn") && <FloatingChatButton />}
           {isVisible("voice_order_btn") && <VoiceOrderButton />}
+          <div className="w-px h-5 bg-border/40" />
+          <TopNavLinks />
         </div>
 
         {/* Separator */}

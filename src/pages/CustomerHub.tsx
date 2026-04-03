@@ -114,7 +114,7 @@ const CustomerHub = () => {
         </div>
       </div>
 
-      <BottomNav role="client" />
+      
     </div>
   );
 };

@@ -120,7 +120,7 @@ const DriverSettings = () => {
         </button>
       </div>
 
-      <BottomNav role="driver" />
+      
     </div>
   );
 };

@@ -457,7 +457,7 @@ const CustomerPage = () => {
         {showDestPicker && <LocationPicker type="dest" onClose={() => { setShowDestPicker(false); setSearchQuery(""); setActiveCategory("all"); }} />}
       </AnimatePresence>
 
-      <BottomNav role="client" />
+      
     </div>
   );
 };
