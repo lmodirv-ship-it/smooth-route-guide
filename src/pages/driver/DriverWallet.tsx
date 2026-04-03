@@ -101,7 +101,7 @@ const DriverWallet = () => {
             </div>
             <Input placeholder="مبلغ آخر" type="number" value={depositAmount || ""} onChange={e => setDepositAmount(Number(e.target.value))}
               className="bg-secondary border-border rounded-xl mb-3" />
-            <p className="text-xs text-muted-foreground mb-3 text-right">💳 طرق الدفع: 💵 نقد | 👛 محفظة | 💎 PayPal</p>
+            <p className="text-xs text-muted-foreground mb-3 text-right">💳 طرق الدفع: 💵 نقد | 👛 محفظة | 💎 PayPal | 🏦 تحويل بنكي | 📍 تحويل وكالة</p>
             <Button className="w-full gradient-primary text-primary-foreground rounded-xl" onClick={async () => {
               if (!depositAmount || depositAmount <= 0) { toast.error("اختر مبلغاً"); return; }
               const { data: { user } } = await supabase.auth.getUser();
