@@ -330,12 +330,12 @@ const DriverPage = () => {
               <Table className="min-w-[480px]">
                  <TableHeader>
                   <TableRow>
-                     <TableHead className="text-right text-xs font-bold">Reference</TableHead>
-                     <TableHead className="text-right text-xs font-bold">⭐</TableHead>
-                     <TableHead className="text-right text-xs font-bold">المسافة</TableHead>
-                     <TableHead className="text-right text-xs font-bold">الوقت</TableHead>
+                     <TableHead className="text-center text-xs font-bold sticky right-0 bg-card z-10">قبول</TableHead>
                      <TableHead className="text-right text-xs font-bold">الثمن</TableHead>
-                     <TableHead className="text-center text-xs font-bold">قبول</TableHead>
+                     <TableHead className="text-right text-xs font-bold">الوقت</TableHead>
+                     <TableHead className="text-right text-xs font-bold">المسافة</TableHead>
+                     <TableHead className="text-right text-xs font-bold">⭐</TableHead>
+                     <TableHead className="text-right text-xs font-bold">Reference</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -347,22 +347,7 @@ const DriverPage = () => {
                         className={`cursor-pointer transition-colors ${isSelected ? "bg-muted/50" : ""}`}
                         onClick={() => setSelectedOrderId(order.id === selectedOrderId ? null : order.id)}
                       >
-                        <TableCell className="font-mono text-xs font-semibold text-primary">
-                          {order.passenger_reference || "—"}
-                        </TableCell>
-                         <TableCell className="text-right text-xs text-amber-400">
-                           {order.passenger_rating ? `${"★".repeat(Math.min(Math.round(order.passenger_rating), 5))}` : "—"}
-                         </TableCell>
-                         <TableCell className="text-right text-xs text-muted-foreground">
-                           {order.totalDistance ? `${order.totalDistance} كم` : "—"}
-                         </TableCell>
-                         <TableCell className="text-right text-xs text-muted-foreground">
-                           {order.eta ? `${order.eta} د` : "—"}
-                         </TableCell>
-                         <TableCell className="text-right text-sm font-bold text-foreground">
-                          {order.totalPrice} DH
-                        </TableCell>
-                        <TableCell className="text-center">
+                        <TableCell className="text-center sticky right-0 bg-card z-10">
                           <Button
                             size="sm"
                             className="h-8 min-w-20"
@@ -374,6 +359,21 @@ const DriverPage = () => {
                           >
                             {accepting === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "قبول"}
                           </Button>
+                        </TableCell>
+                         <TableCell className="text-right text-sm font-bold text-foreground">
+                          {order.totalPrice} DH
+                        </TableCell>
+                         <TableCell className="text-right text-xs text-muted-foreground">
+                           {order.eta ? `${order.eta} د` : "—"}
+                         </TableCell>
+                         <TableCell className="text-right text-xs text-muted-foreground">
+                           {order.totalDistance ? `${order.totalDistance} كم` : "—"}
+                         </TableCell>
+                         <TableCell className="text-right text-xs text-amber-400">
+                           {order.passenger_rating ? `${"★".repeat(Math.min(Math.round(order.passenger_rating), 5))}` : "—"}
+                         </TableCell>
+                        <TableCell className="font-mono text-xs font-semibold text-primary">
+                          {order.passenger_reference || "—"}
                         </TableCell>
                       </TableRow>
                     );
