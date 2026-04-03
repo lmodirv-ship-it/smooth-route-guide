@@ -18,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import CinematicParticles from "@/components/CinematicParticles";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
 import AdsSection from "@/components/AdsSection";
+import SignupPopup from "@/components/SignupPopup";
+import SignupBanner from "@/components/SignupBanner";
 // VisitorCounter already imported above
 import logo from "@/assets/hn-driver-badge.png";
 import iconVtcCar from "@/assets/icon-vtc-car.png";
