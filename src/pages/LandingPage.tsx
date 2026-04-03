@@ -429,27 +429,37 @@ export default function LandingPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.2, duration: 0.5 }}
-                  className="mt-6 flex flex-col sm:flex-row gap-3 justify-center"
+                  className="mt-6 flex flex-col items-center gap-3"
                 >
-                  <Button
-                    size="lg"
-                    onClick={() => navigate("/welcome")}
-                    className="min-w-[13rem] px-8"
+                  {/* Incentive badge */}
+                  <motion.div
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[hsl(var(--warning))]/10 border border-[hsl(var(--warning))]/30 text-sm font-bold text-[hsl(var(--warning))]"
                   >
-                    <span className="relative z-10 flex items-center gap-2">
-                      {lt.heroCta}
-                      <ArrowRight className={`w-4 h-4 group-hover:translate-x-1 transition-transform ${dir === "rtl" ? "rotate-180 group-hover:-translate-x-1" : ""}`} />
-                    </span>
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={() => navigate("/login")}
-                    className="min-w-[13rem] px-8 group"
-                  >
-                    <PlayCircle className={`w-4 h-4 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
-                    {t.common.login}
-                  </Button>
+                    🎁 {dir === "rtl" ? "سجّل واحصل على 50 درهم مجاناً!" : "Sign up & get 50 MAD free!"}
+                  </motion.div>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button
+                      size="lg"
+                      onClick={() => navigate("/auth/client")}
+                      className="min-w-[13rem] px-8"
+                    >
+                      <span className="relative z-10 flex items-center gap-2">
+                        <UserPlus className={`w-4 h-4 ${dir === "rtl" ? "ml-1" : "mr-1"}`} />
+                        {dir === "rtl" ? "إنشاء حساب مجاني" : "Create Free Account"}
+                      </span>
+                    </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={() => navigate("/login")}
+                      className="min-w-[13rem] px-8 group"
+                    >
+                      <PlayCircle className={`w-4 h-4 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
+                      {t.common.login}
+                    </Button>
+                  </div>
                 </motion.div>
               </div>
             </div>
