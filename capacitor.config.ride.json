@@ -8,7 +8,7 @@
   "appName": "HN Driver - سائق",
   "webDir": "dist-driver-ride",
   "server": {
-    "url": "https://driver.hn-driver.com",
+    "url": "https://ride.hn-driver.com",
     "cleartext": true
   },
   "plugins": {
