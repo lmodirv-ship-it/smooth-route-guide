@@ -490,10 +490,10 @@ export default function LandingPage() {
                 whileTap={{ scale: 0.97 }}
                 className="group relative rounded-2xl cursor-pointer overflow-hidden signage-3d-box"
               >
-                <div className="relative z-10 p-5 flex flex-col items-center gap-3 text-center">
-                  <img src={cat.img} alt={cat.label} className="w-24 h-24 object-contain drop-shadow-[0_0_14px_hsl(205,80%,55%,0.4)] group-hover:scale-110 transition-transform duration-500" width={512} height={512} loading="lazy" />
-                  <h3 className={`font-bold text-foreground group-hover:text-[hsl(var(--info))] transition-colors tracking-wide ${(cat as any).big ? "text-lg md:text-2xl" : "text-base md:text-lg"}`}>{cat.label}</h3>
-                  <p className={`text-muted-foreground leading-snug ${(cat as any).big ? "text-base md:text-lg font-semibold" : "text-sm md:text-base"}`}>{cat.desc}</p>
+                <div className="relative z-10 p-3 flex flex-col items-center gap-1.5 text-center">
+                  <img src={cat.img} alt={cat.label} className="w-16 h-16 object-contain drop-shadow-[0_0_14px_hsl(205,80%,55%,0.4)] group-hover:scale-110 transition-transform duration-500" width={512} height={512} loading="lazy" />
+                  <h3 className={`font-bold text-foreground group-hover:text-[hsl(var(--info))] transition-colors tracking-wide ${(cat as any).big ? "text-base md:text-lg" : "text-sm md:text-base"}`}>{cat.label}</h3>
+                  <p className="text-sm leading-snug font-semibold" style={{ color: "hsl(40, 90%, 55%)" }}>{cat.desc}</p>
                 </div>
               </motion.div>
             ))}
