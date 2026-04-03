@@ -254,6 +254,15 @@ const AuthPage = () => {
                   <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 </div>
               </div>
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground text-right block">رمز الإحالة (اختياري)</label>
+                <div className="relative">
+                  <Input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="REF######"
+                    className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right font-mono tracking-wider" />
+                  <Gift className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+                </div>
+                <p className="text-xs text-muted-foreground text-right">إذا دعاك صديق، أدخل رمزه للحصول على مكافأة 🎁</p>
+              </div>
             </>
           )}
 
