@@ -426,18 +426,6 @@ const DriverTracking = () => {
               {updating ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : nextAction.label}
             </Button>
 
-            {/* In-app call button */}
-            {ride.user_id && (
-              <Button
-                variant="outline"
-                className="w-full h-11 rounded-xl gap-2 border-blue-500/30 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
-                onClick={() => inAppCall.startCall({ id: ride.user_id, name: clientRefCode || "الزبون" })}
-                disabled={inAppCall.busy}
-              >
-                <PhoneCall className="w-4 h-4" /> اتصال بالزبون
-              </Button>
-            )}
-
             {/* Cancel button */}
             <Button
               onClick={() => setCancelDialogOpen(true)}
