@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   User, Star, Phone, Mail, MapPin, Car, Shield, Edit2, Camera,
   ChevronLeft, ArrowRight, LogOut, Loader2, TrendingUp, Wallet,
-  Percent, Clock, Route, FileText, Package,
+  Percent, Clock, Route, FileText, Package, CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
