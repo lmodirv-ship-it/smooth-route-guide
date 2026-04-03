@@ -4,11 +4,8 @@ import { Camera, CameraOff, Eye } from "lucide-react";
 import * as faceapi from "face-api.js";
 
 /**
- * Face-based presence tracking for call center agents.
- * Opens camera, detects face presence every 3 seconds.
- * When face is detected → agent is "present" (working).
- * When face disappears → agent is "away" (break).
- * Logs intervals to agent_presence_log.
+ * Compact face-based presence tracker for header bar.
+ * Shows a small camera toggle + work timer inline.
  */
 const AgentFacePresence = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -16,9 +13,11 @@ const AgentFacePresence = () => {
   const [faceDetected, setFaceDetected] = useState(false);
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [totalSeconds, setTotalSeconds] = useState(0);
+  const [showVideo, setShowVideo] = useState(false);
   const presenceIdRef = useRef<string | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   // Load face-api models
   useEffect(() => {
@@ -53,6 +52,7 @@ const AgentFacePresence = () => {
   const startCamera = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 160, height: 120, facingMode: "user" } });
+      streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
@@ -62,6 +62,25 @@ const AgentFacePresence = () => {
       console.error("Camera access denied");
     }
   }, []);
+
+  const stopCamera = useCallback(() => {
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
+    setCameraActive(false);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    endPresenceInterval();
+    setFaceDetected(false);
+  }, [endPresenceInterval]);
+
+  const toggleCamera = useCallback(() => {
+    if (cameraActive) {
+      stopCamera();
+      setShowVideo(false);
+    } else {
+      setShowVideo(true);
+      if (modelsLoaded) startCamera();
+    }
+  }, [cameraActive, modelsLoaded, startCamera, stopCamera]);
 
   // Face detection loop
   useEffect(() => {
@@ -73,13 +92,8 @@ const AgentFacePresence = () => {
       const detected = !!result;
       
       setFaceDetected(prev => {
-        if (detected && !prev) {
-          // Face appeared → start presence
-          startPresenceInterval();
-        } else if (!detected && prev) {
-          // Face disappeared → end presence
-          endPresenceInterval();
-        }
+        if (detected && !prev) startPresenceInterval();
+        else if (!detected && prev) endPresenceInterval();
         return detected;
       });
     };
@@ -98,41 +112,52 @@ const AgentFacePresence = () => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [faceDetected]);
 
-  // Auto-start camera
+  // Cleanup on unmount
   useEffect(() => {
-    if (modelsLoaded) startCamera();
     return () => {
       endPresenceInterval();
-      if (videoRef.current?.srcObject) {
-        (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
-      }
+      streamRef.current?.getTracks().forEach(t => t.stop());
     };
-  }, [modelsLoaded]);
+  }, []);
 
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
   const s = totalSeconds % 60;
 
   return (
-    <div className="fixed bottom-3 left-3 z-40 w-44 rounded-xl border border-border bg-card/90 backdrop-blur-md shadow-lg overflow-hidden">
-      {/* Mini camera feed */}
-      <div className="relative w-full h-24 bg-black">
-        <video ref={videoRef} className="w-full h-full object-cover transform scale-x-[-1]" muted playsInline />
-        {/* Status indicator */}
-        <div className={`absolute top-1.5 right-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium ${
-          faceDetected ? "bg-emerald-500/90 text-white" : "bg-red-500/90 text-white"
-        }`}>
-          {faceDetected ? <Eye className="w-2.5 h-2.5" /> : <CameraOff className="w-2.5 h-2.5" />}
-          {faceDetected ? "حاضر" : "غائب"}
+    <div className="flex items-center gap-1.5 relative">
+      {/* Camera toggle button */}
+      <button
+        onClick={toggleCamera}
+        className={`p-1.5 rounded-lg transition-colors ${cameraActive ? "bg-emerald-500/20 text-emerald-500" : "hover:bg-secondary text-muted-foreground"}`}
+        title={cameraActive ? "إيقاف الكاميرا" : "تشغيل الكاميرا"}
+      >
+        {cameraActive ? <Camera className="w-4 h-4" /> : <CameraOff className="w-4 h-4" />}
+      </button>
+
+      {/* Status dot + timer */}
+      {cameraActive && (
+        <div className="flex items-center gap-1 bg-secondary/60 px-2 py-1 rounded-full">
+          <div className={`w-1.5 h-1.5 rounded-full ${faceDetected ? "bg-emerald-400 animate-pulse" : "bg-red-400"}`} />
+          <span className="text-[10px] font-mono font-bold text-foreground">
+            {String(h).padStart(2, "0")}:{String(m).padStart(2, "0")}:{String(s).padStart(2, "0")}
+          </span>
+          <span className="text-[9px] text-muted-foreground">
+            {faceDetected ? "حاضر" : "غائب"}
+          </span>
         </div>
-      </div>
-      {/* Timer */}
-      <div className="p-2 text-center">
-        <p className="text-xs text-muted-foreground mb-0.5">وقت العمل</p>
-        <p className="text-lg font-mono font-bold text-foreground">
-          {String(h).padStart(2, "0")}:{String(m).padStart(2, "0")}:{String(s).padStart(2, "0")}
-        </p>
-      </div>
+      )}
+
+      {/* Hidden video for face detection */}
+      {showVideo && (
+        <video
+          ref={videoRef}
+          className="absolute top-full right-0 mt-1 w-32 h-24 rounded-lg border border-border shadow-lg object-cover z-50"
+          muted
+          playsInline
+          style={{ transform: "scaleX(-1)" }}
+        />
+      )}
     </div>
   );
 };
