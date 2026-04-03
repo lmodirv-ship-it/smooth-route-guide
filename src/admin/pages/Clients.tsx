@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import ClientDetailSheet from "@/admin/components/ClientDetailSheet";
+import BalanceBars from "@/admin/components/BalanceBars";
 
 interface Client {
   id: string; name: string; email: string | null; phone: string | null;
@@ -134,9 +135,7 @@ const AdminClients = () => {
                 </td>
                 {/* التعبئة / الرصيد */}
                 <td className="p-4">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs font-bold ${getBalanceBg(client.walletBalance || 0)} ${getBalanceColor(client.walletBalance || 0)}`}>
-                    {client.walletBalance} DH
-                  </span>
+                  <BalanceBars balance={client.walletBalance || 0} />
                 </td>
                 <td className="p-4 text-foreground">{client.tripCount}</td>
                 <td className="p-4">
