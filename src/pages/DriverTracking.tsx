@@ -283,9 +283,13 @@ const DriverTracking = () => {
     : null;
 
   return (
-    <div className="h-dvh flex flex-col bg-background overflow-hidden" dir={dir}>
+    <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background overflow-hidden" dir={dir}>
       {/* ── Fullscreen Map ── */}
       <div className="flex-1 relative min-h-0">
+        {/* Glossy black borders */}
+        <div className="absolute top-0 bottom-0 left-0 w-1 z-[1002] bg-gradient-to-b from-zinc-700 via-zinc-900 to-zinc-700 shadow-[0_0_6px_rgba(0,0,0,0.8)]" />
+        <div className="absolute top-0 bottom-0 right-0 w-1 z-[1002] bg-gradient-to-b from-zinc-700 via-zinc-900 to-zinc-700 shadow-[0_0_6px_rgba(0,0,0,0.8)]" />
+
         <LeafletMap
           center={mapCenter}
           zoom={16}
