@@ -448,7 +448,7 @@ const AdminLayout = () => {
         </motion.button>
       )}
     </div>
-    <FloatingChatButton />
+    
     <GlobalContactFooter />
     </AdminGeoProvider>
   );
