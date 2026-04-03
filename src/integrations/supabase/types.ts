@@ -3548,6 +3548,60 @@ export type Database = {
           },
         ]
       }
+      twilio_communications: {
+        Row: {
+          body: string | null
+          comm_type: string
+          cost: number | null
+          created_at: string
+          direction: string
+          duration_seconds: number | null
+          error_message: string | null
+          from_number: string
+          id: string
+          metadata: Json | null
+          status: string
+          to_number: string
+          twilio_sid: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          body?: string | null
+          comm_type: string
+          cost?: number | null
+          created_at?: string
+          direction?: string
+          duration_seconds?: number | null
+          error_message?: string | null
+          from_number: string
+          id?: string
+          metadata?: Json | null
+          status?: string
+          to_number: string
+          twilio_sid?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          body?: string | null
+          comm_type?: string
+          cost?: number | null
+          created_at?: string
+          direction?: string
+          duration_seconds?: number | null
+          error_message?: string | null
+          from_number?: string
+          id?: string
+          metadata?: Json | null
+          status?: string
+          to_number?: string
+          twilio_sid?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_permission_roles: {
         Row: {
           assigned_by: string | null
