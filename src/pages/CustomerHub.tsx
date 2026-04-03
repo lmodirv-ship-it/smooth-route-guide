@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Car, ShoppingBag, Sparkles, UtensilsCrossed, Package } from "lucide-react";
-import BottomNav from "@/components/BottomNav";
+
 import { useI18n } from "@/i18n/context";
 import SubscriptionIndicator from "@/components/SubscriptionIndicator";
 
@@ -114,7 +114,7 @@ const CustomerHub = () => {
         </div>
       </div>
 
-      <BottomNav role="client" />
+      
     </div>
   );
 };

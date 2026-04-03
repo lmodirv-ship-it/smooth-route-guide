@@ -8,6 +8,7 @@ import GlobalNotificationListener from "@/components/GlobalNotificationListener"
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import VoiceOrderButton from "@/components/VoiceOrderButton";
+import TopNavLinks from "@/components/TopNavLinks";
 
 import GlobalContactFooter from "@/components/GlobalContactFooter";
 import { useVisibility } from "@/hooks/useVisibility";
@@ -69,6 +70,8 @@ const MainLayoutInner = () => {
           )}
           {isVisible("floating_chat_btn") && <FloatingChatButton />}
           {isVisible("voice_order_btn") && <VoiceOrderButton />}
+          <div className="w-px h-5 bg-border/40" />
+          <TopNavLinks />
         </div>
 
         {/* Separator */}

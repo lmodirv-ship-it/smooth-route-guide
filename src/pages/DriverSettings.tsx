@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { useLogout } from "@/hooks/useLogout";
 import { useI18n } from "@/i18n/context";
-import BottomNav from "@/components/BottomNav";
+
 
 const DriverSettings = () => {
   const navigate = useNavigate();
@@ -120,7 +120,7 @@ const DriverSettings = () => {
         </button>
       </div>
 
-      <BottomNav role="driver" />
+      
     </div>
   );
 };
