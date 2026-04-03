@@ -63,7 +63,6 @@ const DeliveryDriverTracking = () => {
   const [storePhone, setStorePhone] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [panelOpen, setPanelOpen] = useState(false);
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
   const [showRating, setShowRating] = useState(false);
   const [driverId, setDriverId] = useState<string | null>(null);

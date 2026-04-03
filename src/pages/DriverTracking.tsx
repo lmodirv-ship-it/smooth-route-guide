@@ -59,7 +59,6 @@ const DriverTracking = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const [panelOpen, setPanelOpen] = useState(false);
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
   const pricing = usePricingSettings();
   const { dir } = useI18n();
