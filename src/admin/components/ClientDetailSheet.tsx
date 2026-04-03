@@ -300,7 +300,7 @@ export default function ClientDetailSheet({ clientId, open, onOpenChange, onClie
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </Button>
                   </div>
-                  <Button onClick={handleChangePassword} disabled={savingPassword || newPassword.length < 6} className="w-full gap-2" size="sm">
+                  <Button onClick={handleChangePassword} disabled={savingPassword || !newPassword} className="w-full gap-2" size="sm">
                     {savingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />} تأكيد تغيير كلمة المرور
                   </Button>
                 </div>
