@@ -8,7 +8,7 @@ import GlobalNotificationListener from "@/components/GlobalNotificationListener"
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import VoiceOrderButton from "@/components/VoiceOrderButton";
-import FloatingCommunityButton from "@/components/FloatingCommunityButton";
+
 import GlobalContactFooter from "@/components/GlobalContactFooter";
 import { useVisibility } from "@/hooks/useVisibility";
 import VisitorCounter from "@/components/VisitorCounter";
