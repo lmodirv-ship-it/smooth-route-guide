@@ -13,7 +13,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLogout } from "@/hooks/useLogout";
 import { driverNetEarnings, COMMISSION_RATE } from "@/lib/pricing";
-import BottomNav from "@/components/BottomNav";
+
 
 const DriverProfile = () => {
   const navigate = useNavigate();
