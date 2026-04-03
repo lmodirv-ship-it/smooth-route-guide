@@ -13,7 +13,7 @@ import VisitorCounter from "@/components/VisitorCounter";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import FloatingChatButton from "@/components/FloatingChatButton";
-import FloatingCommunityButton from "@/components/FloatingCommunityButton";
+
 import logo from "@/assets/hn-driver-badge.png";
 import SidebarNavButton from "@/admin/components/SidebarNavButton";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
@@ -198,12 +198,13 @@ const CallCenterLayout = () => {
             <GlobalLogoutButton />
             <VisitorCounter />
             <LanguageSwitcher />
+            <FloatingChatButton />
             <button
               onClick={() => navigate("/call-center/community")}
-              className="p-2 hover:bg-secondary rounded-lg transition-colors"
+              className="p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-emerald-500 hover:text-white transition-all"
               title="مجتمع HN"
             >
-              <Users className="w-5 h-5 text-primary" />
+              <Users className="w-3.5 h-3.5" />
             </button>
             <div className="hidden md:flex items-center gap-1.5 bg-success/10 text-success px-3 py-1 rounded-full text-xs">
               <div className={`w-1.5 h-1.5 rounded-full ${agentStatusColor}`} />
@@ -241,7 +242,6 @@ const CallCenterLayout = () => {
     />
 
     <AgentFacePresence />
-    <FloatingChatButton />
     
     <GlobalContactFooter />
     </>

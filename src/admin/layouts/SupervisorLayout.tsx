@@ -12,7 +12,7 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import VisitorCounter from "@/components/VisitorCounter";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import FloatingChatButton from "@/components/FloatingChatButton";
-import FloatingCommunityButton from "@/components/FloatingCommunityButton";
+
 import { useI18n } from "@/i18n/context";
 import SidebarNavButton from "@/admin/components/SidebarNavButton";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
@@ -136,6 +136,14 @@ const SupervisorLayout = () => {
             <GlobalLogoutButton />
             <VisitorCounter />
             <LanguageSwitcher />
+            <FloatingChatButton />
+            <button
+              onClick={() => navigate("/community")}
+              className="p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-emerald-500 hover:text-white transition-all"
+              title="مجتمع HN"
+            >
+              <Users className="w-3.5 h-3.5" />
+            </button>
             <button className="p-2 relative hover:bg-secondary rounded-lg transition-colors">
               <Bell className="w-5 h-5 text-muted-foreground" />
             </button>
@@ -150,8 +158,7 @@ const SupervisorLayout = () => {
         </div>
       </div>
     </div>
-    <FloatingChatButton />
-    <FloatingCommunityButton communityPath="/community" />
+    
     <GlobalContactFooter />
     </>
   );

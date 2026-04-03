@@ -32,7 +32,7 @@ import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import RequireRole from "@/components/RequireRole";
-import FloatingCommunityButton from "@/components/FloatingCommunityButton";
+import { Users } from "lucide-react";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import ThemeLoader from "@/components/ThemeLoader";
 
@@ -53,13 +53,19 @@ const DeliveryDriverLayout = () => {
           <div className="text-xs text-muted-foreground bg-emerald-500/10 px-2 py-0.5 rounded-full">سائق توصيل</div>
         </div>
         <div className="flex items-center gap-2">
+          <FloatingChatButton />
+          <button
+            onClick={() => window.location.href = "/community"}
+            className="p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-emerald-500 hover:text-white transition-all"
+            title="مجتمع HN"
+          >
+            <Users className="w-3.5 h-3.5" />
+          </button>
           <LanguageSwitcher />
           <GlobalLogoutButton />
         </div>
       </div>
       <div className="h-12" />
-      <FloatingChatButton />
-      <FloatingCommunityButton />
     </>
   );
 };

@@ -356,6 +356,14 @@ const AdminLayout = () => {
             <GlobalLogoutButton />
             <VisitorCounter />
             <LanguageSwitcher />
+            <FloatingChatButton />
+            <button
+              onClick={() => navigate("/admin/community")}
+              className="p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-emerald-500 hover:text-white transition-all"
+              title="مجتمع HN"
+            >
+              <Users className="w-3.5 h-3.5" />
+            </button>
             <button
               onClick={() => setCameraEnabled(prev => !prev)}
               className={`p-2 rounded-lg transition-colors ${cameraEnabled ? "hover:bg-secondary text-success" : "hover:bg-secondary text-muted-foreground"}`}
@@ -440,7 +448,7 @@ const AdminLayout = () => {
         </motion.button>
       )}
     </div>
-    <FloatingChatButton />
+    
     <GlobalContactFooter />
     </AdminGeoProvider>
   );
