@@ -261,76 +261,22 @@ const CustomerTracking = () => {
 
         {/* Active with driver */}
         {isActive && ride.status !== "pending" && (
-          <div className="p-4 space-y-3">
-            {/* Driver card */}
-            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
-              <div className="flex items-center gap-2">
-                {ride.driver_id && (
-                  <button
-                    onClick={async () => {
-                      const { data: driver } = await supabase.from("drivers").select("user_id").eq("id", ride.driver_id!).single();
-                      if (driver) inAppCall.startCall({ id: driver.user_id, name: driverRefCode || "السائق" });
-                    }}
-                    disabled={inAppCall.busy}
-                    className="w-10 h-10 rounded-full bg-blue-500/15 flex items-center justify-center border border-blue-500/25"
-                  >
-                    <PhoneCall className="w-5 h-5 text-blue-400" />
-                  </button>
-                )}
-              </div>
-              <div className="text-right">
-                <p className="text-foreground font-bold flex items-center gap-2 justify-end">
-                  <User className="w-4 h-4 text-primary" />
-                  {driverRefCode && (
-                    <span className="font-mono text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded-md border border-primary/30">
-                      {driverRefCode}
-                    </span>
-                  )}
-                  {driverRating != null && driverRating > 0 && (
-                    <span className="flex items-center gap-0.5 text-amber-400 text-xs">
-                      <Star className="w-3 h-3 fill-amber-400" />
-                      {driverRating.toFixed(1)}
-                    </span>
-                  )}
-                </p>
-                {vehicleInfo && <p className="text-muted-foreground text-[11px]">{vehicleInfo}</p>}
-              </div>
-            </div>
-
-            {/* Route summary */}
-            <div className="flex items-center gap-2 text-xs">
-              <div className="flex-1 flex items-center gap-2 p-2 rounded-lg bg-emerald-500/8 border border-emerald-500/10">
-                <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-                <span className="text-foreground/70 truncate">{ride.pickup || "موقعك"}</span>
-              </div>
-              <RouteIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-              <div className="flex-1 flex items-center gap-2 p-2 rounded-lg bg-destructive/8 border border-destructive/10">
-                <div className="w-2 h-2 rounded-full bg-destructive shrink-0" />
-                <span className="text-foreground/70 truncate">{ride.destination || "الوجهة"}</span>
-              </div>
-            </div>
-
-            {/* Stats row */}
-            <div className="grid grid-cols-3 gap-2">
-              <div className="text-center p-2 rounded-xl bg-muted/20 border border-border">
-                <p className="text-[10px] text-muted-foreground">المسافة</p>
-                <p className="text-primary font-black text-base mt-0.5">{distToTarget?.toFixed(1) || "—"} <span className="text-[9px] font-normal">كم</span></p>
-              </div>
-              <div className="text-center p-2 rounded-xl bg-muted/20 border border-border">
-                <p className="text-[10px] text-muted-foreground">الوقت</p>
-                <p className="text-blue-500 font-black text-base mt-0.5">{etaMinutes || "—"} <span className="text-[9px] font-normal">دقيقة</span></p>
-              </div>
-              <div className="text-center p-2 rounded-xl bg-muted/20 border border-border">
-                <p className="text-[10px] text-muted-foreground">السعر</p>
-                <p className="text-amber-500 font-black text-base mt-0.5">{ride.price || "—"} <span className="text-[9px] font-normal">DH</span></p>
-              </div>
-            </div>
-
-            {/* Cancel button */}
-            <Button onClick={() => setCancelDialogOpen(true)} variant="outline"
-              className="w-full border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded-xl font-bold gap-2">
-              <XCircle className="w-4 h-4" /> إلغاء الرحلة
-            </Button>
+          <div className="p-4">
+            <TrackingInfoTable
+              distanceKm={distToTarget ?? null}
+              etaMinutes={etaMinutes}
+              price={ride.price}
+              pickupLabel={ride.pickup || "موقعك"}
+              destinationLabel={ride.destination || "الوجهة"}
+              referenceCode={driverRefCode}
+              referenceLabel="رمز السائق"
+              onCallClient={ride.driver_id ? async () => {
+                const { data: driver } = await supabase.from("drivers").select("user_id").eq("id", ride.driver_id!).single();
+                if (driver) inAppCall.startCall({ id: driver.user_id, name: driverRefCode || "السائق" });
+              } : undefined}
+              callDisabled={inAppCall.busy}
+              onCancel={() => setCancelDialogOpen(true)}
+            />
           </div>
         )}
 
