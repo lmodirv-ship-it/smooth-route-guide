@@ -27,6 +27,9 @@ Deno.serve(async (req) => {
     const TWILIO_API_KEY = Deno.env.get("TWILIO_API_KEY");
     if (!TWILIO_API_KEY) throw new Error("TWILIO_API_KEY is not configured");
 
+    const TWILIO_PHONE = Deno.env.get("TWILIO_PHONE_NUMBER");
+    if (!TWILIO_PHONE) throw new Error("TWILIO_PHONE_NUMBER is not configured");
+
     // Validate JWT
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return json({ error: "Unauthorized" }, 401);
@@ -40,7 +43,7 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return json({ error: "Unauthorized" }, 401);
 
-    const { to, from, twiml_url } = await req.json();
+    const { to, twiml_url } = await req.json();
 
     if (!to) {
       return json({ error: "الرجاء إدخال رقم الهاتف" }, 400);
@@ -49,13 +52,13 @@ Deno.serve(async (req) => {
     // Validate phone number format (E.164)
     const phoneRegex = /^\+[1-9]\d{6,14}$/;
     if (!phoneRegex.test(to)) {
-      return json({ error: "صيغة رقم الهاتف غير صحيحة" }, 400);
+      return json({ error: "صيغة رقم الهاتف غير صحيحة. يجب أن يبدأ بـ + متبوعاً بكود الدولة" }, 400);
     }
 
     // Initiate call via Twilio gateway
     const params = new URLSearchParams({
       To: to,
-      From: from || Deno.env.get("TWILIO_PHONE_NUMBER") || "+15017122661",
+      From: TWILIO_PHONE,
       Url: twiml_url || "http://demo.twilio.com/docs/voice.xml",
     });
 
@@ -73,7 +76,7 @@ Deno.serve(async (req) => {
 
     if (!response.ok) {
       console.error("Twilio Call error:", JSON.stringify(data));
-      return json({ error: "فشل بدء المكالمة", details: data.message }, 500);
+      return json({ error: "فشل بدء المكالمة", details: data.message || data.detail }, 500);
     }
 
     // Log communication
@@ -81,7 +84,7 @@ Deno.serve(async (req) => {
       user_id: user.id,
       direction: "outbound",
       comm_type: "call",
-      from_number: params.get("From"),
+      from_number: TWILIO_PHONE,
       to_number: to,
       status: data.status || "initiated",
       twilio_sid: data.sid,
