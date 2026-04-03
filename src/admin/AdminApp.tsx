@@ -68,6 +68,7 @@ const AdminApp = () => (
           <Routes>
             {/* Login for standalone admin */}
             <Route path="/login" element={<AdminLogin />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
 
             {/* Setup admin */}
             <Route path="/setup-admin" element={<RequireRole><SetupAdmin /></RequireRole>} />
