@@ -329,10 +329,13 @@ const DeliveryOrdersBoard = ({ title }: { title: string }) => {
 
               {/* Action buttons */}
               <div className="space-y-2 pt-2">
-                {selected.status === "pending_call_center" && (
+                {(selected.status === "pending_call_center" || selected.status === "pending") && (
                   <>
                     <Button onClick={() => handleConfirm(selected.id)} className="w-full gradient-primary text-primary-foreground rounded-xl gap-2">
                       <CheckCircle className="w-4 h-4" />تأكيد الطلب
+                    </Button>
+                    <Button onClick={() => handleSendToDriver(selected.id)} className="w-full bg-info text-info-foreground rounded-xl gap-2">
+                      <Send className="w-4 h-4" />إرسال مباشرة للسائق
                     </Button>
                     <Button onClick={() => setCancelDialogOpen(true)} variant="outline" className="w-full border-destructive text-destructive rounded-xl gap-2">
                       <XCircle className="w-4 h-4" />إلغاء الطلب
