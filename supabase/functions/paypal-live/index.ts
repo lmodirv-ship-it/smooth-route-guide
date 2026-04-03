@@ -177,6 +177,10 @@ serve(async (req) => {
           }],
           application_context: {
             brand_name: "HN Driver",
+            return_url: "https://www.hn-driver.com/customer/payment?status=success",
+            cancel_url: "https://www.hn-driver.com/customer/payment?status=cancel",
+            shipping_preference: "NO_SHIPPING",
+            user_action: "PAY_NOW",
           },
         }),
       });
