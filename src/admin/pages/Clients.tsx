@@ -10,6 +10,7 @@ import ClientDetailSheet from "@/admin/components/ClientDetailSheet";
 interface Client {
   id: string; name: string; email: string | null; phone: string | null;
   created_at: string; tripCount?: number; walletBalance?: number; user_code?: string | null;
+  roles?: string[];
 }
 
 const AdminClients = () => {
@@ -22,14 +23,23 @@ const AdminClients = () => {
     const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
     if (!profiles) return;
     const ids = profiles.map(p => p.id);
-    const { data: trips } = await supabase.from("trips").select("user_id").in("user_id", ids);
+    const [tripsRes, walletsRes, rolesRes] = await Promise.all([
+      supabase.from("trips").select("user_id").in("user_id", ids),
+      supabase.from("wallet").select("user_id, balance").in("user_id", ids),
+      supabase.from("user_roles").select("user_id, role").in("user_id", ids),
+    ]);
     const tripCountMap = new Map<string, number>();
-    trips?.forEach(t => tripCountMap.set(t.user_id, (tripCountMap.get(t.user_id) || 0) + 1));
-    const { data: wallets } = await supabase.from("wallet").select("user_id, balance").in("user_id", ids);
-    const walletMap = new Map(wallets?.map(w => [w.user_id, w.balance]) || []);
+    tripsRes.data?.forEach(t => tripCountMap.set(t.user_id, (tripCountMap.get(t.user_id) || 0) + 1));
+    const walletMap = new Map(walletsRes.data?.map(w => [w.user_id, w.balance]) || []);
+    const rolesMap = new Map<string, string[]>();
+    rolesRes.data?.forEach(r => {
+      if (!rolesMap.has(r.user_id)) rolesMap.set(r.user_id, []);
+      rolesMap.get(r.user_id)!.push(r.role);
+    });
 
     setClients(profiles.map(p => ({
       ...p, tripCount: tripCountMap.get(p.id) || 0, walletBalance: walletMap.get(p.id) || 0,
+      roles: rolesMap.get(p.id) || ["user"],
     })));
   };
 
@@ -66,6 +76,7 @@ const AdminClients = () => {
               <th className="p-4 text-muted-foreground font-medium">إجراءات</th>
               <th className="p-4 text-muted-foreground font-medium">الرصيد</th>
               <th className="p-4 text-muted-foreground font-medium">الرحلات</th>
+              <th className="p-4 text-muted-foreground font-medium">الدور</th>
               <th className="p-4 text-muted-foreground font-medium">الهاتف</th>
               <th className="p-4 text-muted-foreground font-medium">البريد</th>
               <th className="p-4 text-muted-foreground font-medium">الاسم</th>
@@ -73,7 +84,7 @@ const AdminClients = () => {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">لا يوجد عملاء</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">لا يوجد عملاء</td></tr>}
             {filtered.map(client => (
               <motion.tr key={client.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
@@ -84,6 +95,14 @@ const AdminClients = () => {
                 </td>
                 <td className="p-4 text-primary font-semibold">{client.walletBalance} DH</td>
                 <td className="p-4 text-foreground">{client.tripCount}</td>
+                <td className="p-4">
+                  <div className="flex flex-wrap gap-1">
+                    {(client.roles || []).map(r => {
+                      const roleLabels: Record<string, string> = { user: "عميل", admin: "مسؤول", moderator: "مشرف", agent: "مركز اتصال", driver: "سائق ركاب", delivery: "سائق توصيل", store_owner: "صاحب محل" };
+                      return <Badge key={r} variant="secondary" className="text-[10px]">{roleLabels[r] || r}</Badge>;
+                    })}
+                  </div>
+                </td>
                 <td className="p-4 text-muted-foreground">{client.phone || "—"}</td>
                 <td className="p-4 text-muted-foreground">{client.email || "—"}</td>
                 <td className="p-4 text-foreground font-medium">{client.name || "—"}</td>
