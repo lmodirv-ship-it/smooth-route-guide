@@ -76,6 +76,7 @@ const AdminClients = () => {
               <th className="p-4 text-muted-foreground font-medium">إجراءات</th>
               <th className="p-4 text-muted-foreground font-medium">الرصيد</th>
               <th className="p-4 text-muted-foreground font-medium">الرحلات</th>
+              <th className="p-4 text-muted-foreground font-medium">الدور</th>
               <th className="p-4 text-muted-foreground font-medium">الهاتف</th>
               <th className="p-4 text-muted-foreground font-medium">البريد</th>
               <th className="p-4 text-muted-foreground font-medium">الاسم</th>
