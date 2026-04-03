@@ -20,6 +20,7 @@ import { useI18n } from "@/i18n/context";
 import { useDriverSubscription } from "@/hooks/useDriverSubscription";
 import driverLogo from "@/assets/hn-driver-badge.png";
 import { useUserReference } from "@/hooks/useUserReference";
+import { useDemandHeatmap } from "@/hooks/useDemandHeatmap";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 const MAX_RADIUS_KM = 10;
@@ -79,6 +80,7 @@ const DriverPage = () => {
   const { driverCode, userCode } = useUserReference();
   const refCode = driverCode || userCode;
   const { mapTheme, mapExpanded } = useDriverMapControls();
+  const heatPoints = useDemandHeatmap();
 
   // Fetch stats & check active ride
   useEffect(() => {
@@ -271,7 +273,7 @@ const DriverPage = () => {
     <div className="h-[calc(100dvh-2.75rem)] flex flex-col bg-background overflow-hidden" dir={dir} onClick={() => unlockAudio()}>
       {/* Map */}
       <div className="relative flex-1 min-h-0 border-x-4 border-black/90 shadow-[inset_4px_0_8px_rgba(0,0,0,0.3),-4px_0_8px_rgba(0,0,0,0.3),inset_-4px_0_8px_rgba(0,0,0,0.3),4px_0_8px_rgba(0,0,0,0.3)]">
-        <LeafletMap center={driverLocation || DEFAULT_LOCATION} zoom={14} showMarker driverLocation={driverLocation} route={route} className="w-full h-full" hideControls externalTheme={mapTheme} externalExpanded={mapExpanded} />
+        <LeafletMap center={driverLocation || DEFAULT_LOCATION} zoom={14} showMarker driverLocation={driverLocation} route={route} className="w-full h-full" hideControls externalTheme={mapTheme} externalExpanded={mapExpanded} heatPoints={heatPoints} />
 
         {/* Radius indicator */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] bg-card/90 backdrop-blur-md text-foreground px-4 py-1.5 rounded-full text-xs flex items-center gap-2 border border-border">

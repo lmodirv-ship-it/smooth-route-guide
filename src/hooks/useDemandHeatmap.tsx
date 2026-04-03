@@ -16,27 +16,38 @@ export const useDemandHeatmap = () => {
 
   useEffect(() => {
     const fetchDemandData = async () => {
-      // Get orders from last 24 hours with coordinates
+      // Get orders and trips from last 24 hours with coordinates
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const { data: orders } = await supabase
-        .from("delivery_orders")
-        .select("pickup_lat, pickup_lng, delivery_lat, delivery_lng")
-        .gte("created_at", since)
-        .not("pickup_lat", "is", null);
+      const [{ data: orders }, { data: trips }] = await Promise.all([
+        supabase
+          .from("delivery_orders")
+          .select("pickup_lat, pickup_lng, delivery_lat, delivery_lng")
+          .gte("created_at", since)
+          .not("pickup_lat", "is", null),
+        supabase
+          .from("trips")
+          .select("pickup_lat, pickup_lng, destination_lat, destination_lng")
+          .gte("created_at", since)
+          .not("pickup_lat", "is", null),
+      ]);
 
-      if (!orders || orders.length === 0) return;
+      const allPoints: { pLat: number; pLng: number; dLat?: number; dLng?: number }[] = [];
+      (orders || []).forEach(o => {
+        if (o.pickup_lat && o.pickup_lng) allPoints.push({ pLat: o.pickup_lat, pLng: o.pickup_lng, dLat: o.delivery_lat ?? undefined, dLng: o.delivery_lng ?? undefined });
+      });
+      (trips || []).forEach(t => {
+        if (t.pickup_lat && t.pickup_lng) allPoints.push({ pLat: t.pickup_lat, pLng: t.pickup_lng, dLat: t.destination_lat ?? undefined, dLng: t.destination_lng ?? undefined });
+      });
 
-      // Build heatmap from pickup locations (where demand is)
+      if (allPoints.length === 0) return;
+
       const pointMap = new Map<string, number>();
-      orders.forEach((o) => {
-        if (o.pickup_lat && o.pickup_lng) {
-          // Round to ~500m grid cells
-          const key = `${(Math.round(o.pickup_lat * 200) / 200).toFixed(3)},${(Math.round(o.pickup_lng * 200) / 200).toFixed(3)}`;
-          pointMap.set(key, (pointMap.get(key) || 0) + 1);
-        }
-        if (o.delivery_lat && o.delivery_lng) {
-          const key = `${(Math.round(o.delivery_lat * 200) / 200).toFixed(3)},${(Math.round(o.delivery_lng * 200) / 200).toFixed(3)}`;
-          pointMap.set(key, (pointMap.get(key) || 0) + 0.5);
+      allPoints.forEach((o) => {
+        const key = `${(Math.round(o.pLat * 200) / 200).toFixed(3)},${(Math.round(o.pLng * 200) / 200).toFixed(3)}`;
+        pointMap.set(key, (pointMap.get(key) || 0) + 1);
+        if (o.dLat && o.dLng) {
+          const dKey = `${(Math.round(o.dLat * 200) / 200).toFixed(3)},${(Math.round(o.dLng * 200) / 200).toFixed(3)}`;
+          pointMap.set(dKey, (pointMap.get(dKey) || 0) + 0.5);
         }
       });
 

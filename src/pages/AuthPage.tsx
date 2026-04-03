@@ -3,11 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Eye, EyeOff, Mail, Lock, ArrowRight, User as UserIcon,
-  Phone, Loader2, Car, ShoppingBag, Store as StoreIcon,
+  Phone, Loader2, Car, ShoppingBag, Store as StoreIcon, Gift,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   getAuthTimeoutMessage,
   getUserRolesWithTimeout,
@@ -55,6 +56,7 @@ const AuthPage = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const { ready, session } = useAuthReady();
 
   useEffect(() => {
@@ -125,7 +127,7 @@ const AuthPage = () => {
         }
 
         const redirectTo = `https://www.hn-driver.com/login`;
-        const { error } = await signUpWithTimeout({
+        const { data: signUpData, error } = await signUpWithTimeout({
           email,
           password,
           options: {
@@ -133,6 +135,24 @@ const AuthPage = () => {
             data: { name, phone, requested_role: role },
           },
         });
+
+        if (error) throw error;
+
+        // Process referral code if provided
+        if (referralCode.trim() && signUpData?.user) {
+          const { data: referrerProfile } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("referral_code", referralCode.trim().toUpperCase())
+            .single();
+          if (referrerProfile) {
+            await supabase.from("referrals").insert({
+              referrer_id: referrerProfile.id,
+              referred_id: signUpData.user.id,
+              referral_code: referralCode.trim().toUpperCase(),
+            });
+          }
+        }
 
         if (error) throw error;
 
@@ -233,6 +253,15 @@ const AuthPage = () => {
                     className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right" />
                   <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground text-right block">رمز الإحالة (اختياري)</label>
+                <div className="relative">
+                  <Input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="REF######"
+                    className="bg-secondary/80 border-border text-foreground placeholder:text-muted-foreground h-12 rounded-xl pr-11 text-right font-mono tracking-wider" />
+                  <Gift className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+                </div>
+                <p className="text-xs text-muted-foreground text-right">إذا دعاك صديق، أدخل رمزه للحصول على مكافأة 🎁</p>
               </div>
             </>
           )}
