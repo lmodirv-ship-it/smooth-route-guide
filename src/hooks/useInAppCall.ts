@@ -64,6 +64,9 @@ export function useInAppCall() {
   const activeCallRef = useRef<CallViewState | null>(null);
   const incomingCallRef = useRef<CallViewState | null>(null);
   const userIdRef = useRef<string | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const acceptingRef = useRef(false);
+  const startingRef = useRef(false);
 
   useEffect(() => {
     activeCallRef.current = activeCall;
@@ -91,10 +94,6 @@ export function useInAppCall() {
     } satisfies CallPeer;
   }, []);
 
-  const stopStream = useCallback((stream: MediaStream | null) => {
-    stream?.getTracks().forEach((track) => track.stop());
-  }, []);
-
   const resetPeer = useCallback(() => {
     if (pcRef.current) {
       pcRef.current.onicecandidate = null;
@@ -103,14 +102,16 @@ export function useInAppCall() {
       pcRef.current.close();
       pcRef.current = null;
     }
-
     pendingCandidatesRef.current = [];
-    stopStream(localStream);
+    localStreamRef.current?.getTracks().forEach((t) => t.stop());
+    localStreamRef.current = null;
     setLocalStream(null);
     setRemoteStream(null);
     setIsMuted(false);
     setBusy(false);
-  }, [localStream, stopStream]);
+    acceptingRef.current = false;
+    startingRef.current = false;
+  }, []);
 
   const clearCallState = useCallback(() => {
     resetPeer();
@@ -146,19 +147,20 @@ export function useInAppCall() {
       throw new Error("unsupported_media");
     }
 
-    if (localStream) {
+    if (localStreamRef.current) {
       // Add video track if needed
-      if (withVideo && !localStream.getVideoTracks().length) {
+      if (withVideo && !localStreamRef.current.getVideoTracks().length) {
         try {
           const videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 320, height: 240 } });
-          videoStream.getVideoTracks().forEach(t => localStream.addTrack(t));
+          videoStream.getVideoTracks().forEach(t => localStreamRef.current!.addTrack(t));
           // Add video track to peer connection
           if (pcRef.current) {
-            videoStream.getVideoTracks().forEach(t => pcRef.current!.addTrack(t, localStream));
+            videoStream.getVideoTracks().forEach(t => pcRef.current!.addTrack(t, localStreamRef.current!));
           }
         } catch { /* video not available */ }
       }
-      return localStream;
+      setLocalStream(localStreamRef.current);
+      return localStreamRef.current;
     }
 
     const constraints: MediaStreamConstraints = { audio: true };
@@ -166,9 +168,10 @@ export function useInAppCall() {
       constraints.video = { facingMode: "user", width: 320, height: 240 };
     }
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    localStreamRef.current = stream;
     setLocalStream(stream);
     return stream;
-  }, [localStream]);
+  }, []);
 
   const flushPendingCandidates = useCallback(async () => {
     if (!pcRef.current?.remoteDescription) return;
@@ -220,16 +223,26 @@ export function useInAppCall() {
 
         // Only auto-clear on failure if the call was already active (answered)
         // Don't clear during "ringing" phase - let the ringing timeout handle it
-        if (["failed", "disconnected", "closed"].includes(peer.connectionState) && activeCallRef.current) {
+        if (["failed", "closed"].includes(peer.connectionState) && activeCallRef.current) {
           const wasActive = activeCallRef.current.status === "active" || activeCallRef.current.status === "connecting";
           if (wasActive) {
             window.setTimeout(() => {
               if (peer.connectionState !== "connected") {
+                console.warn("[InAppCall] Connection failed/closed, clearing call");
                 clearCallState();
               }
-            }, 3000);
+            }, 8000);
           }
-          // If still "ringing" (outgoing), don't auto-clear - let user cancel manually
+        }
+        if (peer.connectionState === "disconnected" && activeCallRef.current) {
+          if (activeCallRef.current.status === "active") {
+            window.setTimeout(() => {
+              if (peer.connectionState === "disconnected") {
+                console.warn("[InAppCall] Still disconnected after 15s, clearing");
+                clearCallState();
+              }
+            }, 15000);
+          }
         }
       };
 
@@ -246,12 +259,13 @@ export function useInAppCall() {
         return;
       }
 
-      if (activeCallRef.current || incomingCallRef.current || busy) {
+      if (activeCallRef.current || incomingCallRef.current || busy || startingRef.current) {
         toast.error("هناك مكالمة جارية بالفعل");
         return;
       }
 
       try {
+        startingRef.current = true;
         setBusy(true);
         const stream = await ensureMediaStream();
 
@@ -294,28 +308,50 @@ export function useInAppCall() {
         await connection.setLocalDescription(offer);
         await sendSignal(callRow.id, peer.id, "offer", offer as unknown as Record<string, unknown>);
       } catch (error) {
-        console.error(error);
+        console.error("[InAppCall] startCall FAILED:", error);
         toast.error("تعذر بدء المكالمة الداخلية");
         clearCallState();
       } finally {
         setBusy(false);
+        startingRef.current = false;
       }
     },
-    [busy, clearCallState, createPeerConnection, ensureMediaStream, sendSignal, userId],
+    [busy, clearCallState, createPeerConnection, ensureMediaStream, sendSignal, updateSession, userId],
   );
 
   const acceptCall = useCallback(async () => {
-    if (!incomingCall || !userId) return;
+    if (!incomingCall || !userId) {
+      console.warn("[InAppCall] acceptCall: missing incomingCall or userId");
+      return;
+    }
+    if (acceptingRef.current) {
+      console.warn("[InAppCall] acceptCall: already accepting, ignoring");
+      return;
+    }
 
     try {
+      acceptingRef.current = true;
       setBusy(true);
       stopRingtone();
-      const stream = await ensureMediaStream();
+
+      console.log("[InAppCall] acceptCall: getting media stream...");
+      let stream: MediaStream;
+      try {
+        stream = await ensureMediaStream();
+        console.log("[InAppCall] acceptCall: media OK, tracks:", stream.getTracks().map(t => t.kind));
+      } catch (mediaErr) {
+        console.error("[InAppCall] acceptCall: getUserMedia FAILED:", mediaErr);
+        toast.error("تعذر الوصول للميكروفون. تحقق من الإذن.");
+        throw mediaErr;
+      }
+
+      console.log("[InAppCall] acceptCall: creating peer connection...");
       const connection = await createPeerConnection(incomingCall.callId, incomingCall.peer.id, stream);
 
       // Poll for offer signal (may arrive slightly after session insert)
+      console.log("[InAppCall] acceptCall: polling for offer...");
       let offerPayload: RTCSessionDescriptionInit | null = null;
-      for (let attempt = 0; attempt < 8; attempt++) {
+      for (let attempt = 0; attempt < 12; attempt++) {
         const offerResponse: any = await supabase
           .from("call_signals" as any)
           .select("payload")
@@ -328,18 +364,27 @@ export function useInAppCall() {
         const offerSignal = offerResponse.data as { payload?: RTCSessionDescriptionInit } | null;
         if (offerSignal?.payload) {
           offerPayload = offerSignal.payload;
+          console.log("[InAppCall] acceptCall: offer found on attempt", attempt + 1);
           break;
         }
-        // Wait 500ms before retrying
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 400));
       }
 
       if (!offerPayload) {
+        console.error("[InAppCall] acceptCall: offer NOT FOUND after 12 attempts");
+        toast.error("لم يتم العثور على عرض الاتصال");
         throw new Error("offer_missing");
       }
 
-      await connection.setRemoteDescription(new RTCSessionDescription(offerPayload));
+      console.log("[InAppCall] acceptCall: setting remote description...");
+      try {
+        await connection.setRemoteDescription(new RTCSessionDescription(offerPayload));
+      } catch (sdpErr) {
+        console.error("[InAppCall] acceptCall: setRemoteDescription FAILED:", sdpErr);
+        throw sdpErr;
+      }
 
+      console.log("[InAppCall] acceptCall: fetching queued ICE candidates...");
       const { data: queuedCandidates } = await supabase
         .from("call_signals" as any)
         .select("payload")
@@ -348,13 +393,20 @@ export function useInAppCall() {
         .eq("sender_id", incomingCall.peer.id)
         .order("created_at", { ascending: true });
 
-      pendingCandidatesRef.current = (queuedCandidates || []).map((item: any) => item.payload).filter(Boolean);
+      const candidates = (queuedCandidates || []).map((item: any) => item.payload).filter(Boolean);
+      console.log("[InAppCall] acceptCall:", candidates.length, "queued ICE candidates");
+      pendingCandidatesRef.current = candidates;
       await flushPendingCandidates();
 
+      console.log("[InAppCall] acceptCall: creating answer...");
       const answer = await connection.createAnswer();
       await connection.setLocalDescription(answer);
 
-      await sendSignal(incomingCall.callId, incomingCall.peer.id, "answer", answer as unknown as Record<string, unknown>);
+      console.log("[InAppCall] acceptCall: sending answer signal...");
+      const answerPayload = { type: answer.type, sdp: answer.sdp } as Record<string, unknown>;
+      await sendSignal(incomingCall.callId, incomingCall.peer.id, "answer", answerPayload);
+
+      console.log("[InAppCall] acceptCall: updating session to active...");
       await updateSession(incomingCall.callId, {
         status: "active",
         started_at: new Date().toISOString(),
@@ -362,12 +414,14 @@ export function useInAppCall() {
 
       setActiveCall({ ...incomingCall, status: "connecting" });
       setIncomingCall(null);
+      console.log("[InAppCall] acceptCall: ✅ SUCCESS");
     } catch (error) {
-      console.error(error);
+      console.error("[InAppCall] acceptCall FAILED:", error);
       toast.error("تعذر الرد على المكالمة");
       clearCallState();
     } finally {
       setBusy(false);
+      acceptingRef.current = false;
     }
   }, [incomingCall, userId, ensureMediaStream, createPeerConnection, flushPendingCandidates, sendSignal, updateSession, clearCallState]);
 
@@ -393,17 +447,17 @@ export function useInAppCall() {
 
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => {
-      localStream?.getAudioTracks().forEach((track) => {
+      localStreamRef.current?.getAudioTracks().forEach((track) => {
         track.enabled = prev;
       });
       return !prev;
     });
-  }, [localStream]);
+  }, []);
 
   const toggleVideo = useCallback(async () => {
-    if (!localStream) return;
+    if (!localStreamRef.current) return;
     const currentCall = activeCallRef.current;
-    const videoTracks = localStream.getVideoTracks();
+    const videoTracks = localStreamRef.current.getVideoTracks();
     if (videoTracks.length > 0) {
       // Toggle existing video tracks
       const newEnabled = !videoTracks[0].enabled;
@@ -414,9 +468,10 @@ export function useInAppCall() {
       try {
         const videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 320, height: 240 } });
         videoStream.getVideoTracks().forEach(t => {
-          localStream.addTrack(t);
-          pcRef.current?.addTrack(t, localStream);
+          localStreamRef.current!.addTrack(t);
+          pcRef.current?.addTrack(t, localStreamRef.current!);
         });
+        setLocalStream(new MediaStream(localStreamRef.current!.getTracks()));
         setIsVideoEnabled(true);
 
         // Renegotiate so remote peer receives video
@@ -429,7 +484,7 @@ export function useInAppCall() {
         toast.error("تعذر تشغيل الكاميرا");
       }
     }
-  }, [localStream, sendSignal]);
+  }, [sendSignal]);
 
   useEffect(() => {
     if (!userId) return;

@@ -76,6 +76,7 @@ export function useCallCenter() {
   const activeCallRef = useRef<ActiveCallState | null>(null);
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
   const processedSignalsRef = useRef<Set<string>>(new Set());
+  const callingRef = useRef(false);
 
   useEffect(() => { activeCallRef.current = activeCall; }, [activeCall]);
 
@@ -200,6 +201,7 @@ export function useCallCenter() {
     setBusy(false);
     setActiveCall(null);
     setAgentStatus("available");
+    callingRef.current = false;
   }, [stopAudio]);
 
   const createPC = useCallback(async (callId: string, peerId: string, stream: MediaStream) => {
@@ -254,9 +256,10 @@ export function useCallCenter() {
   // --- Start call to a known party ---
   const startCallToParty = useCallback(async (party: CallParty, orderId?: string) => {
     if (!userId) { toast.error("سجّل الدخول أولاً"); return; }
-    if (activeCallRef.current || busy) { toast.error("هناك مكالمة جارية"); return; }
+    if (activeCallRef.current || busy || callingRef.current) { toast.error("هناك مكالمة جارية"); return; }
 
     try {
+      callingRef.current = true;
       setBusy(true);
       await updateAgentStatus("in_call");
       const stream = await ensureMedia();
@@ -307,11 +310,12 @@ export function useCallCenter() {
       });
 
     } catch (err) {
-      console.error(err);
+      console.error("[CallCenter] startCallToParty FAILED:", err);
       toast.error("تعذر بدء المكالمة");
       cleanup();
     } finally {
       setBusy(false);
+      callingRef.current = false;
     }
   }, [userId, busy, cleanup, createPC, ensureMedia, sendSignal, updateAgentStatus]);
 
