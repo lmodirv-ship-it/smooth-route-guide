@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.mailbluster-sync]
 verify_jwt = false
+
+[functions.auto-prospect]
+verify_jwt = false
