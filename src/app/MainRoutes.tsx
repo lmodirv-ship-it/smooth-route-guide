@@ -78,11 +78,13 @@ const DeliverySupport = lazy(() => import("@/pages/delivery/DeliverySupport"));
 const Cart = lazy(() => import("@/pages/delivery/Cart"));
 
 const DynamicPage = lazy(() => import("@/pages/DynamicPage"));
+const HNGroupePortal = lazy(() => import("@/pages/HNGroupePortal"));
 
 export const mainRouteElements = (
   <>
     {/* ─── Public pages (no layout wrapper needed) ─── */}
     <Route path="/" element={<LandingPage />} />
+    <Route path="/hn-groupe" element={<LazyPage component={HNGroupePortal} />} />
     <Route path="/splash" element={<Splash />} />
     <Route path="/welcome" element={<Welcome />} />
     <Route path="/login" element={<AuthPage />} />
