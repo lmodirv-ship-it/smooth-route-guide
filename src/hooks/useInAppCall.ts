@@ -168,7 +168,8 @@ export function useInAppCall() {
         pcRef.current.close();
       }
 
-      const peer = new RTCPeerConnection(rtcConfig);
+      const iceServers = await fetchTurnServers();
+      const peer = new RTCPeerConnection({ iceServers });
       stream.getTracks().forEach((track) => peer.addTrack(track, stream));
 
       peer.onicecandidate = (event) => {
