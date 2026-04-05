@@ -2604,6 +2604,69 @@ export type Database = {
         }
         Relationships: []
       }
+      prospects: {
+        Row: {
+          address: string | null
+          area: string | null
+          category: string
+          city: string
+          created_at: string
+          email: string | null
+          google_place_id: string | null
+          id: string
+          mailbluster_synced: boolean | null
+          mailbluster_synced_at: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          rating: number | null
+          source: string | null
+          status: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          area?: string | null
+          category?: string
+          city?: string
+          created_at?: string
+          email?: string | null
+          google_place_id?: string | null
+          id?: string
+          mailbluster_synced?: boolean | null
+          mailbluster_synced_at?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          rating?: number | null
+          source?: string | null
+          status?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          area?: string | null
+          category?: string
+          city?: string
+          created_at?: string
+          email?: string | null
+          google_place_id?: string | null
+          id?: string
+          mailbluster_synced?: boolean | null
+          mailbluster_synced_at?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          rating?: number | null
+          source?: string | null
+          status?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       ratings: {
         Row: {
           comment: string | null
