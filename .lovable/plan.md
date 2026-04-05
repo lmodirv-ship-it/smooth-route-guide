@@ -1,77 +1,67 @@
 
 
-# خطة التوسع العالمي — الدفع + التسويق + SEO
+# خطة التوسع العالمي الشامل — التنفيذ الكامل
 
-## الوضع الحالي
-
-- **الدفع**: نقد، محفظة، PayPal (مفعّل)، Stripe (موجود في الإعدادات لكن غير مفعّل فعلياً)، تحويل بنكي، تحويل وكالة
-- **SEO**: بيانات meta أساسية موجودة في `index.html`، canonical URL يشير لـ `hn-driver.com`
-- **التسويق**: لا يوجد Facebook Pixel أو Google Ads tag
-- **Crypto**: غير موجود
+## ملخص
+تفعيل كل البنية التحتية اللازمة لجعل المنصة عالمية: Stripe للدفع الدولي، Facebook Pixel + Google Ads للتتبع، SEO دولي كامل (hreflang, Schema.org, sitemap)، وإضافة Stripe كخيار دفع فعلي في واجهة المستخدم.
 
 ---
 
-## المرحلة 1: تفعيل Stripe (الدفع بالبطاقات + Apple/Google Pay)
+## المرحلة 1: تفعيل Stripe (الدفع الدولي)
 
-- تفعيل Stripe عبر أداة Lovable المدمجة (تتطلب Secret Key)
-- إنشاء Edge Function للدفع عبر Stripe Checkout
-- إضافة "💳 بطاقة بنكية" كخيار دفع في `PaymentMethodSelector`
-- ربط المعاملات بجدول `payment_transactions`
-
-## المرحلة 2: تعزيز PayPal
-
-- PayPal مفعّل بالفعل — التحقق من أن المفاتيح Live تعمل
-- لا تغييرات كبيرة مطلوبة
-
-## المرحلة 3: الدفع بالعملات الرقمية (Crypto)
-
-- إضافة خيار "₿ Crypto" في واجهة الدفع
-- إنشاء Edge Function تولّد عنوان محفظة للدفع (USDT/BTC/ETH)
-- يتطلب اختيار مزود خدمة (Coinbase Commerce أو NOWPayments أو مماثل) + مفتاح API
-
-## المرحلة 4: Facebook Pixel + Google Ads
-
-- إضافة Facebook Pixel script في `index.html` (داخل `<body>`)
-- إضافة Google Ads / gtag.js في `index.html`
-- إضافة حقول في `BrandingSettings` لإدخال معرّفات Pixel و Google Ads من لوحة التحكم
-- تتبع الأحداث: تسجيل، طلب رحلة، إتمام طلب
-
-## المرحلة 5: SEO العالمي
-
-- إضافة `hreflang` tags متعددة اللغات (ar, fr, en, es) في `index.html`
-- تحسين `meta description` و `og:tags` لتشمل كلمات مفتاحية دولية
-- إضافة Schema.org JSON-LD (Organization + LocalBusiness)
-- إنشاء `/sitemap.xml` ديناميكي
-- تحسين `robots.txt`
-
-## المرحلة 6: إعدادات DNS و الدومين
-
-- التأكد من أن الدومين الرئيسي `hn-driver.com` مضبوط بشكل صحيح
-- إعداد subdomain records للأسواق الجديدة (اختياري)
-- هذا يتم من إعدادات المشروع → Domains
+1. **تفعيل Stripe Connector** عبر أداة `stripe--enable_stripe` (سيطلب من المستخدم إدخال Secret Key)
+2. **إنشاء Edge Function** `stripe-checkout` للتعامل مع عمليات الدفع
+3. **إضافة Stripe كخيار دفع** في `PaymentMethodPicker.tsx` و `PaymentMethodSelector.tsx`
+4. **إنشاء Edge Function** `stripe-webhook` لاستقبال أحداث الدفع وتحديث حالة المعاملات
 
 ---
 
-## التفاصيل التقنية
+## المرحلة 2: Facebook Pixel + Google Ads
 
-| العنصر | الملفات المتأثرة |
-|--------|------------------|
-| Stripe | Edge Function جديدة، `PaymentMethodSelector.tsx`، `PaymentSettings.tsx` |
-| Crypto | Edge Function جديدة، `PaymentMethodSelector.tsx`، `PaymentSettings.tsx` |
-| Facebook Pixel | `index.html`، `BrandingSettings.tsx` |
+1. **إضافة حقول** `facebookPixelId` و `googleAdsId` في `BrandingSettings.tsx`
+2. **إدراج سكريبتات التتبع** في `index.html`:
+   - Facebook Pixel (`fbq`)
+   - Google Ads (`gtag.js`)
+3. **إضافة تتبع أحداث التحويل** (تسجيل، طلب، دفع) في الصفحات المعنية
+4. **إضافة `<noscript>` fallback** في `<body>` لـ Facebook Pixel
+
+---
+
+## المرحلة 3: SEO العالمي
+
+1. **إضافة وسوم hreflang** في `index.html` للغات الأربع (ar, fr, en, es)
+2. **إضافة Schema.org JSON-LD** (Organization + WebApplication)
+3. **إنشاء `public/sitemap.xml`** ديناميكي يشمل كل الصفحات الرئيسية
+4. **تحديث `robots.txt`** بإضافة رابط Sitemap
+5. **تحسين meta tags** الحالية (Open Graph كامل)
+
+---
+
+## المرحلة 4: إعدادات الإدارة
+
+1. **تحديث BrandingSettings** بحقول: Facebook Pixel ID, Google Ads ID, Google Analytics ID
+2. **إنشاء مكون `TrackingSettings`** منفصل أو دمجه في BrandingSettings
+3. **تحميل معرّفات التتبع ديناميكياً** من `app_settings` عند تحميل التطبيق
+
+---
+
+## الملفات المتأثرة
+
+| الميزة | الملفات |
+|--------|---------|
+| Stripe | Edge Functions جديدة، `PaymentMethodPicker.tsx`، `PaymentMethodSelector.tsx` |
+| Facebook Pixel | `index.html`، `BrandingSettings.tsx`، مكون تتبع جديد |
 | Google Ads | `index.html`، `BrandingSettings.tsx` |
-| SEO | `index.html`، `public/robots.txt`، ملف sitemap جديد |
+| SEO | `index.html`، `public/robots.txt`، `public/sitemap.xml` جديد |
 | Schema.org | `index.html` |
 
 ---
 
-## أسئلة قبل البدء
+## متطلبات من المستخدم
 
-قبل التنفيذ، أحتاج معرفة:
-1. **Stripe**: هل لديك حساب Stripe جاهز مع Secret Key؟
-2. **Crypto**: أي مزود تفضل؟ (Coinbase Commerce / NOWPayments / آخر)
-3. **Facebook Pixel ID**: هل لديك معرّف Pixel جاهز؟
-4. **Google Ads ID**: هل لديك معرّف Google Ads (AW-XXXXXXX)؟
+- **Stripe Secret Key**: سيُطلب عبر الأداة المدمجة
+- **Facebook Pixel ID**: يمكن إدخاله لاحقاً من لوحة الإعدادات
+- **Google Ads ID**: يمكن إدخاله لاحقاً من لوحة الإعدادات
 
-سأبدأ بتفعيل Stripe أولاً ثم أتقدم بالترتيب.
+سأبدأ بتفعيل Stripe أولاً ثم أتابع بالتسلسل.
 
