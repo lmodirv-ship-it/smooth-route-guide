@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.paypal-live]
 verify_jwt = false
+
+[functions.mailbluster-sync]
+verify_jwt = false

@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Download, Loader2, MapPin, Phone, Star, Globe, Store, Bike, Truck, UtensilsCrossed } from "lucide-react";
+import { Search, Download, Loader2, MapPin, Phone, Star, Globe, Store, Bike, Truck, UtensilsCrossed, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -48,6 +48,7 @@ const Prospecting = () => {
   const [results, setResults] = useState<ProspectResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [syncing, setSyncing] = useState(false);
 
   const handleSearch = useCallback(async () => {
     setLoading(true);
@@ -117,6 +118,42 @@ const Prospecting = () => {
     a.click();
     URL.revokeObjectURL(url);
     toast.success(`تم تصدير ${items.length} عنصر`);
+  };
+
+  const syncToMailBluster = async () => {
+    const items = results.filter((r) => selected.has(r.google_place_id));
+    if (!items.length) {
+      toast.error("اختر عنصراً واحداً على الأقل");
+      return;
+    }
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("mailbluster-sync", {
+        body: {
+          action: "sync_leads",
+          leads: items.map((r) => ({
+            name: r.name,
+            phone: r.phone,
+            address: r.address,
+            area: r.area,
+            category: r.category,
+            website: r.website,
+            rating: r.rating,
+            google_place_id: r.google_place_id,
+          })),
+        },
+      });
+      if (error) throw error;
+      toast.success(`تم إرسال ${data?.synced || 0} جهة اتصال إلى MailBluster`);
+      if (data?.failed > 0) {
+        toast.warning(`فشل إرسال ${data.failed} جهة اتصال`);
+      }
+    } catch (e: any) {
+      console.error(e);
+      toast.error("فشل الإرسال: " + (e.message || "خطأ"));
+    } finally {
+      setSyncing(false);
+    }
   };
 
   return (
@@ -199,9 +236,15 @@ const Prospecting = () => {
                 <Badge variant="secondary" className="mr-2">{selected.size} مختار</Badge>
               )}
             </CardTitle>
-            <Button onClick={exportCSV} variant="outline" className="gap-2">
-              <Download className="w-4 h-4" /> تصدير CSV
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={syncToMailBluster} disabled={syncing || selected.size === 0} variant="default" className="gap-2">
+                {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {syncing ? "جاري الإرسال..." : `إرسال إلى MailBluster (${selected.size})`}
+              </Button>
+              <Button onClick={exportCSV} variant="outline" className="gap-2">
+                <Download className="w-4 h-4" /> تصدير CSV
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="overflow-x-auto">
             <Table>
