@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { fetchTurnServers } from "@/lib/turnServers";
 import { startRingtone, stopRingtone, startDialTone, stopDialTone, playEndTone } from "@/lib/callSounds";
 
 export interface CallPeer {
@@ -16,32 +17,6 @@ export interface CallViewState {
   direction: "incoming" | "outgoing";
   status: "ringing" | "connecting" | "active";
 }
-
-/** Build ICE servers config from env vars (STUN + TURN/TURNS) */
-function buildIceServers(): RTCIceServer[] {
-  const servers: RTCIceServer[] = [
-    { urls: import.meta.env.VITE_STUN_URL || "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun.cloudflare.com:3478" },
-  ];
-
-  const turnUrl = import.meta.env.VITE_TURN_URL as string | undefined;
-  const turnsUrl = import.meta.env.VITE_TURNS_URL as string | undefined;
-  const turnUser = import.meta.env.VITE_TURN_USERNAME as string | undefined;
-  const turnPass = import.meta.env.VITE_TURN_PASSWORD as string | undefined;
-
-  if (turnUrl && turnUser && turnPass) {
-    servers.push({ urls: turnUrl, username: turnUser, credential: turnPass });
-  }
-  if (turnsUrl && turnUser && turnPass) {
-    servers.push({ urls: turnsUrl, username: turnUser, credential: turnPass });
-  }
-
-  return servers;
-}
-
-const rtcConfig: RTCConfiguration = {
-  iceServers: buildIceServers(),
-};
 
 const FINAL_STATUSES = new Set(["ended", "rejected", "missed", "cancelled"]);
 
@@ -193,7 +168,8 @@ export function useInAppCall() {
         pcRef.current.close();
       }
 
-      const peer = new RTCPeerConnection(rtcConfig);
+      const iceServers = await fetchTurnServers();
+      const peer = new RTCPeerConnection({ iceServers });
       stream.getTracks().forEach((track) => peer.addTrack(track, stream));
 
       peer.onicecandidate = (event) => {
