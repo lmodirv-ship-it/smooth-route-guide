@@ -36,6 +36,7 @@ const SupervisorLayout = () => {
     { path: "/supervisor/messaging", icon: MessageSquare, label: "المحادثات" },
     { path: "/supervisor/wallet-recharge", icon: Wallet, label: "شحن المحفظة" },
     { path: "/supervisor/payments", icon: CreditCard, label: "💳 المدفوعات" },
+    { path: "/supervisor/prospecting", icon: Search, label: "🔍 التنقيب" },
     { path: "/supervisor/community", icon: Users, label: "مجتمع HN" },
     { path: "/supervisor/analytics", icon: TrendingUp, label: "تحليلات الزوار" },
   ];

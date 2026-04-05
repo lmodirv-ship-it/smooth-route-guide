@@ -42,6 +42,7 @@ import PaymentManagement from "@/admin/pages/PaymentManagement";
 import PayPalSettings from "@/admin/pages/PayPalSettings";
 import PayPalLivePayments from "@/admin/pages/PayPalLivePayments";
 import CouponsManagement from "@/admin/pages/CouponsManagement";
+import Prospecting from "@/admin/pages/Prospecting";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
@@ -118,6 +119,7 @@ export const adminRouteElements = (
       <Route path="paypal-settings" element={<PayPalSettings />} />
       <Route path="paypal-live" element={<PayPalLivePayments />} />
       <Route path="coupons" element={<CouponsManagement />} />
+      <Route path="prospecting" element={<Prospecting />} />
     </Route>
 
     <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><CallCenterLayout /></RequireRole>}>
@@ -144,6 +146,7 @@ export const adminRouteElements = (
       <Route path="analytics" element={<VisitorAnalytics />} />
       <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
       <Route path="payments" element={<PaymentManagement />} />
+      <Route path="prospecting" element={<Prospecting />} />
     </Route>
 
     {/* ═══ Supervisor Panel ═══ */}
@@ -160,6 +163,7 @@ export const adminRouteElements = (
       <Route path="analytics" element={<VisitorAnalytics />} />
       <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
       <Route path="payments" element={<PaymentManagement />} />
+      <Route path="prospecting" element={<Prospecting />} />
     </Route>
   </>
 );

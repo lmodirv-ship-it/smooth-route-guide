@@ -53,6 +53,7 @@ const CallCenterLayout = () => {
     { path: "/call-center/messaging", icon: MessageSquare, label: "المحادثات" },
     { path: "/call-center/wallet-recharge", icon: Wallet, label: "شحن المحفظة" },
     { path: "/call-center/payments", icon: CreditCard, label: "💳 المدفوعات" },
+    { path: "/call-center/prospecting", icon: Search, label: "🔍 التنقيب" },
     { path: "/call-center/community", icon: Users, label: "مجتمع HN" },
     { path: "/call-center/analytics", icon: BarChart, label: "تحليلات الزوار" },
   ];
