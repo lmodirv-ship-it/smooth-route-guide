@@ -21,8 +21,16 @@ const CATEGORY_TAGS: Record<string, string[]> = {
 
 // Cities and business types to auto-search
 const SEARCH_CONFIGS = [
-  { city: "Tanger", types: ["restaurant", "cafe", "grocery_or_supermarket", "bakery", "pharmacy", "clothing_store", "electronics_store", "florist", "courier", "store"] },
-  { city: "Marrakech", types: ["restaurant", "cafe", "grocery_or_supermarket", "pharmacy", "store"] },
+  { city: "Tanger", country: "Morocco", types: ["restaurant", "cafe", "grocery_or_supermarket", "bakery", "pharmacy", "clothing_store", "electronics_store", "florist", "courier", "store"] },
+  { city: "Casablanca", country: "Morocco", types: ["restaurant", "cafe", "grocery_or_supermarket", "bakery", "pharmacy", "store", "courier"] },
+  { city: "Marrakech", country: "Morocco", types: ["restaurant", "cafe", "grocery_or_supermarket", "pharmacy", "store"] },
+  { city: "Rabat", country: "Morocco", types: ["restaurant", "cafe", "pharmacy", "store", "courier"] },
+  { city: "Fes", country: "Morocco", types: ["restaurant", "cafe", "bakery", "pharmacy", "store"] },
+  { city: "Agadir", country: "Morocco", types: ["restaurant", "cafe", "pharmacy", "store"] },
+  { city: "Meknes", country: "Morocco", types: ["restaurant", "cafe", "pharmacy", "store"] },
+  { city: "Oujda", country: "Morocco", types: ["restaurant", "pharmacy", "store"] },
+  { city: "Kenitra", country: "Morocco", types: ["restaurant", "pharmacy", "store"] },
+  { city: "Tetouan", country: "Morocco", types: ["restaurant", "cafe", "bakery", "store"] },
 ];
 
 serve(async (req) => {
