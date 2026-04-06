@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 const POPUP_DISMISSED_KEY = "hn_signup_popup_dismissed";
-const POPUP_DELAY_MS = 8000; // Show after 8 seconds
+const POPUP_DELAY_MS = 4000; // Show after 4 seconds
 
 const SignupPopup = () => {
   const navigate = useNavigate();
