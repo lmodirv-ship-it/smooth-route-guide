@@ -118,6 +118,7 @@ const AdminLayout = () => {
     { path: "/admin/paypal-settings", icon: CreditCard, label: "💎 إعدادات PayPal" },
     { path: "/admin/coupons", icon: Ticket, label: "🎟️ كوبونات الخصم" },
     { path: "/admin/prospecting", icon: Search, label: "🔍 التنقيب عن الشركاء" },
+    { path: "/admin/mailbluster", icon: Mail, label: "📧 نماذج المراسلات" },
   ];
 
   useEffect(() => {
