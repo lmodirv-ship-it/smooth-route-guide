@@ -2647,8 +2647,15 @@ export type Database = {
         Row: {
           address: string | null
           area: string | null
+          call_center_queued: boolean | null
+          call_notes: string | null
+          call_priority: string | null
+          call_status: string | null
+          called_at: string | null
+          called_by: string | null
           category: string
           city: string
+          country: string | null
           created_at: string
           email: string | null
           google_place_id: string | null
@@ -2667,8 +2674,15 @@ export type Database = {
         Insert: {
           address?: string | null
           area?: string | null
+          call_center_queued?: boolean | null
+          call_notes?: string | null
+          call_priority?: string | null
+          call_status?: string | null
+          called_at?: string | null
+          called_by?: string | null
           category?: string
           city?: string
+          country?: string | null
           created_at?: string
           email?: string | null
           google_place_id?: string | null
@@ -2687,8 +2701,15 @@ export type Database = {
         Update: {
           address?: string | null
           area?: string | null
+          call_center_queued?: boolean | null
+          call_notes?: string | null
+          call_priority?: string | null
+          call_status?: string | null
+          called_at?: string | null
+          called_by?: string | null
           category?: string
           city?: string
+          country?: string | null
           created_at?: string
           email?: string | null
           google_place_id?: string | null
