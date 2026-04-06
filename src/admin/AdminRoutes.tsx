@@ -43,6 +43,7 @@ import PayPalSettings from "@/admin/pages/PayPalSettings";
 import PayPalLivePayments from "@/admin/pages/PayPalLivePayments";
 import CouponsManagement from "@/admin/pages/CouponsManagement";
 import Prospecting from "@/admin/pages/Prospecting";
+import MailBlusterTemplates from "@/admin/pages/MailBlusterTemplates";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
