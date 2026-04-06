@@ -154,6 +154,19 @@ const AuthPage = () => {
           }
         }
 
+        // Sync new user to MailBluster
+        if (signUpData?.user) {
+          supabase.functions.invoke("mailbluster-sync", {
+            body: {
+              action: "sync_user",
+              email,
+              name,
+              phone,
+              role: role || "user",
+            },
+          }).catch(() => {/* silent — non-blocking */});
+        }
+
         if (error) throw error;
 
         toast({

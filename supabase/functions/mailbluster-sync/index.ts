@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "../_shared/security.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const MAILBLUSTER_API = "https://api.mailbluster.com/api";
 
@@ -16,20 +17,125 @@ serve(async (req) => {
       });
     }
 
-    const { action, leads } = await req.json();
+    const body = await req.json();
+    const { action } = body;
 
-    if (action === "sync_leads" && Array.isArray(leads)) {
-      const results: { name: string; status: string; error?: string }[] = [];
+    // ─── Sync a single user (on signup) ───
+    if (action === "sync_user") {
+      const { email, name, phone, role, city, country } = body;
+      if (!email) {
+        return new Response(JSON.stringify({ error: "email required" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
-      for (const lead of leads.slice(0, 50)) {
+      const tags = ["hn-driver-platform", `role:${role || "user"}`];
+      if (city) tags.push(`city:${city}`);
+      if (country) tags.push(`country:${country}`);
+
+      const res = await fetch(`${MAILBLUSTER_API}/leads`, {
+        method: "POST",
+        headers: { "Authorization": apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          firstName: name?.split(" ")[0] || "",
+          lastName: name?.split(" ").slice(1).join(" ") || "",
+          fields: {
+            phone: phone || "",
+            role: role || "user",
+            city: city || "",
+            country: country || "",
+            source: "hn-driver-platform",
+          },
+          tags,
+          subscribed: true,
+          overrideExisting: true,
+        }),
+      });
+
+      const data = await res.json();
+      return new Response(JSON.stringify({
+        success: res.ok,
+        message: res.ok ? "Lead synced" : (data?.message || "Failed"),
+      }), {
+        status: res.ok ? 200 : 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ─── Bulk sync users from database ───
+    if (action === "bulk_sync_users") {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+
+      const { data: profiles, error } = await supabase
+        .from("profiles")
+        .select("id, email, name, phone, city, country")
+        .not("email", "is", null)
+        .limit(200);
+
+      if (error) throw new Error(error.message);
+
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role");
+      const roleMap = new Map<string, string>();
+      roles?.forEach((r: any) => roleMap.set(r.user_id, r.role));
+
+      const results: { email: string; status: string }[] = [];
+
+      for (const profile of (profiles || [])) {
         try {
-          // Create or update lead in MailBluster
+          const role = roleMap.get(profile.id) || "user";
+          const tags = ["hn-driver-platform", `role:${role}`];
+          if (profile.city) tags.push(`city:${profile.city}`);
+          if (profile.country) tags.push(`country:${profile.country}`);
+
           const res = await fetch(`${MAILBLUSTER_API}/leads`, {
             method: "POST",
-            headers: {
-              "Authorization": apiKey,
-              "Content-Type": "application/json",
-            },
+            headers: { "Authorization": apiKey, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: profile.email,
+              firstName: profile.name?.split(" ")[0] || "",
+              lastName: profile.name?.split(" ").slice(1).join(" ") || "",
+              fields: {
+                phone: profile.phone || "",
+                role,
+                city: profile.city || "",
+                country: profile.country || "",
+                source: "hn-driver-platform",
+              },
+              tags,
+              subscribed: true,
+              overrideExisting: true,
+            }),
+          });
+          await res.json();
+          results.push({ email: profile.email, status: res.ok ? "success" : "failed" });
+        } catch {
+          results.push({ email: profile.email, status: "failed" });
+        }
+      }
+
+      const synced = results.filter(r => r.status === "success").length;
+      return new Response(JSON.stringify({
+        success: true, total: results.length, synced, failed: results.length - synced,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ─── Sync prospects (restaurants/stores) ───
+    if (action === "sync_leads" && Array.isArray(body.leads)) {
+      const results: { name: string; status: string; error?: string }[] = [];
+
+      for (const lead of body.leads.slice(0, 50)) {
+        try {
+          const tags = ["prospect", `category:${lead.category || "general"}`];
+          if (lead.area) tags.push(`area:${lead.area}`);
+
+          const res = await fetch(`${MAILBLUSTER_API}/leads`, {
+            method: "POST",
+            headers: { "Authorization": apiKey, "Content-Type": "application/json" },
             body: JSON.stringify({
               email: lead.email || `${lead.google_place_id}@placeholder.local`,
               firstName: lead.name || "",
@@ -41,9 +147,11 @@ serve(async (req) => {
                 category: lead.category || "",
                 website: lead.website || "",
                 rating: String(lead.rating || ""),
-                source: "souk-ajail-prospecting",
+                source: "hn-driver-prospecting",
               },
+              tags,
               subscribed: true,
+              overrideExisting: true,
             }),
           });
 
@@ -60,17 +168,14 @@ serve(async (req) => {
 
       const successCount = results.filter(r => r.status === "success").length;
       return new Response(JSON.stringify({
-        success: true,
-        total: results.length,
-        synced: successCount,
-        failed: results.length - successCount,
-        details: results,
+        success: true, total: results.length, synced: successCount,
+        failed: results.length - successCount, details: results,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Get MailBluster products/brands (lists)
+    // ─── Get brands/lists ───
     if (action === "get_brands") {
       const res = await fetch(`${MAILBLUSTER_API}/brands`, {
         headers: { "Authorization": apiKey },
@@ -81,7 +186,7 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ error: "Invalid action" }), {
+    return new Response(JSON.stringify({ error: "Invalid action. Use: sync_user, bulk_sync_users, sync_leads, get_brands" }), {
       status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
