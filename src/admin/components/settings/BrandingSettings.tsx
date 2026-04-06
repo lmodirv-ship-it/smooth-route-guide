@@ -29,6 +29,9 @@ export default function BrandingSettings() {
     socialInstagram: "",
     socialTwitter: "",
     socialLinkedIn: "",
+    facebookPixelId: "",
+    googleAdsId: "",
+    googleAnalyticsId: "",
     metaTitle: "HN Driver — Smart Management",
     metaDescription: "The most powerful ride & delivery platform",
     customCss: "",
@@ -138,6 +141,12 @@ export default function BrandingSettings() {
           <Field label="لينكدإن" value={settings.socialLinkedIn} field="socialLinkedIn" />
           <Field label="عنوان SEO" value={settings.metaTitle} field="metaTitle" />
           <Field label="وصف SEO" value={settings.metaDescription} field="metaDescription" />
+          <div className="border-t border-border pt-3 mt-2">
+            <p className="text-xs font-bold text-foreground text-right mb-2">📊 أكواد التتبع والتسويق</p>
+            <Field label="Facebook Pixel ID" value={settings.facebookPixelId} field="facebookPixelId" />
+            <Field label="Google Ads ID (AW-...)" value={settings.googleAdsId} field="googleAdsId" />
+            <Field label="Google Analytics ID (G-...)" value={settings.googleAnalyticsId} field="googleAnalyticsId" />
+          </div>
         </div>
       </div>
 

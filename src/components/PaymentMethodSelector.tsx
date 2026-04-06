@@ -1,7 +1,7 @@
-import { Banknote, Wallet, CreditCard, CheckCircle, Building2, MapPin } from "lucide-react";
+import { Banknote, Wallet, CreditCard, CheckCircle, Building2, MapPin, Zap } from "lucide-react";
 import { useI18n } from "@/i18n/context";
 
-export type PaymentMethodType = "cash" | "wallet" | "paypal" | "bank_transfer" | "agency_transfer";
+export type PaymentMethodType = "cash" | "wallet" | "paypal" | "stripe" | "bank_transfer" | "agency_transfer";
 
 interface Props {
   selected: PaymentMethodType;
@@ -16,6 +16,7 @@ const PaymentMethodSelector = ({ selected, onChange, walletBalance = 0, compact 
   const methods: { id: PaymentMethodType; label: string; icon: any; desc: string; color: string; iconText?: string }[] = [
     { id: "cash", label: t.customer.cashLabel, icon: Banknote, desc: "الدفع عند الوصول", color: "text-success" },
     { id: "wallet", label: t.customer.walletLabel, icon: Wallet, desc: `${walletBalance.toFixed(2)} DH`, color: "text-primary" },
+    { id: "stripe", label: "Stripe", icon: Zap, desc: "Visa, Mastercard, Apple/Google Pay", color: "text-violet-500" },
     { id: "paypal", label: "PayPal", icon: CreditCard, desc: "دفع إلكتروني آمن", color: "text-info", iconText: "PP" },
     { id: "bank_transfer", label: "تحويل بنكي", icon: Building2, desc: "تحويل عبر الحساب البنكي", color: "text-blue-500" },
     { id: "agency_transfer", label: "تحويل وكالة", icon: MapPin, desc: "Wafacash / Cash Plus", color: "text-amber-500" },

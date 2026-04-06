@@ -16,6 +16,7 @@ import { I18nProvider } from "@/i18n/context";
 import { usePresenceHeartbeat } from "@/hooks/usePresenceHeartbeat";
 import { useTheme } from "@/hooks/useTheme";
 import SmartErrorBoundary from "@/components/SmartErrorBoundary";
+import TrackingScripts from "@/components/TrackingScripts";
 
 // ─── Module route elements ───
 import { mainRouteElements } from "./app/index";
@@ -53,6 +54,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <CartProvider>
+            <TrackingScripts />
             <SmartErrorBoundary>
               <AppInner />
             </SmartErrorBoundary>
