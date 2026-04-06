@@ -5,7 +5,7 @@ import {
   BarChart3, FileText, Car, Users, TrendingUp, MapPin,
   AlertTriangle, FileCheck, Headphones, Settings, Shield,
   Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog, Percent,
-  ShieldCheck, ShieldOff, Globe, RefreshCw, BrainCircuit, Menu, MessageSquare, MessagesSquare, Package, Palette, Monitor, GitBranch, Database, Wallet, Camera, CameraOff, CreditCard, Ticket
+  ShieldCheck, ShieldOff, Globe, RefreshCw, BrainCircuit, Menu, MessageSquare, MessagesSquare, Package, Palette, Monitor, GitBranch, Database, Wallet, Camera, CameraOff, CreditCard, Ticket, Mail
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -118,6 +118,7 @@ const AdminLayout = () => {
     { path: "/admin/paypal-settings", icon: CreditCard, label: "💎 إعدادات PayPal" },
     { path: "/admin/coupons", icon: Ticket, label: "🎟️ كوبونات الخصم" },
     { path: "/admin/prospecting", icon: Search, label: "🔍 التنقيب عن الشركاء" },
+    { path: "/admin/mailbluster", icon: Mail, label: "📧 نماذج المراسلات" },
   ];
 
   useEffect(() => {

@@ -20,7 +20,42 @@ serve(async (req) => {
     const body = await req.json();
     const { action } = body;
 
-    // ─── Sync a single user (on signup) ───
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // Helper: send lead to MailBluster
+    async function syncLead(leadData: any) {
+      const res = await fetch(`${MAILBLUSTER_API}/leads`, {
+        method: "POST",
+        headers: { "Authorization": apiKey!, "Content-Type": "application/json" },
+        body: JSON.stringify({ ...leadData, subscribed: true, overrideExisting: true }),
+      });
+      const data = await res.json();
+      return { ok: res.ok, data };
+    }
+
+    // Helper: get templates for a role
+    async function getTemplatesForRole(role: string) {
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const { data } = await supabase
+        .from("mailbluster_templates")
+        .select("*")
+        .eq("role", role)
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+      return data || [];
+    }
+
+    // Helper: replace template variables
+    function renderTemplate(html: string, vars: Record<string, string>) {
+      let result = html;
+      for (const [key, value] of Object.entries(vars)) {
+        result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value || "");
+      }
+      return result;
+    }
+
+    // ─── Sync a single user (on signup) + send welcome email ───
     if (action === "sync_user") {
       const { email, name, phone, role, city, country } = body;
       if (!email) {
@@ -29,44 +64,110 @@ serve(async (req) => {
         });
       }
 
-      const tags = ["hn-driver-platform", `role:${role || "user"}`];
+      const mappedRole = (role === "client" || !role) ? "user" : role;
+      const tags = ["hn-driver-platform", `role:${mappedRole}`];
       if (city) tags.push(`city:${city}`);
       if (country) tags.push(`country:${country}`);
 
-      const res = await fetch(`${MAILBLUSTER_API}/leads`, {
-        method: "POST",
-        headers: { "Authorization": apiKey, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          firstName: name?.split(" ")[0] || "",
-          lastName: name?.split(" ").slice(1).join(" ") || "",
-          fields: {
-            phone: phone || "",
-            role: role || "user",
-            city: city || "",
-            country: country || "",
-            source: "hn-driver-platform",
-          },
-          tags,
-          subscribed: true,
-          overrideExisting: true,
-        }),
+      const firstName = name?.split(" ")[0] || "";
+      const lastName = name?.split(" ").slice(1).join(" ") || "";
+
+      // 1. Sync lead
+      const syncResult = await syncLead({
+        email,
+        firstName,
+        lastName,
+        fields: { phone: phone || "", role: mappedRole, city: city || "", country: country || "", source: "hn-driver-platform" },
+        tags,
       });
 
-      const data = await res.json();
+      // 2. Get welcome templates and send immediately (delay=0) or queue
+      const templates = await getTemplatesForRole(mappedRole);
+      const emailsSent: string[] = [];
+
+      for (const tpl of templates) {
+        if (tpl.send_delay_hours > 0) continue; // Only instant ones now
+
+        const renderedHtml = renderTemplate(tpl.body_html, { firstName, lastName, email, name: name || "", role: mappedRole });
+        const renderedSubject = renderTemplate(tpl.subject, { firstName, lastName, email, name: name || "", role: mappedRole });
+
+        try {
+          // Send via MailBluster transactional API
+          const sendRes = await fetch(`${MAILBLUSTER_API}/transactional-mails`, {
+            method: "POST",
+            headers: { "Authorization": apiKey!, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              to: email,
+              subject: renderedSubject,
+              html: renderedHtml,
+              fromName: "HN Driver",
+            }),
+          });
+          const sendData = await sendRes.json();
+          emailsSent.push(sendRes.ok ? tpl.template_name : `${tpl.template_name}:failed`);
+        } catch {
+          emailsSent.push(`${tpl.template_name}:error`);
+        }
+      }
+
       return new Response(JSON.stringify({
-        success: res.ok,
-        message: res.ok ? "Lead synced" : (data?.message || "Failed"),
+        success: syncResult.ok,
+        leadSynced: syncResult.ok,
+        emailsSent,
       }), {
-        status: res.ok ? 200 : 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ─── Send a specific template to a user ───
+    if (action === "send_template") {
+      const { email, template_id, variables } = body;
+      if (!email || !template_id) {
+        return new Response(JSON.stringify({ error: "email and template_id required" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const { data: tpl } = await supabase
+        .from("mailbluster_templates")
+        .select("*")
+        .eq("id", template_id)
+        .single();
+
+      if (!tpl) {
+        return new Response(JSON.stringify({ error: "Template not found" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const vars = variables || {};
+      const renderedHtml = renderTemplate(tpl.body_html, vars);
+      const renderedSubject = renderTemplate(tpl.subject, vars);
+
+      const sendRes = await fetch(`${MAILBLUSTER_API}/transactional-mails`, {
+        method: "POST",
+        headers: { "Authorization": apiKey!, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: email,
+          subject: renderedSubject,
+          html: renderedHtml,
+          fromName: "HN Driver",
+        }),
+      });
+      const sendData = await sendRes.json();
+
+      return new Response(JSON.stringify({
+        success: sendRes.ok,
+        data: sendData,
+      }), {
+        status: sendRes.ok ? 200 : 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     // ─── Bulk sync users from database ───
     if (action === "bulk_sync_users") {
-      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const supabase = createClient(supabaseUrl, supabaseKey);
 
       const { data: profiles, error } = await supabase
@@ -90,27 +191,14 @@ serve(async (req) => {
           if (profile.city) tags.push(`city:${profile.city}`);
           if (profile.country) tags.push(`country:${profile.country}`);
 
-          const res = await fetch(`${MAILBLUSTER_API}/leads`, {
-            method: "POST",
-            headers: { "Authorization": apiKey, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: profile.email,
-              firstName: profile.name?.split(" ")[0] || "",
-              lastName: profile.name?.split(" ").slice(1).join(" ") || "",
-              fields: {
-                phone: profile.phone || "",
-                role,
-                city: profile.city || "",
-                country: profile.country || "",
-                source: "hn-driver-platform",
-              },
-              tags,
-              subscribed: true,
-              overrideExisting: true,
-            }),
+          const result = await syncLead({
+            email: profile.email,
+            firstName: profile.name?.split(" ")[0] || "",
+            lastName: profile.name?.split(" ").slice(1).join(" ") || "",
+            fields: { phone: profile.phone || "", role, city: profile.city || "", country: profile.country || "", source: "hn-driver-platform" },
+            tags,
           });
-          await res.json();
-          results.push({ email: profile.email, status: res.ok ? "success" : "failed" });
+          results.push({ email: profile.email, status: result.ok ? "success" : "failed" });
         } catch {
           results.push({ email: profile.email, status: "failed" });
         }
@@ -124,7 +212,7 @@ serve(async (req) => {
       });
     }
 
-    // ─── Sync prospects (restaurants/stores) ───
+    // ─── Sync prospects ───
     if (action === "sync_leads" && Array.isArray(body.leads)) {
       const results: { name: string; status: string; error?: string }[] = [];
 
@@ -133,34 +221,14 @@ serve(async (req) => {
           const tags = ["prospect", `category:${lead.category || "general"}`];
           if (lead.area) tags.push(`area:${lead.area}`);
 
-          const res = await fetch(`${MAILBLUSTER_API}/leads`, {
-            method: "POST",
-            headers: { "Authorization": apiKey, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: lead.email || `${lead.google_place_id}@placeholder.local`,
-              firstName: lead.name || "",
-              lastName: "",
-              fields: {
-                phone: lead.phone || "",
-                address: lead.address || "",
-                area: lead.area || "",
-                category: lead.category || "",
-                website: lead.website || "",
-                rating: String(lead.rating || ""),
-                source: "hn-driver-prospecting",
-              },
-              tags,
-              subscribed: true,
-              overrideExisting: true,
-            }),
+          const result = await syncLead({
+            email: lead.email || `${lead.google_place_id}@placeholder.local`,
+            firstName: lead.name || "",
+            lastName: "",
+            fields: { phone: lead.phone || "", address: lead.address || "", area: lead.area || "", category: lead.category || "", website: lead.website || "", rating: String(lead.rating || ""), source: "hn-driver-prospecting" },
+            tags,
           });
-
-          const data = await res.json();
-          results.push({
-            name: lead.name,
-            status: res.ok ? "success" : "failed",
-            error: res.ok ? undefined : (data?.message || JSON.stringify(data)),
-          });
+          results.push({ name: lead.name, status: result.ok ? "success" : "failed", error: result.ok ? undefined : result.data?.message });
         } catch (e) {
           results.push({ name: lead.name, status: "failed", error: e.message });
         }
@@ -168,8 +236,7 @@ serve(async (req) => {
 
       const successCount = results.filter(r => r.status === "success").length;
       return new Response(JSON.stringify({
-        success: true, total: results.length, synced: successCount,
-        failed: results.length - successCount, details: results,
+        success: true, total: results.length, synced: successCount, failed: results.length - successCount, details: results,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -186,7 +253,7 @@ serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ error: "Invalid action. Use: sync_user, bulk_sync_users, sync_leads, get_brands" }), {
+    return new Response(JSON.stringify({ error: "Invalid action. Use: sync_user, send_template, bulk_sync_users, sync_leads, get_brands" }), {
       status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
