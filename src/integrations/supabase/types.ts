@@ -1820,6 +1820,54 @@ export type Database = {
         }
         Relationships: []
       }
+      hn_driver_leads: {
+        Row: {
+          address: string | null
+          business_name: string
+          category: string | null
+          city: string | null
+          created_at: string
+          date_added: string | null
+          id: string
+          phone: string | null
+          rating: number | null
+          segment: string | null
+          source: string | null
+          status: string | null
+          total_ratings: number | null
+        }
+        Insert: {
+          address?: string | null
+          business_name?: string
+          category?: string | null
+          city?: string | null
+          created_at?: string
+          date_added?: string | null
+          id?: string
+          phone?: string | null
+          rating?: number | null
+          segment?: string | null
+          source?: string | null
+          status?: string | null
+          total_ratings?: number | null
+        }
+        Update: {
+          address?: string | null
+          business_name?: string
+          category?: string | null
+          city?: string | null
+          created_at?: string
+          date_added?: string | null
+          id?: string
+          phone?: string | null
+          rating?: number | null
+          segment?: string | null
+          source?: string | null
+          status?: string | null
+          total_ratings?: number | null
+        }
+        Relationships: []
+      }
       import_logs: {
         Row: {
           categories_count: number
