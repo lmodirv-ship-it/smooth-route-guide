@@ -108,12 +108,16 @@ serve(async (req) => {
               address: (place.formatted_address || "").substring(0, 300),
               area: (area || "").substring(0, 100),
               city: config.city,
+              country: config.country || "Morocco",
               category: type,
               rating: Number(place.rating || 0),
               website: (website || "").substring(0, 300),
               google_place_id: place.place_id,
               source: "google_auto",
               status: "new",
+              call_center_queued: !!phone,
+              call_priority: Number(place.rating || 0) >= 4 ? "high" : "normal",
+              call_status: phone ? "pending" : "no_phone",
             };
 
             const { error: insertErr } = await supabase
