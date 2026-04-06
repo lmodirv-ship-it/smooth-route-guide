@@ -1959,6 +1959,45 @@ export type Database = {
           },
         ]
       }
+      mailbluster_templates: {
+        Row: {
+          body_html: string
+          created_at: string
+          id: string
+          is_active: boolean
+          role: string
+          send_delay_hours: number
+          sort_order: number
+          subject: string
+          template_name: string
+          updated_at: string
+        }
+        Insert: {
+          body_html?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          role?: string
+          send_delay_hours?: number
+          sort_order?: number
+          subject?: string
+          template_name?: string
+          updated_at?: string
+        }
+        Update: {
+          body_html?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          role?: string
+          send_delay_hours?: number
+          sort_order?: number
+          subject?: string
+          template_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       menu_categories: {
         Row: {
           created_at: string
