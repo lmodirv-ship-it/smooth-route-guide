@@ -445,22 +445,22 @@ export default function LandingPage() {
                   >
                     🎁 {dir === "rtl" ? "سجّل واحصل على 50 درهم مجاناً!" : "Sign up & get 50 MAD free!"}
                   </motion.div>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center w-full">
                     <Button
                       size="lg"
                       onClick={() => navigate("/auth/client")}
-                      className="min-w-[13rem] px-8"
+                      className="min-w-[15rem] px-10 h-14 text-lg font-black animate-pulse hover:animate-none shadow-lg shadow-primary/30"
                     >
                       <span className="relative z-10 flex items-center gap-2">
-                        <UserPlus className={`w-4 h-4 ${dir === "rtl" ? "ml-1" : "mr-1"}`} />
-                        {dir === "rtl" ? "إنشاء حساب مجاني" : "Create Free Account"}
+                        <UserPlus className={`w-5 h-5 ${dir === "rtl" ? "ml-1" : "mr-1"}`} />
+                        {dir === "rtl" ? "🚀 سجّل الآن مجاناً" : "🚀 Sign Up Free Now"}
                       </span>
                     </Button>
                     <Button
                       size="lg"
                       variant="outline"
                       onClick={() => navigate("/login")}
-                      className="min-w-[13rem] px-8 group"
+                      className="min-w-[13rem] px-8 h-14 text-base group"
                     >
                       <PlayCircle className={`w-4 h-4 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
                       {t.common.login}
