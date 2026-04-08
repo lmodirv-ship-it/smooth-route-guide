@@ -153,6 +153,9 @@ export const mainRouteElements = (
       <Route path="/assistant" element={<RequireRole><LazyPage component={AIAssistant} /></RequireRole>} />
     </Route>
 
+    {/* ─── Privacy Policy ─── */}
+    <Route path="/privacy" element={<LazyPage component={PrivacyPolicy} />} />
+
     {/* ─── Dynamic CMS Pages ─── */}
     <Route path="/p/:slug" element={<LazyPage component={DynamicPage} />} />
 
