@@ -79,6 +79,7 @@ const Cart = lazy(() => import("@/pages/delivery/Cart"));
 
 const DynamicPage = lazy(() => import("@/pages/DynamicPage"));
 const HNGroupePortal = lazy(() => import("@/pages/HNGroupePortal"));
+const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 
 export const mainRouteElements = (
   <>
