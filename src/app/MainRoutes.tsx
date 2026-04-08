@@ -79,6 +79,7 @@ const Cart = lazy(() => import("@/pages/delivery/Cart"));
 
 const DynamicPage = lazy(() => import("@/pages/DynamicPage"));
 const HNGroupePortal = lazy(() => import("@/pages/HNGroupePortal"));
+const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 
 export const mainRouteElements = (
   <>
@@ -151,6 +152,9 @@ export const mainRouteElements = (
       <Route path="/ai" element={<RequireRole><LazyPage component={AgentHub} /></RequireRole>} />
       <Route path="/assistant" element={<RequireRole><LazyPage component={AIAssistant} /></RequireRole>} />
     </Route>
+
+    {/* ─── Privacy Policy ─── */}
+    <Route path="/privacy" element={<LazyPage component={PrivacyPolicy} />} />
 
     {/* ─── Dynamic CMS Pages ─── */}
     <Route path="/p/:slug" element={<LazyPage component={DynamicPage} />} />
