@@ -9,6 +9,7 @@ import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useDeliveryPricingSettings } from "@/hooks/useDeliveryPricingSettings";
+import { trackEvent } from "@/components/TrackingScripts";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -128,6 +129,7 @@ const Cart = () => {
       if (itemsErr) throw itemsErr;
 
       clearCart();
+      trackEvent("purchase", { value: grandTotal, currency: "MAD", transaction_id: order.id, items: items.length });
       toast({
         title: "تم إرسال طلبك بنجاح ✅",
         description: `المجموع: ${grandTotal} DH — سيتم تأكيد الطلب من مركز الاتصال`,

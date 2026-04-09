@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { trackEvent, trackConversion } from "@/components/TrackingScripts";
 import { lovable } from "@/integrations/lovable/index";
 import {
   getAuthTimeoutMessage,
@@ -120,6 +121,7 @@ const AuthPage = () => {
         const { error } = await signInWithPasswordWithTimeout({ email, password });
         if (error) throw error;
         toast({ title: "تم تسجيل الدخول بنجاح ✅" });
+        trackEvent("login", { method: "email", role });
       } else {
         if (!name) {
           toast({ title: "يرجى إدخال الاسم", variant: "destructive" });
@@ -173,6 +175,8 @@ const AuthPage = () => {
         toast({
           title: "تم إنشاء الحساب بنجاح ✅",
         });
+        trackEvent("sign_up", { method: "email", role });
+        trackConversion();
       }
     } catch (err: any) {
       let msg = err?.message || "حدث خطأ غير متوقع";

@@ -17,6 +17,7 @@ import { usePresenceHeartbeat } from "@/hooks/usePresenceHeartbeat";
 import { useTheme } from "@/hooks/useTheme";
 import SmartErrorBoundary from "@/components/SmartErrorBoundary";
 import TrackingScripts from "@/components/TrackingScripts";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 
 // ─── Module route elements ───
 import { mainRouteElements } from "./app/index";
@@ -55,6 +56,7 @@ const App = () => (
           <Sonner />
           <CartProvider>
             <TrackingScripts />
+            <CookieConsentBanner />
             <SmartErrorBoundary>
               <AppInner />
             </SmartErrorBoundary>

@@ -32,6 +32,7 @@ export default function BrandingSettings() {
     facebookPixelId: "",
     googleAdsId: "",
     googleAnalyticsId: "",
+    googleAdsConversionLabel: "",
     metaTitle: "HN Driver — Smart Management",
     metaDescription: "The most powerful ride & delivery platform",
     customCss: "",
@@ -146,6 +147,7 @@ export default function BrandingSettings() {
             <Field label="Facebook Pixel ID" value={settings.facebookPixelId} field="facebookPixelId" />
             <Field label="Google Ads ID (AW-...)" value={settings.googleAdsId} field="googleAdsId" />
             <Field label="Google Analytics ID (G-...)" value={settings.googleAnalyticsId} field="googleAnalyticsId" />
+            <Field label="Google Ads Conversion Label" value={settings.googleAdsConversionLabel} field="googleAdsConversionLabel" />
           </div>
         </div>
       </div>

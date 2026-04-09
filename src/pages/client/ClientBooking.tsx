@@ -9,6 +9,7 @@ import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/context";
 import PaymentMethodSelector, { PaymentMethodType } from "@/components/PaymentMethodSelector";
+import { trackEvent } from "@/components/TrackingScripts";
 
 interface RideDraft {
   pickup: string;
@@ -65,6 +66,7 @@ const ClientBooking = () => {
       }).select("id").single();
       if (error) throw error;
       toast({ title: t.customer.orderCreated });
+      trackEvent("purchase", { value: ride.price, currency: "MAD", transaction_id: data.id, item_name: "ride" });
       navigate(`/customer/tracking?id=${data.id}`);
     } catch (error: any) {
       toast({ title: t.customer.orderFailed, description: error.message, variant: "destructive" });
