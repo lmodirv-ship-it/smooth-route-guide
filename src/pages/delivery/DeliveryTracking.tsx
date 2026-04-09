@@ -298,8 +298,30 @@ const DeliveryTracking = () => {
             <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto mb-3" />
             <p className="text-foreground font-bold text-lg">تم التوصيل بنجاح! 🎉</p>
             <p className="text-primary font-black text-2xl mt-1">{order.total_price || order.estimated_price || "—"} DH</p>
+            
+            {/* Tip & Rate buttons */}
+            <div className="flex gap-2 mt-3">
+              {order.driver_id && (
+                <Button
+                  onClick={() => setShowTip(true)}
+                  className="flex-1 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold"
+                >
+                  💚 إكرامية للسائق
+                </Button>
+              )}
+              {order.driver_id && (
+                <Button
+                  onClick={() => setShowRating(true)}
+                  variant="outline"
+                  className="flex-1 rounded-xl font-bold"
+                >
+                  ⭐ تقييم السائق
+                </Button>
+              )}
+            </div>
+            
             <Button onClick={() => navigate("/delivery")}
-              className="mt-4 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-bold">
+              className="mt-2 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-bold">
               العودة للرئيسية
             </Button>
           </motion.div>
