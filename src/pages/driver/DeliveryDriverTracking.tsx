@@ -71,6 +71,10 @@ const DeliveryDriverTracking = () => {
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
   const [showRating, setShowRating] = useState(false);
   const [driverId, setDriverId] = useState<string | null>(null);
+  const [showQuickChat, setShowQuickChat] = useState(false);
+  const [showPhotoProof, setShowPhotoProof] = useState(false);
+  const [showRestaurantRating, setShowRestaurantRating] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { dir } = useI18n();
   const inAppCall = useInAppCall();
 
