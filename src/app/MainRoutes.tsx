@@ -80,6 +80,7 @@ const Cart = lazy(() => import("@/pages/delivery/Cart"));
 const DynamicPage = lazy(() => import("@/pages/DynamicPage"));
 const HNGroupePortal = lazy(() => import("@/pages/HNGroupePortal"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
+const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
 
 export const mainRouteElements = (
   <>
@@ -156,6 +157,9 @@ export const mainRouteElements = (
 
     {/* ─── Privacy Policy ─── */}
     <Route path="/privacy" element={<LazyPage component={PrivacyPolicy} />} />
+
+    {/* ─── Unsubscribe ─── */}
+    <Route path="/unsubscribe" element={<LazyPage component={Unsubscribe} />} />
 
     {/* ─── Dynamic CMS Pages ─── */}
     <Route path="/p/:slug" element={<LazyPage component={DynamicPage} />} />

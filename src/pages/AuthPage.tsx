@@ -168,6 +168,16 @@ const AuthPage = () => {
               role: role || "user",
             },
           }).catch(() => {/* silent — non-blocking */});
+
+          // Send welcome email
+          supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "welcome-signup",
+              recipientEmail: email,
+              idempotencyKey: `welcome-${signUpData.user.id}`,
+              templateData: { name: name || undefined },
+            },
+          }).catch(() => {/* silent — non-blocking */});
         }
 
         if (error) throw error;
