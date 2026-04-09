@@ -7,7 +7,7 @@ import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import FloatingChatButton from "@/components/FloatingChatButton";
-import HNChatbot from "@/components/HNChatbot";
+
 import VoiceOrderButton from "@/components/VoiceOrderButton";
 import TopNavLinks from "@/components/TopNavLinks";
 
@@ -132,7 +132,6 @@ const MainLayoutInner = () => {
       
       <Outlet />
       {isVisible("contact_footer") && <GlobalContactFooter />}
-      <HNChatbot />
     </>
   );
 };

@@ -18,6 +18,7 @@ import { useTheme } from "@/hooks/useTheme";
 import SmartErrorBoundary from "@/components/SmartErrorBoundary";
 import TrackingScripts from "@/components/TrackingScripts";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
+import HNChatbot from "@/components/HNChatbot";
 
 // ─── Module route elements ───
 import { mainRouteElements } from "./app/index";
@@ -43,6 +44,7 @@ const AppInner = () => {
         {mainRouteElements}
         {adminRouteElements}
       </Routes>
+      <HNChatbot />
     </BrowserRouter>
   );
 };
