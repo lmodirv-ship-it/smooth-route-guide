@@ -9,6 +9,8 @@ import TrackingInfoTable from "@/components/TrackingInfoTable";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 import { useInAppCall } from "@/hooks/useInAppCall";
 import InAppCallDialog from "@/components/calls/InAppCallDialog";
+import TipDialog from "@/components/driver/TipDialog";
+import RatingDialog from "@/components/RatingDialog";
 import { toast } from "@/hooks/use-toast";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
