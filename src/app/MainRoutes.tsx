@@ -100,8 +100,8 @@ export const mainRouteElements = (
        ═══════════════════════════════════════════ */}
     <Route element={<MainLayout />}>
 
-      {/* ─── Customer /customer/* ─── */}
-      <Route path="/customer" element={<RequireRole allowed={["client"]}><LazyPage component={CustomerHub} /></RequireRole>} />
+      {/* ─── Customer /customer/* — hub is PUBLIC for browsing ─── */}
+      <Route path="/customer" element={<LazyPage component={CustomerHub} />} />
       <Route path="/customer/ride" element={<RequireRole allowed={["client"]}><LazyPage component={CustomerPage} /></RequireRole>} />
       <Route path="/customer/tracking" element={<RequireRole allowed={["client"]}><LazyPage component={CustomerTracking} /></RequireRole>} />
       <Route path="/customer/booking" element={<RequireRole allowed={["client"]}><LazyPage component={ClientBooking} /></RequireRole>} />
@@ -130,23 +130,24 @@ export const mainRouteElements = (
       <Route path="/driver/delivery/tracking" element={<RequireRole allowed={["driver", "delivery"]}><LazyPage component={DeliveryDriverTracking} /></RequireRole>} />
       <Route path="/driver/subscription" element={<RequireRole allowed={["driver", "delivery"]}><LazyPage component={DriverSubscription} /></RequireRole>} />
 
-      {/* ─── Delivery /delivery/* ─── */}
-      <Route path="/delivery" element={<RequireRole allowed={["client"]}><LazyPage component={DeliveryHome} /></RequireRole>} />
+      {/* ─── Delivery /delivery/* — browsing is PUBLIC, actions require auth ─── */}
+      <Route path="/delivery" element={<LazyPage component={DeliveryHome} />} />
+      <Route path="/delivery/restaurants" element={<LazyPage component={RestaurantsList} />} />
+      <Route path="/delivery/restaurant/:id" element={<LazyPage component={RestaurantMenu} />} />
+      <Route path="/delivery/store/:id" element={<LazyPage component={StoreDetail} />} />
+      <Route path="/delivery/:category" element={<LazyPage component={DeliveryCategory} />} />
+      {/* Actions require login */}
       <Route path="/delivery/tracking" element={<RequireRole allowed={["client"]}><LazyPage component={DeliveryTracking} /></RequireRole>} />
       <Route path="/delivery/history" element={<RequireRole allowed={["client"]}><LazyPage component={DeliveryHistory} /></RequireRole>} />
       <Route path="/delivery/courier/send" element={<RequireRole allowed={["client"]}><LazyPage component={CourierSend} /></RequireRole>} />
       <Route path="/delivery/courier/address" element={<RequireRole allowed={["client"]}><LazyPage component={CourierAddress} /></RequireRole>} />
       <Route path="/delivery/courier/track" element={<RequireRole allowed={["client"]}><LazyPage component={CourierTrack} /></RequireRole>} />
       <Route path="/delivery/support" element={<RequireRole allowed={["client"]}><LazyPage component={DeliverySupport} /></RequireRole>} />
-      <Route path="/delivery/restaurants" element={<RequireRole allowed={["client"]}><LazyPage component={RestaurantsList} /></RequireRole>} />
-      <Route path="/delivery/restaurant/:id" element={<RequireRole allowed={["client"]}><LazyPage component={RestaurantMenu} /></RequireRole>} />
       <Route path="/delivery/cart" element={<RequireRole allowed={["client"]}><LazyPage component={Cart} /></RequireRole>} />
-      <Route path="/delivery/store/:id" element={<RequireRole allowed={["client"]}><LazyPage component={StoreDetail} /></RequireRole>} />
       <Route path="/delivery/my-store" element={<RequireRole allowed={["store_owner"]}><LazyPage component={MyStore} /></RequireRole>} />
       <Route path="/delivery/store-subscription" element={<RequireRole allowed={["store_owner"]}><LazyPage component={StoreSubscription} /></RequireRole>} />
       <Route path="/delivery/order/:id" element={<RequireRole allowed={["client"]}><LazyPage component={OrderTracking} /></RequireRole>} />
       <Route path="/delivery/order" element={<RequireRole allowed={["client"]}><LazyPage component={OrderTracking} /></RequireRole>} />
-      <Route path="/delivery/:category" element={<RequireRole allowed={["client"]}><LazyPage component={DeliveryCategory} /></RequireRole>} />
 
       {/* ─── AI ─── */}
       <Route path="/ai" element={<RequireRole><LazyPage component={AgentHub} /></RequireRole>} />
