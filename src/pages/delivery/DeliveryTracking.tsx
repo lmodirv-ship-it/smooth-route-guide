@@ -356,6 +356,31 @@ const DeliveryTracking = () => {
         onToggleMute={inAppCall.toggleMute}
         onToggleVideo={inAppCall.toggleVideo}
       />
+
+      {/* Tip Dialog */}
+      {order && order.driver_id && currentUserId && (
+        <TipDialog
+          open={showTip}
+          onClose={() => setShowTip(false)}
+          orderId={order.id}
+          driverId={order.driver_id}
+          tipperId={currentUserId}
+          driverName={driverRefCode ? `السائق ${driverRefCode}` : "السائق"}
+        />
+      )}
+
+      {/* Rating Dialog */}
+      {order && order.driver_id && currentUserId && (
+        <RatingDialog
+          open={showRating}
+          onClose={() => setShowRating(false)}
+          targetUserId={order.driver_id}
+          driverId={order.driver_id}
+          orderId={order.id}
+          ratingType="customer_to_driver"
+          targetName={driverRefCode ? `السائق ${driverRefCode}` : "السائق"}
+        />
+      )}
     </div>
   );
 };
