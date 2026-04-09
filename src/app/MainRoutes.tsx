@@ -157,6 +157,9 @@ export const mainRouteElements = (
     {/* ─── Privacy Policy ─── */}
     <Route path="/privacy" element={<LazyPage component={PrivacyPolicy} />} />
 
+    {/* ─── Unsubscribe ─── */}
+    <Route path="/unsubscribe" element={<LazyPage component={Unsubscribe} />} />
+
     {/* ─── Dynamic CMS Pages ─── */}
     <Route path="/p/:slug" element={<LazyPage component={DynamicPage} />} />
 
