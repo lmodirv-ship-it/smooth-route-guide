@@ -2,9 +2,11 @@ import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Play, Pause, Volume2, VolumeX, Car, Package, Smartphone } from "lucide-react";
 import { useI18n } from "@/i18n/context";
-import promoHnAsset from "@/assets/promo-video-hn.mp4.asset.json";
-import promoDeliveryAsset from "@/assets/promo-video-delivery.mp4.asset.json";
-import promoRideAsset from "@/assets/promo-video-ride-youtube.mp4.asset.json";
+
+const SUPABASE_URL = "https://typamugwwatqmdkxkfof.supabase.co/storage/v1/object/public/promo-videos";
+const promoHnUrl = `${SUPABASE_URL}/promo-video-hn.mp4`;
+const promoDeliveryUrl = `${SUPABASE_URL}/promo-video-delivery.mp4`;
+const promoRideUrl = `${SUPABASE_URL}/promo-video-ride.mp4`;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -85,21 +87,21 @@ const VideoShowcaseSection = () => {
 
   const videos = [
     {
-      src: promoHnAsset.url,
+      src: promoHnUrl,
       title: dir === "rtl" ? "منصة HN Driver" : "HN Driver Platform",
       desc: dir === "rtl" ? "اكتشف المنصة الأقوى للنقل والتوصيل في طنجة — تسجيل سهل، رحلة أولى مجانية، وخدمة 24/7" : "Discover the most powerful ride & delivery platform in Tangier",
       icon: Smartphone,
       iconColor: "bg-primary/20 text-primary",
     },
     {
-      src: promoDeliveryAsset.url,
+      src: promoDeliveryUrl,
       title: dir === "rtl" ? "خدمة التوصيل السريع" : "Express Delivery",
       desc: dir === "rtl" ? "توصيل الطلبات من المطاعم والمتاجر في أقل من 30 دقيقة — عمولة 0% للسائقين الجدد" : "Orders delivered from restaurants & stores in under 30 minutes",
       icon: Package,
       iconColor: "bg-success/20 text-success",
     },
     {
-      src: promoRideAsset.url,
+      src: promoRideUrl,
       title: dir === "rtl" ? "خدمة النقل الخاص" : "Private Rides",
       desc: dir === "rtl" ? "سيارة خاصة بأسعار منافسة — احجز رحلتك الآن واحصل على رصيد 50 درهم" : "Private car at competitive prices — book now & get 50 MAD credit",
       icon: Car,
