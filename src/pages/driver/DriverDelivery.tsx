@@ -9,6 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import LeafletMap from "@/components/LeafletMap";
+import AcceptanceTimer from "@/components/driver/AcceptanceTimer";
+import NetEarningsEstimate from "@/components/driver/NetEarningsEstimate";
 import { useDemandHeatmap } from "@/hooks/useDemandHeatmap";
 import { useDriverGeolocation } from "@/hooks/useDriverGeolocation";
 import { useDriverSubscription } from "@/hooks/useDriverSubscription";
@@ -78,6 +80,7 @@ const DriverDelivery = () => {
   const [driverRating, setDriverRating] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [timerOrderId, setTimerOrderId] = useState<string | null>(null);
   const { location: driverLocation } = useDriverGeolocation(true);
   const { isExpired: subscriptionExpired, daysLeft: subDaysLeft } = useDriverSubscription();
   const { mapTheme, mapExpanded } = useDriverMapControls();
