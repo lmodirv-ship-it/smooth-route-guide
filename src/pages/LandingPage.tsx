@@ -22,6 +22,7 @@ import SignupPopup from "@/components/SignupPopup";
 import SignupBanner from "@/components/SignupBanner";
 // VisitorCounter already imported above
 import HeroPromoFlash from "@/components/HeroPromoFlash";
+import TangierSocialProof from "@/components/TangierSocialProof";
 import logo from "@/assets/hn-driver-badge.png";
 import iconVtcCar from "@/assets/icon-vtc-car-hn.png";
 import iconDeliveryBike from "@/assets/icon-delivery-bike-hn.png";
@@ -214,8 +215,8 @@ export default function LandingPage() {
             <Button variant="outline" onClick={() => navigate("/login")} className="min-h-0 h-11 px-5 font-medium">
               {t.common.login}
             </Button>
-            <Button onClick={() => navigate("/auth/client")} className="min-h-0 h-11 px-6 font-bold">
-              {dir === "rtl" ? "ابدأ مجاناً" : "Get Started"}
+            <Button onClick={() => navigate("/auth/client")} className="min-h-0 h-11 px-6 font-bold gradient-primary text-primary-foreground glow-primary">
+              {dir === "rtl" ? "🎁 سجل واحصل على 50 د.م" : "🎁 Sign Up & Get 50 MAD"}
             </Button>
           </div>
 
@@ -244,7 +245,7 @@ export default function LandingPage() {
             <div className="h-px bg-border my-2" />
             <LanguageSwitcher variant="outline" />
             <Button variant="outline" onClick={() => { navigate("/login"); setMenuOpen(false); }}>{t.common.login}</Button>
-            <Button onClick={() => { navigate("/auth/client"); setMenuOpen(false); }} className="font-bold">{dir === "rtl" ? "ابدأ مجاناً" : "Get Started"}</Button>
+            <Button onClick={() => { navigate("/auth/client"); setMenuOpen(false); }} className="font-bold gradient-primary text-primary-foreground">{dir === "rtl" ? "🎁 سجل واحصل على 50 د.م" : "🎁 Sign Up & Get 50 MAD"}</Button>
           </motion.div>
         )}
       </nav>
@@ -751,6 +752,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ─── Social Proof + Coverage Map ─── */}
+      <TangierSocialProof />
 
       {/* ─── CTA ─── */}
       <section className="py-20 md:py-28 relative overflow-hidden" id="contact">

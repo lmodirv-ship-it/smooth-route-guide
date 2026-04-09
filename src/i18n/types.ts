@@ -37,6 +37,17 @@ export interface TranslationSet {
     catOnlineStores: string;
     catRestaurants: string;
     catPrinting: string;
+    socialProofBadge: string;
+    socialProofTitle: string;
+    socialProofSubtitle: string;
+    socialProof1Title: string; socialProof1Desc: string;
+    socialProof2Title: string; socialProof2Desc: string;
+    socialProof3Title: string; socialProof3Desc: string;
+    socialProof4Title: string; socialProof4Desc: string;
+    socialProof5Title: string; socialProof5Desc: string;
+    socialProof6Title: string; socialProof6Desc: string;
+    coverageMapTitle: string;
+    coverageMapDesc: string;
   };
   // Common
   common: {
