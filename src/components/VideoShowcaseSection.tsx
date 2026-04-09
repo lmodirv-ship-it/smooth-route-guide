@@ -87,21 +87,21 @@ const VideoShowcaseSection = () => {
 
   const videos = [
     {
-      src: promoHnAsset.url,
+      src: promoHnUrl,
       title: dir === "rtl" ? "منصة HN Driver" : "HN Driver Platform",
       desc: dir === "rtl" ? "اكتشف المنصة الأقوى للنقل والتوصيل في طنجة — تسجيل سهل، رحلة أولى مجانية، وخدمة 24/7" : "Discover the most powerful ride & delivery platform in Tangier",
       icon: Smartphone,
       iconColor: "bg-primary/20 text-primary",
     },
     {
-      src: promoDeliveryAsset.url,
+      src: promoDeliveryUrl,
       title: dir === "rtl" ? "خدمة التوصيل السريع" : "Express Delivery",
       desc: dir === "rtl" ? "توصيل الطلبات من المطاعم والمتاجر في أقل من 30 دقيقة — عمولة 0% للسائقين الجدد" : "Orders delivered from restaurants & stores in under 30 minutes",
       icon: Package,
       iconColor: "bg-success/20 text-success",
     },
     {
-      src: promoRideAsset.url,
+      src: promoRideUrl,
       title: dir === "rtl" ? "خدمة النقل الخاص" : "Private Rides",
       desc: dir === "rtl" ? "سيارة خاصة بأسعار منافسة — احجز رحلتك الآن واحصل على رصيد 50 درهم" : "Private car at competitive prices — book now & get 50 MAD credit",
       icon: Car,
