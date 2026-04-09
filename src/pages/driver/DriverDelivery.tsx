@@ -415,17 +415,28 @@ const DriverDelivery = () => {
                           onClick={() => setSelectedOrderId(order.id === selectedOrderId ? null : order.id)}
                         >
                           <TableCell className="text-center sticky right-0 bg-card z-10">
-                            <Button
-                              size="sm"
-                              className="h-8 min-w-16 bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                acceptOrder(order.id);
-                              }}
-                              disabled={accepting === order.id}
-                            >
-                              {accepting === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "قبول"}
-                            </Button>
+                            {timerOrderId === order.id ? (
+                              <AcceptanceTimer
+                                seconds={30}
+                                onExpire={() => setTimerOrderId(null)}
+                                onAccept={() => { setTimerOrderId(null); acceptOrder(order.id); }}
+                                accepting={accepting === order.id}
+                                price={order.total_price || order.estimated_price}
+                                storeName={order.store_name}
+                              />
+                            ) : (
+                              <Button
+                                size="sm"
+                                className="h-8 min-w-16 bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setTimerOrderId(order.id);
+                                }}
+                                disabled={accepting === order.id}
+                              >
+                                {accepting === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "قبول"}
+                              </Button>
+                            )}
                           </TableCell>
                           <TableCell className="text-right text-sm font-bold text-foreground">
                             {order.total_price || order.estimated_price || "—"} DH
