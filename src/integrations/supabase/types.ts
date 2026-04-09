@@ -1191,6 +1191,7 @@ export type Database = {
           delivery_type: string
           distance: number | null
           driver_id: string | null
+          driver_net_earning: number | null
           estimated_price: number | null
           estimated_time: number | null
           final_price: number | null
@@ -1202,6 +1203,7 @@ export type Database = {
           pickup_address: string | null
           pickup_lat: number | null
           pickup_lng: number | null
+          proof_photo_url: string | null
           status: string
           store_id: string | null
           store_name: string | null
@@ -1226,6 +1228,7 @@ export type Database = {
           delivery_type?: string
           distance?: number | null
           driver_id?: string | null
+          driver_net_earning?: number | null
           estimated_price?: number | null
           estimated_time?: number | null
           final_price?: number | null
@@ -1237,6 +1240,7 @@ export type Database = {
           pickup_address?: string | null
           pickup_lat?: number | null
           pickup_lng?: number | null
+          proof_photo_url?: string | null
           status?: string
           store_id?: string | null
           store_name?: string | null
@@ -1261,6 +1265,7 @@ export type Database = {
           delivery_type?: string
           distance?: number | null
           driver_id?: string | null
+          driver_net_earning?: number | null
           estimated_price?: number | null
           estimated_time?: number | null
           final_price?: number | null
@@ -1272,6 +1277,7 @@ export type Database = {
           pickup_address?: string | null
           pickup_lat?: number | null
           pickup_lng?: number | null
+          proof_photo_url?: string | null
           status?: string
           store_id?: string | null
           store_name?: string | null
@@ -1511,6 +1517,68 @@ export type Database = {
             columns: ["package_id"]
             isOneToOne: false
             referencedRelation: "driver_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      driver_tips: {
+        Row: {
+          amount: number
+          created_at: string
+          driver_id: string
+          id: string
+          message: string | null
+          order_id: string | null
+          tipper_id: string
+          trip_id: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          driver_id: string
+          id?: string
+          message?: string | null
+          order_id?: string | null
+          tipper_id: string
+          trip_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          driver_id?: string
+          id?: string
+          message?: string | null
+          order_id?: string | null
+          tipper_id?: string
+          trip_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_tips_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "active_drivers_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_tips_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_tips_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_tips_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
             referencedColumns: ["id"]
           },
         ]
@@ -2916,6 +2984,71 @@ export type Database = {
           status?: string
         }
         Relationships: []
+      }
+      restaurant_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          driver_id: string
+          id: string
+          order_accuracy: boolean | null
+          order_id: string | null
+          score: number
+          store_id: string
+          wait_time_minutes: number | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          driver_id: string
+          id?: string
+          order_accuracy?: boolean | null
+          order_id?: string | null
+          score: number
+          store_id: string
+          wait_time_minutes?: number | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          driver_id?: string
+          id?: string
+          order_accuracy?: boolean | null
+          order_id?: string | null
+          score?: number
+          store_id?: string
+          wait_time_minutes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_ratings_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "active_drivers_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_ratings_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_ratings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_ratings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reward_stars: {
         Row: {

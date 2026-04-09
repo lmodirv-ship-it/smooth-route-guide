@@ -14,6 +14,10 @@ import { useI18n } from "@/i18n/context";
 import { useInAppCall } from "@/hooks/useInAppCall";
 import InAppCallDialog from "@/components/calls/InAppCallDialog";
 import RatingDialog from "@/components/RatingDialog";
+import QuickChatMessages from "@/components/driver/QuickChatMessages";
+import PhotoProofCapture from "@/components/driver/PhotoProofCapture";
+import RestaurantRatingDialog from "@/components/driver/RestaurantRatingDialog";
+import NetEarningsEstimate from "@/components/driver/NetEarningsEstimate";
 import { toast } from "@/hooks/use-toast";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
@@ -67,6 +71,10 @@ const DeliveryDriverTracking = () => {
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
   const [showRating, setShowRating] = useState(false);
   const [driverId, setDriverId] = useState<string | null>(null);
+  const [showQuickChat, setShowQuickChat] = useState(false);
+  const [showPhotoProof, setShowPhotoProof] = useState(false);
+  const [showRestaurantRating, setShowRestaurantRating] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { dir } = useI18n();
   const inAppCall = useInAppCall();
 
@@ -76,6 +84,7 @@ const DeliveryDriverTracking = () => {
     const findActive = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
+      setCurrentUserId(user.id);
       const { data: driver } = await supabase.from("drivers").select("id").eq("user_id", user.id).single();
       if (!driver) { setLoading(false); return; }
       setDriverId(driver.id);
@@ -249,8 +258,18 @@ const DeliveryDriverTracking = () => {
         return;
       }
       const updates: any = { status: newStatus, updated_at: new Date().toISOString() };
-      if (newStatus === "picked_up") updates.picked_up_at = new Date().toISOString();
-      if (newStatus === "delivered") updates.delivered_at = new Date().toISOString();
+      if (newStatus === "picked_up") {
+        updates.picked_up_at = new Date().toISOString();
+        // Show restaurant rating after pickup
+        if (order?.store_id) setShowRestaurantRating(true);
+      }
+      if (newStatus === "on_the_way_to_customer") {
+        // Show photo proof before marking delivered (driver takes photo when delivering)
+      }
+      if (newStatus === "delivered") {
+        updates.delivered_at = new Date().toISOString();
+        setShowPhotoProof(true); // Show photo proof dialog
+      }
       await supabase.from("delivery_orders").update(updates).eq("id", orderId);
       if (newStatus === "delivered") {
         toast({ title: "تم التسليم بنجاح ✅" });
@@ -347,7 +366,13 @@ const DeliveryDriverTracking = () => {
 
         {/* ── Info Table + Actions ── */}
         {!isFinished && (
-          <div className="px-4 pb-3">
+          <div className="px-4 pb-3 space-y-2">
+            {/* Net Earnings Estimate */}
+            <NetEarningsEstimate
+              totalPrice={Number(order.total_price) || null}
+              deliveryFee={Number(order.delivery_fee) || null}
+            />
+
             <TrackingInfoTable
               distanceKm={distanceToTarget ?? null}
               etaMinutes={etaMinutes}
@@ -367,6 +392,27 @@ const DeliveryDriverTracking = () => {
               updating={updating}
               orderCode={order.order_code}
             />
+
+            {/* Quick Chat Button */}
+            {currentUserId && (
+              <div className="mt-2">
+                {showQuickChat ? (
+                  <QuickChatMessages
+                    orderId={order.id}
+                    recipientId={order.user_id}
+                    senderId={currentUserId}
+                    onClose={() => setShowQuickChat(false)}
+                  />
+                ) : (
+                  <button
+                    onClick={() => setShowQuickChat(true)}
+                    className="w-full py-2 rounded-xl bg-muted/50 border border-border text-xs font-bold text-foreground hover:bg-muted transition-colors flex items-center justify-center gap-2"
+                  >
+                    💬 رسائل سريعة للزبون
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -431,6 +477,31 @@ const DeliveryDriverTracking = () => {
           orderId={order.id}
           ratingType="driver_to_customer"
           targetName={customerRefCode ? `الزبون ${customerRefCode}` : "الزبون"}
+        />
+      )}
+
+      {/* Photo Proof Dialog */}
+      {order && showPhotoProof && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md p-4 safe-area-bottom">
+            <PhotoProofCapture
+              orderId={order.id}
+              onPhotoSaved={() => setShowPhotoProof(false)}
+              onSkip={() => setShowPhotoProof(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Restaurant Rating Dialog */}
+      {order && driverId && order.store_id && (
+        <RestaurantRatingDialog
+          open={showRestaurantRating}
+          onClose={() => setShowRestaurantRating(false)}
+          storeId={order.store_id}
+          storeName={order.store_name || "المطعم"}
+          driverId={driverId}
+          orderId={order.id}
         />
       )}
     </div>

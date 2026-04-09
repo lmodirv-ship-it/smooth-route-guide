@@ -9,6 +9,8 @@ import TrackingInfoTable from "@/components/TrackingInfoTable";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 import { useInAppCall } from "@/hooks/useInAppCall";
 import InAppCallDialog from "@/components/calls/InAppCallDialog";
+import TipDialog from "@/components/driver/TipDialog";
+import RatingDialog from "@/components/RatingDialog";
 import { toast } from "@/hooks/use-toast";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
@@ -38,11 +40,17 @@ const DeliveryTracking = () => {
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
   const [throttledDriverPos, setThrottledDriverPos] = useState<{ lat: number; lng: number } | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [showTip, setShowTip] = useState(false);
+  const [showRating, setShowRating] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const lastRouteFetchRef = useRef(0);
   const inAppCall = useInAppCall();
 
   useEffect(() => {
     const fetchOrder = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setCurrentUserId(user.id);
       if (id) {
         const { data } = await supabase.from("delivery_orders").select("*").eq("id", id).single();
         if (data) setOrder(data);
@@ -290,8 +298,30 @@ const DeliveryTracking = () => {
             <CheckCircle className="w-16 h-16 text-emerald-400 mx-auto mb-3" />
             <p className="text-foreground font-bold text-lg">تم التوصيل بنجاح! 🎉</p>
             <p className="text-primary font-black text-2xl mt-1">{order.total_price || order.estimated_price || "—"} DH</p>
+            
+            {/* Tip & Rate buttons */}
+            <div className="flex gap-2 mt-3">
+              {order.driver_id && (
+                <Button
+                  onClick={() => setShowTip(true)}
+                  className="flex-1 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold"
+                >
+                  💚 إكرامية للسائق
+                </Button>
+              )}
+              {order.driver_id && (
+                <Button
+                  onClick={() => setShowRating(true)}
+                  variant="outline"
+                  className="flex-1 rounded-xl font-bold"
+                >
+                  ⭐ تقييم السائق
+                </Button>
+              )}
+            </div>
+            
             <Button onClick={() => navigate("/delivery")}
-              className="mt-4 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-bold">
+              className="mt-2 w-full rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-bold">
               العودة للرئيسية
             </Button>
           </motion.div>
@@ -326,6 +356,31 @@ const DeliveryTracking = () => {
         onToggleMute={inAppCall.toggleMute}
         onToggleVideo={inAppCall.toggleVideo}
       />
+
+      {/* Tip Dialog */}
+      {order && order.driver_id && currentUserId && (
+        <TipDialog
+          open={showTip}
+          onClose={() => setShowTip(false)}
+          orderId={order.id}
+          driverId={order.driver_id}
+          tipperId={currentUserId}
+          driverName={driverRefCode ? `السائق ${driverRefCode}` : "السائق"}
+        />
+      )}
+
+      {/* Rating Dialog */}
+      {order && order.driver_id && currentUserId && (
+        <RatingDialog
+          open={showRating}
+          onClose={() => setShowRating(false)}
+          targetUserId={order.driver_id}
+          driverId={order.driver_id}
+          orderId={order.id}
+          ratingType="customer_to_driver"
+          targetName={driverRefCode ? `السائق ${driverRefCode}` : "السائق"}
+        />
+      )}
     </div>
   );
 };
