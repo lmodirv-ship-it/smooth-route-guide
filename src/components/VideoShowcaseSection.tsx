@@ -2,9 +2,11 @@ import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Play, Pause, Volume2, VolumeX, Car, Package, Smartphone } from "lucide-react";
 import { useI18n } from "@/i18n/context";
-import promoHnAsset from "@/assets/promo-video-hn.mp4.asset.json";
-import promoDeliveryAsset from "@/assets/promo-video-delivery.mp4.asset.json";
-import promoRideAsset from "@/assets/promo-video-ride-youtube.mp4.asset.json";
+
+const SUPABASE_URL = "https://typamugwwatqmdkxkfof.supabase.co/storage/v1/object/public/promo-videos";
+const promoHnUrl = `${SUPABASE_URL}/promo-video-hn.mp4`;
+const promoDeliveryUrl = `${SUPABASE_URL}/promo-video-delivery.mp4`;
+const promoRideUrl = `${SUPABASE_URL}/promo-video-ride.mp4`;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
