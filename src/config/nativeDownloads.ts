@@ -24,6 +24,7 @@ export const nativeDownloads: NativeDownload[] = [
     buildCommand: "Client App",
     platform: "mobile",
     version: "v1.0.0",
+    playStoreUrl: "https://play.google.com/store/apps/details?id=com.hndriver.client",
   },
   {
     id: "android-ride",
@@ -35,6 +36,7 @@ export const nativeDownloads: NativeDownload[] = [
     buildCommand: "Driver Ride App",
     platform: "mobile",
     version: "v1.0.0",
+    playStoreUrl: "https://play.google.com/store/apps/details?id=com.hndriver.app",
   },
   {
     id: "android-delivery",
@@ -46,6 +48,7 @@ export const nativeDownloads: NativeDownload[] = [
     buildCommand: "Driver Delivery App",
     platform: "mobile",
     version: "v1.0.0",
+    playStoreUrl: "https://play.google.com/store/apps/details?id=com.hndriver.delivery",
   },
   {
     id: "ios",
