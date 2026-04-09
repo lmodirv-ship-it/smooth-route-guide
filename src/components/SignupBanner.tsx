@@ -45,10 +45,10 @@ const SignupBanner = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-foreground truncate">
-                🎁 سجّل واحصل على 50 درهم مجاناً!
+                🍽️ تصفّح المطاعم والمتاجر بحرية
               </p>
               <p className="text-xs text-muted-foreground truncate">
-                رحلات • توصيل • تسوّق — كل شيء في تطبيق واحد
+                سجّل فقط عندما تريد الطلب — خطوة واحدة بسيطة
               </p>
             </div>
             <button
