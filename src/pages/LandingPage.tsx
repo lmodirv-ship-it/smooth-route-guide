@@ -756,6 +756,37 @@ export default function LandingPage() {
       {/* ─── Social Proof + Coverage Map ─── */}
       <TangierSocialProof />
 
+      {/* ─── Download App Section ─── */}
+      <section id="download" className="py-20 md:py-28 relative">
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="max-w-2xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card border border-primary/20 text-xs text-primary mb-6">
+              <Smartphone className="w-4 h-4" />
+              {dir === "rtl" ? "متاح الآن على Google Play" : "Now available on Google Play"}
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold font-display mb-6">
+              <span className="text-gradient-primary">{dir === "rtl" ? "حمّل التطبيق الآن" : "Download the App"}</span>
+            </h2>
+            <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
+              {dir === "rtl"
+                ? "احصل على تجربة أفضل مع تطبيق HN Driver على هاتفك — اطلب رحلة، تتبع طلبك، أو ابدأ العمل كسائق."
+                : "Get the best experience with HN Driver on your phone — book a ride, track your order, or start driving."}
+            </p>
+            <a
+              href="https://play.google.com/store/apps/details?id=com.hndriver.app&pcampaignid=web_share"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-foreground text-background font-bold text-lg hover:scale-105 transition-transform duration-300 shadow-xl"
+            >
+              <svg viewBox="0 0 24 24" className="w-7 h-7 fill-current" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 2.302a1 1 0 0 1 0 1.38l-2.302 2.302L15.396 13l2.302-2.492zM5.864 3.458L16.8 9.79l-2.302 2.302L5.864 3.458z" />
+              </svg>
+              Google Play
+            </a>
+          </motion.div>
+        </div>
+      </section>
+
       {/* ─── CTA ─── */}
       <section className="py-20 md:py-28 relative overflow-hidden" id="contact">
         <div className="absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
