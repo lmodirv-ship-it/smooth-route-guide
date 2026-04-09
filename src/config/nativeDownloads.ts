@@ -8,6 +8,7 @@ export type NativeDownload = {
   buildCommand: string;
   platform: "mobile" | "desktop";
   version?: string;
+  playStoreUrl?: string;
 };
 
 export const nativeDownloadPageUrl = "/welcome#mobile-download";
