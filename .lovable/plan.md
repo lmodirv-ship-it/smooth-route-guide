@@ -1,73 +1,36 @@
 
 
-# خطة تنفيذ 4 تحسينات: كوكيز + تحويلات + SEO + Google Ads
+## خطة تحديث الشات بوت — شخصية "أمين" بلهجة طنجة
 
----
+### ملخص
+تحديث الشات بوت الحالي ليتبنى شخصية "أمين" المساعد الذكي، مع تعليمات نظام محسّنة تركز على إقناع الزوار بالتسجيل بأسلوب طنجاوي أصيل.
 
-## 1. بانر موافقة الكوكيز (Cookie Consent + Google Consent Mode v2)
+**لا حاجة لمفتاح Google API خارجي** — النظام يستخدم بالفعل Lovable AI (مدعوم بـ Gemini) بدون أي إعداد إضافي.
 
-**ماذا:** شريط سفلي بالعربية يطلب موافقة الزائر على الكوكيز، مع ربطه بـ Google Consent Mode v2.
+### التغييرات
 
-**كيف:**
-- إنشاء مكون `CookieConsentBanner` يظهر أسفل الشاشة عند أول زيارة
-- يحفظ الموافقة في `localStorage`
-- يُضاف `gtag('consent', 'default', { analytics_storage: 'denied', ad_storage: 'denied' })` قبل تحميل gtag
-- عند قبول الزائر: `gtag('consent', 'update', { analytics_storage: 'granted', ad_storage: 'granted' })`
-- زرّان: "قبول الكل" و "رفض غير الضروري"
-- يُضاف في `App.tsx` وجميع التطبيقات الفرعية
-- تعديل `index.html` + باقي HTML لإضافة consent default قبل gtag config
+#### 1. تحديث تعليمات النظام (Edge Function)
+**ملف:** `supabase/functions/hn-chatbot/index.ts`
+- تغيير هوية البوت من وكيل عام إلى **"أمين"** المساعد الذكي
+- إضافة التعابير الطنجاوية: "يا لخوان"، "الخيي"، "فابور"
+- تفصيل العروض: رصيد 50 درهم للركاب + عمولة 0% للسائقين
+- إضافة الرؤية المستقبلية (التوسع لإسبانيا وفرنسا)
+- إضافة القاعدة الذهبية: طمأنة المتردد بمزايا حصرية كمشروع محلي
+- إنهاء كل رد بجملة: "تواصل معانا دابا، حنا ولاد البلاد"
+- ضبط temperature على 0.7
 
-**ملفات:** `src/components/CookieConsentBanner.tsx` (جديد)، `index.html`، `App.tsx`، + 6 HTML أخرى
+#### 2. تحديث رسالة الترحيب + اسم البوت (Frontend)
+**ملف:** `src/components/HNChatbot.tsx`
+- تغيير رسالة الترحيب الأولية لتعكس شخصية أمين مع عرض الـ50 درهم
+- تغيير اسم البوت في الهيدر من "مساعد HN Driver" إلى "أمين — مساعد HN"
+- إضافة أزرار أسئلة سريعة (3 أزرار): "شنو HN Driver؟" / "بغيت نسجل" / "أنا سائق"
 
----
+#### 3. نشر Edge Function
+- إعادة نشر `hn-chatbot` بالتعليمات الجديدة
 
-## 2. تتبع أحداث التحويل (Conversion Events)
-
-**ماذا:** تتبع التسجيل، تسجيل الدخول، الطلبات عبر Google Analytics + Facebook Pixel.
-
-**كيف:**
-- استخدام دالة `trackEvent` الموجودة في `TrackingScripts.tsx`
-- إضافة استدعاءات في:
-  - `AuthPage.tsx`: عند نجاح التسجيل → `trackEvent('sign_up', { method: 'email', role })`
-  - `AuthPage.tsx`: عند نجاح الدخول → `trackEvent('login', { method: 'email' })`
-  - `AuthPage.tsx`: عند Google OAuth → `trackEvent('sign_up', { method: 'google' })`
-  - صفحات الطلبات (Cart, ClientBooking) → `trackEvent('purchase', { value, currency: 'MAD' })`
-
-**ملفات:** `src/pages/AuthPage.tsx`، `src/pages/delivery/Cart.tsx`، `src/pages/client/ClientBooking.tsx`
-
----
-
-## 3. تحسين SEO
-
-**ماذا:** إضافة صفحات مفقودة في sitemap، تحسين meta tags ديناميكية.
-
-**كيف:**
-- توسيع `sitemap.xml` بإضافة: `/privacy`, `/forgot-password`, `/delivery/restaurants`, `/delivery/category/*`
-- إضافة مكون `PageMeta` (باستخدام `document.title` و meta description) في الصفحات الرئيسية
-- إضافة Schema.org للخدمات (Ride, Delivery) كـ JSON-LD
-
-**ملفات:** `public/sitemap.xml`، `src/components/PageMeta.tsx` (جديد)، صفحات رئيسية
-
----
-
-## 4. ربط Google Ads
-
-**ماذا:** تفعيل Google Ads conversion tracking عبر البنية الموجودة.
-
-**كيف:**
-- إعدادات Google Ads ID موجودة فعلاً في `TrackingScripts` (تُقرأ من `app_settings.branding_settings.googleAdsId`)
-- يكفي إدخال معرّف Google Ads من لوحة الإدارة: **Settings → Branding → Google Ads ID**
-- إضافة تتبع تحويلات الإعلانات: `gtag('event', 'conversion', { send_to: 'AW-XXXXX/XXXXX' })` عند التسجيل
-- إضافة حقل `googleAdsConversionLabel` في إعدادات Branding
-
-**ملفات:** `src/admin/components/settings/BrandingSettings.tsx`، `src/components/TrackingScripts.tsx`
-
----
-
-## ترتيب التنفيذ
-
-1. Cookie Consent Banner + Consent Mode (أولوية قصوى - قانوني)
-2. Conversion Events tracking
-3. Google Ads conversion label
-4. SEO improvements
+### التفاصيل التقنية
+- لا حاجة لتغيير قاعدة البيانات
+- لا حاجة لمفتاح API خارجي (Lovable AI مدمج تلقائياً)
+- Temperature 0.7 تُضبط في body الطلب للـ AI Gateway
+- الأزرار السريعة تُرسل النص مباشرة كرسالة مستخدم
 
