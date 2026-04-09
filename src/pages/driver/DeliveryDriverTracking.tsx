@@ -479,6 +479,31 @@ const DeliveryDriverTracking = () => {
           targetName={customerRefCode ? `الزبون ${customerRefCode}` : "الزبون"}
         />
       )}
+
+      {/* Photo Proof Dialog */}
+      {order && showPhotoProof && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md p-4 safe-area-bottom">
+            <PhotoProofCapture
+              orderId={order.id}
+              onPhotoSaved={() => setShowPhotoProof(false)}
+              onSkip={() => setShowPhotoProof(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Restaurant Rating Dialog */}
+      {order && driverId && order.store_id && (
+        <RestaurantRatingDialog
+          open={showRestaurantRating}
+          onClose={() => setShowRestaurantRating(false)}
+          storeId={order.store_id}
+          storeName={order.store_name || "المطعم"}
+          driverId={driverId}
+          orderId={order.id}
+        />
+      )}
     </div>
   );
 };
