@@ -366,7 +366,13 @@ const DeliveryDriverTracking = () => {
 
         {/* ── Info Table + Actions ── */}
         {!isFinished && (
-          <div className="px-4 pb-3">
+          <div className="px-4 pb-3 space-y-2">
+            {/* Net Earnings Estimate */}
+            <NetEarningsEstimate
+              totalPrice={Number(order.total_price) || null}
+              deliveryFee={Number(order.delivery_fee) || null}
+            />
+
             <TrackingInfoTable
               distanceKm={distanceToTarget ?? null}
               etaMinutes={etaMinutes}
@@ -386,6 +392,27 @@ const DeliveryDriverTracking = () => {
               updating={updating}
               orderCode={order.order_code}
             />
+
+            {/* Quick Chat Button */}
+            {currentUserId && (
+              <div className="mt-2">
+                {showQuickChat ? (
+                  <QuickChatMessages
+                    orderId={order.id}
+                    recipientId={order.user_id}
+                    senderId={currentUserId}
+                    onClose={() => setShowQuickChat(false)}
+                  />
+                ) : (
+                  <button
+                    onClick={() => setShowQuickChat(true)}
+                    className="w-full py-2 rounded-xl bg-muted/50 border border-border text-xs font-bold text-foreground hover:bg-muted transition-colors flex items-center justify-center gap-2"
+                  >
+                    💬 رسائل سريعة للزبون
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 
