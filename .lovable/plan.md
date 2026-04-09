@@ -1,67 +1,73 @@
 
 
-# خطة التوسع العالمي الشامل — التنفيذ الكامل
-
-## ملخص
-تفعيل كل البنية التحتية اللازمة لجعل المنصة عالمية: Stripe للدفع الدولي، Facebook Pixel + Google Ads للتتبع، SEO دولي كامل (hreflang, Schema.org, sitemap)، وإضافة Stripe كخيار دفع فعلي في واجهة المستخدم.
+# خطة تنفيذ 4 تحسينات: كوكيز + تحويلات + SEO + Google Ads
 
 ---
 
-## المرحلة 1: تفعيل Stripe (الدفع الدولي)
+## 1. بانر موافقة الكوكيز (Cookie Consent + Google Consent Mode v2)
 
-1. **تفعيل Stripe Connector** عبر أداة `stripe--enable_stripe` (سيطلب من المستخدم إدخال Secret Key)
-2. **إنشاء Edge Function** `stripe-checkout` للتعامل مع عمليات الدفع
-3. **إضافة Stripe كخيار دفع** في `PaymentMethodPicker.tsx` و `PaymentMethodSelector.tsx`
-4. **إنشاء Edge Function** `stripe-webhook` لاستقبال أحداث الدفع وتحديث حالة المعاملات
+**ماذا:** شريط سفلي بالعربية يطلب موافقة الزائر على الكوكيز، مع ربطه بـ Google Consent Mode v2.
 
----
+**كيف:**
+- إنشاء مكون `CookieConsentBanner` يظهر أسفل الشاشة عند أول زيارة
+- يحفظ الموافقة في `localStorage`
+- يُضاف `gtag('consent', 'default', { analytics_storage: 'denied', ad_storage: 'denied' })` قبل تحميل gtag
+- عند قبول الزائر: `gtag('consent', 'update', { analytics_storage: 'granted', ad_storage: 'granted' })`
+- زرّان: "قبول الكل" و "رفض غير الضروري"
+- يُضاف في `App.tsx` وجميع التطبيقات الفرعية
+- تعديل `index.html` + باقي HTML لإضافة consent default قبل gtag config
 
-## المرحلة 2: Facebook Pixel + Google Ads
-
-1. **إضافة حقول** `facebookPixelId` و `googleAdsId` في `BrandingSettings.tsx`
-2. **إدراج سكريبتات التتبع** في `index.html`:
-   - Facebook Pixel (`fbq`)
-   - Google Ads (`gtag.js`)
-3. **إضافة تتبع أحداث التحويل** (تسجيل، طلب، دفع) في الصفحات المعنية
-4. **إضافة `<noscript>` fallback** في `<body>` لـ Facebook Pixel
+**ملفات:** `src/components/CookieConsentBanner.tsx` (جديد)، `index.html`، `App.tsx`، + 6 HTML أخرى
 
 ---
 
-## المرحلة 3: SEO العالمي
+## 2. تتبع أحداث التحويل (Conversion Events)
 
-1. **إضافة وسوم hreflang** في `index.html` للغات الأربع (ar, fr, en, es)
-2. **إضافة Schema.org JSON-LD** (Organization + WebApplication)
-3. **إنشاء `public/sitemap.xml`** ديناميكي يشمل كل الصفحات الرئيسية
-4. **تحديث `robots.txt`** بإضافة رابط Sitemap
-5. **تحسين meta tags** الحالية (Open Graph كامل)
+**ماذا:** تتبع التسجيل، تسجيل الدخول، الطلبات عبر Google Analytics + Facebook Pixel.
 
----
+**كيف:**
+- استخدام دالة `trackEvent` الموجودة في `TrackingScripts.tsx`
+- إضافة استدعاءات في:
+  - `AuthPage.tsx`: عند نجاح التسجيل → `trackEvent('sign_up', { method: 'email', role })`
+  - `AuthPage.tsx`: عند نجاح الدخول → `trackEvent('login', { method: 'email' })`
+  - `AuthPage.tsx`: عند Google OAuth → `trackEvent('sign_up', { method: 'google' })`
+  - صفحات الطلبات (Cart, ClientBooking) → `trackEvent('purchase', { value, currency: 'MAD' })`
 
-## المرحلة 4: إعدادات الإدارة
-
-1. **تحديث BrandingSettings** بحقول: Facebook Pixel ID, Google Ads ID, Google Analytics ID
-2. **إنشاء مكون `TrackingSettings`** منفصل أو دمجه في BrandingSettings
-3. **تحميل معرّفات التتبع ديناميكياً** من `app_settings` عند تحميل التطبيق
+**ملفات:** `src/pages/AuthPage.tsx`، `src/pages/delivery/Cart.tsx`، `src/pages/client/ClientBooking.tsx`
 
 ---
 
-## الملفات المتأثرة
+## 3. تحسين SEO
 
-| الميزة | الملفات |
-|--------|---------|
-| Stripe | Edge Functions جديدة، `PaymentMethodPicker.tsx`، `PaymentMethodSelector.tsx` |
-| Facebook Pixel | `index.html`، `BrandingSettings.tsx`، مكون تتبع جديد |
-| Google Ads | `index.html`، `BrandingSettings.tsx` |
-| SEO | `index.html`، `public/robots.txt`، `public/sitemap.xml` جديد |
-| Schema.org | `index.html` |
+**ماذا:** إضافة صفحات مفقودة في sitemap، تحسين meta tags ديناميكية.
+
+**كيف:**
+- توسيع `sitemap.xml` بإضافة: `/privacy`, `/forgot-password`, `/delivery/restaurants`, `/delivery/category/*`
+- إضافة مكون `PageMeta` (باستخدام `document.title` و meta description) في الصفحات الرئيسية
+- إضافة Schema.org للخدمات (Ride, Delivery) كـ JSON-LD
+
+**ملفات:** `public/sitemap.xml`، `src/components/PageMeta.tsx` (جديد)، صفحات رئيسية
 
 ---
 
-## متطلبات من المستخدم
+## 4. ربط Google Ads
 
-- **Stripe Secret Key**: سيُطلب عبر الأداة المدمجة
-- **Facebook Pixel ID**: يمكن إدخاله لاحقاً من لوحة الإعدادات
-- **Google Ads ID**: يمكن إدخاله لاحقاً من لوحة الإعدادات
+**ماذا:** تفعيل Google Ads conversion tracking عبر البنية الموجودة.
 
-سأبدأ بتفعيل Stripe أولاً ثم أتابع بالتسلسل.
+**كيف:**
+- إعدادات Google Ads ID موجودة فعلاً في `TrackingScripts` (تُقرأ من `app_settings.branding_settings.googleAdsId`)
+- يكفي إدخال معرّف Google Ads من لوحة الإدارة: **Settings → Branding → Google Ads ID**
+- إضافة تتبع تحويلات الإعلانات: `gtag('event', 'conversion', { send_to: 'AW-XXXXX/XXXXX' })` عند التسجيل
+- إضافة حقل `googleAdsConversionLabel` في إعدادات Branding
+
+**ملفات:** `src/admin/components/settings/BrandingSettings.tsx`، `src/components/TrackingScripts.tsx`
+
+---
+
+## ترتيب التنفيذ
+
+1. Cookie Consent Banner + Consent Mode (أولوية قصوى - قانوني)
+2. Conversion Events tracking
+3. Google Ads conversion label
+4. SEO improvements
 
