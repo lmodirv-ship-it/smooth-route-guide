@@ -65,22 +65,18 @@ export default function TangierSocialProof() {
           ))}
         </div>
 
-        {/* Coverage Map */}
+        {/* Coverage Zones */}
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={7}>
           <h3 className="text-2xl md:text-3xl font-bold font-display text-center mb-8">
             <span className="text-gradient-primary">{lt.coverageMapTitle}</span>
           </h3>
-          <div className="max-w-4xl mx-auto rounded-2xl overflow-hidden border border-border shadow-lg shadow-primary/5" style={{ height: "400px" }}>
-            <MapContainer center={TANGIER_CENTER} zoom={12} scrollWheelZoom={false} style={{ height: "100%", width: "100%" }} attributionControl={false}>
-              <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
-              {coverageZones.map((zone) => (
-                <Circle key={zone.nameEn} center={[zone.lat, zone.lng]} radius={zone.radius} pathOptions={{ color: zone.color, fillColor: zone.color, fillOpacity: 0.2, weight: 2 }}>
-                  <Popup>
-                    <div className="text-center font-bold">{getZoneName(zone)}</div>
-                  </Popup>
-                </Circle>
-              ))}
-            </MapContainer>
+          <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+            {coverageZones.map((zone) => (
+              <div key={zone.nameEn} className="rounded-xl p-4 glass-card border border-border text-center hover:border-primary/40 transition-all">
+                <MapPin className="w-6 h-6 mx-auto mb-2" style={{ color: zone.color }} />
+                <span className="font-semibold text-sm text-foreground">{getZoneName(zone)}</span>
+              </div>
+            ))}
           </div>
           <p className="text-center text-sm text-muted-foreground mt-4">{lt.coverageMapDesc}</p>
         </motion.div>
