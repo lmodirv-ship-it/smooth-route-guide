@@ -40,11 +40,17 @@ const DeliveryTracking = () => {
   const [initialDistance, setInitialDistance] = useState<number | null>(null);
   const [throttledDriverPos, setThrottledDriverPos] = useState<{ lat: number; lng: number } | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [showTip, setShowTip] = useState(false);
+  const [showRating, setShowRating] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const lastRouteFetchRef = useRef(0);
   const inAppCall = useInAppCall();
 
   useEffect(() => {
     const fetchOrder = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setCurrentUserId(user.id);
       if (id) {
         const { data } = await supabase.from("delivery_orders").select("*").eq("id", id).single();
         if (data) setOrder(data);
