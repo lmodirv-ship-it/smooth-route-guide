@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
           const { error: updateErr } = await supabase
             .from("delivery_orders")
             .update({
-              status: "accepted",
+              status: "driver_assigned",
               driver_id: nearest.id,
               accepted_at: new Date().toISOString(),
             })
