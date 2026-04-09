@@ -84,6 +84,7 @@ const DeliveryDriverTracking = () => {
     const findActive = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
+      setCurrentUserId(user.id);
       const { data: driver } = await supabase.from("drivers").select("id").eq("user_id", user.id).single();
       if (!driver) { setLoading(false); return; }
       setDriverId(driver.id);
