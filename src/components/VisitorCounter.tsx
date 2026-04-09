@@ -20,6 +20,17 @@ const detectDevice = () => {
   return { device_type: isMobile ? "mobile" : "desktop", browser, os };
 };
 
+const fetchGeoInfo = async (): Promise<{ country: string; city: string }> => {
+  try {
+    const res = await fetch("https://ip-api.com/json/?fields=country,city&lang=en", { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return { country: "", city: "" };
+    const data = await res.json();
+    return { country: data.country || "", city: data.city || "" };
+  } catch {
+    return { country: "", city: "" };
+  }
+};
+
 interface Stats {
   total_visits: number;
   unique_visitors: number;
