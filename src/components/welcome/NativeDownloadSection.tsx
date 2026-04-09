@@ -114,24 +114,14 @@ const NativeDownloadCard = ({ item, meta }: { item: NativeDownload; meta?: Downl
         </a>
       )}
 
-      {ready ? (
-        <a
-          href={item.href}
-          download
-          className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-        >
-          <Download className="h-3.5 w-3.5" />
-          تحميل APK مباشر
-        </a>
-      ) : !item.playStoreUrl ? (
-        <button
-          type="button"
-          disabled
-          className="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold text-muted-foreground opacity-80"
-        >
-          بانتظار ملف التثبيت
-        </button>
-      ) : null}
+      <a
+        href={item.href}
+        download
+        className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+      >
+        <Download className="h-3.5 w-3.5" />
+        تحميل APK مباشر
+      </a>
     </div>
   );
 };
