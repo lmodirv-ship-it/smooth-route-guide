@@ -82,3 +82,10 @@ export const trackEvent = (eventName: string, params?: Record<string, unknown>) 
     (window as any).gtag("event", eventName, params);
   }
 };
+
+// Helper for Google Ads conversion tracking
+export const trackConversion = (sendTo?: string) => {
+  if (typeof window !== "undefined" && (window as any).gtag && sendTo) {
+    (window as any).gtag("event", "conversion", { send_to: sendTo });
+  }
+};
