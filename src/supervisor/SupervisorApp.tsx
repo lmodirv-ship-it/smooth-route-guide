@@ -26,6 +26,7 @@ import InternalMessaging from "@/admin/pages/callcenter/InternalMessaging";
 import CommunityChat from "@/pages/CommunityChat";
 
 import ThemeLoader from "@/components/ThemeLoader";
+import TrackingScripts from "@/components/TrackingScripts";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const SupervisorApp = () => (
         <Toaster />
         <Sonner />
         <ThemeLoader />
+        <TrackingScripts />
         <BrowserRouter>
           <Routes>
             {/* Login */}

@@ -45,6 +45,7 @@ import AdminAlerts from "@/admin/pages/Alerts";
 import CommunityChat from "@/pages/CommunityChat";
 
 import ThemeLoader from "@/components/ThemeLoader";
+import TrackingScripts from "@/components/TrackingScripts";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const CallCenterApp = () => (
         <Toaster />
         <Sonner />
         <ThemeLoader />
+        <TrackingScripts />
         <BrowserRouter>
           <Routes>
             {/* Login */}

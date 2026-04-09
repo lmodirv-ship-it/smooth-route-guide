@@ -36,6 +36,7 @@ import { Users } from "lucide-react";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import ThemeLoader from "@/components/ThemeLoader";
 import TopNavLinks from "@/components/TopNavLinks";
+import TrackingScripts from "@/components/TrackingScripts";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +81,7 @@ const DriverDeliveryApp = () => (
         <Toaster />
         <Sonner />
         <ThemeLoader />
+        <TrackingScripts />
         <BrowserRouter>
           <Routes>
             {/* Auth */}

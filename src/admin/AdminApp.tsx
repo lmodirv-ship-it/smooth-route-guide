@@ -54,6 +54,7 @@ import GoogleMapsImport from "./pages/callcenter/GoogleMapsImport";
 // Admin-specific login page
 import AdminLogin from "./pages/AdminLogin";
 import ThemeLoader from "@/components/ThemeLoader";
+import TrackingScripts from "@/components/TrackingScripts";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const AdminApp = () => (
         <Toaster />
         <Sonner />
         <ThemeLoader />
+        <TrackingScripts />
         <BrowserRouter>
           <Routes>
             {/* Login for standalone admin */}
