@@ -46,11 +46,12 @@ const VisitorCounter = () => {
     const { device_type, browser, os } = detectDevice();
 
     const recordVisit = async () => {
+      const geo = await fetchGeoInfo();
       const { data, error } = await supabase.rpc("record_visit", {
         p_session_id: sessionId,
         p_page_path: window.location.pathname,
-        p_country: "",
-        p_city: "",
+        p_country: geo.country,
+        p_city: geo.city,
         p_device_type: device_type,
         p_browser: browser,
         p_os: os,
