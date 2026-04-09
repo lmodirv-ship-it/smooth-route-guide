@@ -443,17 +443,17 @@ export default function LandingPage() {
                     transition={{ duration: 2, repeat: Infinity }}
                     className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[hsl(var(--warning))]/10 border border-[hsl(var(--warning))]/30 text-sm font-bold text-[hsl(var(--warning))]"
                   >
-                    🎁 {dir === "rtl" ? "سجّل واحصل على 50 درهم مجاناً!" : "Sign up & get 50 MAD free!"}
+                    🍽️ {dir === "rtl" ? "تصفّح المطاعم والمتاجر بحرية — بدون تسجيل!" : "Browse restaurants & stores freely — no signup!"}
                   </motion.div>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center w-full">
                     <Button
                       size="lg"
-                      onClick={() => navigate("/auth/client")}
+                      onClick={() => navigate("/delivery")}
                       className="min-w-[15rem] px-10 h-14 text-lg font-black animate-pulse hover:animate-none shadow-lg shadow-primary/30"
                     >
                       <span className="relative z-10 flex items-center gap-2">
-                        <UserPlus className={`w-5 h-5 ${dir === "rtl" ? "ml-1" : "mr-1"}`} />
-                        {dir === "rtl" ? "🚀 سجّل الآن مجاناً" : "🚀 Sign Up Free Now"}
+                        <Store className={`w-5 h-5 ${dir === "rtl" ? "ml-1" : "mr-1"}`} />
+                        {dir === "rtl" ? "🚀 تصفّح الخدمات الآن" : "🚀 Browse Services Now"}
                       </span>
                     </Button>
                     <Button
@@ -462,7 +462,7 @@ export default function LandingPage() {
                       onClick={() => navigate("/login")}
                       className="min-w-[13rem] px-8 h-14 text-base group"
                     >
-                      <PlayCircle className={`w-4 h-4 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
+                      <LogIn className={`w-4 h-4 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
                       {t.common.login}
                     </Button>
                   </div>
