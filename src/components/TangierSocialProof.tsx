@@ -1,8 +1,6 @@
 import { motion } from "framer-motion";
 import { useI18n } from "@/i18n/context";
 import { Headphones, DollarSign, Globe, MapPin, Shield, Users } from "lucide-react";
-import { MapContainer, TileLayer, Circle, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
