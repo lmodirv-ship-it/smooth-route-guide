@@ -762,13 +762,13 @@ export default function LandingPage() {
             </h2>
             <p className="text-lg text-muted-foreground mb-10">{lt.ctaSubtitle}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" onClick={() => navigate("/auth/client")} className="gradient-primary text-primary-foreground font-bold text-lg rounded-full px-12 py-6 glow-primary animate-pulse-glow">
-                {lt.ctaButton}
+              <Button size="lg" onClick={() => navigate("/delivery")} className="gradient-primary text-primary-foreground font-bold text-lg rounded-full px-12 py-6 glow-primary animate-pulse-glow">
+                {dir === "rtl" ? "تصفّح الخدمات" : "Browse Services"}
                 <ArrowRight className={`w-5 h-5 ${dir === "rtl" ? "me-2 rotate-180" : "ms-2"}`} />
               </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate("/auth/driver")} className="rounded-full px-12 py-6 border-border hover:border-success/40 hover:bg-success/5">
-                <Car className={`w-5 h-5 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
-                {dir === "rtl" ? "سجل كسائق" : "Register as Driver"}
+              <Button size="lg" variant="outline" onClick={() => navigate("/auth/client")} className="rounded-full px-12 py-6 border-border hover:border-primary/40 hover:bg-primary/5">
+                <UserPlus className={`w-5 h-5 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
+                {dir === "rtl" ? "إنشاء حساب مجاني" : "Create Free Account"}
               </Button>
             </div>
           </motion.div>
