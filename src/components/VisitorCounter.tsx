@@ -20,6 +20,17 @@ const detectDevice = () => {
   return { device_type: isMobile ? "mobile" : "desktop", browser, os };
 };
 
+const fetchGeoInfo = async (): Promise<{ country: string; city: string }> => {
+  try {
+    const res = await fetch("https://ip-api.com/json/?fields=country,city&lang=en", { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return { country: "", city: "" };
+    const data = await res.json();
+    return { country: data.country || "", city: data.city || "" };
+  } catch {
+    return { country: "", city: "" };
+  }
+};
+
 interface Stats {
   total_visits: number;
   unique_visitors: number;
@@ -35,11 +46,12 @@ const VisitorCounter = () => {
     const { device_type, browser, os } = detectDevice();
 
     const recordVisit = async () => {
+      const geo = await fetchGeoInfo();
       const { data, error } = await supabase.rpc("record_visit", {
         p_session_id: sessionId,
         p_page_path: window.location.pathname,
-        p_country: "",
-        p_city: "",
+        p_country: geo.country,
+        p_city: geo.city,
         p_device_type: device_type,
         p_browser: browser,
         p_os: os,
