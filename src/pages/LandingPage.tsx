@@ -23,6 +23,7 @@ import SignupBanner from "@/components/SignupBanner";
 // VisitorCounter already imported above
 import HeroPromoFlash from "@/components/HeroPromoFlash";
 import TangierSocialProof from "@/components/TangierSocialProof";
+import VideoShowcaseSection from "@/components/VideoShowcaseSection";
 import logo from "@/assets/hn-driver-badge.png";
 import iconVtcCar from "@/assets/icon-vtc-car-hn.png";
 import iconDeliveryBike from "@/assets/icon-delivery-bike-hn.png";
@@ -617,6 +618,9 @@ export default function LandingPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* ─── Video Showcase ─── */}
+      <VideoShowcaseSection />
 
       {/* ─── Partner Sites ─── */}
       <section className="py-20 md:py-28 relative overflow-hidden">
