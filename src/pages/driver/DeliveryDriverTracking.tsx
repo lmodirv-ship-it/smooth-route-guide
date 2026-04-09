@@ -258,8 +258,18 @@ const DeliveryDriverTracking = () => {
         return;
       }
       const updates: any = { status: newStatus, updated_at: new Date().toISOString() };
-      if (newStatus === "picked_up") updates.picked_up_at = new Date().toISOString();
-      if (newStatus === "delivered") updates.delivered_at = new Date().toISOString();
+      if (newStatus === "picked_up") {
+        updates.picked_up_at = new Date().toISOString();
+        // Show restaurant rating after pickup
+        if (order?.store_id) setShowRestaurantRating(true);
+      }
+      if (newStatus === "on_the_way_to_customer") {
+        // Show photo proof before marking delivered (driver takes photo when delivering)
+      }
+      if (newStatus === "delivered") {
+        updates.delivered_at = new Date().toISOString();
+        setShowPhotoProof(true); // Show photo proof dialog
+      }
       await supabase.from("delivery_orders").update(updates).eq("id", orderId);
       if (newStatus === "delivered") {
         toast({ title: "تم التسليم بنجاح ✅" });
