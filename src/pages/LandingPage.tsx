@@ -443,17 +443,17 @@ export default function LandingPage() {
                     transition={{ duration: 2, repeat: Infinity }}
                     className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[hsl(var(--warning))]/10 border border-[hsl(var(--warning))]/30 text-sm font-bold text-[hsl(var(--warning))]"
                   >
-                    🎁 {dir === "rtl" ? "سجّل واحصل على 50 درهم مجاناً!" : "Sign up & get 50 MAD free!"}
+                    🍽️ {dir === "rtl" ? "تصفّح المطاعم والمتاجر بحرية — بدون تسجيل!" : "Browse restaurants & stores freely — no signup!"}
                   </motion.div>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center w-full">
                     <Button
                       size="lg"
-                      onClick={() => navigate("/auth/client")}
+                      onClick={() => navigate("/delivery")}
                       className="min-w-[15rem] px-10 h-14 text-lg font-black animate-pulse hover:animate-none shadow-lg shadow-primary/30"
                     >
                       <span className="relative z-10 flex items-center gap-2">
-                        <UserPlus className={`w-5 h-5 ${dir === "rtl" ? "ml-1" : "mr-1"}`} />
-                        {dir === "rtl" ? "🚀 سجّل الآن مجاناً" : "🚀 Sign Up Free Now"}
+                        <Store className={`w-5 h-5 ${dir === "rtl" ? "ml-1" : "mr-1"}`} />
+                        {dir === "rtl" ? "🚀 تصفّح الخدمات الآن" : "🚀 Browse Services Now"}
                       </span>
                     </Button>
                     <Button
@@ -462,7 +462,7 @@ export default function LandingPage() {
                       onClick={() => navigate("/login")}
                       className="min-w-[13rem] px-8 h-14 text-base group"
                     >
-                      <PlayCircle className={`w-4 h-4 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
+                      <LogIn className={`w-4 h-4 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
                       {t.common.login}
                     </Button>
                   </div>
@@ -762,13 +762,13 @@ export default function LandingPage() {
             </h2>
             <p className="text-lg text-muted-foreground mb-10">{lt.ctaSubtitle}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" onClick={() => navigate("/auth/client")} className="gradient-primary text-primary-foreground font-bold text-lg rounded-full px-12 py-6 glow-primary animate-pulse-glow">
-                {lt.ctaButton}
+              <Button size="lg" onClick={() => navigate("/delivery")} className="gradient-primary text-primary-foreground font-bold text-lg rounded-full px-12 py-6 glow-primary animate-pulse-glow">
+                {dir === "rtl" ? "تصفّح الخدمات" : "Browse Services"}
                 <ArrowRight className={`w-5 h-5 ${dir === "rtl" ? "me-2 rotate-180" : "ms-2"}`} />
               </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate("/auth/driver")} className="rounded-full px-12 py-6 border-border hover:border-success/40 hover:bg-success/5">
-                <Car className={`w-5 h-5 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
-                {dir === "rtl" ? "سجل كسائق" : "Register as Driver"}
+              <Button size="lg" variant="outline" onClick={() => navigate("/auth/client")} className="rounded-full px-12 py-6 border-border hover:border-primary/40 hover:bg-primary/5">
+                <UserPlus className={`w-5 h-5 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
+                {dir === "rtl" ? "إنشاء حساب مجاني" : "Create Free Account"}
               </Button>
             </div>
           </motion.div>

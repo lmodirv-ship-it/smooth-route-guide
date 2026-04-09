@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 const POPUP_DISMISSED_KEY = "hn_signup_popup_dismissed";
-const POPUP_DELAY_MS = 4000; // Show after 4 seconds
+const POPUP_DELAY_MS = 15000; // Show after 15 seconds of browsing
 
 const SignupPopup = () => {
   const navigate = useNavigate();
@@ -92,10 +92,10 @@ const SignupPopup = () => {
               </motion.div>
 
               <h2 className="text-xl font-bold text-foreground mb-1">
-                🎉 سجّل الآن واحصل على 50 درهم!
+                🍽️ عجبتك الخدمات؟ سجّل لتطلب!
               </h2>
               <p className="text-sm text-muted-foreground mb-5">
-                انضم لأكثر من 1000 مستخدم يستفيدون من خدماتنا يومياً
+                تصفّح بحرية — التسجيل فقط عند الطلب، وبخطوة واحدة بسيطة
               </p>
 
               {/* Benefits */}
