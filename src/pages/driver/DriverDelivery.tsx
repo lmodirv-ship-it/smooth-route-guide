@@ -438,8 +438,15 @@ const DriverDelivery = () => {
                               </Button>
                             )}
                           </TableCell>
-                          <TableCell className="text-right text-sm font-bold text-foreground">
-                            {order.total_price || order.estimated_price || "—"} DH
+                          <TableCell className="text-right">
+                            <div className="text-sm font-bold text-foreground">
+                              {order.total_price || order.estimated_price || "—"} DH
+                            </div>
+                            <NetEarningsEstimate
+                              totalPrice={Number(order.total_price) || null}
+                              deliveryFee={Number(order.delivery_fee) || null}
+                              className="mt-1 text-[9px] px-1.5 py-0.5"
+                            />
                           </TableCell>
                           <TableCell className="text-right text-xs text-muted-foreground">
                             {order.etaMin != null ? `${order.etaMin} د` : "—"}

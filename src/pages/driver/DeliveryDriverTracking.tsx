@@ -14,6 +14,10 @@ import { useI18n } from "@/i18n/context";
 import { useInAppCall } from "@/hooks/useInAppCall";
 import InAppCallDialog from "@/components/calls/InAppCallDialog";
 import RatingDialog from "@/components/RatingDialog";
+import QuickChatMessages from "@/components/driver/QuickChatMessages";
+import PhotoProofCapture from "@/components/driver/PhotoProofCapture";
+import RestaurantRatingDialog from "@/components/driver/RestaurantRatingDialog";
+import NetEarningsEstimate from "@/components/driver/NetEarningsEstimate";
 import { toast } from "@/hooks/use-toast";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
