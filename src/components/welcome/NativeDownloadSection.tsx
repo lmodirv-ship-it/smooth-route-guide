@@ -1,6 +1,6 @@
 import { createElement, type ComponentType, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Download, Laptop, Smartphone } from "lucide-react";
+import { Download, ExternalLink, Laptop, Smartphone } from "lucide-react";
 import QRCodeImport from "react-qr-code";
 import {
   desktopDownloads,
@@ -102,16 +102,28 @@ const NativeDownloadCard = ({ item, meta }: { item: NativeDownload; meta?: Downl
         </div>
       ) : null}
 
+      {item.playStoreUrl && (
+        <a
+          href={item.playStoreUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-success px-3 py-2.5 text-xs font-semibold text-success-foreground transition-opacity hover:opacity-90"
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+          تحميل من Google Play
+        </a>
+      )}
+
       {ready ? (
         <a
           href={item.href}
           download
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+          className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
         >
           <Download className="h-3.5 w-3.5" />
-          تحميل الآن
+          تحميل APK مباشر
         </a>
-      ) : (
+      ) : !item.playStoreUrl ? (
         <button
           type="button"
           disabled
@@ -119,7 +131,7 @@ const NativeDownloadCard = ({ item, meta }: { item: NativeDownload; meta?: Downl
         >
           بانتظار ملف التثبيت
         </button>
-      )}
+      ) : null}
     </div>
   );
 };
