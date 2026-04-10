@@ -529,7 +529,7 @@ const DatabaseManager = () => {
                 </div>
               </TabsContent>
             </Tabs>
-          )}
+          ) : null}
         </div>
       </div>
 
