@@ -128,6 +128,10 @@ KEEP_WEEKLY=12
 ENABLE_SYNC=true
 SYNC_INTERVAL_HOURS=6
 
+# Cloud Reporting (sends backup status to admin dashboard)
+SUPABASE_FUNCTIONS_URL="https://typamugwwatqmdkxkfof.supabase.co/functions/v1"
+SERVER_BACKUP_KEY="CHANGE_THIS_TO_A_SECRET_KEY"
+
 # Notifications (optional)
 NOTIFY_EMAIL=""
 NOTIFY_WEBHOOK=""
