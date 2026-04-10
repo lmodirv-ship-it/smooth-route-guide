@@ -1,12 +1,13 @@
 /**
- * System Health Check — Comprehensive diagnostics with self-healing engine.
+ * System Health Check — Comprehensive diagnostics with self-healing engine + DB persistence.
  */
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   ShieldCheck, Play, Loader2, Clock, Shield, Server, Zap,
   Database as DbIcon, CheckCircle, AlertTriangle, XCircle,
-  Heart, Wrench, Trash2, RefreshCw, RotateCcw, WifiOff
+  Heart, Wrench, Trash2, RefreshCw, RotateCcw, WifiOff,
+  History, Download, BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -15,6 +16,7 @@ import { toast } from "@/hooks/use-toast";
 import { healthChecks, type CheckStatus, type HealthCheckResult } from "@/admin/components/health/healthCheckDefinitions";
 import HealthCheckCard from "@/admin/components/health/HealthCheckCard";
 import { selfHealingEngine } from "@/lib/selfHealingEngine";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CheckState extends HealthCheckResult {
   id: string;
@@ -32,8 +34,11 @@ const SystemHealthCheck = () => {
   const [lastScan, setLastScan] = useState<string | null>(null);
   const [healingLogs, setHealingLogs] = useState(selfHealingEngine.getLogs());
   const [showLogs, setShowLogs] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [dbSnapshots, setDbSnapshots] = useState<any[]>([]);
+  const [dbRepairs, setDbRepairs] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Start self-healing engine & listen to logs
   useEffect(() => {
     selfHealingEngine.start();
     const unsub = selfHealingEngine.onLog(setHealingLogs);
@@ -49,19 +54,41 @@ const SystemHealthCheck = () => {
     setProgress(0);
     setChecks(prev => prev.map(c => ({ ...c, status: "running" as CheckStatus, message: "جاري الفحص...", fixable: false, fixAction: undefined })));
 
+    const results: Array<{ id: string; name: string; category: string; status: string; message: string; details?: string }> = [];
+
     for (let i = 0; i < healthChecks.length; i++) {
       const def = healthChecks[i];
       try {
         const result = await def.run();
         updateCheck(def.id, result);
+        results.push({ id: def.id, name: def.nameAr, category: def.category, status: result.status, message: result.message || "", details: result.details });
       } catch (e: any) {
         updateCheck(def.id, { status: "fail", message: e.message || "خطأ غير متوقع" });
+        results.push({ id: def.id, name: def.nameAr, category: def.category, status: "fail", message: e.message });
       }
       setProgress(Math.round(((i + 1) / healthChecks.length) * 100));
     }
 
     setScanning(false);
     setLastScan(new Date().toLocaleString("ar-MA"));
+
+    // Persist to database
+    const passC = results.filter(r => r.status === "pass").length;
+    const warnC = results.filter(r => r.status === "warn").length;
+    const failC = results.filter(r => r.status === "fail").length;
+    const total = passC + warnC + failC;
+    const sc = total > 0 ? Math.round((passC / total) * 100) : 0;
+
+    await selfHealingEngine.persistHealthResults(results);
+    await selfHealingEngine.persistSnapshot(sc, total, passC, warnC, failC, {
+      categories: results.reduce((acc, r) => {
+        acc[r.category] = acc[r.category] || { pass: 0, warn: 0, fail: 0 };
+        acc[r.category][r.status as "pass" | "warn" | "fail"]++;
+        return acc;
+      }, {} as any)
+    });
+
+    toast({ title: "✅ تم حفظ نتائج الفحص", description: `النتيجة: ${sc}% — ${passC} ناجح، ${warnC} تحذير، ${failC} فشل` });
   };
 
   const handleFix = async (checkId: string) => {
@@ -93,6 +120,20 @@ const SystemHealthCheck = () => {
     toast({ title: "✅ تم إصلاح جميع المشاكل القابلة للإصلاح" });
   };
 
+  const loadHistory = async () => {
+    setLoadingHistory(true);
+    try {
+      const [snapshotsRes, repairsRes] = await Promise.all([
+        supabase.from("system_health_snapshots").select("*").order("created_at", { ascending: false }).limit(20),
+        supabase.from("system_repairs").select("*").order("created_at", { ascending: false }).limit(50)
+      ]);
+      setDbSnapshots((snapshotsRes.data as any[]) || []);
+      setDbRepairs((repairsRes.data as any[]) || []);
+      setShowHistory(true);
+    } catch { /* silent */ }
+    setLoadingHistory(false);
+  };
+
   const passCount = checks.filter(c => c.status === "pass").length;
   const warnCount = checks.filter(c => c.status === "warn").length;
   const failCount = checks.filter(c => c.status === "fail").length;
@@ -115,6 +156,7 @@ const SystemHealthCheck = () => {
     { id: "reconnect-realtime", label: "إعادة اتصال البث", icon: WifiOff, desc: "إعادة تهيئة قنوات Realtime" },
     { id: "refresh-auth", label: "تجديد الجلسة", icon: RefreshCw, desc: "تجديد رمز المصادقة" },
     { id: "clear-local-storage", label: "تنظيف التخزين", icon: RotateCcw, desc: "حذف بيانات مؤقتة قديمة" },
+    { id: "cleanup-old-data", label: "تنظيف قاعدة البيانات", icon: DbIcon, desc: "حذف سجلات أقدم من 30 يوم" },
     { id: "force-reload", label: "إعادة تحميل", icon: RefreshCw, desc: "إعادة تحميل كاملة للصفحة" },
   ];
 
@@ -128,7 +170,7 @@ const SystemHealthCheck = () => {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-foreground">فحص وإصلاح النظام</h1>
-            <p className="text-sm text-muted-foreground">فحص شامل + إصلاح ذاتي + أدوات صيانة سريعة</p>
+            <p className="text-sm text-muted-foreground">فحص شامل + إصلاح ذاتي + قاعدة بيانات مركزية</p>
           </div>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
@@ -140,6 +182,10 @@ const SystemHealthCheck = () => {
           <Badge className="bg-green-500/20 text-green-600 gap-1">
             <Heart className="w-3 h-3" /> الإصلاح الذاتي نشط
           </Badge>
+          <Button onClick={loadHistory} disabled={loadingHistory} variant="outline" className="gap-2 rounded-xl text-sm">
+            {loadingHistory ? <Loader2 className="w-3 h-3 animate-spin" /> : <History className="w-3 h-3" />}
+            سجل الفحوصات
+          </Button>
           {fixableCount > 0 && (
             <Button onClick={fixAll} variant="outline" className="gap-2 rounded-xl text-sm">
               🔧 إصلاح الكل ({fixableCount})
@@ -159,12 +205,71 @@ const SystemHealthCheck = () => {
         </motion.div>
       )}
 
+      {/* History from DB */}
+      {showHistory && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          {/* Snapshots history */}
+          <div className="glass-card rounded-2xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-primary" /> سجل نتائج الفحوصات ({dbSnapshots.length})
+              </h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)} className="text-xs">إخفاء</Button>
+            </div>
+            <div className="max-h-48 overflow-y-auto space-y-2">
+              {dbSnapshots.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">لا توجد سجلات محفوظة بعد</p>}
+              {dbSnapshots.map((s: any) => (
+                <div key={s.id} className="flex items-center gap-3 text-xs p-3 rounded-xl bg-muted/30">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 ${
+                    s.score >= 80 ? "border-green-500 text-green-500" :
+                    s.score >= 50 ? "border-yellow-500 text-yellow-500" :
+                    "border-red-500 text-red-500"
+                  }`}>{s.score}%</div>
+                  <div className="flex-1">
+                    <div className="flex gap-3">
+                      <span className="text-green-500">✓ {s.pass_count}</span>
+                      <span className="text-yellow-500">⚠ {s.warn_count}</span>
+                      <span className="text-red-500">✗ {s.fail_count}</span>
+                    </div>
+                    <span className="text-muted-foreground">{new Date(s.created_at).toLocaleString("ar-MA")}</span>
+                  </div>
+                  <Badge variant="outline" className="text-[10px]">{s.source}</Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Repairs history */}
+          <div className="glass-card rounded-2xl p-4 space-y-3">
+            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+              <Wrench className="w-4 h-4 text-primary" /> سجل الإصلاحات ({dbRepairs.length})
+            </h2>
+            <div className="max-h-48 overflow-y-auto space-y-1">
+              {dbRepairs.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">لا توجد إصلاحات محفوظة</p>}
+              {dbRepairs.map((r: any) => (
+                <div key={r.id} className="flex items-center gap-2 text-xs p-2 rounded-lg bg-muted/30">
+                  {r.status === "success" ? (
+                    <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
+                  ) : (
+                    <XCircle className="w-3 h-3 text-red-500 flex-shrink-0" />
+                  )}
+                  <Badge variant="outline" className="text-[10px]">{r.repair_type}</Badge>
+                  <span className="text-foreground truncate">{r.description}</span>
+                  {r.auto_triggered && <Badge className="bg-blue-500/20 text-blue-500 text-[10px]">تلقائي</Badge>}
+                  <span className="text-muted-foreground mr-auto">{new Date(r.created_at).toLocaleString("ar-MA")}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Quick Repair Tools */}
       <div className="glass-card rounded-2xl p-4 space-y-3">
         <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
           <Wrench className="w-4 h-4 text-primary" /> أدوات الإصلاح السريع
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {quickRepairs.map(repair => (
             <Button
               key={repair.id}
@@ -243,7 +348,7 @@ const SystemHealthCheck = () => {
       <div className="glass-card rounded-2xl p-4 space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-            <Heart className="w-4 h-4 text-primary" /> سجل الإصلاح الذاتي
+            <Heart className="w-4 h-4 text-primary" /> سجل الإصلاح الذاتي (الجلسة الحالية)
           </h2>
           <Button variant="ghost" size="sm" onClick={() => setShowLogs(!showLogs)} className="text-xs">
             {showLogs ? "إخفاء" : `عرض (${healingLogs.length})`}
