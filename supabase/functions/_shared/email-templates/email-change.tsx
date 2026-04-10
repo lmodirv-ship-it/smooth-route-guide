@@ -56,6 +56,7 @@ export const EmailChangeEmail = ({
         <Text style={footer}>
           إذا لم تطلب هذا التغيير، يرجى تأمين حسابك فوراً.
         </Text>
+        <Text style={contact}>📧 info@hn-driver.com</Text>
       </Container>
     </Body>
   </Html>
@@ -98,3 +99,4 @@ const button = {
   textAlign: 'center' as const,
 }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const contact = { fontSize: '12px', color: '#d4841a', textAlign: 'center' as const, margin: '10px 0 0' }
