@@ -298,13 +298,58 @@ const DatabaseManager = () => {
 
         {/* Main Content */}
         <div className="lg:col-span-10">
-          {!selectedTable ? (
+          {/* Server Tab - always accessible */}
+          <div className="flex gap-2 mb-3">
+            <Button
+              size="sm"
+              variant={activeTab === "server" ? "default" : "outline"}
+              onClick={() => setActiveTab("server")}
+              className="gap-1.5"
+            >
+              <Server className="w-3.5 h-3.5" /> السيرفر والنسخ الاحتياطي
+            </Button>
+            {selectedTable && (
+              <>
+                <Button size="sm" variant={activeTab === "data" ? "default" : "outline"} onClick={() => setActiveTab("data")} className="gap-1.5">
+                  <Table2 className="w-3.5 h-3.5" /> البيانات
+                </Button>
+                <Button size="sm" variant={activeTab === "columns" ? "default" : "outline"} onClick={() => setActiveTab("columns")} className="gap-1.5">
+                  <FileText className="w-3.5 h-3.5" /> الأعمدة
+                </Button>
+                <Button size="sm" variant={activeTab === "audit" ? "default" : "outline"} onClick={() => setActiveTab("audit")} className="gap-1.5">
+                  <Clock className="w-3.5 h-3.5" /> سجل العمليات
+                </Button>
+              </>
+            )}
+            {selectedTable && (
+              <div className="flex items-center gap-2 mr-auto">
+                <Badge variant="outline" className="font-mono">{selectedTable}</Badge>
+                <Badge variant="secondary">{total} سجل</Badge>
+              </div>
+            )}
+          </div>
+
+          {/* Server Tab Content */}
+          {activeTab === "server" && (
+            <ServerBackupPanel
+              loading={serverLoading}
+              status={serverStatus}
+              backups={serverBackups}
+              repairs={serverRepairs}
+              snapshots={serverSnapshots}
+              onRefresh={loadServerStatus}
+            />
+          )}
+
+          {activeTab !== "server" && !selectedTable ? (
             <div className="rounded-xl border border-border glass-strong p-16 text-center">
               <Database className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
               <p className="text-lg text-muted-foreground">اختر جدولاً من القائمة</p>
             </div>
-          ) : (
+          ) : activeTab !== "server" && selectedTable ? (
             <Tabs value={activeTab} onValueChange={setActiveTab}>
+
+              {/* DATA TAB - keep the TabsContent blocks below */}
               <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
                 <TabsList>
                   <TabsTrigger value="data" className="gap-1.5"><Table2 className="w-3.5 h-3.5" /> البيانات</TabsTrigger>
