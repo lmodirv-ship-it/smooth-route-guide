@@ -123,86 +123,37 @@ class SmartErrorBoundary extends Component<Props, State> {
       return this.props.children;
     }
 
-    if (this.props.fallback) {
-      return this.props.fallback;
-    }
-
-    const { error, errorCategory, retryCount, recovering, countdownSeconds } = this.state;
+    // Silent recovery: never show error UI to users.
+    // For auth errors, redirect immediately to login.
+    // For all other errors, silently retry or reload without any visible error screen.
+    const { errorCategory, retryCount, recovering } = this.state;
     const isMaxRetries = retryCount >= MAX_RETRIES;
 
-    const categoryLabels: Record<ErrorCategory, { icon: string; title: string; desc: string }> = {
-      network: { icon: "🌐", title: "مشكلة في الاتصال", desc: "تعذر الاتصال بالخادم. جاري إعادة المحاولة..." },
-      chunk_load: { icon: "📦", title: "تحديث متاح", desc: "يتم تحميل الإصدار الجديد تلقائياً..." },
-      render: { icon: "🔧", title: "خطأ في العرض", desc: "حدث خطأ أثناء عرض الصفحة. جاري الإصلاح التلقائي..." },
-      auth: { icon: "🔐", title: "انتهت الجلسة", desc: "يتم إعادة توجيهك لتسجيل الدخول..." },
-      unknown: { icon: "⚡", title: "خطأ غير متوقع", desc: "جاري محاولة الإصلاح التلقائي..." },
-    };
+    // Auth errors: silent redirect to login
+    if (errorCategory === "auth") {
+      window.location.href = "/login";
+      return null;
+    }
 
-    const label = categoryLabels[errorCategory];
+    // Chunk load errors: silent reload
+    if (errorCategory === "chunk_load") {
+      window.location.reload();
+      return null;
+    }
 
-    return (
-      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background/95 backdrop-blur-sm" dir="rtl">
-        <div className="w-full max-w-md mx-4 rounded-2xl border border-border/50 bg-card p-8 shadow-2xl text-center">
-          {/* Icon */}
-          <div className="text-5xl mb-4">{label.icon}</div>
+    // Still recovering (retrying silently): show nothing, just the children will re-render
+    if (recovering && !isMaxRetries) {
+      return null;
+    }
 
-          {/* Title */}
-          <h2 className="text-xl font-bold text-foreground mb-2">{label.title}</h2>
-          <p className="text-sm text-muted-foreground mb-4">{label.desc}</p>
+    // Max retries exhausted: silently go home instead of showing error screen
+    if (isMaxRetries) {
+      window.location.href = "/";
+      return null;
+    }
 
-          {/* Recovery status */}
-          {recovering && !isMaxRetries && (
-            <div className="mb-4">
-              <div className="flex items-center justify-center gap-2 text-sm text-primary mb-2">
-                <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-                <span>جاري الإصلاح التلقائي... {countdownSeconds > 0 && `(${countdownSeconds}ث)`}</span>
-              </div>
-              <div className="w-full bg-secondary rounded-full h-1.5 overflow-hidden">
-                <div
-                  className="h-full bg-primary rounded-full transition-all duration-1000"
-                  style={{ width: `${Math.min(((retryCount + 1) / MAX_RETRIES) * 100, 100)}%` }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">محاولة {retryCount + 1} من {MAX_RETRIES}</p>
-            </div>
-          )}
-
-          {/* Max retries reached */}
-          {isMaxRetries && (
-            <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20">
-              <p className="text-sm text-destructive font-medium">تعذر الإصلاح التلقائي</p>
-              <p className="text-xs text-muted-foreground mt-1">يرجى المحاولة يدوياً أو العودة للصفحة الرئيسية</p>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex gap-3 justify-center">
-            <button
-              onClick={this.handleManualRetry}
-              className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition-colors"
-            >
-              إعادة المحاولة
-            </button>
-            <button
-              onClick={this.handleGoHome}
-              className="px-6 py-2.5 rounded-xl bg-secondary text-secondary-foreground font-medium text-sm hover:bg-secondary/80 transition-colors"
-            >
-              الرئيسية
-            </button>
-          </div>
-
-          {/* Debug info (dev only) */}
-          {import.meta.env.DEV && error && (
-            <details className="mt-4 text-left">
-              <summary className="text-xs text-muted-foreground cursor-pointer">تفاصيل الخطأ</summary>
-              <pre className="mt-2 p-2 rounded-lg bg-secondary text-xs text-muted-foreground overflow-auto max-h-32 whitespace-pre-wrap">
-                {error.message}
-              </pre>
-            </details>
-          )}
-        </div>
-      </div>
-    );
+    // Fallback: return null (invisible) — auto-recovery will handle it
+    return null;
   }
 }
 
