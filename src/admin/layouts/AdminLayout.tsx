@@ -27,6 +27,7 @@ import SidebarNavButton from "@/admin/components/SidebarNavButton";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
 import { useVisibility } from "@/hooks/useVisibility";
 import { useUserReference } from "@/hooks/useUserReference";
+import { selfHealingEngine } from "@/lib/selfHealingEngine";
 
 type AiMsg = { role: "user" | "assistant"; content: string };
 
