@@ -43,6 +43,244 @@ interface ColumnInfo {
   column_default: string | null;
 }
 
+// ─── Server Backup Panel Component ────────────────────────────
+const ServerBackupPanel = ({ loading, status, backups, repairs, snapshots, onRefresh }: {
+  loading: boolean;
+  status: any;
+  backups: any[];
+  repairs: any[];
+  snapshots: any[];
+  onRefresh: () => void;
+}) => {
+  const [subTab, setSubTab] = useState<"overview" | "backups" | "repairs" | "health">("overview");
+
+  const formatSize = (bytes: number) => {
+    if (!bytes) return "—";
+    if (bytes > 1073741824) return (bytes / 1073741824).toFixed(1) + " GB";
+    if (bytes > 1048576) return (bytes / 1048576).toFixed(1) + " MB";
+    return (bytes / 1024).toFixed(0) + " KB";
+  };
+
+  const formatDate = (d: string) => d ? new Date(d).toLocaleString("ar") : "—";
+
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-border p-16 text-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-3" />
+        <p className="text-muted-foreground">جاري تحميل بيانات السيرفر...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="rounded-xl border border-border p-4 text-center">
+          <HardDrive className="w-6 h-6 mx-auto mb-2 text-primary" />
+          <p className="text-2xl font-bold text-foreground">{status?.total_7d || 0}</p>
+          <p className="text-xs text-muted-foreground">نسخ في 7 أيام</p>
+        </div>
+        <div className="rounded-xl border border-border p-4 text-center">
+          <CheckCircle2 className="w-6 h-6 mx-auto mb-2 text-green-500" />
+          <p className="text-2xl font-bold text-green-600">{status?.success_7d || 0}</p>
+          <p className="text-xs text-muted-foreground">نسخ ناجحة</p>
+        </div>
+        <div className="rounded-xl border border-border p-4 text-center">
+          <XCircle className="w-6 h-6 mx-auto mb-2 text-red-500" />
+          <p className="text-2xl font-bold text-red-600">{status?.failed_7d || 0}</p>
+          <p className="text-xs text-muted-foreground">نسخ فاشلة</p>
+        </div>
+        <div className="rounded-xl border border-border p-4 text-center">
+          <Activity className="w-6 h-6 mx-auto mb-2 text-blue-500" />
+          <p className="text-2xl font-bold text-foreground">{status?.last_health_score ?? "—"}%</p>
+          <p className="text-xs text-muted-foreground">صحة السيرفر</p>
+        </div>
+      </div>
+
+      {/* Status Bar */}
+      <div className="rounded-xl border border-border p-4 flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">آخر نسخ:</span>
+          <Badge variant={status?.last_status === "success" ? "default" : "destructive"}>
+            {status?.last_status === "success" ? "ناجح" : status?.last_status || "غير معروف"}
+          </Badge>
+          <span className="text-xs text-muted-foreground">{formatDate(status?.last_backup)}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">المزامنة:</span>
+          <Badge variant={status?.last_sync === "synced" ? "default" : "secondary"}>
+            {status?.last_sync === "synced" ? "متزامن" : status?.last_sync || "—"}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">القرص:</span>
+          <span className="text-sm font-mono text-foreground">{status?.disk_usage || "N/A"}</span>
+        </div>
+        <Button size="sm" variant="outline" onClick={onRefresh} className="gap-1.5 mr-auto">
+          <RefreshCw className="w-3.5 h-3.5" /> تحديث
+        </Button>
+      </div>
+
+      {/* Sub Tabs */}
+      <div className="flex gap-2">
+        <Button size="sm" variant={subTab === "overview" ? "default" : "outline"} onClick={() => setSubTab("overview")}>نظرة عامة</Button>
+        <Button size="sm" variant={subTab === "backups" ? "default" : "outline"} onClick={() => setSubTab("backups")}>سجل النسخ</Button>
+        <Button size="sm" variant={subTab === "repairs" ? "default" : "outline"} onClick={() => setSubTab("repairs")}>الإصلاحات</Button>
+        <Button size="sm" variant={subTab === "health" ? "default" : "outline"} onClick={() => setSubTab("health")}>لقطات الصحة</Button>
+      </div>
+
+      {/* Sub Tab Content */}
+      {subTab === "overview" && (
+        <div className="rounded-xl border border-border p-6 space-y-4">
+          <h3 className="text-lg font-bold flex items-center gap-2"><Server className="w-5 h-5 text-primary" /> نظام النسخ الاحتياطي</h3>
+          <div className="grid gap-3 text-sm">
+            <div className="flex justify-between border-b border-border pb-2">
+              <span className="text-muted-foreground">النسخ اليومي</span>
+              <span>كل يوم الساعة 3:00 صباحاً</span>
+            </div>
+            <div className="flex justify-between border-b border-border pb-2">
+              <span className="text-muted-foreground">النسخ الأسبوعي</span>
+              <span>كل أحد الساعة 2:00 صباحاً</span>
+            </div>
+            <div className="flex justify-between border-b border-border pb-2">
+              <span className="text-muted-foreground">المزامنة التدريجية</span>
+              <span>كل 6 ساعات</span>
+            </div>
+            <div className="flex justify-between border-b border-border pb-2">
+              <span className="text-muted-foreground">فحص الصحة</span>
+              <span>كل ساعة</span>
+            </div>
+            <div className="flex justify-between border-b border-border pb-2">
+              <span className="text-muted-foreground">مدة الاحتفاظ (يومي)</span>
+              <span>30 يوم</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">مدة الاحتفاظ (أسبوعي)</span>
+              <span>12 أسبوع</span>
+            </div>
+          </div>
+          <div className="rounded-lg bg-secondary/30 p-3 text-xs text-muted-foreground">
+            <p className="font-semibold mb-1">📋 أوامر السيرفر:</p>
+            <code className="block mt-1" dir="ltr">bash /var/www/hn-driver/scripts/server/backup-database.sh</code>
+            <code className="block mt-1" dir="ltr">bash /var/www/hn-driver/scripts/server/sync-database.sh</code>
+            <code className="block mt-1" dir="ltr">bash /var/www/hn-driver/scripts/server/db-health-check.sh</code>
+            <code className="block mt-1" dir="ltr">bash /var/www/hn-driver/scripts/server/restore-database.sh --list</code>
+          </div>
+        </div>
+      )}
+
+      {subTab === "backups" && (
+        <div className="rounded-xl border border-border overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-secondary/50">
+              <tr>
+                <th className="px-3 py-2.5 text-right font-semibold">النوع</th>
+                <th className="px-3 py-2.5 text-right font-semibold">الحالة</th>
+                <th className="px-3 py-2.5 text-right font-semibold">الجداول</th>
+                <th className="px-3 py-2.5 text-right font-semibold">الصفوف</th>
+                <th className="px-3 py-2.5 text-right font-semibold">الحجم</th>
+                <th className="px-3 py-2.5 text-right font-semibold">المدة</th>
+                <th className="px-3 py-2.5 text-right font-semibold">التاريخ</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {backups.length === 0 ? (
+                <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">
+                  <CloudOff className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                  لا توجد نسخ احتياطية مسجلة بعد
+                </td></tr>
+              ) : backups.map((b: any) => (
+                <tr key={b.id} className="hover:bg-secondary/30">
+                  <td className="px-3 py-2">
+                    <Badge variant="outline">{b.backup_type === "weekly" ? "أسبوعي" : b.backup_type === "sync" ? "مزامنة" : "يومي"}</Badge>
+                  </td>
+                  <td className="px-3 py-2">
+                    <Badge variant={b.status === "success" ? "default" : b.status === "failed" ? "destructive" : "secondary"}>
+                      {b.status === "success" ? "✅ ناجح" : b.status === "failed" ? "❌ فشل" : "⚠️ جزئي"}
+                    </Badge>
+                  </td>
+                  <td className="px-3 py-2 font-mono text-xs">{b.tables_count}</td>
+                  <td className="px-3 py-2 font-mono text-xs">{b.rows_total?.toLocaleString()}</td>
+                  <td className="px-3 py-2 font-mono text-xs">{formatSize(b.file_size)}</td>
+                  <td className="px-3 py-2 font-mono text-xs">{b.duration_sec}s</td>
+                  <td className="px-3 py-2 text-xs text-muted-foreground">{formatDate(b.created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {subTab === "repairs" && (
+        <div className="rounded-xl border border-border overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-secondary/50">
+              <tr>
+                <th className="px-3 py-2.5 text-right font-semibold">نوع الإصلاح</th>
+                <th className="px-3 py-2.5 text-right font-semibold">الوصف</th>
+                <th className="px-3 py-2.5 text-right font-semibold">الحالة</th>
+                <th className="px-3 py-2.5 text-right font-semibold">المصدر</th>
+                <th className="px-3 py-2.5 text-right font-semibold">التاريخ</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {repairs.length === 0 ? (
+                <tr><td colSpan={5} className="py-8 text-center text-muted-foreground">
+                  <Wrench className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                  لا توجد عمليات إصلاح مسجلة
+                </td></tr>
+              ) : repairs.map((r: any) => (
+                <tr key={r.id} className="hover:bg-secondary/30">
+                  <td className="px-3 py-2">
+                    <Badge variant="outline" className="font-mono text-xs">{r.repair_type}</Badge>
+                  </td>
+                  <td className="px-3 py-2 text-xs max-w-[250px] truncate">{r.description}</td>
+                  <td className="px-3 py-2">
+                    <Badge variant={r.status === "success" ? "default" : "destructive"}>
+                      {r.status === "success" ? "✅" : "❌"} {r.status}
+                    </Badge>
+                  </td>
+                  <td className="px-3 py-2 text-xs">{r.source || "web"}</td>
+                  <td className="px-3 py-2 text-xs text-muted-foreground">{formatDate(r.created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {subTab === "health" && (
+        <div className="space-y-3">
+          {snapshots.length === 0 ? (
+            <div className="rounded-xl border border-border p-8 text-center text-muted-foreground">
+              <Zap className="w-8 h-8 mx-auto mb-2 opacity-40" />
+              لا توجد لقطات صحة مسجلة بعد
+            </div>
+          ) : snapshots.map((s: any) => (
+            <div key={s.id} className="rounded-xl border border-border p-4 flex items-center gap-4">
+              <div className="text-center min-w-[60px]">
+                <p className={`text-2xl font-bold ${s.score >= 80 ? "text-green-600" : s.score >= 50 ? "text-yellow-600" : "text-red-600"}`}>
+                  {s.score}%
+                </p>
+              </div>
+              <div className="flex-1">
+                <Progress value={s.score} className="h-2 mb-1" />
+                <div className="flex gap-3 text-xs text-muted-foreground">
+                  <span>✅ {s.pass_count} ناجح</span>
+                  <span>⚠️ {s.warn_count} تحذير</span>
+                  <span>❌ {s.fail_count} فشل</span>
+                  <span className="mr-auto">{formatDate(s.created_at)}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const DatabaseManager = () => {
   const [tables, setTables] = useState<string[]>([]);
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
