@@ -96,10 +96,16 @@ Deno.serve(async (req) => {
           }
         }
       }
+      // Check if table has created_at column before defaulting sort
       if (sortColumn) {
         query = query.order(sortColumn, { ascending: sortDir === "asc" });
       } else {
-        query = query.order("created_at", { ascending: false });
+        // Try created_at sort; if column doesn't exist, query without sort
+        const { data: cols } = await adminClient.rpc("get_table_columns", { p_table: table });
+        const hasCreatedAt = cols?.some((c: any) => c.column_name === "created_at");
+        if (hasCreatedAt) {
+          query = query.order("created_at", { ascending: false });
+        }
       }
 
       const from = (page - 1) * pageSize;
