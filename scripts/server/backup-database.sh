@@ -11,6 +11,13 @@ ENV_FILE="/etc/hn-driver-backup.env"
 [ -f "$ENV_FILE" ] && source "$ENV_FILE"
 
 REMOTE_DB_URL="${SUPABASE_DB_URL:-}"
+# For pg_dump we need the direct connection (port 5432), not the pooler (port 6543)
+# Auto-convert pooler URL to direct URL if needed
+REMOTE_DB_URL_DIRECT="${SUPABASE_DB_URL_DIRECT:-}"
+if [ -z "$REMOTE_DB_URL_DIRECT" ] && [ -n "$REMOTE_DB_URL" ]; then
+  # Convert: aws-1-eu-west-1.pooler.supabase.com:6543 → db.PROJECT_REF.supabase.co:5432
+  REMOTE_DB_URL_DIRECT=$(echo "$REMOTE_DB_URL" | sed -E 's|@([^:]+):6543/|@db.typamugwwatqmdkxkfof.supabase.co:5432/|')
+fi
 LOCAL_DB="${LOCAL_DB_NAME:-hn_driver}"
 LOCAL_USER="${LOCAL_DB_USER:-hn_admin}"
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/hn-driver}"
@@ -73,7 +80,11 @@ ROWS_TOTAL=$(psql "$REMOTE_DB_URL" -t -A -c \
   "SELECT COALESCE(SUM(n_live_tup),0) FROM pg_stat_user_tables WHERE schemaname='public';" 2>/dev/null || echo "0")
 
 # Perform pg_dump
-if pg_dump "$REMOTE_DB_URL" \
+# Use direct connection for pg_dump (pooler port 6543 doesn't support pg_dump)
+DUMP_URL="${REMOTE_DB_URL_DIRECT:-$REMOTE_DB_URL}"
+log "  Using connection: $(echo "$DUMP_URL" | sed 's|://[^:]*:[^@]*@|://***:***@|')"
+
+if pg_dump "$DUMP_URL" \
   --no-owner \
   --no-privileges \
   --schema=public \
