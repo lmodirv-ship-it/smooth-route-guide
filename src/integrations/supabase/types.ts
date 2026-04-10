@@ -3219,6 +3219,60 @@ export type Database = {
           },
         ]
       }
+      server_backup_status: {
+        Row: {
+          backup_type: string
+          created_at: string
+          disk_usage: string | null
+          duration_sec: number | null
+          error_message: string | null
+          file_path: string | null
+          file_size: number | null
+          health_score: number | null
+          id: string
+          metadata: Json | null
+          rows_total: number | null
+          source: string | null
+          status: string
+          sync_status: string | null
+          tables_count: number | null
+        }
+        Insert: {
+          backup_type?: string
+          created_at?: string
+          disk_usage?: string | null
+          duration_sec?: number | null
+          error_message?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          health_score?: number | null
+          id?: string
+          metadata?: Json | null
+          rows_total?: number | null
+          source?: string | null
+          status?: string
+          sync_status?: string | null
+          tables_count?: number | null
+        }
+        Update: {
+          backup_type?: string
+          created_at?: string
+          disk_usage?: string | null
+          duration_sec?: number | null
+          error_message?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          health_score?: number | null
+          id?: string
+          metadata?: Json | null
+          rows_total?: number | null
+          source?: string | null
+          status?: string
+          sync_status?: string | null
+          tables_count?: number | null
+        }
+        Relationships: []
+      }
       site_analytics_daily: {
         Row: {
           city: string
