@@ -16,8 +16,8 @@ export interface HealthCheckResult {
 export interface HealthCheckDef {
   id: string;
   nameAr: string;
-  icon: string; // lucide icon name
-  category: "security" | "system" | "performance" | "data";
+  icon: string;
+  category: "security" | "system" | "performance" | "data" | "runtime";
   run: () => Promise<HealthCheckResult>;
 }
 
@@ -29,8 +29,8 @@ async function timed(fn: () => PromiseLike<any>): Promise<{ result: any; ms: num
 }
 
 // ─── Check implementations ───
-
 export const healthChecks: HealthCheckDef[] = [
+
   // ══════ SECURITY ══════
   {
     id: "db-conn",
@@ -41,7 +41,16 @@ export const healthChecks: HealthCheckDef[] = [
       const { result: { error }, ms } = await timed(() =>
         supabase.from("app_settings").select("id").limit(1)
       );
-      if (error) return { status: "fail", message: `فشل الاتصال: ${error.message}`, details: `${ms}ms`, fixable: false };
+      if (error) return {
+        status: "fail", message: `فشل الاتصال: ${error.message}`, details: `${ms}ms`,
+        fixable: true,
+        fixAction: async () => {
+          supabase.removeAllChannels();
+          const { error: e2 } = await supabase.from("app_settings").select("id").limit(1);
+          if (e2) throw e2;
+          return "تم إعادة الاتصال بنجاح";
+        },
+      };
       return {
         status: ms < 500 ? "pass" : "warn",
         message: ms < 500 ? `متصل بنجاح (${ms}ms)` : `بطيء (${ms}ms)`,
@@ -93,6 +102,184 @@ export const healthChecks: HealthCheckDef[] = [
     },
   },
 
+  // ══════ RUNTIME (Self-Healing) ══════
+  {
+    id: "browser-cache",
+    nameAr: "كاش المتصفح وService Workers",
+    icon: "Trash2",
+    category: "runtime",
+    run: async () => {
+      let swCount = 0;
+      let cacheCount = 0;
+      try {
+        if ("serviceWorker" in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          swCount = regs.length;
+        }
+        if ("caches" in window) {
+          const keys = await caches.keys();
+          cacheCount = keys.length;
+        }
+      } catch { /* ignore */ }
+      if (swCount > 0 || cacheCount > 0) {
+        return {
+          status: "warn",
+          message: `${swCount} Service Worker, ${cacheCount} كاش — قد يسبب نسخ قديمة`,
+          fixable: true,
+          fixAction: async () => {
+            if ("serviceWorker" in navigator) {
+              const regs = await navigator.serviceWorker.getRegistrations();
+              await Promise.all(regs.map(r => r.unregister()));
+            }
+            if ("caches" in window) {
+              const keys = await caches.keys();
+              await Promise.all(keys.map(k => caches.delete(k)));
+            }
+            return `تم مسح ${swCount} SW و${cacheCount} كاش`;
+          },
+        };
+      }
+      return { status: "pass", message: "لا يوجد كاش قديم أو Service Workers" };
+    },
+  },
+  {
+    id: "memory-usage",
+    nameAr: "استهلاك الذاكرة",
+    icon: "Cpu",
+    category: "runtime",
+    run: async () => {
+      const perf = performance as any;
+      if (!perf.memory) return { status: "pass", message: "غير متاح في هذا المتصفح" };
+      const usedMB = Math.round(perf.memory.usedJSHeapSize / 1048576);
+      const limitMB = Math.round(perf.memory.jsHeapSizeLimit / 1048576);
+      const pct = Math.round((usedMB / limitMB) * 100);
+      if (pct > 85) {
+        return {
+          status: "fail",
+          message: `ذاكرة مرتفعة: ${usedMB}MB / ${limitMB}MB (${pct}%)`,
+          fixable: true,
+          fixAction: async () => {
+            supabase.removeAllChannels();
+            return "تم تحرير قنوات Realtime غير المستخدمة";
+          },
+        };
+      }
+      if (pct > 60) return { status: "warn", message: `${usedMB}MB / ${limitMB}MB (${pct}%)` };
+      return { status: "pass", message: `${usedMB}MB / ${limitMB}MB (${pct}%)` };
+    },
+  },
+  {
+    id: "dom-complexity",
+    nameAr: "تعقيد صفحة DOM",
+    icon: "Layers",
+    category: "runtime",
+    run: async () => {
+      const totalNodes = document.querySelectorAll("*").length;
+      if (totalNodes > 5000) {
+        return {
+          status: "warn",
+          message: `${totalNodes} عنصر DOM — الصفحة معقدة جداً`,
+          details: "أكثر من 5000 عنصر قد يسبب بطء",
+        };
+      }
+      if (totalNodes > 3000) {
+        return { status: "warn", message: `${totalNodes} عنصر DOM — متوسط التعقيد` };
+      }
+      return { status: "pass", message: `${totalNodes} عنصر DOM — ممتاز` };
+    },
+  },
+  {
+    id: "network-latency",
+    nameAr: "زمن استجابة الشبكة",
+    icon: "Globe",
+    category: "runtime",
+    run: async () => {
+      const times: number[] = [];
+      for (let i = 0; i < 3; i++) {
+        const s = Date.now();
+        try {
+          await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/`, {
+            method: "HEAD",
+            headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          });
+        } catch { /* ignore */ }
+        times.push(Date.now() - s);
+      }
+      const avg = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
+      return {
+        status: avg < 200 ? "pass" : avg < 500 ? "warn" : "fail",
+        message: `متوسط: ${avg}ms`,
+        details: times.map((t, i) => `محاولة ${i + 1}: ${t}ms`).join(" | "),
+      };
+    },
+  },
+  {
+    id: "local-storage-health",
+    nameAr: "التخزين المحلي (LocalStorage)",
+    icon: "HardDrive",
+    category: "runtime",
+    run: async () => {
+      try {
+        let totalSize = 0;
+        let itemCount = 0;
+        const staleKeys: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (!key) continue;
+          const val = localStorage.getItem(key) || "";
+          totalSize += key.length + val.length;
+          itemCount++;
+          // Detect stale/orphan keys
+          if (key.startsWith("sb-") && key.endsWith("-auth-token")) {
+            try {
+              const parsed = JSON.parse(val);
+              if (parsed.expires_at && parsed.expires_at * 1000 < Date.now() - 86400000) {
+                staleKeys.push(key);
+              }
+            } catch { /* skip */ }
+          }
+        }
+        const sizeMB = (totalSize * 2 / 1048576).toFixed(2);
+        if (staleKeys.length > 0) {
+          return {
+            status: "warn",
+            message: `${itemCount} عنصر (${sizeMB}MB) — ${staleKeys.length} رمز منتهي`,
+            fixable: true,
+            fixAction: async () => {
+              staleKeys.forEach(k => localStorage.removeItem(k));
+              return `تم حذف ${staleKeys.length} رمز مصادقة منتهي`;
+            },
+          };
+        }
+        return { status: "pass", message: `${itemCount} عنصر (${sizeMB}MB)` };
+      } catch {
+        return { status: "fail", message: "لا يمكن الوصول للتخزين المحلي" };
+      }
+    },
+  },
+  {
+    id: "realtime-channels",
+    nameAr: "قنوات البث المباشر النشطة",
+    icon: "Radio",
+    category: "runtime",
+    run: async () => {
+      const channels = supabase.getChannels();
+      if (channels.length > 10) {
+        return {
+          status: "warn",
+          message: `${channels.length} قناة نشطة — عدد مرتفع`,
+          details: channels.map(c => c.topic).join(", "),
+          fixable: true,
+          fixAction: async () => {
+            supabase.removeAllChannels();
+            return `تم إغلاق ${channels.length} قناة`;
+          },
+        };
+      }
+      return { status: "pass", message: `${channels.length} قناة نشطة`, details: channels.map(c => c.topic).join(", ") };
+    },
+  },
+
   // ══════ DATA INTEGRITY ══════
   {
     id: "orphan-drivers",
@@ -113,7 +300,6 @@ export const healthChecks: HealthCheckDef[] = [
           details: orphans.map(o => o.id.slice(0, 8)).join(", "),
           fixable: true,
           fixAction: async () => {
-            // Create missing profiles for orphan drivers
             for (const o of orphans) {
               await supabase.from("profiles").upsert({
                 id: o.user_id,
@@ -177,10 +363,7 @@ export const healthChecks: HealthCheckDef[] = [
           fixable: true,
           fixAction: async () => {
             const ids = stuck.map(t => t.id);
-            const { error: e } = await supabase
-              .from("trips")
-              .update({ status: "cancelled" })
-              .in("id", ids);
+            const { error: e } = await supabase.from("trips").update({ status: "cancelled" }).in("id", ids);
             if (e) throw e;
             return `تم إلغاء ${ids.length} رحلة معلقة`;
           },
@@ -210,10 +393,7 @@ export const healthChecks: HealthCheckDef[] = [
           fixable: true,
           fixAction: async () => {
             const ids = stuck.map(t => t.id);
-            const { error: e } = await supabase
-              .from("delivery_orders")
-              .update({ status: "cancelled" })
-              .in("id", ids);
+            const { error: e } = await supabase.from("delivery_orders").update({ status: "cancelled" }).in("id", ids);
             if (e) throw e;
             return `تم إلغاء ${ids.length} طلب معلق`;
           },
@@ -252,6 +432,56 @@ export const healthChecks: HealthCheckDef[] = [
       return { status: "pass", message: `${online.length} سائق متصل — جميعهم نشطون` };
     },
   },
+  {
+    id: "expired-subscriptions",
+    nameAr: "اشتراكات سائقين منتهية ولم تُغلق",
+    icon: "CreditCard",
+    category: "data",
+    run: async () => {
+      const now = new Date().toISOString();
+      const { data: expired, error } = await supabase
+        .from("driver_subscriptions")
+        .select("id, driver_id, expires_at")
+        .eq("status", "active")
+        .lt("expires_at", now)
+        .limit(100);
+      if (error) return { status: "fail", message: error.message };
+      if (expired && expired.length > 0) {
+        return {
+          status: "warn",
+          message: `${expired.length} اشتراك منتهي لم يُغلق`,
+          fixable: true,
+          fixAction: async () => {
+            const ids = expired.map(e => e.id);
+            const { error: e } = await supabase.from("driver_subscriptions").update({ status: "expired" }).in("id", ids);
+            if (e) throw e;
+            return `تم إغلاق ${ids.length} اشتراك منتهي`;
+          },
+        };
+      }
+      return { status: "pass", message: "جميع الاشتراكات محدثة" };
+    },
+  },
+  {
+    id: "duplicate-roles",
+    nameAr: "أدوار مكررة",
+    icon: "Copy",
+    category: "data",
+    run: async () => {
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role").limit(1000);
+      if (!roles) return { status: "pass", message: "لا بيانات" };
+      const seen = new Map<string, number>();
+      for (const r of roles) {
+        const key = `${r.user_id}:${r.role}`;
+        seen.set(key, (seen.get(key) || 0) + 1);
+      }
+      const dupes = [...seen.entries()].filter(([, c]) => c > 1);
+      if (dupes.length > 0) {
+        return { status: "warn", message: `${dupes.length} دور مكرر`, details: dupes.map(([k]) => k.slice(0, 12)).join(", ") };
+      }
+      return { status: "pass", message: "لا توجد أدوار مكررة" };
+    },
+  },
 
   // ══════ SYSTEM ══════
   {
@@ -275,16 +505,25 @@ export const healthChecks: HealthCheckDef[] = [
     icon: "Zap",
     category: "system",
     run: async () => {
-      try {
-        const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/hn-assistant`;
-        const resp = await fetch(url, { method: "OPTIONS" });
-        return {
-          status: resp.ok || resp.status === 204 || resp.status === 200 ? "pass" : "warn",
-          message: `الدوال السحابية متاحة (${resp.status})`,
-        };
-      } catch {
-        return { status: "warn", message: "لم يتم الوصول — قد تكون محمية" };
+      const fns = ["hn-assistant", "auto-dispatch", "distance-matrix"];
+      const results: string[] = [];
+      let allOk = true;
+      for (const fn of fns) {
+        try {
+          const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${fn}`;
+          const resp = await fetch(url, { method: "OPTIONS" });
+          results.push(`${fn}: ${resp.status}`);
+          if (!resp.ok && resp.status !== 204) allOk = false;
+        } catch {
+          results.push(`${fn}: ✗`);
+          allOk = false;
+        }
       }
+      return {
+        status: allOk ? "pass" : "warn",
+        message: allOk ? `${fns.length} دوال سحابية متاحة` : "بعض الدوال غير متاحة",
+        details: results.join(" | "),
+      };
     },
   },
   {
@@ -303,7 +542,17 @@ export const healthChecks: HealthCheckDef[] = [
           });
         });
         supabase.removeChannel(channel);
-        return { status: connected ? "pass" : "warn", message: connected ? "البث المباشر يعمل" : "بطء في الاتصال" };
+        if (!connected) {
+          return {
+            status: "fail", message: "فشل اتصال البث المباشر",
+            fixable: true,
+            fixAction: async () => {
+              supabase.removeAllChannels();
+              return "تم إعادة تهيئة اتصالات Realtime";
+            },
+          };
+        }
+        return { status: "pass", message: "البث المباشر يعمل" };
       } catch {
         return { status: "fail", message: "فشل اتصال البث المباشر" };
       }
@@ -320,39 +569,6 @@ export const healthChecks: HealthCheckDef[] = [
       return { status: "pass", message: `${count || 0} مستخدم مسجل` };
     },
   },
-  {
-    id: "expired-subscriptions",
-    nameAr: "اشتراكات سائقين منتهية ولم تُغلق",
-    icon: "CreditCard",
-    category: "data",
-    run: async () => {
-      const now = new Date().toISOString();
-      const { data: expired, error } = await supabase
-        .from("driver_subscriptions")
-        .select("id, driver_id, expires_at")
-        .eq("status", "active")
-        .lt("expires_at", now)
-        .limit(100);
-      if (error) return { status: "fail", message: error.message };
-      if (expired && expired.length > 0) {
-        return {
-          status: "warn",
-          message: `${expired.length} اشتراك منتهي لم يُغلق`,
-          fixable: true,
-          fixAction: async () => {
-            const ids = expired.map(e => e.id);
-            const { error: e } = await supabase
-              .from("driver_subscriptions")
-              .update({ status: "expired" })
-              .in("id", ids);
-            if (e) throw e;
-            return `تم إغلاق ${ids.length} اشتراك منتهي`;
-          },
-        };
-      }
-      return { status: "pass", message: "جميع الاشتراكات محدثة" };
-    },
-  },
 
   // ══════ PERFORMANCE ══════
   {
@@ -365,6 +581,7 @@ export const healthChecks: HealthCheckDef[] = [
         { name: "profiles", fn: () => supabase.from("profiles").select("id").limit(10) },
         { name: "drivers", fn: () => supabase.from("drivers").select("id").limit(10) },
         { name: "trips", fn: () => supabase.from("trips").select("id").limit(10) },
+        { name: "delivery_orders", fn: () => supabase.from("delivery_orders").select("id").limit(10) },
       ];
       let totalMs = 0;
       const timings: string[] = [];
@@ -387,33 +604,38 @@ export const healthChecks: HealthCheckDef[] = [
     icon: "Database",
     category: "performance",
     run: async () => {
-      const tables = ["profiles", "trips", "delivery_orders", "drivers", "ride_requests"];
+      const tables = ["profiles", "trips", "delivery_orders", "drivers", "ride_requests", "wallet", "user_roles"];
       const sizes: string[] = [];
+      let totalRows = 0;
       for (const t of tables) {
         const { count } = await supabase.from(t as any).select("id", { count: "exact", head: true });
-        sizes.push(`${t}: ${count || 0}`);
+        const c = count || 0;
+        totalRows += c;
+        sizes.push(`${t}: ${c}`);
       }
-      return { status: "pass", message: `تم فحص ${tables.length} جداول`, details: sizes.join(" | ") };
+      return {
+        status: totalRows > 50000 ? "warn" : "pass",
+        message: `${totalRows} سجل في ${tables.length} جداول`,
+        details: sizes.join(" | "),
+      };
     },
   },
   {
-    id: "duplicate-roles",
-    nameAr: "أدوار مكررة",
-    icon: "Copy",
-    category: "data",
+    id: "page-load-speed",
+    nameAr: "سرعة تحميل الصفحة",
+    icon: "Timer",
+    category: "performance",
     run: async () => {
-      const { data: roles } = await supabase.from("user_roles").select("user_id, role").limit(1000);
-      if (!roles) return { status: "pass", message: "لا بيانات" };
-      const seen = new Map<string, number>();
-      for (const r of roles) {
-        const key = `${r.user_id}:${r.role}`;
-        seen.set(key, (seen.get(key) || 0) + 1);
-      }
-      const dupes = [...seen.entries()].filter(([, c]) => c > 1);
-      if (dupes.length > 0) {
-        return { status: "warn", message: `${dupes.length} دور مكرر`, details: dupes.map(([k]) => k.slice(0, 12)).join(", ") };
-      }
-      return { status: "pass", message: "لا توجد أدوار مكررة" };
+      const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+      if (!nav) return { status: "pass", message: "غير متاح" };
+      const domReady = Math.round(nav.domContentLoadedEventEnd - nav.startTime);
+      const fullLoad = Math.round(nav.loadEventEnd - nav.startTime);
+      const ttfb = Math.round(nav.responseStart - nav.startTime);
+      return {
+        status: fullLoad < 3000 ? "pass" : fullLoad < 6000 ? "warn" : "fail",
+        message: `تحميل كامل: ${fullLoad}ms`,
+        details: `TTFB: ${ttfb}ms | DOM Ready: ${domReady}ms | Full: ${fullLoad}ms`,
+      };
     },
   },
 ];

@@ -1,15 +1,20 @@
 /**
- * System Health Check — Comprehensive diagnostics with real fix capabilities.
+ * System Health Check — Comprehensive diagnostics with self-healing engine.
  */
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ShieldCheck, Play, Loader2, Clock, Shield, Server, Zap, Database as DbIcon } from "lucide-react";
+import {
+  ShieldCheck, Play, Loader2, Clock, Shield, Server, Zap,
+  Database as DbIcon, CheckCircle, AlertTriangle, XCircle,
+  Heart, Wrench, Trash2, RefreshCw, RotateCcw, WifiOff
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { healthChecks, type CheckStatus, type HealthCheckResult } from "@/admin/components/health/healthCheckDefinitions";
 import HealthCheckCard from "@/admin/components/health/HealthCheckCard";
-import { CheckCircle, AlertTriangle, XCircle } from "lucide-react";
+import { selfHealingEngine } from "@/lib/selfHealingEngine";
 
 interface CheckState extends HealthCheckResult {
   id: string;
@@ -25,6 +30,15 @@ const SystemHealthCheck = () => {
   const [scanning, setScanning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [lastScan, setLastScan] = useState<string | null>(null);
+  const [healingLogs, setHealingLogs] = useState(selfHealingEngine.getLogs());
+  const [showLogs, setShowLogs] = useState(false);
+
+  // Start self-healing engine & listen to logs
+  useEffect(() => {
+    selfHealingEngine.start();
+    const unsub = selfHealingEngine.onLog(setHealingLogs);
+    return () => { unsub(); };
+  }, []);
 
   const updateCheck = useCallback((id: string, update: Partial<CheckState>) => {
     setChecks(prev => prev.map(c => c.id === id ? { ...c, ...update } : c));
@@ -62,27 +76,44 @@ const SystemHealthCheck = () => {
     }
   };
 
-  const passCount = checks.filter(c => c.status === "pass").length;
-  const warnCount = checks.filter(c => c.status === "warn").length;
-  const failCount = checks.filter(c => c.status === "fail").length;
-  const total = passCount + warnCount + failCount;
-  const score = total > 0 ? Math.round((passCount / total) * 100) : 0;
-
-  const categories = [
-    { key: "security", label: "🔒 الأمان", icon: Shield },
-    { key: "data", label: "🗃️ سلامة البيانات", icon: DbIcon },
-    { key: "system", label: "⚙️ النظام", icon: Server },
-    { key: "performance", label: "⚡ الأداء", icon: Zap },
-  ];
-
-  const fixableCount = checks.filter(c => c.fixable && (c.status === "fail" || c.status === "warn")).length;
+  const handleQuickRepair = async (repairId: string, label: string) => {
+    try {
+      const result = await selfHealingEngine.runRepair(repairId);
+      toast({ title: `✅ ${label}`, description: result });
+    } catch (e: any) {
+      toast({ title: `❌ ${label}`, description: e.message, variant: "destructive" });
+    }
+  };
 
   const fixAll = async () => {
     const fixable = checks.filter(c => c.fixable && c.fixAction && (c.status === "fail" || c.status === "warn"));
     for (const c of fixable) {
       await handleFix(c.id);
     }
+    toast({ title: "✅ تم إصلاح جميع المشاكل القابلة للإصلاح" });
   };
+
+  const passCount = checks.filter(c => c.status === "pass").length;
+  const warnCount = checks.filter(c => c.status === "warn").length;
+  const failCount = checks.filter(c => c.status === "fail").length;
+  const total = passCount + warnCount + failCount;
+  const score = total > 0 ? Math.round((passCount / total) * 100) : 0;
+  const fixableCount = checks.filter(c => c.fixable && (c.status === "fail" || c.status === "warn")).length;
+
+  const categories = [
+    { key: "runtime", label: "🛠️ الإصلاح الذاتي والتشغيل", icon: Wrench },
+    { key: "security", label: "🔒 الأمان", icon: Shield },
+    { key: "data", label: "🗃️ سلامة البيانات", icon: DbIcon },
+    { key: "system", label: "⚙️ النظام", icon: Server },
+    { key: "performance", label: "⚡ الأداء", icon: Zap },
+  ];
+
+  const quickRepairs = [
+    { id: "clear-all-caches", label: "مسح الكاش", icon: Trash2, desc: "مسح جميع الكاش وService Workers" },
+    { id: "reconnect-realtime", label: "إعادة اتصال البث", icon: WifiOff, desc: "إعادة تهيئة قنوات Realtime" },
+    { id: "refresh-auth", label: "تجديد الجلسة", icon: RefreshCw, desc: "تجديد رمز المصادقة" },
+    { id: "clear-local-storage", label: "تنظيف التخزين", icon: RotateCcw, desc: "حذف بيانات مؤقتة قديمة" },
+  ];
 
   return (
     <div className="space-y-6 p-2 md:p-6" dir="rtl">
@@ -93,8 +124,8 @@ const SystemHealthCheck = () => {
             <ShieldCheck className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">فحص صحة النظام</h1>
-            <p className="text-sm text-muted-foreground">فحص شامل مع إصلاح تلقائي للمشاكل</p>
+            <h1 className="text-2xl font-bold text-foreground">فحص وإصلاح النظام</h1>
+            <p className="text-sm text-muted-foreground">فحص شامل + إصلاح ذاتي + أدوات صيانة سريعة</p>
           </div>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
@@ -103,6 +134,9 @@ const SystemHealthCheck = () => {
               <Clock className="w-3 h-3" /> آخر فحص: {lastScan}
             </span>
           )}
+          <Badge className="bg-green-500/20 text-green-600 gap-1">
+            <Heart className="w-3 h-3" /> الإصلاح الذاتي نشط
+          </Badge>
           {fixableCount > 0 && (
             <Button onClick={fixAll} variant="outline" className="gap-2 rounded-xl text-sm">
               🔧 إصلاح الكل ({fixableCount})
@@ -121,6 +155,27 @@ const SystemHealthCheck = () => {
           <p className="text-xs text-muted-foreground mt-1 text-center">{progress}% مكتمل</p>
         </motion.div>
       )}
+
+      {/* Quick Repair Tools */}
+      <div className="glass-card rounded-2xl p-4 space-y-3">
+        <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+          <Wrench className="w-4 h-4 text-primary" /> أدوات الإصلاح السريع
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {quickRepairs.map(repair => (
+            <Button
+              key={repair.id}
+              variant="outline"
+              className="flex flex-col items-center gap-2 h-auto py-4 rounded-xl hover:bg-primary/5"
+              onClick={() => handleQuickRepair(repair.id, repair.label)}
+            >
+              <repair.icon className="w-5 h-5 text-primary" />
+              <span className="text-xs font-medium">{repair.label}</span>
+              <span className="text-[10px] text-muted-foreground">{repair.desc}</span>
+            </Button>
+          ))}
+        </div>
+      </div>
 
       {/* Score */}
       {!scanning && total > 0 && (
@@ -180,6 +235,35 @@ const SystemHealthCheck = () => {
           </div>
         );
       })}
+
+      {/* Self-Healing Activity Log */}
+      <div className="glass-card rounded-2xl p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Heart className="w-4 h-4 text-primary" /> سجل الإصلاح الذاتي
+          </h2>
+          <Button variant="ghost" size="sm" onClick={() => setShowLogs(!showLogs)} className="text-xs">
+            {showLogs ? "إخفاء" : `عرض (${healingLogs.length})`}
+          </Button>
+        </div>
+        {showLogs && (
+          <div className="max-h-60 overflow-y-auto space-y-1">
+            {healingLogs.length === 0 && <p className="text-xs text-muted-foreground text-center py-4">لا توجد سجلات بعد</p>}
+            {healingLogs.map((log, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs p-2 rounded-lg bg-muted/30">
+                {log.result === "success" ? (
+                  <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
+                ) : (
+                  <XCircle className="w-3 h-3 text-red-500 flex-shrink-0" />
+                )}
+                <span className="text-muted-foreground">{new Date(log.timestamp).toLocaleTimeString("ar-MA")}</span>
+                <span className="text-foreground">{log.action}</span>
+                {log.details && <span className="text-muted-foreground truncate">— {log.details}</span>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -3,7 +3,8 @@ import { motion } from "framer-motion";
 import {
   Database, Lock, Users, HardDrive, Zap, Wifi, FileText, Activity,
   AlertTriangle, CheckCircle, XCircle, Loader2, RefreshCw, Shield,
-  CreditCard, Package, UserCheck, UserX, Copy, Wallet
+  CreditCard, Package, UserCheck, UserX, Copy, Wallet, Trash2, Cpu,
+  Layers, Globe, Radio, Timer
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import type { CheckStatus } from "./healthCheckDefinitions";
 const iconMap: Record<string, React.ElementType> = {
   Database, Lock, Users, HardDrive, Zap, Wifi, FileText, Activity,
   AlertTriangle, Shield, CreditCard, Package, UserCheck, UserX, Copy, Wallet,
+  Trash2, Cpu, Layers, Globe, Radio, Timer,
 };
 
 interface Props {
