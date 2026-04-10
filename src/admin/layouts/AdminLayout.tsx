@@ -59,6 +59,12 @@ const AdminLayout = () => {
   const { t, dir } = useI18n();
   const { isVisible } = useVisibility();
   const { userCode } = useUserReference();
+
+  // Start self-healing engine once for all admin pages
+  useEffect(() => {
+    selfHealingEngine.start();
+    return () => { selfHealingEngine.stop(); };
+  }, []);
   const location = useLocation();
   const navigate = useNavigate();
   const [aiOpen, setAiOpen] = useState(false);
