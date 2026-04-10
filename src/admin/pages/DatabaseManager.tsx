@@ -349,19 +349,6 @@ const DatabaseManager = () => {
           ) : activeTab !== "server" && selectedTable ? (
             <Tabs value={activeTab} onValueChange={setActiveTab}>
 
-              {/* DATA TAB - keep the TabsContent blocks below */}
-              <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
-                <TabsList>
-                  <TabsTrigger value="data" className="gap-1.5"><Table2 className="w-3.5 h-3.5" /> البيانات</TabsTrigger>
-                  <TabsTrigger value="columns" className="gap-1.5"><FileText className="w-3.5 h-3.5" /> الأعمدة</TabsTrigger>
-                  <TabsTrigger value="audit" className="gap-1.5"><Clock className="w-3.5 h-3.5" /> سجل العمليات</TabsTrigger>
-                </TabsList>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="font-mono">{selectedTable}</Badge>
-                  <Badge variant="secondary">{total} سجل</Badge>
-                </div>
-              </div>
-
               {/* DATA TAB */}
               <TabsContent value="data" className="space-y-3">
                 {/* Toolbar */}
