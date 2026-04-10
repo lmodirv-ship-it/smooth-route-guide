@@ -113,8 +113,10 @@ if [ ! -f "$ENV_FILE" ]; then
 # ═══════════════════════════════════════════════════
 
 # Lovable Cloud (Remote) — REQUIRED
-# Get the connection string from Lovable Cloud
+# Pooler URL for app/database access
 SUPABASE_DB_URL="postgresql://postgres.typamugwwatqmdkxkfof:[YOUR-PASSWORD]@aws-1-eu-west-1.pooler.supabase.com:6543/postgres"
+# Direct URL for pg_dump / pg_restore (recommended so backups always work)
+SUPABASE_DB_URL_DIRECT="postgresql://postgres.typamugwwatqmdkxkfof:[YOUR-PASSWORD]@db.typamugwwatqmdkxkfof.supabase.co:5432/postgres"
 
 # Local Database
 LOCAL_DB_NAME="${DB_NAME}"

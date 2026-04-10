@@ -10,14 +10,36 @@ set -euo pipefail
 ENV_FILE="/etc/hn-driver-backup.env"
 [ -f "$ENV_FILE" ] && source "$ENV_FILE"
 
+build_direct_db_url() {
+  local input_url="${1:-}"
+  local project_ref=""
+
+  if [ -z "$input_url" ]; then
+    return 0
+  fi
+
+  if [[ "$input_url" != *".pooler.supabase.com"* ]]; then
+    printf '%s\n' "$input_url"
+    return 0
+  fi
+
+  project_ref=$(printf '%s\n' "$input_url" | sed -nE 's|^postgres(ql)?://postgres\.([^.:/?]+).*|\2|p')
+
+  if [ -z "$project_ref" ]; then
+    printf '%s\n' "$input_url"
+    return 0
+  fi
+
+  printf '%s\n' "$input_url" | sed -E "s|@[^/]+/|@db.${project_ref}.supabase.co:5432/|"
+}
+
 REMOTE_DB_URL="${SUPABASE_DB_URL:-}"
-# For pg_dump we need the direct connection (port 5432), not the pooler (port 6543)
-# Auto-convert pooler URL to direct URL if needed
+# pg_dump/pg_restore require the direct database host, never the pooler host.
 REMOTE_DB_URL_DIRECT="${SUPABASE_DB_URL_DIRECT:-}"
 if [ -z "$REMOTE_DB_URL_DIRECT" ] && [ -n "$REMOTE_DB_URL" ]; then
-  # Convert: aws-1-eu-west-1.pooler.supabase.com:6543 → db.PROJECT_REF.supabase.co:5432
-  REMOTE_DB_URL_DIRECT=$(echo "$REMOTE_DB_URL" | sed -E 's|@([^:]+):6543/|@db.typamugwwatqmdkxkfof.supabase.co:5432/|')
+  REMOTE_DB_URL_DIRECT="$(build_direct_db_url "$REMOTE_DB_URL")"
 fi
+DUMP_URL="${REMOTE_DB_URL_DIRECT:-$REMOTE_DB_URL}"
 LOCAL_DB="${LOCAL_DB_NAME:-hn_driver}"
 LOCAL_USER="${LOCAL_DB_USER:-hn_admin}"
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/hn-driver}"
@@ -51,8 +73,13 @@ log_ok()   { log "✅ $1"; }
 log_fail() { log "❌ $1"; }
 
 # ─── Validation ──────────────────────────────────────────
-if [ -z "$REMOTE_DB_URL" ]; then
-  log_fail "SUPABASE_DB_URL not configured in ${ENV_FILE}"
+if [ -z "$DUMP_URL" ]; then
+  log_fail "SUPABASE_DB_URL or SUPABASE_DB_URL_DIRECT not configured in ${ENV_FILE}"
+  exit 1
+fi
+
+if [[ "$DUMP_URL" == *".pooler.supabase.com"* ]]; then
+  log_fail "pg_dump requires the direct database host, but the configured URL still points to the pooler. Set SUPABASE_DB_URL_DIRECT in ${ENV_FILE}."
   exit 1
 fi
 
@@ -72,16 +99,14 @@ BACKUP_STATUS="success"
 ERROR_MSG=""
 
 # Get table count before backup
-TABLES_COUNT=$(psql "$REMOTE_DB_URL" -t -A -c \
+TABLES_COUNT=$(psql "$DUMP_URL" -t -A -c \
   "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';" 2>/dev/null || echo "0")
 
 # Get total rows
-ROWS_TOTAL=$(psql "$REMOTE_DB_URL" -t -A -c \
+ROWS_TOTAL=$(psql "$DUMP_URL" -t -A -c \
   "SELECT COALESCE(SUM(n_live_tup),0) FROM pg_stat_user_tables WHERE schemaname='public';" 2>/dev/null || echo "0")
 
 # Perform pg_dump
-# Use direct connection for pg_dump (pooler port 6543 doesn't support pg_dump)
-DUMP_URL="${REMOTE_DB_URL_DIRECT:-$REMOTE_DB_URL}"
 log "  Using connection: $(echo "$DUMP_URL" | sed 's|://[^:]*:[^@]*@|://***:***@|')"
 
 if pg_dump "$DUMP_URL" \
