@@ -17,7 +17,7 @@ export interface HealthCheckDef {
   id: string;
   nameAr: string;
   icon: string;
-  category: "security" | "system" | "performance" | "data" | "runtime";
+  category: "security" | "system" | "performance" | "data" | "runtime" | "mobile" | "sync";
   run: () => Promise<HealthCheckResult>;
 }
 
