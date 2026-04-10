@@ -80,7 +80,11 @@ ROWS_TOTAL=$(psql "$REMOTE_DB_URL" -t -A -c \
   "SELECT COALESCE(SUM(n_live_tup),0) FROM pg_stat_user_tables WHERE schemaname='public';" 2>/dev/null || echo "0")
 
 # Perform pg_dump
-if pg_dump "$REMOTE_DB_URL" \
+# Use direct connection for pg_dump (pooler port 6543 doesn't support pg_dump)
+DUMP_URL="${REMOTE_DB_URL_DIRECT:-$REMOTE_DB_URL}"
+log "  Using connection: $(echo "$DUMP_URL" | sed 's|://[^:]*:[^@]*@|://***:***@|')"
+
+if pg_dump "$DUMP_URL" \
   --no-owner \
   --no-privileges \
   --schema=public \
