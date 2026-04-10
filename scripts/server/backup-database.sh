@@ -184,6 +184,33 @@ if [ -n "${NOTIFY_WEBHOOK:-}" ]; then
     2>/dev/null || true
 fi
 
+# ─── Step 10: Report to Lovable Cloud ────────────────────
+CLOUD_REPORT_URL="${SUPABASE_FUNCTIONS_URL:-}"
+SERVER_KEY="${SERVER_BACKUP_KEY:-}"
+if [ -n "$CLOUD_REPORT_URL" ] && [ -n "$SERVER_KEY" ]; then
+  log "📡 Reporting to Lovable Cloud..."
+  DISK_USAGE_PCT=$(df /var/backups --output=pcent 2>/dev/null | tail -1 | tr -d ' ')
+  SYNC_ST=$(sudo -u postgres psql -d "$LOCAL_DB" -t -A -c "SELECT value FROM _sync_meta WHERE key='sync_status';" 2>/dev/null || echo "unknown")
+  HEALTH_SC=$(cat "${BACKUP_DIR}/logs/health-report-$(date +%Y%m%d).json" 2>/dev/null | grep -o '"score":[0-9]*' | head -1 | cut -d: -f2 || echo "0")
+
+  curl -sf -X POST "${CLOUD_REPORT_URL}/server-db-status" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"action\": \"report_backup\",
+      \"server_key\": \"${SERVER_KEY}\",
+      \"backup_type\": \"$( $IS_WEEKLY && echo weekly || echo daily )\",
+      \"file_path\": \"${BACKUP_FILE}.gz\",
+      \"file_size\": ${RAW_SIZE},
+      \"tables_count\": ${TABLES_COUNT},
+      \"rows_total\": ${ROWS_TOTAL},
+      \"duration_sec\": ${DURATION},
+      \"status\": \"${BACKUP_STATUS}\",
+      \"health_score\": ${HEALTH_SC:-0},
+      \"sync_status\": \"${SYNC_ST}\",
+      \"disk_usage\": \"${DISK_USAGE_PCT}\"
+    }" 2>/dev/null && log_ok "Cloud report sent" || log "⚠️  Cloud report failed (non-critical)"
+fi
+
 # ─── Summary ─────────────────────────────────────────────
 log "═══════════════════════════════════════════════════"
 log "Backup complete in ${DURATION}s"
