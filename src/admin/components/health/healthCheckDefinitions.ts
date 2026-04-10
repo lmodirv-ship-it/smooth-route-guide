@@ -230,12 +230,12 @@ export const healthChecks: HealthCheckDef[] = [
     run: async () => {
       const { data: online } = await supabase
         .from("drivers")
-        .select("id, user_id, updated_at")
+        .select("id, user_id, last_location_update")
         .eq("status", "active")
         .limit(200);
       if (!online || online.length === 0) return { status: "pass", message: "لا سائقين متصلين" };
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-      const stale = online.filter(d => d.updated_at < oneHourAgo);
+      const stale = online.filter(d => !d.last_location_update || d.last_location_update < oneHourAgo);
       if (stale.length > 0) {
         return {
           status: "warn",
