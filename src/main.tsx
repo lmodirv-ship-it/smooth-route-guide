@@ -24,31 +24,18 @@ if (isPreviewHost || isInIframe) {
 
 void initializeNativeApp();
 
-// ── Global error handlers for unhandled errors ──
-// Debounce reloads: max 1 auto-reload per 5 minutes to prevent reload loops
-const RELOAD_COOLDOWN_KEY = "hn_last_auto_reload";
-const RELOAD_COOLDOWN_MS = 5 * 60 * 1000;
-
-function canAutoReload(): boolean {
-  const last = Number(sessionStorage.getItem(RELOAD_COOLDOWN_KEY) || "0");
-  if (Date.now() - last < RELOAD_COOLDOWN_MS) return false;
-  sessionStorage.setItem(RELOAD_COOLDOWN_KEY, String(Date.now()));
-  return true;
-}
-
+// ── Global error handlers: log only, never auto-reload ──
 window.addEventListener("unhandledrejection", (event) => {
   const msg = event.reason?.message || String(event.reason);
   if (msg.includes("Loading chunk") || msg.includes("dynamically imported module") || msg.includes("Loading CSS chunk")) {
-    console.warn("[AutoRecovery] Chunk load failure detected");
+    console.warn("[ErrorLog] Chunk load issue:", msg);
     event.preventDefault();
-    if (canAutoReload()) window.location.reload();
   }
 });
 
 window.addEventListener("error", (event) => {
   if (event.message?.includes("Loading chunk") || event.message?.includes("Script error")) {
-    console.warn("[AutoRecovery] Script error detected");
-    if (canAutoReload()) window.location.reload();
+    console.warn("[ErrorLog] Script error:", event.message);
   }
 });
 
