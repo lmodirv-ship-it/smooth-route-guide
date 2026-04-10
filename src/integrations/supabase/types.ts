@@ -3650,6 +3650,123 @@ export type Database = {
         }
         Relationships: []
       }
+      system_health_logs: {
+        Row: {
+          category: string
+          check_id: string
+          check_name: string
+          created_at: string
+          details: string | null
+          device_info: Json | null
+          id: string
+          message: string | null
+          source: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          category?: string
+          check_id: string
+          check_name: string
+          created_at?: string
+          details?: string | null
+          device_info?: Json | null
+          id?: string
+          message?: string | null
+          source?: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          check_id?: string
+          check_name?: string
+          created_at?: string
+          details?: string | null
+          device_info?: Json | null
+          id?: string
+          message?: string | null
+          source?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      system_health_snapshots: {
+        Row: {
+          created_at: string
+          fail_count: number
+          id: string
+          pass_count: number
+          score: number
+          snapshot_data: Json | null
+          source: string
+          total_checks: number
+          warn_count: number
+        }
+        Insert: {
+          created_at?: string
+          fail_count?: number
+          id?: string
+          pass_count?: number
+          score?: number
+          snapshot_data?: Json | null
+          source?: string
+          total_checks?: number
+          warn_count?: number
+        }
+        Update: {
+          created_at?: string
+          fail_count?: number
+          id?: string
+          pass_count?: number
+          score?: number
+          snapshot_data?: Json | null
+          source?: string
+          total_checks?: number
+          warn_count?: number
+        }
+        Relationships: []
+      }
+      system_repairs: {
+        Row: {
+          auto_triggered: boolean
+          created_at: string
+          description: string | null
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          repair_type: string
+          source: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          auto_triggered?: boolean
+          created_at?: string
+          description?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          repair_type: string
+          source?: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          auto_triggered?: boolean
+          created_at?: string
+          description?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          repair_type?: string
+          source?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       tickets: {
         Row: {
           agent_id: string | null
@@ -4255,6 +4372,7 @@ export type Database = {
       }
     }
     Functions: {
+      cleanup_old_health_data: { Args: never; Returns: undefined }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
