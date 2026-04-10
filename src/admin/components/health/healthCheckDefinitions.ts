@@ -22,7 +22,7 @@ export interface HealthCheckDef {
 }
 
 // ─── Helpers ───
-async function timed<T>(fn: () => Promise<T>): Promise<{ result: T; ms: number }> {
+async function timed(fn: () => PromiseLike<any>): Promise<{ result: any; ms: number }> {
   const s = Date.now();
   const result = await fn();
   return { result, ms: Date.now() - s };
