@@ -12,6 +12,7 @@ import {
   Link,
   Preview,
   Text,
+  Hr,
 } from 'npm:@react-email/components@0.0.22'
 
 interface InviteEmailProps {
@@ -25,26 +26,26 @@ export const InviteEmail = ({
   siteUrl,
   confirmationUrl,
 }: InviteEmailProps) => (
-  <Html lang="en" dir="ltr">
+  <Html lang="ar" dir="rtl">
     <Head />
-    <Preview>You've been invited to join {siteName}</Preview>
+    <Preview>دعوة للانضمام إلى HN Driver</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>You've been invited</Heading>
+        <Text style={logo}>🚗 HN Driver</Text>
+        <Hr style={hr} />
+        <Heading style={h1}>لقد تمت دعوتك</Heading>
         <Text style={text}>
-          You've been invited to join{' '}
+          تمت دعوتك للانضمام إلى{' '}
           <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
+            <strong>HN Driver</strong>
           </Link>
-          . Click the button below to accept the invitation and create your
-          account.
+          . انقر على الزر أدناه لقبول الدعوة وإنشاء حسابك.
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Accept Invitation
+          قبول الدعوة
         </Button>
         <Text style={footer}>
-          If you weren't expecting this invitation, you can safely ignore this
-          email.
+          إذا لم تكن تتوقع هذه الدعوة، يمكنك تجاهل هذا البريد بأمان.
         </Text>
       </Container>
     </Body>
@@ -53,27 +54,38 @@ export const InviteEmail = ({
 
 export default InviteEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
+const main = { backgroundColor: '#ffffff', fontFamily: 'Cairo, Arial, sans-serif' }
+const container = { padding: '20px 25px', maxWidth: '480px', margin: '0 auto' }
+const logo = {
+  fontSize: '24px',
+  fontWeight: 'bold' as const,
+  color: '#d4841a',
+  textAlign: 'center' as const,
+  margin: '0 0 10px',
+}
+const hr = { borderColor: '#e5e5e5', margin: '10px 0 20px' }
 const h1 = {
   fontSize: '22px',
   fontWeight: 'bold' as const,
-  color: '#000000',
+  color: '#1a1a2e',
   margin: '0 0 20px',
 }
 const text = {
   fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
+  color: '#6b7280',
+  lineHeight: '1.7',
   margin: '0 0 25px',
 }
-const link = { color: 'inherit', textDecoration: 'underline' }
+const link = { color: '#d4841a', textDecoration: 'underline' }
 const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
+  backgroundColor: '#d4841a',
+  color: '#1a1a2e',
+  fontSize: '16px',
+  fontWeight: 'bold' as const,
+  borderRadius: '12px',
+  padding: '14px 28px',
   textDecoration: 'none',
+  display: 'block' as const,
+  textAlign: 'center' as const,
 }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
