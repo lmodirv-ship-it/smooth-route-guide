@@ -11,6 +11,13 @@ ENV_FILE="/etc/hn-driver-backup.env"
 [ -f "$ENV_FILE" ] && source "$ENV_FILE"
 
 REMOTE_DB_URL="${SUPABASE_DB_URL:-}"
+# For pg_dump we need the direct connection (port 5432), not the pooler (port 6543)
+# Auto-convert pooler URL to direct URL if needed
+REMOTE_DB_URL_DIRECT="${SUPABASE_DB_URL_DIRECT:-}"
+if [ -z "$REMOTE_DB_URL_DIRECT" ] && [ -n "$REMOTE_DB_URL" ]; then
+  # Convert: aws-1-eu-west-1.pooler.supabase.com:6543 → db.PROJECT_REF.supabase.co:5432
+  REMOTE_DB_URL_DIRECT=$(echo "$REMOTE_DB_URL" | sed -E 's|@([^:]+):6543/|@db.typamugwwatqmdkxkfof.supabase.co:5432/|')
+fi
 LOCAL_DB="${LOCAL_DB_NAME:-hn_driver}"
 LOCAL_USER="${LOCAL_DB_USER:-hn_admin}"
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/hn-driver}"
