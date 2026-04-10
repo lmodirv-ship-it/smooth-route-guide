@@ -106,6 +106,8 @@ const SystemHealthCheck = () => {
     { key: "data", label: "🗃️ سلامة البيانات", icon: DbIcon },
     { key: "system", label: "⚙️ النظام", icon: Server },
     { key: "performance", label: "⚡ الأداء", icon: Zap },
+    { key: "mobile", label: "📱 التطبيقات (iOS/APK)", icon: Zap },
+    { key: "sync", label: "🔄 التزامن والسيرفر", icon: RefreshCw },
   ];
 
   const quickRepairs = [
@@ -113,6 +115,7 @@ const SystemHealthCheck = () => {
     { id: "reconnect-realtime", label: "إعادة اتصال البث", icon: WifiOff, desc: "إعادة تهيئة قنوات Realtime" },
     { id: "refresh-auth", label: "تجديد الجلسة", icon: RefreshCw, desc: "تجديد رمز المصادقة" },
     { id: "clear-local-storage", label: "تنظيف التخزين", icon: RotateCcw, desc: "حذف بيانات مؤقتة قديمة" },
+    { id: "force-reload", label: "إعادة تحميل", icon: RefreshCw, desc: "إعادة تحميل كاملة للصفحة" },
   ];
 
   return (
