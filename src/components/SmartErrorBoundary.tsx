@@ -115,32 +115,18 @@ class SmartErrorBoundary extends Component<Props, State> {
       return this.props.children;
     }
 
-    // Silent recovery: never show error UI to users.
-    // For auth errors, redirect immediately to login.
-    // For all other errors, silently retry or reload without any visible error screen.
-    const { errorCategory, retryCount, recovering } = this.state;
+    // Silent recovery: never reload, never redirect, never show error UI.
+    // Just silently retry rendering or return null.
+    const { retryCount, recovering } = this.state;
     const isMaxRetries = retryCount >= MAX_RETRIES;
 
-    // Auth errors: silent redirect to login
-    if (errorCategory === "auth") {
-      window.location.href = "/login";
-      return null;
-    }
-
-    // Chunk load errors: silent reload
-    if (errorCategory === "chunk_load") {
-      window.location.reload();
-      return null;
-    }
-
-    // Still recovering (retrying silently): show nothing, just the children will re-render
+    // Still recovering (retrying silently)
     if (recovering && !isMaxRetries) {
       return null;
     }
 
-    // Max retries exhausted: silently go home instead of showing error screen
+    // Max retries exhausted: just return null (blank) — no redirect, no reload
     if (isMaxRetries) {
-      window.location.href = "/";
       return null;
     }
 
