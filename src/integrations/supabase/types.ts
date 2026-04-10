@@ -985,6 +985,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           current_uses: number | null
+          description: string | null
           discount_type: string
           discount_value: number
           expires_at: string | null
@@ -992,6 +993,7 @@ export type Database = {
           is_active: boolean | null
           max_discount: number | null
           max_uses: number | null
+          max_uses_per_user: number | null
           min_order_amount: number | null
           updated_at: string
         }
@@ -1001,6 +1003,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_uses?: number | null
+          description?: string | null
           discount_type?: string
           discount_value?: number
           expires_at?: string | null
@@ -1008,6 +1011,7 @@ export type Database = {
           is_active?: boolean | null
           max_discount?: number | null
           max_uses?: number | null
+          max_uses_per_user?: number | null
           min_order_amount?: number | null
           updated_at?: string
         }
@@ -1017,6 +1021,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_uses?: number | null
+          description?: string | null
           discount_type?: string
           discount_value?: number
           expires_at?: string | null
@@ -1024,6 +1029,7 @@ export type Database = {
           is_active?: boolean | null
           max_discount?: number | null
           max_uses?: number | null
+          max_uses_per_user?: number | null
           min_order_amount?: number | null
           updated_at?: string
         }
