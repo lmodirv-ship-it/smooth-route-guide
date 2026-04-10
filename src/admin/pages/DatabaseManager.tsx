@@ -138,7 +138,39 @@ const DatabaseManager = () => {
 
   useEffect(() => { if (activeTab === "audit") loadAudit(); }, [activeTab, loadAudit]);
 
-  const handleSort = (col: string) => {
+  // Server DB status API
+  const SERVER_API = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/server-db-status`;
+  const serverApi = async (action: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const resp = await fetch(SERVER_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ action }),
+    });
+    const d = await resp.json();
+    if (d.error) throw new Error(d.error);
+    return d;
+  };
+
+  const loadServerStatus = useCallback(async () => {
+    setServerLoading(true);
+    try {
+      const [statusRes, repairsRes, snapshotsRes] = await Promise.all([
+        serverApi("status"),
+        serverApi("repairs"),
+        serverApi("snapshots"),
+      ]);
+      setServerStatus(statusRes.summary || null);
+      setServerBackups(statusRes.backups || []);
+      setServerRepairs(repairsRes.repairs || []);
+      setServerSnapshots(snapshotsRes.snapshots || []);
+    } catch {}
+    setServerLoading(false);
+  }, []);
+
+  useEffect(() => { if (activeTab === "server") loadServerStatus(); }, [activeTab, loadServerStatus]);
+
+
     if (sortColumn === col) {
       setSortDir(d => d === "asc" ? "desc" : "asc");
     } else {
