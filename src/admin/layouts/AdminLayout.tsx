@@ -356,6 +356,15 @@ const AdminLayout = () => {
                 <div className="w-px h-6 bg-border" />
               </>
             )}
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => window.location.reload()}
+              title="تحديث الصفحة"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </Button>
             <FaceGuard onLock={handleFaceLock} disabled={!cameraEnabled} />
             <GlobalLogoutButton />
             <VisitorCounter />
