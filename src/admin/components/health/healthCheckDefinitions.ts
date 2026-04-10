@@ -638,4 +638,308 @@ export const healthChecks: HealthCheckDef[] = [
       };
     },
   },
+
+  // ══════ NEW: ADVANCED CHECKS ══════
+
+  // --- Security: detect users without roles ---
+  {
+    id: "users-without-roles",
+    nameAr: "مستخدمون بدون أدوار",
+    icon: "ShieldAlert",
+    category: "security",
+    run: async () => {
+      const { data: profiles } = await supabase.from("profiles").select("id").limit(500);
+      if (!profiles?.length) return { status: "pass", message: "لا مستخدمين" };
+      const { data: roles } = await supabase.from("user_roles").select("user_id").in("user_id", profiles.map(p => p.id));
+      const roleSet = new Set((roles || []).map(r => r.user_id));
+      const missing = profiles.filter(p => !roleSet.has(p.id));
+      if (missing.length > 0) {
+        return {
+          status: "fail",
+          message: `${missing.length} مستخدم بدون دور`,
+          fixable: true,
+          fixAction: async () => {
+            for (const m of missing) {
+              await supabase.from("user_roles").upsert({ user_id: m.id, role: "user" }, { onConflict: "user_id,role" });
+            }
+            return `تم تعيين دور "user" لـ ${missing.length} مستخدم`;
+          },
+        };
+      }
+      return { status: "pass", message: `${profiles.length} مستخدم — جميعهم لديهم أدوار` };
+    },
+  },
+
+  // --- Security: expired customer subscriptions ---
+  {
+    id: "expired-customer-subs",
+    nameAr: "اشتراكات عملاء منتهية ولم تُغلق",
+    icon: "CreditCard",
+    category: "security",
+    run: async () => {
+      const now = new Date().toISOString();
+      const { data: expired, error } = await supabase
+        .from("customer_subscriptions")
+        .select("id")
+        .eq("status", "active")
+        .lt("expires_at", now)
+        .limit(100);
+      if (error) return { status: "fail", message: error.message };
+      if (expired && expired.length > 0) {
+        return {
+          status: "warn",
+          message: `${expired.length} اشتراك عميل منتهي`,
+          fixable: true,
+          fixAction: async () => {
+            const ids = expired.map(e => e.id);
+            const { error: e } = await supabase.from("customer_subscriptions").update({ status: "expired" }).in("id", ids);
+            if (e) throw e;
+            return `تم إغلاق ${ids.length} اشتراك عميل`;
+          },
+        };
+      }
+      return { status: "pass", message: "جميع اشتراكات العملاء محدثة" };
+    },
+  },
+
+  // --- Data: unresolved alerts ---
+  {
+    id: "stale-alerts",
+    nameAr: "تنبيهات قديمة غير محلولة",
+    icon: "Bell",
+    category: "data",
+    run: async () => {
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: stale, error } = await supabase
+        .from("alerts")
+        .select("id")
+        .eq("status", "new")
+        .lt("created_at", weekAgo)
+        .limit(100);
+      if (error) return { status: "fail", message: error.message };
+      if (stale && stale.length > 0) {
+        return {
+          status: "warn",
+          message: `${stale.length} تنبيه قديم (أكثر من أسبوع)`,
+          fixable: true,
+          fixAction: async () => {
+            const ids = stale.map(a => a.id);
+            const { error: e } = await supabase.from("alerts").update({ status: "dismissed" }).in("id", ids);
+            if (e) throw e;
+            return `تم إغلاق ${ids.length} تنبيه قديم`;
+          },
+        };
+      }
+      return { status: "pass", message: "لا توجد تنبيهات قديمة" };
+    },
+  },
+
+  // --- Data: open complaints older than 48h ---
+  {
+    id: "stale-complaints",
+    nameAr: "شكاوى مفتوحة أكثر من 48 ساعة",
+    icon: "MessageSquareWarning",
+    category: "data",
+    run: async () => {
+      const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+      const { data: old, error } = await supabase
+        .from("complaints")
+        .select("id, priority")
+        .in("status", ["open", "pending"])
+        .lt("created_at", twoDaysAgo)
+        .limit(50);
+      if (error) return { status: "fail", message: error.message };
+      if (old && old.length > 0) {
+        const urgent = old.filter(c => c.priority === "high" || c.priority === "urgent").length;
+        return {
+          status: urgent > 0 ? "fail" : "warn",
+          message: `${old.length} شكوى مفتوحة (${urgent} عاجلة)`,
+          details: `يجب معالجة الشكاوى العاجلة فوراً`,
+        };
+      }
+      return { status: "pass", message: "جميع الشكاوى تمت معالجتها" };
+    },
+  },
+
+  // --- Data: negative wallet balances ---
+  {
+    id: "negative-wallets",
+    nameAr: "محافظ برصيد سالب",
+    icon: "Wallet",
+    category: "data",
+    run: async () => {
+      const { data: neg, error } = await supabase
+        .from("wallet")
+        .select("user_id, balance")
+        .lt("balance", 0)
+        .limit(50);
+      if (error) return { status: "fail", message: error.message };
+      if (neg && neg.length > 0) {
+        return {
+          status: "warn",
+          message: `${neg.length} محفظة برصيد سالب`,
+          details: neg.map(w => `${w.user_id.slice(0, 8)}: ${w.balance} DH`).join(", "),
+          fixable: true,
+          fixAction: async () => {
+            const ids = neg.map(w => w.user_id);
+            const { error: e } = await supabase.from("wallet").update({ balance: 0 }).in("user_id", ids);
+            if (e) throw e;
+            return `تم تصفير ${ids.length} محفظة سالبة`;
+          },
+        };
+      }
+      return { status: "pass", message: "لا توجد محافظ سالبة" };
+    },
+  },
+
+  // --- Performance: JS errors in console ---
+  {
+    id: "js-error-count",
+    nameAr: "أخطاء JavaScript الأخيرة",
+    icon: "Bug",
+    category: "performance",
+    run: async () => {
+      // Count errors captured during session
+      const errorCount = (window as any).__hn_error_count || 0;
+      if (errorCount > 10) {
+        return { status: "fail", message: `${errorCount} خطأ JS في هذه الجلسة`, details: "تحقق من Console للتفاصيل" };
+      }
+      if (errorCount > 0) {
+        return { status: "warn", message: `${errorCount} خطأ JS في هذه الجلسة` };
+      }
+      return { status: "pass", message: "لا أخطاء JavaScript" };
+    },
+  },
+
+  // --- Performance: pending network requests ---
+  {
+    id: "network-pending",
+    nameAr: "استقرار الشبكة",
+    icon: "Wifi",
+    category: "performance",
+    run: async () => {
+      const online = navigator.onLine;
+      if (!online) {
+        return {
+          status: "fail",
+          message: "المتصفح غير متصل بالإنترنت",
+          fixable: true,
+          fixAction: async () => {
+            // Just retry check
+            if (navigator.onLine) return "تم استعادة الاتصال";
+            throw new Error("لا يزال غير متصل");
+          },
+        };
+      }
+      // Check connection quality
+      const conn = (navigator as any).connection;
+      if (conn) {
+        const effectiveType = conn.effectiveType;
+        const downlink = conn.downlink;
+        if (effectiveType === "slow-2g" || effectiveType === "2g") {
+          return { status: "fail", message: `اتصال بطيء جداً: ${effectiveType}`, details: `سرعة: ${downlink}Mbps` };
+        }
+        if (effectiveType === "3g") {
+          return { status: "warn", message: `اتصال متوسط: ${effectiveType}`, details: `سرعة: ${downlink}Mbps` };
+        }
+        return { status: "pass", message: `اتصال جيد: ${effectiveType}`, details: `سرعة: ${downlink}Mbps` };
+      }
+      return { status: "pass", message: "متصل بالإنترنت" };
+    },
+  },
+
+  // --- System: app settings integrity ---
+  {
+    id: "app-settings",
+    nameAr: "إعدادات التطبيق",
+    icon: "Settings",
+    category: "system",
+    run: async () => {
+      const { data, error } = await supabase.from("app_settings").select("key, value").limit(100);
+      if (error) return { status: "fail", message: error.message };
+      if (!data || data.length === 0) {
+        return { status: "warn", message: "لا توجد إعدادات محفوظة" };
+      }
+      const emptyValues = data.filter(s => s.value === null || s.value === undefined);
+      if (emptyValues.length > 0) {
+        return {
+          status: "warn",
+          message: `${emptyValues.length} إعداد بدون قيمة`,
+          details: emptyValues.map(s => s.key).join(", "),
+        };
+      }
+      return { status: "pass", message: `${data.length} إعداد — جميعها صالحة` };
+    },
+  },
+
+  // --- System: stores without owner ---
+  {
+    id: "orphan-stores",
+    nameAr: "متاجر بدون مالك",
+    icon: "Store",
+    category: "data",
+    run: async () => {
+      const { data: stores } = await supabase.from("stores").select("id, owner_id, name").limit(200);
+      if (!stores?.length) return { status: "pass", message: "لا متاجر" };
+      const ownerIds = stores.filter(s => s.owner_id).map(s => s.owner_id!);
+      if (ownerIds.length === 0) return { status: "pass", message: `${stores.length} متجر` };
+      const { data: profiles } = await supabase.from("profiles").select("id").in("id", ownerIds);
+      const profileSet = new Set((profiles || []).map(p => p.id));
+      const orphans = stores.filter(s => s.owner_id && !profileSet.has(s.owner_id));
+      if (orphans.length > 0) {
+        return {
+          status: "warn",
+          message: `${orphans.length} متجر مرتبط بمالك غير موجود`,
+          details: orphans.map(s => s.name || s.id.slice(0, 8)).join(", "),
+        };
+      }
+      return { status: "pass", message: `${stores.length} متجر — جميعها صالحة` };
+    },
+  },
+
+  // --- Runtime: CSS/font loading ---
+  {
+    id: "resource-loading",
+    nameAr: "تحميل الموارد (CSS/الخطوط)",
+    icon: "FileCode",
+    category: "runtime",
+    run: async () => {
+      const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
+      const failed = resources.filter(r => r.transferSize === 0 && r.decodedBodySize === 0 && !r.name.includes("data:"));
+      const slowResources = resources.filter(r => r.duration > 3000);
+      if (failed.length > 5) {
+        return {
+          status: "warn",
+          message: `${failed.length} مورد قد يكون فاشل التحميل`,
+          details: failed.slice(0, 5).map(r => r.name.split("/").pop()).join(", "),
+        };
+      }
+      if (slowResources.length > 3) {
+        return {
+          status: "warn",
+          message: `${slowResources.length} مورد بطيء (>3 ثوانٍ)`,
+          details: slowResources.slice(0, 3).map(r => `${r.name.split("/").pop()}: ${Math.round(r.duration)}ms`).join(", "),
+        };
+      }
+      return { status: "pass", message: `${resources.length} مورد — تحميل سليم` };
+    },
+  },
+
+  // --- Runtime: error listener setup ---
+  {
+    id: "error-tracking",
+    nameAr: "تتبع الأخطاء التلقائي",
+    icon: "Shield",
+    category: "runtime",
+    run: async () => {
+      // Ensure global error counter is set up
+      if (!(window as any).__hn_error_listener_active) {
+        (window as any).__hn_error_count = 0;
+        window.addEventListener("error", () => { (window as any).__hn_error_count = ((window as any).__hn_error_count || 0) + 1; });
+        window.addEventListener("unhandledrejection", () => { (window as any).__hn_error_count = ((window as any).__hn_error_count || 0) + 1; });
+        (window as any).__hn_error_listener_active = true;
+      }
+      return { status: "pass", message: "تتبع الأخطاء نشط — يتم رصد أخطاء JS تلقائياً" };
+    },
+  },
 ];
