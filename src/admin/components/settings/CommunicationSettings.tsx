@@ -34,7 +34,7 @@ export default function CommunicationSettings() {
     notifyOnLowBalance: true,
     lowBalanceThreshold: "20",
     emailFromName: "HN Driver",
-    emailReplyTo: "",
+    emailReplyTo: "info@hn-driver.com",
     welcomeEmailEnabled: true,
     orderConfirmationEmail: true,
   });
