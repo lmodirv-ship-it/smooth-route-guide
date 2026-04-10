@@ -83,15 +83,7 @@ class SmartErrorBoundary extends Component<Props, State> {
     }, 1000);
 
     this.retryTimer = setTimeout(() => {
-      if (recovery.action === "reload") {
-        window.location.reload();
-        return;
-      }
-      if (recovery.action === "redirect" && recovery.target) {
-        window.location.href = recovery.target;
-        return;
-      }
-      // retry or wait → re-render
+      // Never reload or redirect automatically — just retry rendering
       this.setState(prev => ({
         hasError: false,
         error: null,
