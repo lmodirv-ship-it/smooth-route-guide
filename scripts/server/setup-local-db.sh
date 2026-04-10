@@ -114,7 +114,7 @@ if [ ! -f "$ENV_FILE" ]; then
 
 # Lovable Cloud (Remote) — REQUIRED
 # Get the connection string from Lovable Cloud
-SUPABASE_DB_URL="postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres"
+SUPABASE_DB_URL="postgresql://postgres.typamugwwatqmdkxkfof:[YOUR-PASSWORD]@aws-1-eu-west-1.pooler.supabase.com:6543/postgres"
 
 # Local Database
 LOCAL_DB_NAME="${DB_NAME}"
