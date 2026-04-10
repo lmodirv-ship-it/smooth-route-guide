@@ -170,7 +170,7 @@ const DatabaseManager = () => {
 
   useEffect(() => { if (activeTab === "server") loadServerStatus(); }, [activeTab, loadServerStatus]);
 
-
+  const handleSort = (col: string) => {
     if (sortColumn === col) {
       setSortDir(d => d === "asc" ? "desc" : "asc");
     } else {
