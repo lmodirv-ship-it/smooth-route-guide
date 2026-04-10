@@ -36,10 +36,11 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "smooth-route-guide"
+const SITE_NAME = "HN Driver"
 const SENDER_DOMAIN = "notify.hn-driver.com"
 const ROOT_DOMAIN = "hn-driver.com"
-const FROM_DOMAIN = "notify.hn-driver.com" // Domain shown in From address (may be root or sender subdomain)
+const FROM_DOMAIN = "hn-driver.com"
+const REPLY_TO = "info@hn-driver.com"
 
 // Sample data for preview mode ONLY (not used in actual email sending).
 // URLs are baked in at scaffold time from the project's real data.
@@ -257,6 +258,7 @@ async function handleWebhook(req: Request): Promise<Response> {
       message_id: messageId,
       to: payload.data.email,
       from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+      reply_to: REPLY_TO,
       sender_domain: SENDER_DOMAIN,
       subject: EMAIL_SUBJECTS[emailType] || 'Notification',
       html,
