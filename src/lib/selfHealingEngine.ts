@@ -1,10 +1,10 @@
 /**
  * Self-Healing Engine — Background service that monitors and auto-repairs runtime issues.
- * Runs silently in the background without user intervention.
+ * Persists all logs and repairs to database for history and analytics.
  */
 import { supabase } from "@/integrations/supabase/client";
 
-interface HealingLog {
+export interface HealingLog {
   timestamp: number;
   action: string;
   result: "success" | "fail";
@@ -23,15 +23,12 @@ class SelfHealingEngine {
     this.isRunning = true;
     this.log("بدء محرك الإصلاح الذاتي", "success");
 
-    // Run immediately then every 60s
     this.runHealingCycle();
     this.intervalId = setInterval(() => this.runHealingCycle(), 60_000);
 
-    // Monitor for connection drops
     window.addEventListener("online", () => this.handleReconnect());
     window.addEventListener("offline", () => this.log("انقطاع الاتصال — في انتظار العودة", "fail"));
 
-    // Monitor memory pressure
     if ("memory" in performance) {
       this.monitorMemory();
     }
@@ -59,6 +56,64 @@ class SelfHealingEngine {
     this.listeners.forEach(l => l(this.getLogs()));
   }
 
+  /** Persist a repair action to the database */
+  private async persistRepair(repairType: string, description: string, status: "success" | "fail", errorMsg?: string, autoTriggered = false) {
+    try {
+      await supabase.from("system_repairs").insert({
+        repair_type: repairType,
+        description,
+        status,
+        error_message: errorMsg || null,
+        source: "web",
+        auto_triggered: autoTriggered,
+        metadata: {
+          user_agent: navigator.userAgent,
+          url: window.location.href,
+          timestamp: Date.now()
+        }
+      } as any);
+    } catch { /* silent */ }
+  }
+
+  /** Save health check results to database */
+  async persistHealthResults(results: Array<{ id: string; name: string; category: string; status: string; message: string; details?: string }>) {
+    try {
+      const rows = results.map(r => ({
+        check_id: r.id,
+        check_name: r.name,
+        category: r.category,
+        status: r.status,
+        message: r.message,
+        details: r.details || null,
+        source: "web",
+        device_info: { user_agent: navigator.userAgent, url: window.location.href }
+      }));
+      await supabase.from("system_health_logs").insert(rows as any);
+    } catch { /* silent */ }
+  }
+
+  /** Save a health snapshot summary */
+  async persistSnapshot(score: number, total: number, pass: number, warn: number, fail: number, data?: any) {
+    try {
+      await supabase.from("system_health_snapshots").insert({
+        score, total_checks: total, pass_count: pass, warn_count: warn, fail_count: fail,
+        source: "web",
+        snapshot_data: data || {}
+      } as any);
+    } catch { /* silent */ }
+  }
+
+  /** Cleanup old data (calls DB function) */
+  async cleanupOldData() {
+    try {
+      await supabase.rpc("cleanup_old_health_data" as any);
+      this.log("تنظيف بيانات الفحص القديمة", "success");
+      return "تم تنظيف البيانات القديمة بنجاح";
+    } catch {
+      return "لا توجد بيانات قديمة للتنظيف";
+    }
+  }
+
   private async runHealingCycle() {
     try {
       await this.healAuthSession();
@@ -70,7 +125,6 @@ class SelfHealingEngine {
     }
   }
 
-  /** Auto-refresh auth session if expiring soon */
   private async healAuthSession() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -80,14 +134,12 @@ class SelfHealingEngine {
         const { error } = await supabase.auth.refreshSession();
         if (!error) {
           this.log("تجديد جلسة المصادقة التلقائي", "success", `كانت ستنتهي خلال ${Math.round(remaining)} دقيقة`);
+          await this.persistRepair("auth-refresh", "تجديد الجلسة تلقائياً", "success", undefined, true);
         }
       }
-    } catch {
-      // Silent
-    }
+    } catch { /* Silent */ }
   }
 
-  /** Verify DB connection and reconnect Realtime if needed */
   private async healSupabaseConnection() {
     try {
       const start = Date.now();
@@ -95,20 +147,16 @@ class SelfHealingEngine {
       const ms = Date.now() - start;
       if (error) {
         this.log("فشل اتصال قاعدة البيانات — محاولة إعادة الاتصال", "fail", error.message);
-        // Force reconnect realtime channels
         supabase.removeAllChannels();
+        await this.persistRepair("db-reconnect", "إعادة اتصال قاعدة البيانات", "fail", error.message, true);
       } else if (ms > 2000) {
         this.log("بطء اتصال قاعدة البيانات", "fail", `${ms}ms`);
       }
-    } catch {
-      // Silent
-    }
+    } catch { /* Silent */ }
   }
 
-  /** Clean up old browser caches that might cause stale content */
   private healBrowserCaches() {
     try {
-      // Clear old localStorage items that might cause issues
       const keysToCheck = ["sb-typamugwwatqmdkxkfof-auth-token"];
       for (const key of keysToCheck) {
         const val = localStorage.getItem(key);
@@ -125,7 +173,6 @@ class SelfHealingEngine {
     } catch { /* Silent */ }
   }
 
-  /** Monitor and handle memory issues */
   private healMemoryLeaks() {
     try {
       const perf = performance as any;
@@ -135,7 +182,6 @@ class SelfHealingEngine {
         const usage = usedMB / limitMB;
         if (usage > 0.85) {
           this.log("تحذير: استهلاك ذاكرة مرتفع", "fail", `${usedMB}MB / ${limitMB}MB (${Math.round(usage * 100)}%)`);
-          // Force garbage collection hint
           if (typeof (window as any).gc === "function") {
             (window as any).gc();
           }
@@ -152,7 +198,6 @@ class SelfHealingEngine {
         const limitMB = Math.round(perf.memory.jsHeapSizeLimit / 1048576);
         if (usedMB / limitMB > 0.9) {
           this.log("ذاكرة حرجة — تنظيف تلقائي", "fail", `${usedMB}MB`);
-          // Remove unused Supabase channels
           supabase.removeAllChannels();
         }
       }
@@ -161,54 +206,72 @@ class SelfHealingEngine {
 
   private handleReconnect() {
     this.log("عودة الاتصال — إعادة تهيئة", "success");
-    // Refresh auth
     supabase.auth.refreshSession();
   }
 
   /** Run a specific repair action */
   async runRepair(repairId: string): Promise<string> {
-    switch (repairId) {
-      case "clear-all-caches": {
-        if ("caches" in window) {
-          const keys = await caches.keys();
-          await Promise.all(keys.map(k => caches.delete(k)));
+    let result = "";
+    let status: "success" | "fail" = "success";
+    try {
+      switch (repairId) {
+        case "clear-all-caches": {
+          if ("caches" in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k)));
+          }
+          if ("serviceWorker" in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map(r => r.unregister()));
+          }
+          this.log("مسح جميع الكاش", "success");
+          result = "تم مسح كاش المتصفح وService Workers";
+          break;
         }
-        if ("serviceWorker" in navigator) {
-          const regs = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(regs.map(r => r.unregister()));
+        case "reconnect-realtime": {
+          supabase.removeAllChannels();
+          this.log("إعادة اتصال البث المباشر", "success");
+          result = "تم إعادة تهيئة اتصالات Realtime";
+          break;
         }
-        this.log("مسح جميع الكاش", "success");
-        return `تم مسح ${0} service workers وكاش المتصفح`;
-      }
-      case "reconnect-realtime": {
-        supabase.removeAllChannels();
-        this.log("إعادة اتصال البث المباشر", "success");
-        return "تم إعادة تهيئة اتصالات Realtime";
-      }
-      case "refresh-auth": {
-        const { error } = await supabase.auth.refreshSession();
-        if (error) throw error;
-        this.log("تجديد جلسة المصادقة", "success");
-        return "تم تجديد الجلسة بنجاح";
-      }
-      case "clear-local-storage": {
-        const keysToKeep = ["hn_cache_reset_version", "sb-typamugwwatqmdkxkfof-auth-token", "i18n-locale"];
-        const allKeys: string[] = [];
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key && !keysToKeep.includes(key)) allKeys.push(key);
+        case "refresh-auth": {
+          const { error } = await supabase.auth.refreshSession();
+          if (error) throw error;
+          this.log("تجديد جلسة المصادقة", "success");
+          result = "تم تجديد الجلسة بنجاح";
+          break;
         }
-        allKeys.forEach(k => localStorage.removeItem(k));
-        this.log("تنظيف التخزين المحلي", "success", `${allKeys.length} عنصر`);
-        return `تم حذف ${allKeys.length} عنصر من التخزين المحلي`;
+        case "clear-local-storage": {
+          const keysToKeep = ["hn_cache_reset_version", "sb-typamugwwatqmdkxkfof-auth-token", "i18n-locale"];
+          const allKeys: string[] = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && !keysToKeep.includes(key)) allKeys.push(key);
+          }
+          allKeys.forEach(k => localStorage.removeItem(k));
+          this.log("تنظيف التخزين المحلي", "success", `${allKeys.length} عنصر`);
+          result = `تم حذف ${allKeys.length} عنصر من التخزين المحلي`;
+          break;
+        }
+        case "cleanup-old-data": {
+          result = await this.cleanupOldData();
+          break;
+        }
+        case "force-reload": {
+          this.log("إعادة تحميل قسرية", "success");
+          await this.persistRepair(repairId, "إعادة تحميل قسرية", "success");
+          window.location.reload();
+          return "جاري إعادة التحميل...";
+        }
+        default:
+          throw new Error("إجراء إصلاح غير معروف");
       }
-      case "force-reload": {
-        this.log("إعادة تحميل قسرية", "success");
-        window.location.reload();
-        return "جاري إعادة التحميل...";
-      }
-      default:
-        throw new Error("إجراء إصلاح غير معروف");
+      await this.persistRepair(repairId, result, "success");
+      return result;
+    } catch (e: any) {
+      status = "fail";
+      await this.persistRepair(repairId, e.message, "fail", e.message);
+      throw e;
     }
   }
 }
