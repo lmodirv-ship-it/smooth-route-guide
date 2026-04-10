@@ -3,8 +3,10 @@ import { motion } from "framer-motion";
 import {
   Database, Table2, Search, Plus, Trash2, Edit3, Save, X, RefreshCw,
   ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, Download,
-  Loader2, Shield, Clock, FileText, AlertTriangle, Eye
+  Loader2, Shield, Clock, FileText, AlertTriangle, Eye, Server,
+  HardDrive, Activity, CheckCircle2, XCircle, Wrench, CloudOff, Zap
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -74,6 +76,13 @@ const DatabaseManager = () => {
   const [auditPage, setAuditPage] = useState(1);
 
   const [activeTab, setActiveTab] = useState("data");
+
+  // Server status
+  const [serverStatus, setServerStatus] = useState<any>(null);
+  const [serverBackups, setServerBackups] = useState<any[]>([]);
+  const [serverRepairs, setServerRepairs] = useState<any[]>([]);
+  const [serverSnapshots, setServerSnapshots] = useState<any[]>([]);
+  const [serverLoading, setServerLoading] = useState(false);
 
   // Load tables
   useEffect(() => {
