@@ -942,4 +942,294 @@ export const healthChecks: HealthCheckDef[] = [
       return { status: "pass", message: "تتبع الأخطاء نشط — يتم رصد أخطاء JS تلقائياً" };
     },
   },
+
+  // ══════ MOBILE (iOS/APK) ══════
+  {
+    id: "mobile-viewport",
+    nameAr: "توافق الموقع مع الهاتف",
+    icon: "Smartphone",
+    category: "mobile",
+    run: async () => {
+      const viewport = document.querySelector('meta[name="viewport"]');
+      if (!viewport) {
+        return {
+          status: "fail", message: "لا يوجد وسم viewport",
+          fixable: true,
+          fixAction: async () => {
+            const meta = document.createElement("meta");
+            meta.name = "viewport";
+            meta.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
+            document.head.appendChild(meta);
+            return "تم إضافة viewport meta tag";
+          },
+        };
+      }
+      const content = viewport.getAttribute("content") || "";
+      return { status: "pass", message: "viewport مضبوط", details: content };
+    },
+  },
+  {
+    id: "mobile-manifest",
+    nameAr: "ملف تعريف التطبيق (manifest)",
+    icon: "FileJson2",
+    category: "mobile",
+    run: async () => {
+      try {
+        const resp = await fetch("/manifest.json");
+        if (!resp.ok) return { status: "fail", message: "manifest.json غير موجود" };
+        const data = await resp.json();
+        const issues: string[] = [];
+        if (!data.name) issues.push("اسم مفقود");
+        if (!data.icons?.length) issues.push("لا أيقونات");
+        if (!data.start_url) issues.push("start_url مفقود");
+        if (issues.length > 0) return { status: "warn", message: issues.join(" | ") };
+        return { status: "pass", message: `التطبيق: ${data.name}`, details: `${data.icons?.length || 0} أيقونة` };
+      } catch { return { status: "fail", message: "فشل قراءة manifest.json" }; }
+    },
+  },
+  {
+    id: "mobile-touch-targets",
+    nameAr: "حجم أزرار اللمس",
+    icon: "Pointer",
+    category: "mobile",
+    run: async () => {
+      const btns = document.querySelectorAll("button, a, [role='button']");
+      let small = 0;
+      btns.forEach(b => { const r = b.getBoundingClientRect(); if (r.width > 0 && r.height > 0 && (r.width < 32 || r.height < 32)) small++; });
+      if (small > 10) return { status: "warn", message: `${small} زر صغير (<32px)`, details: `إجمالي: ${btns.length}` };
+      return { status: "pass", message: `${btns.length} زر — أحجام مناسبة للمس` };
+    },
+  },
+  {
+    id: "mobile-images-opt",
+    nameAr: "تحسين الصور للهاتف",
+    icon: "ImageDown",
+    category: "mobile",
+    run: async () => {
+      const imgs = document.querySelectorAll("img");
+      let noAlt = 0, noLazy = 0;
+      imgs.forEach(img => { if (!img.alt) noAlt++; if (img.loading !== "lazy") noLazy++; });
+      const issues: string[] = [];
+      if (noAlt > 3) issues.push(`${noAlt} بدون alt`);
+      if (noLazy > 5) issues.push(`${noLazy} بدون lazy loading`);
+      if (issues.length) return { status: "warn", message: issues.join(" | "), details: `إجمالي: ${imgs.length}` };
+      return { status: "pass", message: `${imgs.length} صورة محسّنة` };
+    },
+  },
+  {
+    id: "mobile-apk-links",
+    nameAr: "روابط تحميل APK",
+    icon: "Download",
+    category: "mobile",
+    run: async () => {
+      const apks = [
+        { name: "Client", path: "/downloads/hn-client.apk" },
+        { name: "Ride", path: "/downloads/hn-ride.apk" },
+        { name: "Delivery", path: "/downloads/hn-delivery.apk" },
+      ];
+      const results: string[] = [];
+      let ok = 0;
+      for (const a of apks) {
+        try {
+          await fetch(`https://www.hn-driver.com${a.path}`, { method: "HEAD", mode: "no-cors" });
+          results.push(`${a.name}: ✓`);
+          ok++;
+        } catch { results.push(`${a.name}: ✗`); }
+      }
+      return {
+        status: ok === apks.length ? "pass" : "warn",
+        message: ok === apks.length ? "جميع APK متاحة" : `${apks.length - ok} APK غير متاحة`,
+        details: results.join(" | "),
+      };
+    },
+  },
+  {
+    id: "mobile-capacitor",
+    nameAr: "حالة Capacitor Native",
+    icon: "Cpu",
+    category: "mobile",
+    run: async () => {
+      const cap = (window as any).Capacitor;
+      if (cap) {
+        const platform = cap.getPlatform?.() || "unknown";
+        return { status: "pass", message: `Capacitor — المنصة: ${platform}`, details: `Native: ${cap.isNativePlatform?.()}` };
+      }
+      return { status: "pass", message: "وضع الويب (ليس Native)" };
+    },
+  },
+  {
+    id: "mobile-scroll-perf",
+    nameAr: "أداء التمرير (Scroll)",
+    icon: "ArrowDownUp",
+    category: "mobile",
+    run: async () => {
+      const heavyAnims = document.querySelectorAll("[style*='transform'], [style*='animation']");
+      const fixedElements = document.querySelectorAll("[style*='position: fixed'], .fixed");
+      if (heavyAnims.length > 20) {
+        return { status: "warn", message: `${heavyAnims.length} عنصر متحرك — قد يسبب بطء التمرير` };
+      }
+      if (fixedElements.length > 5) {
+        return { status: "warn", message: `${fixedElements.length} عنصر ثابت (fixed) — قد يؤثر على الأداء` };
+      }
+      return { status: "pass", message: "أداء التمرير سليم" };
+    },
+  },
+
+  // ══════ SYNC (التزامن وقاعدة البيانات) ══════
+  {
+    id: "sync-db-backup",
+    nameAr: "حالة النسخ الاحتياطي",
+    icon: "HardDrive",
+    category: "sync",
+    run: async () => {
+      const { data } = await supabase
+        .from("app_settings").select("value, updated_at")
+        .eq("key", "last_backup_timestamp").maybeSingle();
+      if (!data) {
+        return {
+          status: "warn", message: "لم تُسجل أي نسخة احتياطية",
+          fixable: true,
+          fixAction: async () => {
+            await supabase.from("app_settings").upsert(
+              { key: "last_backup_timestamp", value: JSON.parse(JSON.stringify(new Date().toISOString())) },
+              { onConflict: "key" }
+            );
+            return "تم تسجيل وقت النسخة";
+          },
+        };
+      }
+      const hrs = Math.round((Date.now() - new Date(data.updated_at).getTime()) / 3600000);
+      return {
+        status: hrs > 48 ? "fail" : hrs > 24 ? "warn" : "pass",
+        message: `آخر نسخة منذ ${hrs} ساعة`,
+        details: new Date(data.updated_at).toLocaleString("ar-MA"),
+      };
+    },
+  },
+  {
+    id: "sync-server-ping",
+    nameAr: "السيرفر الرئيسي (hn-driver.com)",
+    icon: "Server",
+    category: "sync",
+    run: async () => {
+      try {
+        const s = Date.now();
+        await fetch("https://www.hn-driver.com/robots.txt", { method: "HEAD", mode: "no-cors" });
+        const ms = Date.now() - s;
+        return { status: ms < 1000 ? "pass" : ms < 3000 ? "warn" : "fail", message: `استجابة: ${ms}ms` };
+      } catch { return { status: "fail", message: "السيرفر لا يستجيب" }; }
+    },
+  },
+  {
+    id: "sync-critical-tables",
+    nameAr: "تزامن الجداول الحيوية",
+    icon: "RefreshCw",
+    category: "sync",
+    run: async () => {
+      const tables = ["trips", "delivery_orders", "drivers", "wallet", "profiles"];
+      const slow: string[] = [];
+      for (const t of tables) {
+        const { ms } = await timed(() => supabase.from(t as any).select("id").limit(1));
+        if (ms > 1000) slow.push(`${t}: ${ms}ms`);
+      }
+      if (slow.length > 0) return { status: "warn", message: `${slow.length} جدول بطيء`, details: slow.join(" | ") };
+      return { status: "pass", message: `${tables.length} جداول — تستجيب بسرعة` };
+    },
+  },
+  {
+    id: "sync-edge-fns",
+    nameAr: "الدوال السحابية الشاملة",
+    icon: "Cloud",
+    category: "sync",
+    run: async () => {
+      const fns = ["hn-chatbot", "paypal-payment", "distance-matrix", "auto-dispatch", "twilio-sms", "send-transactional-email", "hn-assistant"];
+      let fail = 0;
+      const res: string[] = [];
+      for (const fn of fns) {
+        try {
+          const r = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${fn}`, { method: "OPTIONS" });
+          res.push(`${fn}: ${r.status}`);
+          if (!r.ok && r.status !== 204) fail++;
+        } catch { res.push(`${fn}: ✗`); fail++; }
+      }
+      return {
+        status: fail === 0 ? "pass" : fail <= 2 ? "warn" : "fail",
+        message: fail === 0 ? `${fns.length} دالة تعمل` : `${fail} دالة غير متاحة`,
+        details: res.join(" | "),
+      };
+    },
+  },
+  {
+    id: "sync-data-consistency",
+    nameAr: "تناسق البيانات بين الجداول",
+    icon: "GitCompareArrows",
+    category: "sync",
+    run: async () => {
+      const issues: string[] = [];
+      const { data: activeTrips } = await supabase
+        .from("trips").select("id, driver_id")
+        .in("status", ["accepted", "in_progress"]).not("driver_id", "is", null).limit(100);
+      if (activeTrips?.length) {
+        const dids = [...new Set(activeTrips.map(t => t.driver_id!))];
+        const { data: drvs } = await supabase.from("drivers").select("id").in("id", dids);
+        const dset = new Set((drvs || []).map(d => d.id));
+        const orphan = activeTrips.filter(t => !dset.has(t.driver_id!));
+        if (orphan.length) issues.push(`${orphan.length} رحلة بسائق مفقود`);
+      }
+      const { data: storeOrders } = await supabase
+        .from("delivery_orders").select("id, store_id")
+        .not("store_id", "is", null).in("status", ["pending", "accepted"]).limit(100);
+      if (storeOrders?.length) {
+        const sids = [...new Set(storeOrders.map(o => o.store_id!))];
+        const { data: stores } = await supabase.from("stores").select("id").in("id", sids);
+        const sset = new Set((stores || []).map(s => s.id));
+        const orphan = storeOrders.filter(o => !sset.has(o.store_id!));
+        if (orphan.length) issues.push(`${orphan.length} طلب بمتجر مفقود`);
+      }
+      if (issues.length) return { status: "warn", message: issues.join(" | ") };
+      return { status: "pass", message: "تناسق البيانات سليم" };
+    },
+  },
+  {
+    id: "sync-version",
+    nameAr: "رقم إصدار التطبيق",
+    icon: "Tag",
+    category: "sync",
+    run: async () => {
+      const { data } = await supabase.from("app_settings").select("value").eq("key", "app_version").maybeSingle();
+      if (!data) {
+        return {
+          status: "warn", message: "لم يُسجل رقم الإصدار",
+          fixable: true,
+          fixAction: async () => {
+            await supabase.from("app_settings").upsert({ key: "app_version", value: JSON.parse(JSON.stringify("1.0.0")) }, { onConflict: "key" });
+            return "تم تسجيل الإصدار 1.0.0";
+          },
+        };
+      }
+      return { status: "pass", message: `الإصدار: ${JSON.stringify(data.value)}` };
+    },
+  },
+  {
+    id: "sync-subdomain-configs",
+    nameAr: "النطاقات الفرعية",
+    icon: "Globe",
+    category: "sync",
+    run: async () => {
+      const subs = ["admin", "call", "ride", "delivery", "supervisor"];
+      const results: string[] = [];
+      let fail = 0;
+      for (const sub of subs) {
+        try {
+          await fetch(`https://${sub}.hn-driver.com/`, { method: "HEAD", mode: "no-cors" });
+          results.push(`${sub}: ✓`);
+        } catch { results.push(`${sub}: ✗`); fail++; }
+      }
+      return {
+        status: fail === 0 ? "pass" : fail <= 2 ? "warn" : "fail",
+        message: fail === 0 ? `${subs.length} نطاقات فرعية تعمل` : `${fail} نطاق غير متاح`,
+        details: results.join(" | "),
+      };
+    },
+  },
 ];
