@@ -13,7 +13,8 @@ const SENDER_DOMAIN = "notify.hn-driver.com"
 // FROM_DOMAIN is the domain shown in the From: header (e.g., "example.com").
 // When display_from_root is enabled, this can be the root domain for cleaner branding,
 // even though actual sending uses the subdomain above.
-const FROM_DOMAIN = "notify.hn-driver.com"
+const FROM_DOMAIN = "hn-driver.com"
+const REPLY_TO = "info@hn-driver.com"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -313,7 +314,8 @@ Deno.serve(async (req) => {
     payload: {
       message_id: messageId,
       to: effectiveRecipient,
-      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+      from: `HN Driver <noreply@${FROM_DOMAIN}>`,
+      reply_to: REPLY_TO,
       sender_domain: SENDER_DOMAIN,
       subject: resolvedSubject,
       html,
