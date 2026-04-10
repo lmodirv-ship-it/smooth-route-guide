@@ -3,24 +3,35 @@ import App from "./App.tsx";
 import "./index.css";
 import { initializeNativeApp } from "./lib/nativeApp";
 
-// ── PWA Guard: prevent service worker issues in preview/iframe ──
-const isInIframe = (() => {
+const CACHE_RESET_VERSION = "2026-04-10-disable-pwa-cache";
+
+async function cleanupLegacyWebCaches() {
   try {
-    return window.self !== window.top;
+    if ("serviceWorker" in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((registration) => registration.unregister()));
+    }
+
+    if ("caches" in window) {
+      const cacheKeys = await caches.keys();
+      await Promise.all(cacheKeys.map((cacheKey) => caches.delete(cacheKey)));
+    }
+  } catch (error) {
+    console.warn("[BootCleanup] Failed to clear legacy caches", error);
+  }
+}
+
+void (async () => {
+  try {
+    const lastReset = localStorage.getItem("hn_cache_reset_version");
+    if (lastReset !== CACHE_RESET_VERSION) {
+      await cleanupLegacyWebCaches();
+      localStorage.setItem("hn_cache_reset_version", CACHE_RESET_VERSION);
+    }
   } catch {
-    return true;
+    await cleanupLegacyWebCaches();
   }
 })();
-
-const isPreviewHost =
-  window.location.hostname.includes("id-preview--") ||
-  window.location.hostname.includes("lovableproject.com");
-
-if (isPreviewHost || isInIframe) {
-  navigator.serviceWorker?.getRegistrations().then((registrations) => {
-    registrations.forEach((r) => r.unregister());
-  });
-}
 
 void initializeNativeApp();
 
