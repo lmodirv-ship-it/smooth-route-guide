@@ -118,6 +118,7 @@ const AdminSettings = () => {
 
       await Promise.all([
         upsert("pricing", { baseFare: settings.baseFare, perKmRate: settings.perKmRate, perMinRate: settings.perMinRate, minFare: settings.minFare }),
+        upsert("free_period", freePeriod),
         upsert("general", { maxRadius: settings.maxRadius, autoAssign: settings.autoAssign, maintenanceMode: settings.maintenanceMode }),
         upsert("notifications", { email: settings.emailNotifications, push: settings.pushNotifications }),
         upsert("delivery_pricing", {
@@ -189,7 +190,7 @@ const AdminSettings = () => {
         </TabsList>
 
         <TabsContent value="general" className="mt-4">
-          <GeneralSettings settings={settings} onChange={(key, value) => setSettings(s => ({ ...s, [key]: value }))} />
+          <GeneralSettings settings={settings} onChange={(key, value) => setSettings(s => ({ ...s, [key]: value }))} freePeriod={freePeriod} onFreePeriodChange={setFreePeriod} />
         </TabsContent>
 
         <TabsContent value="pricing" className="mt-4">
