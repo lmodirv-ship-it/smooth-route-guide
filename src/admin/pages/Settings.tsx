@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/context";
 import { DELIVERY_PRICING_DEFAULTS } from "@/hooks/useDeliveryPricingSettings";
 import PricingSettings from "@/admin/components/settings/PricingSettings";
-import GeneralSettings from "@/admin/components/settings/GeneralSettings";
+import GeneralSettings, { type FreePeriodSettings } from "@/admin/components/settings/GeneralSettings";
 import DeliveryPricingSettings from "@/admin/components/settings/DeliveryPricingSettings";
 import PaymentSettings from "@/admin/components/settings/PaymentSettings";
 import LanguageManagement from "@/admin/components/LanguageManagement";
@@ -34,6 +34,12 @@ const AdminSettings = () => {
     emailNotifications: true,
     pushNotifications: true,
     maintenanceMode: false,
+  });
+  const [freePeriod, setFreePeriod] = useState<FreePeriodSettings>({
+    enabled: false,
+    from: "",
+    to: "",
+    label_ar: "خدمة مجانية",
   });
   const [deliveryPricing, setDeliveryPricing] = useState({
     dayBaseFare: String(DELIVERY_PRICING_DEFAULTS.dayBaseFare),
@@ -63,6 +69,15 @@ const AdminSettings = () => {
         if (map.has("notifications")) {
           const n = map.get("notifications") as any;
           setSettings(s => ({ ...s, emailNotifications: n.email ?? s.emailNotifications, pushNotifications: n.push ?? s.pushNotifications }));
+        }
+        if (map.has("free_period")) {
+          const fp = map.get("free_period") as any;
+          setFreePeriod({
+            enabled: fp.enabled ?? false,
+            from: fp.from || "",
+            to: fp.to || "",
+            label_ar: fp.label_ar || "خدمة مجانية",
+          });
         }
         if (map.has("delivery_pricing")) {
           const dp = map.get("delivery_pricing") as any;
