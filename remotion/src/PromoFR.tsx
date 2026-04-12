@@ -56,9 +56,10 @@ const Scene1Tangier = () => {
 
       {/* Logo */}
       <Img src={staticFile("images/logo.png")} style={{
-        position: "absolute", top: 40, left: 50,
-        width: 80, height: 80, borderRadius: "50%",
-        border: `3px solid ${GOLD}40`,
+        position: "absolute", top: 30, left: 40,
+        width: 140, height: 140, borderRadius: "50%",
+        border: `4px solid ${GOLD}60`,
+        boxShadow: "0 8px 40px rgba(245,200,66,0.3)",
         opacity: interpolate(frame, [0, 20], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }),
       }} />
     </AbsoluteFill>
@@ -282,9 +283,10 @@ const Scene5CTA = () => {
         textAlign: "center",
       }}>
         <Img src={staticFile("images/logo.png")} style={{
-          width: 120, height: 120, borderRadius: "50%",
-          border: `4px solid ${GOLD}60`, margin: "0 auto 30px",
+          width: 200, height: 200, borderRadius: "50%",
+          border: `5px solid ${GOLD}80`, margin: "0 auto 30px",
           transform: `scale(${interpolate(logoSpring, [0, 1], [0, 1])})`,
+          boxShadow: "0 10px 60px rgba(245,200,66,0.4)",
         }} />
         <div style={{
           fontFamily: montserrat, fontSize: 72, fontWeight: 900,
@@ -315,8 +317,13 @@ const Scene5CTA = () => {
         </div>
 
         <div style={{
-          marginTop: 30, fontFamily: poppins, fontSize: 24,
-          color: "rgba(255,255,255,0.5)", opacity: urlOp,
+          marginTop: 35, fontFamily: montserrat, fontSize: 38, fontWeight: 700,
+          color: "white", opacity: urlOp,
+          letterSpacing: 2,
+          padding: "10px 40px", borderRadius: 12,
+          background: "rgba(255,255,255,0.08)",
+          border: "1px solid rgba(255,255,255,0.15)",
+          display: "inline-block",
         }}>
           www.hn-driver.com
         </div>
