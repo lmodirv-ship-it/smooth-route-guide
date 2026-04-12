@@ -114,17 +114,7 @@ const VideoShowcaseSection = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
       <div className="container mx-auto px-4 relative z-10">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-          <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-[0.2em] border border-primary/30 text-primary bg-primary/5 mb-4">
-            {dir === "rtl" ? "شاهد بالفيديو" : "Watch Videos"}
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold font-display mb-3">
-            <span className="text-gradient-primary">{dir === "rtl" ? "شوف كيفاش خدامة HN Driver" : "See HN Driver in Action"}</span>
-          </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            {dir === "rtl" ? "مقاطع قصيرة تعرّفك على خدماتنا — النقل، التوصيل، والمنصة الكاملة" : "Short clips showcasing our services — rides, delivery, and the full platform"}
-          </p>
-        </motion.div>
+
         <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {videos.map((v, i) => (
             <VideoCard key={i} {...v} index={i} />
