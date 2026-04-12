@@ -186,8 +186,10 @@ serve(async (req) => {
         : `${safeType} in ${safeCity}, Morocco`;
       const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(areaQuery)}&key=${googleMapsApiKey}&language=fr`;
 
+      console.log("Google Places API URL:", areaQuery);
       const response = await fetch(url);
       const data = await response.json();
+      console.log("Google Places API status:", data.status, "results:", data.results?.length || 0, "error:", data.error_message || "none");
 
       if (data.status === "OK" && data.results?.length > 0) {
         // Fetch details (phone, website) for each place in parallel (max 10)
