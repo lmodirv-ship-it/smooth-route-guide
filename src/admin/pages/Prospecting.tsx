@@ -600,6 +600,7 @@ const Prospecting = () => {
                         const callInfo = CALL_STATUS_MAP[p.call_status] || CALL_STATUS_MAP.pending;
                         return (
                           <TableRow key={p.id}>
+                            <TableCell className="font-mono text-xs font-bold text-primary">{p.prospect_code || "—"}</TableCell>
                             <TableCell className="font-medium max-w-[180px] truncate">{p.name}</TableCell>
                             <TableCell>
                               <Badge variant="outline" className="text-xs">
