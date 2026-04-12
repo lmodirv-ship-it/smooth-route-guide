@@ -319,8 +319,7 @@ export default function LandingPage() {
           <motion.div className="absolute bottom-1/4 h-[1px] w-56" style={{ background: "linear-gradient(90deg, transparent, hsl(40 90% 60% / 0.7), hsl(32 95% 50% / 0.3), transparent)" }} animate={{ x: ["120vw", "-300px"] }} transition={{ duration: 4.5, repeat: Infinity, ease: "linear", repeatDelay: 2.5 }} />
         </div>
 
-        {/* Promo Flash Banners — Left & Right */}
-        <HeroPromoFlash />
+        {/* Promo Flash Banners moved below videos */}
 
         {/* Hero Content */}
         <div className="container mx-auto px-4 relative z-10 pt-16 pb-8">
@@ -621,6 +620,9 @@ export default function LandingPage() {
 
       {/* ─── Video Showcase ─── */}
       <VideoShowcaseSection />
+
+      {/* ─── Promo Images Section ─── */}
+      <HeroPromoFlash />
 
       {/* ─── Partner Sites ─── */}
       <section className="py-20 md:py-28 relative overflow-hidden">
