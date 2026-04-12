@@ -8,6 +8,88 @@ const { fontFamily: poppins } = loadPoppins("normal", { weights: ["400", "600", 
 const GOLD = "#f5c842";
 const DARK = "#0a0a12";
 
+// ─── Scene 0: Platform Intro ───
+const Scene0Intro = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const logoScale = spring({ frame: frame - 5, fps, config: { damping: 15 } });
+  const titleSpring = spring({ frame: frame - 25, fps, config: { damping: 18 } });
+  const line1Op = interpolate(frame, [50, 70], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const line1Y = interpolate(spring({ frame: frame - 50, fps, config: { damping: 20 } }), [0, 1], [30, 0]);
+  const line2Op = interpolate(frame, [75, 95], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const line2Y = interpolate(spring({ frame: frame - 75, fps, config: { damping: 20 } }), [0, 1], [30, 0]);
+  const line3Op = interpolate(frame, [100, 120], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const line3Y = interpolate(spring({ frame: frame - 100, fps, config: { damping: 20 } }), [0, 1], [30, 0]);
+  const badgeScale = spring({ frame: frame - 130, fps, config: { damping: 12, stiffness: 120 } });
+
+  const bgRotate = interpolate(frame, [0, 180], [0, 360], { extrapolateRight: "clamp" });
+
+  return (
+    <AbsoluteFill style={{ backgroundColor: DARK }}>
+      {/* Animated radial bg */}
+      <AbsoluteFill style={{
+        background: `conic-gradient(from ${bgRotate}deg at 50% 50%, rgba(245,200,66,0.06) 0%, transparent 30%, rgba(245,200,66,0.04) 50%, transparent 70%, rgba(245,200,66,0.06) 100%)`,
+      }} />
+      <AbsoluteFill style={{
+        background: "radial-gradient(ellipse at center, rgba(245,200,66,0.08) 0%, transparent 60%)",
+      }} />
+
+      <div style={{
+        position: "absolute", top: "50%", left: "50%",
+        transform: "translate(-50%, -50%)", textAlign: "center", width: "80%",
+      }}>
+        {/* Logo */}
+        <Img src={staticFile("images/logo.png")} style={{
+          width: 180, height: 180, borderRadius: "50%",
+          border: `5px solid ${GOLD}80`, margin: "0 auto 20px",
+          transform: `scale(${interpolate(logoScale, [0, 1], [0, 1])})`,
+          boxShadow: "0 10px 60px rgba(245,200,66,0.4)",
+        }} />
+
+        {/* Title */}
+        <div style={{
+          fontFamily: montserrat, fontSize: 80, fontWeight: 900,
+          background: `linear-gradient(170deg, ${GOLD}, #e8a032)`,
+          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+          transform: `scale(${interpolate(titleSpring, [0, 1], [0.6, 1])})`,
+          opacity: interpolate(titleSpring, [0, 0.3], [0, 1]),
+        }}>
+          HN DRIVER
+        </div>
+
+        {/* Platform description lines */}
+        <div style={{
+          fontFamily: poppins, fontSize: 30, color: "rgba(255,255,255,0.85)",
+          marginTop: 30, lineHeight: 1.6,
+        }}>
+          <div style={{ opacity: line1Op, transform: `translateY(${line1Y}px)` }}>
+            🚗 Plateforme intelligente de transport et livraison
+          </div>
+          <div style={{ opacity: line2Op, transform: `translateY(${line2Y}px)`, marginTop: 10 }}>
+            🍽️ Courses · Repas · Colis — tout dans une seule app
+          </div>
+          <div style={{ opacity: line3Op, transform: `translateY(${line3Y}px)`, marginTop: 10 }}>
+            📍 Basée à Tanger · Vision internationale 🇲🇦 🇪🇸 🇫🇷
+          </div>
+        </div>
+
+        {/* Badge */}
+        <div style={{
+          marginTop: 35, display: "inline-block",
+          padding: "14px 40px", borderRadius: 50,
+          background: `linear-gradient(135deg, ${GOLD}, #e8a032)`,
+          fontFamily: montserrat, fontSize: 26, fontWeight: 900, color: DARK,
+          transform: `scale(${badgeScale})`,
+          boxShadow: "0 8px 30px rgba(245,200,66,0.4)",
+        }}>
+          0% commission pour les nouveaux chauffeurs
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
 // ─── Scene 1: Tangier Hero ───
 const Scene1Tangier = () => {
   const frame = useCurrentFrame();
@@ -336,11 +418,30 @@ const Scene5CTA = () => {
 export const PromoFR = () => {
   return (
     <AbsoluteFill>
-      <Sequence from={0} durationInFrames={180}><Scene1Tangier /></Sequence>
-      <Sequence from={180} durationInFrames={180}><Scene2Delivery /></Sequence>
-      <Sequence from={360} durationInFrames={180}><Scene3Ride /></Sequence>
-      <Sequence from={540} durationInFrames={180}><Scene4People /></Sequence>
-      <Sequence from={720} durationInFrames={180}><Scene5CTA /></Sequence>
+      <Sequence from={0} durationInFrames={180}><Scene0Intro /></Sequence>
+      <Sequence from={180} durationInFrames={180}><Scene1Tangier /></Sequence>
+      <Sequence from={360} durationInFrames={180}><Scene2Delivery /></Sequence>
+      <Sequence from={540} durationInFrames={180}><Scene3Ride /></Sequence>
+      <Sequence from={720} durationInFrames={180}><Scene4People /></Sequence>
+      <Sequence from={900} durationInFrames={180}><Scene5CTA /></Sequence>
+
+      {/* Persistent brand overlay */}
+      <div style={{
+        position: "absolute", top: 20, left: 30, zIndex: 100,
+        display: "flex", alignItems: "center", gap: 12,
+      }}>
+        <Img src={staticFile("images/logo.png")} style={{
+          width: 60, height: 60, borderRadius: "50%",
+          border: `2px solid ${GOLD}60`,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
+        }} />
+        <div style={{
+          fontFamily: montserrat, fontSize: 20, fontWeight: 700,
+          color: "white", textShadow: "0 2px 10px rgba(0,0,0,0.8)",
+        }}>
+          www.hn-driver.com
+        </div>
+      </div>
     </AbsoluteFill>
   );
 };

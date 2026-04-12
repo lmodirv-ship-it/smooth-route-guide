@@ -5,7 +5,7 @@ export const RemotionRootPromoFR = () => (
   <Composition
     id="promo-fr"
     component={PromoFR}
-    durationInFrames={900}
+    durationInFrames={1080}
     fps={30}
     width={1920}
     height={1080}
