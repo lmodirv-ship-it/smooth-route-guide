@@ -43,6 +43,7 @@ export const LEGACY_SUBDOMAINS = {
 export const HN_STOCK = {
   domain: "hn-driver.site",
   url: "https://www.hn-driver.site",
+  admin: "https://admin.hn-driver.site",
 } as const;
 
 export const SOUK_HN = {
