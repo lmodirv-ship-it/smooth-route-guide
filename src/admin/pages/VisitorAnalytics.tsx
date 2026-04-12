@@ -5,7 +5,7 @@ import { useI18n } from "@/i18n/context";
 import {
   Eye, Users, TrendingUp, Monitor, Smartphone, Globe, Clock,
   BarChart3, Zap, Activity, MapPin, ExternalLink, RefreshCw,
-  ArrowUpRight, ArrowDownRight, Languages
+  ArrowUpRight, ArrowDownRight, Languages, Megaphone, Target, Video
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,10 @@ interface VisitRow {
   country: string;
   city: string;
   session_id: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_content?: string;
 }
 
 interface CounterRow {
