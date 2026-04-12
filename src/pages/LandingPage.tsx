@@ -472,8 +472,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── Video Showcase ─── */}
-      <VideoShowcaseSection />
 
       {/* ─── Promo Images Section ─── */}
       <HeroPromoFlash />
