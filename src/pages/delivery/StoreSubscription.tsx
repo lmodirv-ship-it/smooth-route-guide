@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Crown, Star, Package, Loader2, Check, Timer } from "lucide-react";
+import { ArrowRight, Crown, Star, Package, Loader2, Check, Timer, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import PaymentMethodPicker, { PaymentMethod } from "@/components/PaymentMethodPicker";
+import { useFreePeriod } from "@/hooks/useFreePeriod";
 
 const StoreSubscription = () => {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const StoreSubscription = () => {
   const [walletBalance, setWalletBalance] = useState(0);
   const [subscribing, setSubscribing] = useState(false);
   const [stars, setStars] = useState(0);
+  const freePeriod = useFreePeriod();
 
   useEffect(() => {
     const load = async () => {
@@ -112,6 +114,23 @@ const StoreSubscription = () => {
         <p className="text-sm text-muted-foreground">اكسب نجوم مع كل اشتراك!</p>
       </div>
 
+      {freePeriod.isActive ? (
+        <div className="px-4 mt-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="rounded-2xl p-6 glass-card-green text-center"
+          >
+            <Gift className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
+            <h2 className="text-foreground font-bold text-xl mb-2">🎉 {freePeriod.label}</h2>
+            <p className="text-muted-foreground mb-2">
+              المنصة مجانية بالكامل حتى <strong className="text-foreground">{freePeriod.to}</strong>
+            </p>
+            <p className="text-emerald-400 font-bold text-lg">{freePeriod.daysLeft} يوم متبقي</p>
+            <p className="text-muted-foreground text-sm mt-3">لا حاجة لأي اشتراك خلال هذه الفترة — استمتع بجميع الخدمات مجاناً!</p>
+          </motion.div>
+        </div>
+      ) : (
       <div className="px-4 mt-6">
         <h2 className="text-foreground font-bold text-lg mb-4 flex items-center gap-2">
           <Crown className="w-5 h-5 text-warning" />
@@ -219,6 +238,7 @@ const StoreSubscription = () => {
           </ul>
         </div>
       </div>
+      )}
     </div>
   );
 };
