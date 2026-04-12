@@ -7,7 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Download, Loader2, MapPin, Phone, Star, Globe, Store, Bike, Truck, UtensilsCrossed, Send, Database, RefreshCw, CheckCircle2 } from "lucide-react";
+import {
+  Search, Download, Loader2, MapPin, Phone, Star, Globe, Store, Bike, Truck,
+  UtensilsCrossed, Send, Database, RefreshCw, CheckCircle2, Users, Building2,
+  PhoneCall, TrendingUp, Eye, MailCheck, AlertCircle
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -22,13 +26,26 @@ type ProspectResult = {
   category: string;
 };
 
-type DBProspect = ProspectResult & {
+type DBProspect = {
   id: string;
-  city: string;
+  name: string;
+  phone: string;
   email: string;
+  address: string;
+  area: string;
+  city: string;
+  country: string;
+  category: string;
+  rating: number;
+  website: string;
+  google_place_id: string;
   mailbluster_synced: boolean;
   source: string;
   status: string;
+  notes: string;
+  call_status: string;
+  call_priority: string;
+  call_notes: string;
   created_at: string;
 };
 
@@ -51,6 +68,30 @@ const CITIES = [
   "مكناس", "وجدة", "تطوان", "القنيطرة",
 ];
 
+const STATUS_MAP: Record<string, { label: string; color: string }> = {
+  new: { label: "جديد", color: "bg-blue-100 text-blue-800" },
+  contacted: { label: "تم التواصل", color: "bg-yellow-100 text-yellow-800" },
+  interested: { label: "مهتم", color: "bg-green-100 text-green-800" },
+  not_interested: { label: "غير مهتم", color: "bg-red-100 text-red-800" },
+  converted: { label: "شريك ✓", color: "bg-emerald-100 text-emerald-800" },
+};
+
+const CALL_STATUS_MAP: Record<string, { label: string; color: string }> = {
+  pending: { label: "في الانتظار", color: "bg-gray-100 text-gray-700" },
+  no_phone: { label: "بدون هاتف", color: "bg-red-50 text-red-600" },
+  called: { label: "تم الاتصال", color: "bg-green-100 text-green-700" },
+  no_answer: { label: "لم يرد", color: "bg-yellow-100 text-yellow-700" },
+  callback: { label: "إعادة اتصال", color: "bg-purple-100 text-purple-700" },
+};
+
+type Stats = {
+  total: number;
+  withPhone: number;
+  synced: number;
+  byStatus: Record<string, number>;
+  byCategory: Record<string, number>;
+};
+
 const Prospecting = () => {
   const [city, setCity] = useState("طنجة");
   const [customCity, setCustomCity] = useState("");
@@ -62,13 +103,47 @@ const Prospecting = () => {
   const [syncing, setSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState("search");
 
-  // DB prospects state
+  // DB state
   const [dbProspects, setDbProspects] = useState<DBProspect[]>([]);
   const [dbLoading, setDbLoading] = useState(false);
   const [dbFilter, setDbFilter] = useState("all");
   const [dbCityFilter, setDbCityFilter] = useState("all");
+  const [dbStatusFilter, setDbStatusFilter] = useState("all");
   const [dbTotal, setDbTotal] = useState(0);
   const [triggeringAuto, setTriggeringAuto] = useState(false);
+  const [dbCities, setDbCities] = useState<string[]>([]);
+  const [stats, setStats] = useState<Stats>({ total: 0, withPhone: 0, synced: 0, byStatus: {}, byCategory: {} });
+
+  // Load stats
+  const loadStats = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from("prospects").select("status, category, phone, mailbluster_synced");
+      if (error) throw error;
+      const rows = data || [];
+      const byStatus: Record<string, number> = {};
+      const byCategory: Record<string, number> = {};
+      let withPhone = 0;
+      let synced = 0;
+      for (const r of rows) {
+        byStatus[r.status || "new"] = (byStatus[r.status || "new"] || 0) + 1;
+        byCategory[r.category] = (byCategory[r.category] || 0) + 1;
+        if (r.phone) withPhone++;
+        if (r.mailbluster_synced) synced++;
+      }
+      setStats({ total: rows.length, withPhone, synced, byStatus, byCategory });
+    } catch {}
+  }, []);
+
+  // Load distinct cities from DB
+  const loadCities = useCallback(async () => {
+    try {
+      const { data } = await supabase.from("prospects").select("city");
+      if (data) {
+        const unique = [...new Set(data.map((d: any) => d.city).filter(Boolean))];
+        setDbCities(unique.sort());
+      }
+    } catch {}
+  }, []);
 
   const loadDbProspects = useCallback(async () => {
     setDbLoading(true);
@@ -81,6 +156,7 @@ const Prospecting = () => {
 
       if (dbFilter !== "all") query = query.eq("category", dbFilter);
       if (dbCityFilter !== "all") query = query.eq("city", dbCityFilter);
+      if (dbStatusFilter !== "all") query = query.eq("status", dbStatusFilter);
 
       const { data, error, count } = await query;
       if (error) throw error;
@@ -91,7 +167,12 @@ const Prospecting = () => {
     } finally {
       setDbLoading(false);
     }
-  }, [dbFilter, dbCityFilter]);
+  }, [dbFilter, dbCityFilter, dbStatusFilter]);
+
+  useEffect(() => {
+    loadStats();
+    loadCities();
+  }, [loadStats, loadCities]);
 
   useEffect(() => {
     if (activeTab === "database") loadDbProspects();
@@ -137,11 +218,8 @@ const Prospecting = () => {
   };
 
   const toggleAll = () => {
-    if (selected.size === results.length) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(results.map((r) => r.google_place_id)));
-    }
+    if (selected.size === results.length) setSelected(new Set());
+    else setSelected(new Set(results.map((r) => r.google_place_id)));
   };
 
   const exportCSV = () => {
@@ -182,7 +260,6 @@ const Prospecting = () => {
       toast.success(`تم إرسال ${data?.synced || 0} جهة اتصال إلى MailBluster`);
       if (data?.failed > 0) toast.warning(`فشل إرسال ${data.failed} جهة اتصال`);
     } catch (e: any) {
-      console.error(e);
       toast.error("فشل الإرسال: " + (e.message || "خطأ"));
     } finally {
       setSyncing(false);
@@ -197,16 +274,32 @@ const Prospecting = () => {
       const searchCity = customCity.trim() || city;
       const rows = items.map((r) => ({
         name: r.name, phone: r.phone, address: r.address, area: r.area,
-        city: searchCity, category: r.category, rating: r.rating,
+        city: searchCity, country: "Morocco", category: r.category, rating: r.rating,
         website: r.website || "", google_place_id: r.google_place_id, source: "google_manual",
+        status: "new", call_status: r.phone ? "pending" : "no_phone",
+        call_priority: Number(r.rating) >= 4 ? "high" : "normal",
       }));
       const { error } = await supabase.from("prospects").upsert(rows, { onConflict: "google_place_id" });
       if (error) throw error;
       toast.success(`تم حفظ ${items.length} شريك في قاعدة البيانات`);
+      loadStats();
+      loadCities();
     } catch (e: any) {
       toast.error("فشل الحفظ: " + (e.message || "خطأ"));
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const updateProspectStatus = async (id: string, status: string) => {
+    try {
+      const { error } = await supabase.from("prospects").update({ status, updated_at: new Date().toISOString() }).eq("id", id);
+      if (error) throw error;
+      setDbProspects((prev) => prev.map((p) => p.id === id ? { ...p, status } : p));
+      loadStats();
+      toast.success("تم تحديث الحالة");
+    } catch (e: any) {
+      toast.error("فشل التحديث: " + e.message);
     }
   };
 
@@ -218,10 +311,10 @@ const Prospecting = () => {
       });
       if (error) throw error;
       toast.success(`تم جمع ${data?.new_prospects || 0} شريك جديد | MailBluster: ${data?.mailbluster_synced || 0}`);
-      if (data?.errors?.length > 0) {
-        console.warn("Auto-prospect errors:", data.errors);
-      }
+      if (data?.errors?.length > 0) console.warn("Auto-prospect errors:", data.errors);
       loadDbProspects();
+      loadStats();
+      loadCities();
     } catch (e: any) {
       toast.error("فشل التنقيب التلقائي: " + (e.message || "خطأ"));
     } finally {
@@ -229,28 +322,101 @@ const Prospecting = () => {
     }
   };
 
+  const topCategories = Object.entries(stats.byCategory)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5);
+
   return (
     <div className="p-4 md:p-6 space-y-6" dir="rtl">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
-          <Search className="w-8 h-8 text-primary" />
+          <div className="p-2 rounded-xl bg-primary/10">
+            <Search className="w-7 h-7 text-primary" />
+          </div>
           <div>
             <h1 className="text-2xl font-bold">التنقيب عن الشركاء</h1>
             <p className="text-muted-foreground text-sm">
-              جمع تلقائي ويدوي للمطاعم والمحلات وخدمات التوصيل + إرسال إلى MailBluster
+              جمع تلقائي ويدوي للمطاعم والمحلات + حفظ في قاعدة البيانات
             </p>
           </div>
         </div>
-        <Button onClick={triggerAutoProspect} disabled={triggeringAuto} variant="outline" className="gap-2">
+        <Button onClick={triggerAutoProspect} disabled={triggeringAuto} className="gap-2">
           {triggeringAuto ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
           {triggeringAuto ? "جاري التنقيب..." : "تشغيل التنقيب التلقائي"}
         </Button>
       </div>
 
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="border-blue-200 bg-blue-50/50">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-100"><Building2 className="w-5 h-5 text-blue-600" /></div>
+            <div>
+              <p className="text-2xl font-bold text-blue-700">{stats.total}</p>
+              <p className="text-xs text-blue-600">إجمالي الشركاء المحتملين</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-green-200 bg-green-50/50">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-green-100"><PhoneCall className="w-5 h-5 text-green-600" /></div>
+            <div>
+              <p className="text-2xl font-bold text-green-700">{stats.withPhone}</p>
+              <p className="text-xs text-green-600">لديهم هاتف</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-purple-200 bg-purple-50/50">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-purple-100"><MailCheck className="w-5 h-5 text-purple-600" /></div>
+            <div>
+              <p className="text-2xl font-bold text-purple-700">{stats.synced}</p>
+              <p className="text-xs text-purple-600">مُرسَل لـ MailBluster</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-amber-200 bg-amber-50/50">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-amber-100"><TrendingUp className="w-5 h-5 text-amber-600" /></div>
+            <div>
+              <p className="text-2xl font-bold text-amber-700">{stats.byStatus?.converted || 0}</p>
+              <p className="text-xs text-amber-600">تم التحويل لشريك</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Status breakdown mini-bar */}
+      {stats.total > 0 && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              <span className="text-sm font-medium text-muted-foreground">توزيع الحالات:</span>
+              {Object.entries(STATUS_MAP).map(([key, { label, color }]) => (
+                <Badge key={key} className={`${color} gap-1`}>
+                  {label}: {stats.byStatus[key] || 0}
+                </Badge>
+              ))}
+            </div>
+            {topCategories.length > 0 && (
+              <div className="flex items-center gap-4 flex-wrap mt-3">
+                <span className="text-sm font-medium text-muted-foreground">أعلى الفئات:</span>
+                {topCategories.map(([cat, count]) => (
+                  <Badge key={cat} variant="outline" className="gap-1">
+                    {BUSINESS_TYPES.find(b => b.value === cat)?.label || cat}: {count}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2 max-w-md">
           <TabsTrigger value="search" className="gap-2"><Search className="w-4 h-4" /> بحث يدوي</TabsTrigger>
-          <TabsTrigger value="database" className="gap-2"><Database className="w-4 h-4" /> قاعدة البيانات ({dbTotal})</TabsTrigger>
+          <TabsTrigger value="database" className="gap-2"><Database className="w-4 h-4" /> قاعدة البيانات ({stats.total})</TabsTrigger>
         </TabsList>
 
         {/* Manual Search Tab */}
@@ -298,18 +464,18 @@ const Prospecting = () => {
 
           {results.length > 0 && (
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
                 <CardTitle className="text-lg">
                   النتائج ({results.length})
                   {selected.size > 0 && <Badge variant="secondary" className="mr-2">{selected.size} مختار</Badge>}
                 </CardTitle>
                 <div className="flex gap-2 flex-wrap">
-                  <Button onClick={saveToDatabase} disabled={syncing || selected.size === 0} variant="secondary" className="gap-2">
-                    <Database className="w-4 h-4" /> حفظ في قاعدة البيانات
+                  <Button onClick={saveToDatabase} disabled={syncing || selected.size === 0} variant="default" className="gap-2">
+                    {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+                    حفظ في قاعدة البيانات
                   </Button>
-                  <Button onClick={syncToMailBluster} disabled={syncing || selected.size === 0} variant="default" className="gap-2">
-                    {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    إرسال إلى MailBluster
+                  <Button onClick={syncToMailBluster} disabled={syncing || selected.size === 0} variant="secondary" className="gap-2">
+                    <Send className="w-4 h-4" /> إرسال إلى MailBluster
                   </Button>
                   <Button onClick={exportCSV} variant="outline" className="gap-2">
                     <Download className="w-4 h-4" /> CSV
@@ -358,7 +524,7 @@ const Prospecting = () => {
               <CardContent className="py-12 text-center text-muted-foreground">
                 <Search className="w-12 h-12 mx-auto mb-4 opacity-30" />
                 <p>ابحث عن المحلات والمطاعم وخدمات التوصيل في مدينتك</p>
-                <p className="text-xs mt-1">النتائج تأتي من Google Places API</p>
+                <p className="text-xs mt-1">النتائج تأتي من Google Places API وتُحفظ مباشرة في قاعدة البيانات</p>
               </CardContent>
             </Card>
           )}
@@ -369,11 +535,18 @@ const Prospecting = () => {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Database className="w-5 h-5" /> الشركاء المحتملين المُجمَّعين ({dbTotal})
+                <Database className="w-5 h-5" /> الشركاء المحتملين ({dbTotal})
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex gap-3 mb-4 flex-wrap">
+                <Select value={dbCityFilter} onValueChange={setDbCityFilter}>
+                  <SelectTrigger className="w-48"><SelectValue placeholder="المدينة" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">جميع المدن</SelectItem>
+                    {dbCities.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
+                  </SelectContent>
+                </Select>
                 <Select value={dbFilter} onValueChange={setDbFilter}>
                   <SelectTrigger className="w-48"><SelectValue placeholder="الفئة" /></SelectTrigger>
                   <SelectContent>
@@ -381,12 +554,11 @@ const Prospecting = () => {
                     {BUSINESS_TYPES.map((bt) => (<SelectItem key={bt.value} value={bt.value}>{bt.label}</SelectItem>))}
                   </SelectContent>
                 </Select>
-                <Select value={dbCityFilter} onValueChange={setDbCityFilter}>
-                  <SelectTrigger className="w-48"><SelectValue placeholder="المدينة" /></SelectTrigger>
+                <Select value={dbStatusFilter} onValueChange={setDbStatusFilter}>
+                  <SelectTrigger className="w-40"><SelectValue placeholder="الحالة" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">جميع المدن</SelectItem>
-                    <SelectItem value="Tanger">طنجة</SelectItem>
-                    <SelectItem value="Marrakech">مراكش</SelectItem>
+                    <SelectItem value="all">جميع الحالات</SelectItem>
+                    {Object.entries(STATUS_MAP).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
                   </SelectContent>
                 </Select>
                 <Button onClick={loadDbProspects} variant="outline" size="icon" disabled={dbLoading}>
@@ -406,36 +578,76 @@ const Prospecting = () => {
                         <TableHead>المدينة</TableHead>
                         <TableHead>الهاتف</TableHead>
                         <TableHead>التقييم</TableHead>
+                        <TableHead>الحالة</TableHead>
+                        <TableHead>الاتصال</TableHead>
                         <TableHead>MailBluster</TableHead>
                         <TableHead>المصدر</TableHead>
                         <TableHead>التاريخ</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {dbProspects.map((p) => (
-                        <TableRow key={p.id}>
-                          <TableCell className="font-medium">{p.name}</TableCell>
-                          <TableCell><Badge variant="outline">{BUSINESS_TYPES.find(b => b.value === p.category)?.label || p.category}</Badge></TableCell>
-                          <TableCell>{p.city}</TableCell>
-                          <TableCell>
-                            {p.phone ? <span className="flex items-center gap-1 text-sm"><Phone className="w-3 h-3" /> {p.phone}</span> : "—"}
-                          </TableCell>
-                          <TableCell><span className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {p.rating}</span></TableCell>
-                          <TableCell>
-                            {p.mailbluster_synced ? (
-                              <Badge className="bg-green-100 text-green-800 gap-1"><CheckCircle2 className="w-3 h-3" /> مُرسَل</Badge>
-                            ) : (
-                              <Badge variant="secondary">في الانتظار</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell><Badge variant="outline">{p.source === "google_auto" ? "تلقائي" : "يدوي"}</Badge></TableCell>
-                          <TableCell className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString("ar-MA")}</TableCell>
-                        </TableRow>
-                      ))}
+                      {dbProspects.map((p) => {
+                        const statusInfo = STATUS_MAP[p.status] || STATUS_MAP.new;
+                        const callInfo = CALL_STATUS_MAP[p.call_status] || CALL_STATUS_MAP.pending;
+                        return (
+                          <TableRow key={p.id}>
+                            <TableCell className="font-medium max-w-[180px] truncate">{p.name}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="text-xs">
+                                {BUSINESS_TYPES.find(b => b.value === p.category)?.label || p.category}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm">{p.city}</TableCell>
+                            <TableCell>
+                              {p.phone ? (
+                                <a href={`tel:${p.phone}`} className="flex items-center gap-1 text-sm text-primary hover:underline">
+                                  <Phone className="w-3 h-3" /> {p.phone}
+                                </a>
+                              ) : <span className="text-muted-foreground text-xs">—</span>}
+                            </TableCell>
+                            <TableCell>
+                              <span className="flex items-center gap-1">
+                                <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {p.rating || 0}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <Select value={p.status || "new"} onValueChange={(v) => updateProspectStatus(p.id, v)}>
+                                <SelectTrigger className="h-7 text-xs w-[120px] p-1">
+                                  <Badge className={`${statusInfo.color} text-xs`}>{statusInfo.label}</Badge>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Object.entries(STATUS_MAP).map(([k, v]) => (
+                                    <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={`${callInfo.color} text-xs`}>{callInfo.label}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              {p.mailbluster_synced ? (
+                                <Badge className="bg-green-100 text-green-800 gap-1 text-xs"><CheckCircle2 className="w-3 h-3" /> مُرسَل</Badge>
+                              ) : (
+                                <Badge variant="secondary" className="text-xs">—</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="text-xs">
+                                {p.source === "google_auto" ? "تلقائي" : "يدوي"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                              {new Date(p.created_at).toLocaleDateString("ar-MA")}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                       {dbProspects.length === 0 && (
                         <TableRow>
-                          <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                            لا توجد بيانات بعد. اضغط "تشغيل التنقيب التلقائي" لبدء الجمع
+                          <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                            <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                            لا توجد بيانات. ابحث يدوياً أو شغّل التنقيب التلقائي لبدء الجمع
                           </TableCell>
                         </TableRow>
                       )}
