@@ -7,11 +7,13 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useDriverSubscription, useDriverPackages } from "@/hooks/useDriverSubscription";
 import PaymentMethodPicker, { PaymentMethod } from "@/components/PaymentMethodPicker";
+import { useFreePeriod } from "@/hooks/useFreePeriod";
 
 const DriverSubscription = () => {
   const navigate = useNavigate();
   const { activeSubscription, daysLeft, isExpired } = useDriverSubscription();
   const { packages, loading } = useDriverPackages();
+  const freePeriod = useFreePeriod();
   const [selectedPkg, setSelectedPkg] = useState<any>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
   const [walletBalance, setWalletBalance] = useState(0);
