@@ -20,33 +20,45 @@ export function useCustomerSubscription() {
   const [trialDaysLeft, setTrialDaysLeft] = useState(0);
 
   useEffect(() => {
-    const SUBSCRIPTION_START_DATE = new Date("2026-04-05T00:00:00Z");
-    const fetch = async () => {
+    const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
-      // Before April 5, 2026 — everything is free
-      if (Date.now() < SUBSCRIPTION_START_DATE.getTime()) {
-        const daysLeft = Math.max(0, Math.ceil((SUBSCRIPTION_START_DATE.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
-        setIsInTrial(true);
-        setTrialDaysLeft(daysLeft);
-        setSubs([{
-          id: "pre-launch",
-          subscription_type: "credits",
-          status: "free",
-          credits_remaining: 999,
-          credits_total: 999,
-          starts_at: new Date().toISOString(),
-          expires_at: SUBSCRIPTION_START_DATE.toISOString(),
-          package_name: "مجاني حتى 5 أبريل",
-        }]);
-        const walletRes = await supabase.from("wallet").select("balance").eq("user_id", user.id).maybeSingle();
-        setWalletBalance(walletRes.data?.balance || 0);
-        setLoading(false);
-        return;
+      // Check dynamic free period from app_settings
+      const { data: fpRow } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "free_period")
+        .maybeSingle();
+
+      const fp = fpRow?.value as any;
+      const now = Date.now();
+
+      if (fp?.enabled && fp?.from && fp?.to) {
+        const fromDate = new Date(fp.from + "T00:00:00Z");
+        const toDate = new Date(fp.to + "T23:59:59Z");
+        if (now >= fromDate.getTime() && now <= toDate.getTime()) {
+          const daysLeft = Math.max(0, Math.ceil((toDate.getTime() - now) / (1000 * 60 * 60 * 24)));
+          setIsInTrial(true);
+          setTrialDaysLeft(daysLeft);
+          setSubs([{
+            id: "free-period",
+            subscription_type: "credits",
+            status: "free",
+            credits_remaining: 999,
+            credits_total: 999,
+            starts_at: fromDate.toISOString(),
+            expires_at: toDate.toISOString(),
+            package_name: fp.label_ar || "فترة مجانية",
+          }]);
+          const walletRes = await supabase.from("wallet").select("balance").eq("user_id", user.id).maybeSingle();
+          setWalletBalance(walletRes.data?.balance || 0);
+          setLoading(false);
+          return;
+        }
       }
 
-      const now = new Date().toISOString();
+      const nowIso = new Date().toISOString();
 
       const [subsRes, walletRes, profileRes] = await Promise.all([
         supabase
@@ -54,7 +66,7 @@ export function useCustomerSubscription() {
           .select("*, customer_packages(name_ar, name_fr)")
           .eq("user_id", user.id)
           .eq("status", "active")
-          .gte("expires_at", now)
+          .gte("expires_at", nowIso)
           .order("expires_at", { ascending: false }) as any,
         supabase.from("wallet").select("balance").eq("user_id", user.id).maybeSingle(),
         supabase.from("profiles").select("created_at").eq("id", user.id).maybeSingle(),
@@ -75,7 +87,7 @@ export function useCustomerSubscription() {
         // Check 5-day free trial
         const createdAt = new Date(profileRes.data?.created_at || user.created_at || Date.now());
         const trialEnds = new Date(createdAt.getTime() + 5 * 24 * 60 * 60 * 1000);
-        const daysLeft = Math.max(0, Math.ceil((trialEnds.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+        const daysLeft = Math.max(0, Math.ceil((trialEnds.getTime() - now) / (1000 * 60 * 60 * 24)));
         if (daysLeft > 0) {
           setIsInTrial(true);
           setTrialDaysLeft(daysLeft);
@@ -95,7 +107,7 @@ export function useCustomerSubscription() {
       setWalletBalance(walletRes.data?.balance || 0);
       setLoading(false);
     };
-    fetch();
+    fetchData();
   }, []);
 
   return { subs, walletBalance, loading, isInTrial, trialDaysLeft };
