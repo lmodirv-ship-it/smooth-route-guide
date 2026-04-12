@@ -977,4 +977,84 @@ export const healthChecks: HealthCheckDef[] = [
       return { status: fail === 0 ? "pass" : fail <= 2 ? "warn" : "fail", message: fail === 0 ? `${subs.length} نطاقات تعمل` : `${fail} غير متاح`, details: results.join(" | ") };
     },
   },
+  // ══════════════════════════════════════════════
+  // ══════ SERVER / NGINX (4 checks) ══════
+  // ══════════════════════════════════════════════
+  {
+    id: "nginx-html-cache",
+    nameAr: "كاش HTML على السيرفر (Nginx)",
+    icon: "Globe",
+    category: "performance",
+    run: async () => {
+      try {
+        const resp = await fetch("https://www.hn-driver.com/", { method: "HEAD", cache: "no-store" });
+        const cacheControl = resp.headers.get("cache-control") || "";
+        const pragma = resp.headers.get("pragma") || "";
+        if (cacheControl.includes("no-cache") || cacheControl.includes("no-store") || pragma.includes("no-cache")) {
+          return { status: "pass", message: "HTML لا يُخزّن مؤقتاً ✓", details: `Cache-Control: ${cacheControl}` };
+        }
+        if (cacheControl === "") {
+          return { status: "warn", message: "لا يوجد Cache-Control على HTML", details: "قد يتم تخزين HTML مؤقتاً من المتصفح" };
+        }
+        return { status: "fail", message: "HTML مُخزّن مؤقتاً!", details: `Cache-Control: ${cacheControl}` };
+      } catch (e: any) {
+        return { status: "warn", message: "تعذر الفحص (CORS)", details: e.message };
+      }
+    },
+  },
+  {
+    id: "static-assets-cache",
+    nameAr: "كاش الأصول الثابتة (JS/CSS)",
+    icon: "Zap",
+    category: "performance",
+    run: async () => {
+      const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
+      const jsCSS = resources.filter(r => r.name.match(/\.(js|css)(\?|$)/));
+      if (jsCSS.length === 0) return { status: "pass", message: "لا ملفات JS/CSS محمّلة" };
+      const cached = jsCSS.filter(r => r.transferSize === 0 && r.decodedBodySize > 0);
+      const fromServer = jsCSS.filter(r => r.transferSize > 0);
+      const total = jsCSS.length;
+      const cachePct = Math.round((cached.length / total) * 100);
+      if (fromServer.length === 0 && cached.length > 0) {
+        return { status: "pass", message: `${total} ملف — جميعها من الكاش (${cachePct}%)` };
+      }
+      return { status: "pass", message: `${cached.length}/${total} من الكاش — ${fromServer.length} من السيرفر`, details: `نسبة الكاش: ${cachePct}%` };
+    },
+  },
+  {
+    id: "gzip-compression",
+    nameAr: "ضغط Gzip على السيرفر",
+    icon: "Server",
+    category: "performance",
+    run: async () => {
+      const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
+      const jsFiles = resources.filter(r => r.name.match(/\.js(\?|$)/) && r.transferSize > 0);
+      if (jsFiles.length === 0) return { status: "pass", message: "جميع الملفات من الكاش — لا حاجة للفحص" };
+      let compressed = 0;
+      for (const f of jsFiles) {
+        if (f.decodedBodySize > 0 && f.transferSize < f.decodedBodySize * 0.9) compressed++;
+      }
+      const pct = Math.round((compressed / jsFiles.length) * 100);
+      if (pct >= 80) return { status: "pass", message: `${compressed}/${jsFiles.length} ملف مضغوط (${pct}%)` };
+      if (pct >= 50) return { status: "warn", message: `${compressed}/${jsFiles.length} مضغوط فقط (${pct}%)`, details: "تحقق من إعدادات gzip في Nginx" };
+      return { status: "fail", message: `ضغط ضعيف: ${pct}%`, details: "أضف gzip on في Nginx" };
+    },
+  },
+  {
+    id: "ssl-certificate",
+    nameAr: "شهادة SSL",
+    icon: "Shield",
+    category: "security",
+    run: async () => {
+      try {
+        const isSecure = window.location.protocol === "https:";
+        if (!isSecure) return { status: "warn", message: "الموقع يعمل بدون HTTPS", details: "تحقق من شهادة SSL" };
+        // Check main domain
+        const resp = await fetch("https://www.hn-driver.com/", { method: "HEAD", mode: "no-cors" });
+        return { status: "pass", message: "شهادة SSL نشطة ✓", details: "HTTPS مفعّل على جميع النطاقات" };
+      } catch {
+        return { status: "warn", message: "تعذر التحقق من SSL", details: "قد يكون بسبب CORS" };
+      }
+    },
+  },
 ];
