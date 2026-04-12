@@ -47,6 +47,7 @@ const VisitorCounter = () => {
 
     const recordVisit = async () => {
       const geo = await fetchGeoInfo();
+      const params = new URLSearchParams(window.location.search);
       const { data, error } = await supabase.rpc("record_visit", {
         p_session_id: sessionId,
         p_page_path: window.location.pathname,
@@ -57,6 +58,11 @@ const VisitorCounter = () => {
         p_os: os,
         p_referrer: document.referrer || "",
         p_language: navigator.language || "",
+        p_utm_source: params.get("utm_source") || "",
+        p_utm_medium: params.get("utm_medium") || "",
+        p_utm_campaign: params.get("utm_campaign") || "",
+        p_utm_content: params.get("utm_content") || "",
+        p_utm_term: params.get("utm_term") || "",
       });
 
       if (!error && data) {
