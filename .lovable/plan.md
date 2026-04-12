@@ -1,35 +1,52 @@
 
 
-# خطة: إضافة خاصية "الفترة المجانية" الديناميكية
+# خطة نشر HN-STOCK كموقع مستقل ومعزول تماماً
 
-## المشكلة الحالية
-تاريخ الفترة المجانية مكتوب يدوياً في الكود (`2026-04-05`) ولا يمكن للمدير تغييره من لوحة التحكم.
+## المبدأ
+كل مشروع معزول بالكامل: ملفات منفصلة، قاعدة بيانات منفصلة، عملية Node منفصلة، server block منفصل. لا تداخل بين المشاريع الثلاثة.
 
-## الحل
+## البنية على السيرفر (213.156.132.166)
 
-### 1. إضافة إعداد "free_period" في app_settings
-- عند حفظ الإعدادات، يُخزّن في `app_settings` مفتاح `free_period` بقيمة:
-  ```json
-  { "enabled": true, "from": "2026-04-01", "to": "2026-04-30", "label_ar": "فترة مجانية" }
-  ```
+```text
+/var/www/
+├── hn-driver/          ← الموقع الرئيسي (hn-driver.com)
+│   ├── dist/
+│   └── dist-admin/
+├── souk-hn/            ← Souk-HN (hn-driver.online)
+│   └── dist/
+└── hn-stock/           ← HN-STOCK (hn-driver.site) ← جديد
+    ├── dist/           ← React frontend
+    ├── server/         ← Express API
+    ├── .env            ← إعدادات خاصة بـ HN-STOCK فقط
+    └── node_modules/
+```
 
-### 2. إضافة واجهة في إعدادات المدير (Settings.tsx)
-- إضافة قسم جديد في صفحة الإعدادات العامة (GeneralSettings) أو تبويب مستقل يحتوي على:
-  - **Switch** لتفعيل/تعطيل الفترة المجانية
-  - **DatePicker "من"** و **DatePicker "إلى"** لتحديد النطاق الزمني
-  - **حقل نصي** لرسالة مخصصة تظهر للمستخدمين
-- يُحفظ مع باقي الإعدادات عبر upsert في `app_settings`
+## ما سيتم تنفيذه
 
-### 3. تعديل hooks الاشتراكات لقراءة الإعداد ديناميكياً
-- **useCustomerSubscription.ts**: بدل التاريخ الثابت، يقرأ `app_settings` مفتاح `free_period` ويتحقق إن كان التاريخ الحالي ضمن النطاق
-- **useDriverSubscription.ts**: نفس التعديل — إذا كانت الفترة المجانية مفعّلة والتاريخ ضمن النطاق، يُعتبر الاشتراك مجاني
+### 1. سكريبت إعداد السيرفر (`scripts/server/setup-hn-stock.sh`)
+- إنشاء مجلد `/var/www/hn-stock/` مستقل
+- إعداد Nginx server block منفصل في ملف مستقل (`/etc/nginx/sites-available/hn-stock`)
+- Reverse proxy: `/` → ملفات React الثابتة، `/api` → Express على منفذ `5050` (مختلف عن باقي المشاريع)
+- إعداد PM2 باسم `hn-stock-api` (معزول عن أي عملية أخرى)
+- إنشاء قاعدة بيانات PostgreSQL مستقلة (`hn_stock_db`) بمستخدم خاص
 
-### الملفات المتأثرة
-1. `src/admin/components/settings/GeneralSettings.tsx` — إضافة قسم الفترة المجانية مع DatePickers
-2. `src/admin/pages/Settings.tsx` — إضافة state للفترة المجانية + تحميلها وحفظها
-3. `src/hooks/useCustomerSubscription.ts` — قراءة الإعداد بدل التاريخ الثابت
-4. `src/hooks/useDriverSubscription.ts` — نفس التعديل
+### 2. تحديث `src/config/domain.ts`
+- إضافة `hn-driver.site` و `hn-driver.online` إلى `ALL_DOMAINS`
+- إضافة ثوابت المشاريع المستقلة
 
-### لا حاجة لتعديل قاعدة البيانات
-جدول `app_settings` موجود ويدعم أي مفتاح/قيمة JSON.
+### 3. تحديث `src/pages/HNGroupePortal.tsx`
+- تحديث رابط Souk-HN → `https://www.hn-driver.online`
+- إضافة بطاقة HN-STOCK → `https://www.hn-driver.site`
+
+## مبدأ العزل الكامل
+
+| العنصر | hn-driver.com | hn-driver.online | hn-driver.site |
+|--------|--------------|------------------|----------------|
+| المجلد | `/var/www/hn-driver/` | `/var/www/souk-hn/` | `/var/www/hn-stock/` |
+| Nginx | ملف config مستقل | ملف config مستقل | ملف config مستقل |
+| قاعدة البيانات | Supabase Cloud | خاصة | `hn_stock_db` (PostgreSQL محلي) |
+| العملية | ثابت (Vite) | — | PM2: `hn-stock-api` (منفذ 5050) |
+| SSL | شهادة مستقلة | شهادة مستقلة | شهادة مستقلة |
+
+هذا يضمن أن تعطل أي مشروع لا يؤثر على الآخرين إطلاقاً.
 
