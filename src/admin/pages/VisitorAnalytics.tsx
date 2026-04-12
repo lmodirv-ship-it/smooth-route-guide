@@ -164,8 +164,6 @@ const VisitorAnalytics = () => {
         .select("created_at, page_path, device_type, browser, os, referrer, language, country, city, session_id, utm_source, utm_medium, utm_campaign, utm_content")
         .order("created_at", { ascending: false })
         .limit(1000),
-        .order("created_at", { ascending: false })
-        .limit(1000),
       supabase.from("profiles").select("id", { count: "exact", head: true }),
     ]);
 
