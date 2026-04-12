@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, Crown, Shield, Sparkles, Timer, Zap } from "lucide-react";
+import { ArrowRight, Check, Crown, Gift, Shield, Sparkles, Timer, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -130,107 +130,128 @@ const DriverSubscription = () => {
         </motion.div>
       )}
 
-      {/* Packages */}
-      <div className="px-4 mt-6">
-        <h2 className="text-foreground font-bold text-lg mb-4 flex items-center gap-2">
-          <Crown className="w-5 h-5 text-warning" />
-          اختر باقتك
-        </h2>
-
-        {loading ? (
-          <div className="text-center py-8 text-muted-foreground">جاري التحميل...</div>
-        ) : (
-          <div className="space-y-4">
-            {packages.map((pkg, i) => (
-              <motion.div
-                key={pkg.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className={`relative rounded-2xl p-5 border transition-all overflow-hidden ${
-                  pkg.is_featured
-                    ? "glass-card-gold"
-                    : "gradient-card"
-                }`}
-              >
-                {pkg.is_featured && (
-                  <div className="absolute -top-3 right-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold text-xs px-4 py-1 rounded-full">
-                    ⭐ الأكثر شعبية
-                  </div>
-                )}
-
-                {discount(pkg) > 0 && (
-                  <div className="absolute -top-3 left-4 bg-red-500 text-white font-bold text-xs px-3 py-1 rounded-full">
-                    خصم {discount(pkg)}%
-                  </div>
-                )}
-
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="text-foreground font-bold text-lg">{pkg.name_ar}</h3>
-                    <p className="text-muted-foreground text-sm">{pkg.description_ar || `${pkg.duration_days} يوم`}</p>
-                  </div>
-                  <div className="text-left">
-                    <p className="text-foreground font-bold text-2xl">{pkg.price} <span className="text-sm text-muted-foreground">DH</span></p>
-                    {pkg.original_price && pkg.original_price > pkg.price && (
-                      <p className="text-muted-foreground text-sm line-through">{pkg.original_price} DH</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Timer className="w-4 h-4" />
-                    <span>{pkg.duration_days} يوم</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    <span>طلبات غير محدودة</span>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={() => setSelectedPkg(pkg)}
-                  disabled={subscribing === pkg.id}
-                    className={`w-full h-12 rounded-xl font-bold text-base ${
-                    pkg.is_featured
-                      ? "bg-gradient-to-r from-amber-500 to-primary text-primary-foreground hover:from-amber-600 hover:to-primary/90"
-                      : "bg-secondary text-foreground hover:bg-secondary/80"
-                  }`}
-                >
-                  {subscribing === pkg.id ? "جاري الاشتراك..." : "اشترك الآن"}
-                </Button>
-
-                {/* Payment picker for selected package */}
-                {selectedPkg?.id === pkg.id && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 pt-4 border-t border-border">
-                    <PaymentMethodPicker
-                      selected={paymentMethod}
-                      onChange={setPaymentMethod}
-                      walletBalance={walletBalance}
-                      amount={pkg.price}
-                      onPaymentComplete={handlePaymentComplete}
-                      loading={!!subscribing}
-                      referenceType="driver_subscription"
-                    />
-                  </motion.div>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        )}
-
-        {/* Info */}
-        <div className="mt-6 p-4 rounded-xl glass-card">
-          <p className="text-muted-foreground text-sm text-center mb-3">🎁 الشهر الأول مجاني لجميع السائقين الجدد</p>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" />طلبات غير محدودة خلال فترة الاشتراك</li>
-            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" />دعم فني على مدار الساعة</li>
-            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" />أولوية في توزيع الطلبات</li>
-            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" />تقارير الأرباح التفصيلية</li>
-          </ul>
+      {/* Free period banner — hide packages */}
+      {freePeriod.isActive ? (
+        <div className="px-4 mt-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="rounded-2xl p-6 glass-card-green text-center"
+          >
+            <Gift className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
+            <h2 className="text-foreground font-bold text-xl mb-2">🎉 {freePeriod.label}</h2>
+            <p className="text-muted-foreground mb-2">
+              المنصة مجانية بالكامل حتى <strong className="text-foreground">{freePeriod.to}</strong>
+            </p>
+            <p className="text-emerald-400 font-bold text-lg">{freePeriod.daysLeft} يوم متبقي</p>
+            <p className="text-muted-foreground text-sm mt-3">لا حاجة لأي اشتراك خلال هذه الفترة — استمتع بجميع الخدمات مجاناً!</p>
+          </motion.div>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Packages */}
+          <div className="px-4 mt-6">
+            <h2 className="text-foreground font-bold text-lg mb-4 flex items-center gap-2">
+              <Crown className="w-5 h-5 text-warning" />
+              اختر باقتك
+            </h2>
+
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">جاري التحميل...</div>
+            ) : (
+              <div className="space-y-4">
+                {packages.map((pkg, i) => (
+                  <motion.div
+                    key={pkg.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className={`relative rounded-2xl p-5 border transition-all overflow-hidden ${
+                      pkg.is_featured
+                        ? "glass-card-gold"
+                        : "gradient-card"
+                    }`}
+                  >
+                    {pkg.is_featured && (
+                      <div className="absolute -top-3 right-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold text-xs px-4 py-1 rounded-full">
+                        ⭐ الأكثر شعبية
+                      </div>
+                    )}
+
+                    {discount(pkg) > 0 && (
+                      <div className="absolute -top-3 left-4 bg-red-500 text-white font-bold text-xs px-3 py-1 rounded-full">
+                        خصم {discount(pkg)}%
+                      </div>
+                    )}
+
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-foreground font-bold text-lg">{pkg.name_ar}</h3>
+                        <p className="text-muted-foreground text-sm">{pkg.description_ar || `${pkg.duration_days} يوم`}</p>
+                      </div>
+                      <div className="text-left">
+                        <p className="text-foreground font-bold text-2xl">{pkg.price} <span className="text-sm text-muted-foreground">DH</span></p>
+                        {pkg.original_price && pkg.original_price > pkg.price && (
+                          <p className="text-muted-foreground text-sm line-through">{pkg.original_price} DH</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Timer className="w-4 h-4" />
+                        <span>{pkg.duration_days} يوم</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Check className="w-4 h-4 text-emerald-400" />
+                        <span>طلبات غير محدودة</span>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={() => setSelectedPkg(pkg)}
+                      disabled={subscribing === pkg.id}
+                        className={`w-full h-12 rounded-xl font-bold text-base ${
+                        pkg.is_featured
+                          ? "bg-gradient-to-r from-amber-500 to-primary text-primary-foreground hover:from-amber-600 hover:to-primary/90"
+                          : "bg-secondary text-foreground hover:bg-secondary/80"
+                      }`}
+                    >
+                      {subscribing === pkg.id ? "جاري الاشتراك..." : "اشترك الآن"}
+                    </Button>
+
+                    {/* Payment picker for selected package */}
+                    {selectedPkg?.id === pkg.id && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 pt-4 border-t border-border">
+                        <PaymentMethodPicker
+                          selected={paymentMethod}
+                          onChange={setPaymentMethod}
+                          walletBalance={walletBalance}
+                          amount={pkg.price}
+                          onPaymentComplete={handlePaymentComplete}
+                          loading={!!subscribing}
+                          referenceType="driver_subscription"
+                        />
+                      </motion.div>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            )}
+
+            {/* Info */}
+            <div className="mt-6 p-4 rounded-xl glass-card">
+              <p className="text-muted-foreground text-sm text-center mb-3">🎁 الشهر الأول مجاني لجميع السائقين الجدد</p>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" />طلبات غير محدودة خلال فترة الاشتراك</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" />دعم فني على مدار الساعة</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" />أولوية في توزيع الطلبات</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" />تقارير الأرباح التفصيلية</li>
+              </ul>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
