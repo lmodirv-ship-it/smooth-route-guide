@@ -2793,6 +2793,7 @@ export type Database = {
           name: string
           notes: string | null
           phone: string | null
+          prospect_code: string | null
           rating: number | null
           source: string | null
           status: string | null
@@ -2820,6 +2821,7 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string | null
+          prospect_code?: string | null
           rating?: number | null
           source?: string | null
           status?: string | null
@@ -2847,6 +2849,7 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string | null
+          prospect_code?: string | null
           rating?: number | null
           source?: string | null
           status?: string | null
