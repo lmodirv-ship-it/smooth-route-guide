@@ -621,6 +621,9 @@ export default function LandingPage() {
       {/* ─── Video Showcase ─── */}
       <VideoShowcaseSection />
 
+      {/* ─── Promo Images Section ─── */}
+      <HeroPromoFlash />
+
       {/* ─── Partner Sites ─── */}
       <section className="py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
