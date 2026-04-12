@@ -48,6 +48,7 @@ type DBProspect = {
   call_priority: string;
   call_notes: string;
   created_at: string;
+  prospect_code: string;
 };
 
 const BUSINESS_TYPES = [
@@ -579,6 +580,7 @@ const Prospecting = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                         <TableHead>الرمز</TableHead>
                          <TableHead>الاسم</TableHead>
                         <TableHead>الفئة</TableHead>
                         <TableHead>المدينة</TableHead>
