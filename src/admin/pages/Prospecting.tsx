@@ -20,6 +20,7 @@ type ProspectResult = {
   address: string;
   area: string;
   phone: string;
+  email: string;
   rating: number;
   website?: string;
   google_place_id: string;
@@ -193,6 +194,7 @@ const Prospecting = () => {
         address: r.address,
         area: r.area,
         phone: r.phone,
+        email: r.email || "",
         rating: r.rating,
         website: r.website || "",
         google_place_id: r.google_place_id,
@@ -227,7 +229,7 @@ const Prospecting = () => {
     if (!items.length) { toast.error("اختر عنصراً واحداً على الأقل"); return; }
     const header = "Name,Phone,Email,Address,Area,Rating,Website,Category,Google Place ID";
     const rows = items.map((r) =>
-      [r.name, r.phone, "", r.address, r.area, r.rating, r.website || "", r.category, r.google_place_id]
+      [r.name, r.phone, r.email || "", r.address, r.area, r.rating, r.website || "", r.category, r.google_place_id]
         .map((v) => `"${String(v).replace(/"/g, '""')}"`)
         .join(",")
     );
@@ -273,7 +275,7 @@ const Prospecting = () => {
     try {
       const searchCity = customCity.trim() || city;
       const rows = items.map((r) => ({
-        name: r.name, phone: r.phone, address: r.address, area: r.area,
+        name: r.name, phone: r.phone, email: r.email || "", address: r.address, area: r.area,
         city: searchCity, country: "Morocco", category: r.category, rating: r.rating,
         website: r.website || "", google_place_id: r.google_place_id, source: "google_manual",
         status: "new", call_status: r.phone ? "pending" : "no_phone",
@@ -491,6 +493,7 @@ const Prospecting = () => {
                       </TableHead>
                       <TableHead>الاسم</TableHead>
                       <TableHead>الهاتف</TableHead>
+                      <TableHead>الإيميل</TableHead>
                       <TableHead>العنوان</TableHead>
                       <TableHead>الحي</TableHead>
                       <TableHead>التقييم</TableHead>
@@ -504,6 +507,9 @@ const Prospecting = () => {
                         <TableCell className="font-medium">{r.name}</TableCell>
                         <TableCell>
                           {r.phone ? <span className="flex items-center gap-1 text-sm"><Phone className="w-3 h-3" /> {r.phone}</span> : <span className="text-muted-foreground text-xs">—</span>}
+                        </TableCell>
+                        <TableCell>
+                          {r.email ? <a href={`mailto:${r.email}`} className="text-primary hover:underline text-sm">{r.email}</a> : <span className="text-muted-foreground text-xs">—</span>}
                         </TableCell>
                         <TableCell className="text-sm max-w-[200px] truncate">{r.address}</TableCell>
                         <TableCell><Badge variant="outline">{r.area || "—"}</Badge></TableCell>
@@ -573,10 +579,11 @@ const Prospecting = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>الاسم</TableHead>
+                         <TableHead>الاسم</TableHead>
                         <TableHead>الفئة</TableHead>
                         <TableHead>المدينة</TableHead>
                         <TableHead>الهاتف</TableHead>
+                        <TableHead>الإيميل</TableHead>
                         <TableHead>التقييم</TableHead>
                         <TableHead>الحالة</TableHead>
                         <TableHead>الاتصال</TableHead>
@@ -603,6 +610,11 @@ const Prospecting = () => {
                                 <a href={`tel:${p.phone}`} className="flex items-center gap-1 text-sm text-primary hover:underline">
                                   <Phone className="w-3 h-3" /> {p.phone}
                                 </a>
+                              ) : <span className="text-muted-foreground text-xs">—</span>}
+                            </TableCell>
+                            <TableCell>
+                              {p.email ? (
+                                <a href={`mailto:${p.email}`} className="text-primary hover:underline text-sm">{p.email}</a>
                               ) : <span className="text-muted-foreground text-xs">—</span>}
                             </TableCell>
                             <TableCell>

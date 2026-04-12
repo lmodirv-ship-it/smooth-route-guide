@@ -201,10 +201,10 @@ serve(async (req) => {
 
             let phone = "";
             let website = "";
-            // Fetch Place Details for phone number
+            // Fetch Place Details for phone number, website, email
             if (place.place_id) {
               try {
-                const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=formatted_phone_number,international_phone_number,website&key=${googleMapsApiKey}&language=fr`;
+                const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=formatted_phone_number,international_phone_number,website,url,editorial_summary&key=${googleMapsApiKey}&language=fr`;
                 const detailRes = await fetch(detailUrl);
                 const detailData = await detailRes.json();
                 if (detailData.status === "OK" && detailData.result) {
@@ -213,6 +213,35 @@ serve(async (req) => {
                 }
               } catch (e) {
                 console.error("Place details error:", e);
+              }
+            }
+
+            // Try to extract email from website if available
+            let email = "";
+            if (website) {
+              try {
+                const siteRes = await fetch(website, {
+                  headers: { "User-Agent": "HN-Driver-Bot/1.0" },
+                  redirect: "follow",
+                });
+                if (siteRes.ok) {
+                  const html = await siteRes.text();
+                  // Extract email from page content
+                  const emailRegex = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
+                  const emails = html.match(emailRegex) || [];
+                  // Filter out common non-business emails
+                  const filtered = emails.filter((e: string) =>
+                    !e.includes("example.com") &&
+                    !e.includes("sentry") &&
+                    !e.includes("webpack") &&
+                    !e.includes("wixpress") &&
+                    !e.endsWith(".png") &&
+                    !e.endsWith(".jpg")
+                  );
+                  if (filtered.length > 0) email = filtered[0];
+                }
+              } catch (e) {
+                // Website scraping failed, skip
               }
             }
 
@@ -230,6 +259,7 @@ serve(async (req) => {
               lat: Number(place.geometry?.location?.lat || 0),
               lng: Number(place.geometry?.location?.lng || 0),
               phone: sanitizePlainText(phone, 40),
+              email: sanitizePlainText(email, 120),
               rating: Number(place.rating || 0),
               image_url: imageUrl,
               is_open: place.opening_hours?.open_now ?? true,
