@@ -332,6 +332,51 @@ const Scene5CTA = () => {
   );
 };
 
+// ─── Persistent Overlay: Logo + URL ───
+const PersistentBrand = () => {
+  const frame = useCurrentFrame();
+  const fadeIn = interpolate(frame, [0, 30], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const fadeOut = interpolate(frame, [870, 900], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const op = Math.min(fadeIn, fadeOut);
+
+  return (
+    <div style={{
+      position: "absolute", top: 0, left: 0, right: 0,
+      zIndex: 100, opacity: op,
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      padding: "24px 40px",
+      background: "linear-gradient(180deg, rgba(0,0,0,0.5) 0%, transparent 100%)",
+    }}>
+      {/* Logo + Brand */}
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <Img src={staticFile("images/logo.png")} style={{
+          width: 70, height: 70, borderRadius: "50%",
+          border: `3px solid ${GOLD}80`,
+          boxShadow: "0 4px 20px rgba(245,200,66,0.3)",
+        }} />
+        <div style={{
+          fontFamily: montserrat, fontSize: 32, fontWeight: 900,
+          background: `linear-gradient(170deg, ${GOLD}, #e8a032)`,
+          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+        }}>
+          HN DRIVER
+        </div>
+      </div>
+
+      {/* URL */}
+      <div style={{
+        fontFamily: montserrat, fontSize: 24, fontWeight: 700,
+        color: "white", letterSpacing: 1,
+        padding: "8px 24px", borderRadius: 30,
+        background: "rgba(245,200,66,0.15)",
+        border: `1px solid ${GOLD}40`,
+      }}>
+        www.hn-driver.com
+      </div>
+    </div>
+  );
+};
+
 // ─── Main Composition ───
 export const PromoFR = () => {
   return (
@@ -341,6 +386,8 @@ export const PromoFR = () => {
       <Sequence from={360} durationInFrames={180}><Scene3Ride /></Sequence>
       <Sequence from={540} durationInFrames={180}><Scene4People /></Sequence>
       <Sequence from={720} durationInFrames={180}><Scene5CTA /></Sequence>
+      {/* Persistent brand overlay on all scenes */}
+      <PersistentBrand />
     </AbsoluteFill>
   );
 };
