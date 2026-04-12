@@ -24,6 +24,8 @@ import SignupBanner from "@/components/SignupBanner";
 import HeroPromoFlash from "@/components/HeroPromoFlash";
 import TangierSocialProof from "@/components/TangierSocialProof";
 import VideoShowcaseSection from "@/components/VideoShowcaseSection";
+import FreePeriodHeroBanner from "@/components/FreePeriodHeroBanner";
+import StickyCTABar from "@/components/StickyCTABar";
 import logo from "@/assets/hn-driver-badge.png";
 import iconVtcCar from "@/assets/icon-vtc-car-hn.png";
 import iconDeliveryBike from "@/assets/icon-delivery-bike-hn.png";
@@ -216,8 +218,8 @@ export default function LandingPage() {
             <Button variant="outline" onClick={() => navigate("/login")} className="min-h-0 h-11 px-5 font-medium">
               {t.common.login}
             </Button>
-            <Button onClick={() => navigate("/auth/client")} className="min-h-0 h-11 px-6 font-bold gradient-primary text-primary-foreground glow-primary">
-              {dir === "rtl" ? "🎁 سجل واحصل على 50 د.م" : "🎁 Sign Up & Get 50 MAD"}
+            <Button onClick={() => navigate("/auth/client")} className="min-h-0 h-11 px-6 font-bold gradient-primary text-primary-foreground glow-primary animate-pulse-glow">
+              {dir === "rtl" ? "🎉 سجّل مجاناً" : "🎉 Sign Up Free"}
             </Button>
           </div>
 
@@ -246,7 +248,7 @@ export default function LandingPage() {
             <div className="h-px bg-border my-2" />
             <LanguageSwitcher variant="outline" />
             <Button variant="outline" onClick={() => { navigate("/login"); setMenuOpen(false); }}>{t.common.login}</Button>
-            <Button onClick={() => { navigate("/auth/client"); setMenuOpen(false); }} className="font-bold gradient-primary text-primary-foreground">{dir === "rtl" ? "🎁 سجل واحصل على 50 د.م" : "🎁 Sign Up & Get 50 MAD"}</Button>
+            <Button onClick={() => { navigate("/auth/client"); setMenuOpen(false); }} className="font-bold gradient-primary text-primary-foreground animate-pulse-glow">{dir === "rtl" ? "🎉 سجّل مجاناً" : "🎉 Sign Up Free"}</Button>
           </motion.div>
         )}
       </nav>
@@ -323,6 +325,9 @@ export default function LandingPage() {
 
         {/* Hero Content */}
         <div className="container mx-auto px-4 relative z-10 pt-20 pb-8">
+          {/* ═══ Free Period Banner ═══ */}
+          <FreePeriodHeroBanner />
+
           {/* ═══ Videos at the top ═══ */}
           <VideoShowcaseSection />
 
@@ -894,6 +899,7 @@ export default function LandingPage() {
       {/* ─── Signup Conversion Components ─── */}
       <SignupPopup />
       <SignupBanner />
+      <StickyCTABar />
     </div>
   );
 }
