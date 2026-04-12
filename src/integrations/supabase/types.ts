@@ -3363,6 +3363,11 @@ export type Database = {
           session_id: string | null
           user_agent: string | null
           user_id: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
           visitor_ip: string | null
         }
         Insert: {
@@ -3379,6 +3384,11 @@ export type Database = {
           session_id?: string | null
           user_agent?: string | null
           user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
           visitor_ip?: string | null
         }
         Update: {
@@ -3395,6 +3405,11 @@ export type Database = {
           session_id?: string | null
           user_agent?: string | null
           user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
           visitor_ip?: string | null
         }
         Relationships: []
