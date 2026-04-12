@@ -218,8 +218,8 @@ export default function LandingPage() {
             <Button variant="outline" onClick={() => navigate("/login")} className="min-h-0 h-11 px-5 font-medium">
               {t.common.login}
             </Button>
-            <Button onClick={() => navigate("/auth/client")} className="min-h-0 h-11 px-6 font-bold gradient-primary text-primary-foreground glow-primary">
-              {dir === "rtl" ? "🎁 سجل واحصل على 50 د.م" : "🎁 Sign Up & Get 50 MAD"}
+            <Button onClick={() => navigate("/auth/client")} className="min-h-0 h-11 px-6 font-bold gradient-primary text-primary-foreground glow-primary animate-pulse-glow">
+              {dir === "rtl" ? "🎉 سجّل مجاناً" : "🎉 Sign Up Free"}
             </Button>
           </div>
 
@@ -248,7 +248,7 @@ export default function LandingPage() {
             <div className="h-px bg-border my-2" />
             <LanguageSwitcher variant="outline" />
             <Button variant="outline" onClick={() => { navigate("/login"); setMenuOpen(false); }}>{t.common.login}</Button>
-            <Button onClick={() => { navigate("/auth/client"); setMenuOpen(false); }} className="font-bold gradient-primary text-primary-foreground">{dir === "rtl" ? "🎁 سجل واحصل على 50 د.م" : "🎁 Sign Up & Get 50 MAD"}</Button>
+            <Button onClick={() => { navigate("/auth/client"); setMenuOpen(false); }} className="font-bold gradient-primary text-primary-foreground animate-pulse-glow">{dir === "rtl" ? "🎉 سجّل مجاناً" : "🎉 Sign Up Free"}</Button>
           </motion.div>
         )}
       </nav>
