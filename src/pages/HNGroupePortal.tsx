@@ -25,8 +25,17 @@ const PROJECTS: ProjectCard[] = [
     nameAr: "سوق HN إكسبريس",
     description: "منصة النقل والتوصيل والخدمات",
     icon: Truck,
-    url: "https://smooth-route-guide.lovable.app",
+    url: "https://www.hn-driver.online",
     color: "from-amber-500 to-orange-600",
+    status: "live",
+  },
+  {
+    name: "HN-STOCK",
+    nameAr: "HN ستوك",
+    description: "نظام إدارة المخزون والمستودعات",
+    icon: Store,
+    url: "https://www.hn-driver.site",
+    color: "from-emerald-600 to-green-700",
     status: "live",
   },
   {
