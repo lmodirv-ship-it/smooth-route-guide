@@ -4,12 +4,14 @@ import { motion } from "framer-motion";
 import { ArrowRight, Gift, Clock, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/context";
+import { useFreePeriod } from "@/hooks/useFreePeriod";
 
 const DriverPromotions = () => {
   const navigate = useNavigate();
   const { t, dir } = useI18n();
   const [promotions, setPromotions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const freePeriod = useFreePeriod();
 
   useEffect(() => {
     const fetch = async () => {
@@ -29,6 +31,20 @@ const DriverPromotions = () => {
         <span className="font-bold text-foreground">{t.driver.promotionsTitle}</span>
         <Gift className="w-5 h-5 text-primary" />
       </div>
+
+      {freePeriod.isActive && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mx-4 mt-4 rounded-2xl p-5 glass-card-green text-center"
+        >
+          <Gift className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
+          <h3 className="text-foreground font-bold text-lg mb-1">🎉 {freePeriod.label}</h3>
+          <p className="text-muted-foreground text-sm">
+            جميع الخدمات مجانية حتى <strong className="text-foreground">{freePeriod.to}</strong> — {freePeriod.daysLeft} يوم متبقي
+          </p>
+        </motion.div>
+      )}
 
       <div className="px-4 mt-4">
         <h3 className="text-foreground font-bold mb-3">{t.driver.activeDiscounts}</h3>
