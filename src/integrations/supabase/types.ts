@@ -4522,6 +4522,25 @@ export type Database = {
             }
             Returns: Json
           }
+        | {
+            Args: {
+              p_browser?: string
+              p_city?: string
+              p_country?: string
+              p_device_type?: string
+              p_language?: string
+              p_os?: string
+              p_page_path?: string
+              p_referrer?: string
+              p_session_id: string
+              p_utm_campaign?: string
+              p_utm_content?: string
+              p_utm_medium?: string
+              p_utm_source?: string
+              p_utm_term?: string
+            }
+            Returns: Json
+          }
     }
     Enums: {
       app_role:
