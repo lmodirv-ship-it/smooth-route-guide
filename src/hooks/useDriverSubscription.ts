@@ -34,30 +34,43 @@ export function useDriverSubscription() {
   const [isExpired, setIsExpired] = useState(true);
 
   useEffect(() => {
-    const SUBSCRIPTION_START_DATE = new Date("2026-04-05T00:00:00Z");
     const check = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
-      // Before April 5, 2026 — everything is free
-      if (Date.now() < SUBSCRIPTION_START_DATE.getTime()) {
-        setIsExpired(false);
-        setDaysLeft(Math.max(0, Math.ceil((SUBSCRIPTION_START_DATE.getTime() - Date.now()) / (1000 * 60 * 60 * 24))));
-        setActiveSubscription({
-          id: "pre-launch",
-          status: "free",
-          starts_at: new Date().toISOString(),
-          expires_at: SUBSCRIPTION_START_DATE.toISOString(),
-          orders_used: 0,
-          km_used: 0,
-          package_name: "مجاني حتى 5 أبريل",
-          duration_days: Math.ceil((SUBSCRIPTION_START_DATE.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
-        });
-        setLoading(false);
-        return;
+      // Check dynamic free period from app_settings
+      const { data: fpRow } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "free_period")
+        .maybeSingle();
+
+      const fp = fpRow?.value as any;
+      const now = Date.now();
+
+      if (fp?.enabled && fp?.from && fp?.to) {
+        const fromDate = new Date(fp.from + "T00:00:00Z");
+        const toDate = new Date(fp.to + "T23:59:59Z");
+        if (now >= fromDate.getTime() && now <= toDate.getTime()) {
+          const days = Math.max(0, Math.ceil((toDate.getTime() - now) / (1000 * 60 * 60 * 24)));
+          setIsExpired(false);
+          setDaysLeft(days);
+          setActiveSubscription({
+            id: "free-period",
+            status: "free",
+            starts_at: fromDate.toISOString(),
+            expires_at: toDate.toISOString(),
+            orders_used: 0,
+            km_used: 0,
+            package_name: fp.label_ar || "فترة مجانية",
+            duration_days: days,
+          });
+          setLoading(false);
+          return;
+        }
       }
 
-      const now = new Date().toISOString();
+      const nowIso = new Date().toISOString();
 
       // Check active subscription
       const { data } = await supabase
@@ -65,14 +78,14 @@ export function useDriverSubscription() {
         .select("*, driver_packages(name_ar, duration_days)")
         .eq("user_id", user.id)
         .eq("status", "active")
-        .gte("expires_at", now)
+        .gte("expires_at", nowIso)
         .order("expires_at", { ascending: false })
         .limit(1) as any;
 
       if (data && data.length > 0) {
         const sub = data[0];
         const expires = new Date(sub.expires_at);
-        const days = Math.max(0, Math.ceil((expires.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+        const days = Math.max(0, Math.ceil((expires.getTime() - now) / (1000 * 60 * 60 * 24)));
         setDaysLeft(days);
         setIsExpired(false);
         setActiveSubscription({
@@ -95,7 +108,7 @@ export function useDriverSubscription() {
 
         const createdAt = new Date(profile?.created_at || user.created_at || Date.now());
         const trialEnds = new Date(createdAt.getTime() + 5 * 24 * 60 * 60 * 1000);
-        const trialDaysLeft = Math.max(0, Math.ceil((trialEnds.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+        const trialDaysLeft = Math.max(0, Math.ceil((trialEnds.getTime() - now) / (1000 * 60 * 60 * 24)));
 
         if (trialDaysLeft > 0) {
           setIsExpired(false);
