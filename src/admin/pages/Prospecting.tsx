@@ -20,6 +20,7 @@ type ProspectResult = {
   address: string;
   area: string;
   phone: string;
+  email: string;
   rating: number;
   website?: string;
   google_place_id: string;
@@ -193,6 +194,7 @@ const Prospecting = () => {
         address: r.address,
         area: r.area,
         phone: r.phone,
+        email: r.email || "",
         rating: r.rating,
         website: r.website || "",
         google_place_id: r.google_place_id,
@@ -227,7 +229,7 @@ const Prospecting = () => {
     if (!items.length) { toast.error("اختر عنصراً واحداً على الأقل"); return; }
     const header = "Name,Phone,Email,Address,Area,Rating,Website,Category,Google Place ID";
     const rows = items.map((r) =>
-      [r.name, r.phone, "", r.address, r.area, r.rating, r.website || "", r.category, r.google_place_id]
+      [r.name, r.phone, r.email || "", r.address, r.area, r.rating, r.website || "", r.category, r.google_place_id]
         .map((v) => `"${String(v).replace(/"/g, '""')}"`)
         .join(",")
     );
@@ -273,7 +275,7 @@ const Prospecting = () => {
     try {
       const searchCity = customCity.trim() || city;
       const rows = items.map((r) => ({
-        name: r.name, phone: r.phone, address: r.address, area: r.area,
+        name: r.name, phone: r.phone, email: r.email || "", address: r.address, area: r.area,
         city: searchCity, country: "Morocco", category: r.category, rating: r.rating,
         website: r.website || "", google_place_id: r.google_place_id, source: "google_manual",
         status: "new", call_status: r.phone ? "pending" : "no_phone",
