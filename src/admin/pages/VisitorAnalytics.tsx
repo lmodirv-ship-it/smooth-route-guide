@@ -608,7 +608,110 @@ const VisitorAnalytics = () => {
         </motion.div>
       </div>
 
-      {/* ═══ Top Pages ═══ */}
+      {/* ═══ Ad Campaign Performance ═══ */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.62 }}
+        className="rounded-2xl border border-border/50 bg-gradient-to-br from-background/80 to-secondary/20 backdrop-blur-xl p-6 relative z-10 shadow-[0_0_20px_hsl(var(--primary)/0.05)]"
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-pink-500/20 flex items-center justify-center border border-blue-500/20">
+            <Megaphone className="w-5 h-5 text-blue-400" />
+          </div>
+          <div>
+            <h3 className="font-bold text-foreground">أداء الحملات الإعلانية</h3>
+            <p className="text-xs text-muted-foreground">تتبع حملات Facebook · YouTube · Google Ads</p>
+          </div>
+          <Badge variant="secondary" className="mr-auto text-xs">{campaignStats.length} حملة</Badge>
+        </div>
+
+        {campaignStats.length === 0 ? (
+          <div className="text-center py-10">
+            <Target className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
+            <p className="text-muted-foreground text-sm mb-2">لم يتم رصد زيارات من حملات إعلانية بعد</p>
+            <div className="bg-secondary/30 rounded-xl p-4 max-w-md mx-auto text-right">
+              <p className="text-xs text-muted-foreground mb-2 font-semibold">💡 لتتبع حملاتك، أضف UTM لروابطك:</p>
+              <code className="text-[11px] text-primary block bg-background/50 rounded-lg p-2 font-mono break-all">
+                www.hn-driver.com/?utm_source=facebook&utm_medium=social&utm_campaign=promo_2026
+              </code>
+            </div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border/30">
+                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">المصدر</th>
+                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">الوسيلة</th>
+                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">الحملة</th>
+                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">الزيارات</th>
+                  <th className="text-right py-3 px-4 text-muted-foreground font-medium w-40">الأداء</th>
+                </tr>
+              </thead>
+              <tbody>
+                {campaignStats.slice(0, 15).map((c, i) => {
+                  const maxCount = campaignStats[0]?.count || 1;
+                  const pct = (c.count / maxCount) * 100;
+                  const sourceIcons: Record<string, { icon: string; color: string }> = {
+                    facebook: { icon: "📘", color: "text-blue-400" },
+                    youtube: { icon: "▶️", color: "text-red-400" },
+                    google: { icon: "🔍", color: "text-green-400" },
+                    instagram: { icon: "📷", color: "text-pink-400" },
+                    tiktok: { icon: "🎵", color: "text-foreground" },
+                  };
+                  const si = sourceIcons[c.source.toLowerCase()] || { icon: "🌐", color: "text-foreground" };
+                  return (
+                    <motion.tr key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7 + i * 0.04 }}
+                      className="border-b border-border/10 hover:bg-primary/5 transition-colors">
+                      <td className="py-3 px-4">
+                        <span className="flex items-center gap-2">
+                          <span>{si.icon}</span>
+                          <span className={`font-semibold ${si.color}`}>{c.source}</span>
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge variant="outline" className="text-xs">{c.medium || "—"}</Badge>
+                      </td>
+                      <td className="py-3 px-4 text-foreground text-xs font-mono">{c.campaign || "—"}</td>
+                      <td className="py-3 px-4 font-bold tabular-nums text-foreground">{c.count}</td>
+                      <td className="py-3 px-4">
+                        <div className="h-2.5 bg-secondary/50 rounded-full overflow-hidden">
+                          <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ delay: 0.8 + i * 0.05, duration: 0.6 }}
+                            className="h-full rounded-full"
+                            style={{ background: "linear-gradient(90deg, hsl(210 100% 55%), hsl(330 80% 55%))", boxShadow: "0 0 12px hsl(210 100% 55% / 0.4)" }}
+                          />
+                        </div>
+                      </td>
+                    </motion.tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            {/* Quick summary cards */}
+            <div className="grid grid-cols-3 gap-3 mt-5 pt-4 border-t border-border/20">
+              {(() => {
+                const fbCount = campaignStats.filter(c => c.source.toLowerCase() === "facebook").reduce((s, c) => s + c.count, 0);
+                const ytCount = campaignStats.filter(c => c.source.toLowerCase() === "youtube").reduce((s, c) => s + c.count, 0);
+                const otherCount = campaignStats.filter(c => !["facebook", "youtube"].includes(c.source.toLowerCase())).reduce((s, c) => s + c.count, 0);
+                return [
+                  { label: "Facebook", value: fbCount, icon: "📘", gradient: "from-blue-500/15 to-blue-500/5", border: "border-blue-500/20" },
+                  { label: "YouTube", value: ytCount, icon: "▶️", gradient: "from-red-500/15 to-red-500/5", border: "border-red-500/20" },
+                  { label: "أخرى", value: otherCount, icon: "🌐", gradient: "from-primary/15 to-primary/5", border: "border-primary/20" },
+                ].map((s, i) => (
+                  <div key={i} className={`rounded-xl bg-gradient-to-br ${s.gradient} border ${s.border} p-3 text-center`}>
+                    <span className="text-xl">{s.icon}</span>
+                    <div className="text-lg font-black tabular-nums text-foreground mt-1">{s.value}</div>
+                    <div className="text-[10px] text-muted-foreground">{s.label}</div>
+                  </div>
+                ));
+              })()}
+            </div>
+          </div>
+        )}
+      </motion.div>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
