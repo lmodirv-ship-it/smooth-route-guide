@@ -579,10 +579,11 @@ const Prospecting = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>الاسم</TableHead>
+                         <TableHead>الاسم</TableHead>
                         <TableHead>الفئة</TableHead>
                         <TableHead>المدينة</TableHead>
                         <TableHead>الهاتف</TableHead>
+                        <TableHead>الإيميل</TableHead>
                         <TableHead>التقييم</TableHead>
                         <TableHead>الحالة</TableHead>
                         <TableHead>الاتصال</TableHead>
@@ -609,6 +610,11 @@ const Prospecting = () => {
                                 <a href={`tel:${p.phone}`} className="flex items-center gap-1 text-sm text-primary hover:underline">
                                   <Phone className="w-3 h-3" /> {p.phone}
                                 </a>
+                              ) : <span className="text-muted-foreground text-xs">—</span>}
+                            </TableCell>
+                            <TableCell>
+                              {p.email ? (
+                                <a href={`mailto:${p.email}`} className="text-primary hover:underline text-sm">{p.email}</a>
                               ) : <span className="text-muted-foreground text-xs">—</span>}
                             </TableCell>
                             <TableCell>
