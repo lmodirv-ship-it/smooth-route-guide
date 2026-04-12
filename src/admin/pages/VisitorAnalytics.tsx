@@ -214,6 +214,20 @@ const VisitorAnalytics = () => {
       setCityStats(cities);
       setReferrerStats(referrers);
       setLanguageStats(languages);
+
+      // Campaign/UTM stats
+      const campaignMap: Record<string, { source: string; medium: string; campaign: string; count: number }> = {};
+      visits.forEach(v => {
+        const src = (v as any).utm_source || "";
+        const med = (v as any).utm_medium || "";
+        const camp = (v as any).utm_campaign || "";
+        if (src) {
+          const key = `${src}|${med}|${camp}`;
+          if (!campaignMap[key]) campaignMap[key] = { source: src, medium: med, campaign: camp, count: 0 };
+          campaignMap[key].count++;
+        }
+      });
+      setCampaignStats(Object.values(campaignMap).sort((a, b) => b.count - a.count));
     }
     setRefreshing(false);
   };
