@@ -48,6 +48,7 @@ type DBProspect = {
   call_priority: string;
   call_notes: string;
   created_at: string;
+  prospect_code: string;
 };
 
 const BUSINESS_TYPES = [
@@ -579,6 +580,7 @@ const Prospecting = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                         <TableHead>الرمز</TableHead>
                          <TableHead>الاسم</TableHead>
                         <TableHead>الفئة</TableHead>
                         <TableHead>المدينة</TableHead>
@@ -598,6 +600,7 @@ const Prospecting = () => {
                         const callInfo = CALL_STATUS_MAP[p.call_status] || CALL_STATUS_MAP.pending;
                         return (
                           <TableRow key={p.id}>
+                            <TableCell className="font-mono text-xs font-bold text-primary">{p.prospect_code || "—"}</TableCell>
                             <TableCell className="font-medium max-w-[180px] truncate">{p.name}</TableCell>
                             <TableCell>
                               <Badge variant="outline" className="text-xs">
@@ -657,7 +660,7 @@ const Prospecting = () => {
                       })}
                       {dbProspects.length === 0 && (
                         <TableRow>
-                          <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                          <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
                             <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-30" />
                             لا توجد بيانات. ابحث يدوياً أو شغّل التنقيب التلقائي لبدء الجمع
                           </TableCell>
