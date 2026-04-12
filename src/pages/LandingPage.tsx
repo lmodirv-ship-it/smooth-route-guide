@@ -24,6 +24,8 @@ import SignupBanner from "@/components/SignupBanner";
 import HeroPromoFlash from "@/components/HeroPromoFlash";
 import TangierSocialProof from "@/components/TangierSocialProof";
 import VideoShowcaseSection from "@/components/VideoShowcaseSection";
+import FreePeriodHeroBanner from "@/components/FreePeriodHeroBanner";
+import StickyCTABar from "@/components/StickyCTABar";
 import logo from "@/assets/hn-driver-badge.png";
 import iconVtcCar from "@/assets/icon-vtc-car-hn.png";
 import iconDeliveryBike from "@/assets/icon-delivery-bike-hn.png";
