@@ -39,8 +39,19 @@ export const LEGACY_SUBDOMAINS = {
   callcenter: "https://call.hn-driver.net",
 } as const;
 
+/** External HN Groupe projects — fully isolated */
+export const HN_STOCK = {
+  domain: "hn-driver.site",
+  url: "https://www.hn-driver.site",
+} as const;
+
+export const SOUK_HN = {
+  domain: "hn-driver.online",
+  url: "https://www.hn-driver.online",
+} as const;
+
 /** All supported domains for CORS / auth redirect checks */
-export const ALL_DOMAINS = ["hn-driver.com", "hn-driver.net"] as const;
+export const ALL_DOMAINS = ["hn-driver.com", "hn-driver.net", "hn-driver.online", "hn-driver.site"] as const;
 
 /** Main pages with their full URLs — useful for sitemaps, sharing, etc. */
 export const MAIN_PAGES = {
