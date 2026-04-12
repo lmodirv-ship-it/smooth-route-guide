@@ -325,6 +325,9 @@ export default function LandingPage() {
 
         {/* Hero Content */}
         <div className="container mx-auto px-4 relative z-10 pt-20 pb-8">
+          {/* ═══ Free Period Banner ═══ */}
+          <FreePeriodHeroBanner />
+
           {/* ═══ Videos at the top ═══ */}
           <VideoShowcaseSection />
 
@@ -896,6 +899,7 @@ export default function LandingPage() {
       {/* ─── Signup Conversion Components ─── */}
       <SignupPopup />
       <SignupBanner />
+      <StickyCTABar />
     </div>
   );
 }
