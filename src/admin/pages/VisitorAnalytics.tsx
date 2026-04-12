@@ -137,6 +137,7 @@ const VisitorAnalytics = () => {
   const [cityStats, setCityStats] = useState<Record<string, number>>({});
   const [referrerStats, setReferrerStats] = useState<Record<string, number>>({});
   const [languageStats, setLanguageStats] = useState<Record<string, number>>({});
+  const [campaignStats, setCampaignStats] = useState<{ source: string; medium: string; campaign: string; count: number }[]>([]);
   const [flashPulse, setFlashPulse] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [totalUsers, setTotalUsers] = useState(0);
