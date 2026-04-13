@@ -1942,6 +1942,639 @@ export type Database = {
         }
         Relationships: []
       }
+      hn_stock_activity: {
+        Row: {
+          actor_name: string | null
+          created_at: string
+          description: string
+          id: string
+          title: string
+          type: string
+        }
+        Insert: {
+          actor_name?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          title: string
+          type: string
+        }
+        Update: {
+          actor_name?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      hn_stock_call_logs: {
+        Row: {
+          call_status: string
+          called_at: string
+          id: string
+          notes: string | null
+          operator_name: string
+          order_id: string
+        }
+        Insert: {
+          call_status: string
+          called_at?: string
+          id?: string
+          notes?: string | null
+          operator_name: string
+          order_id: string
+        }
+        Update: {
+          call_status?: string
+          called_at?: string
+          id?: string
+          notes?: string | null
+          operator_name?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hn_stock_call_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "hn_stock_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hn_stock_contact_messages: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string | null
+          status: string
+          subject: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone?: string | null
+          status?: string
+          subject: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string | null
+          status?: string
+          subject?: string
+        }
+        Relationships: []
+      }
+      hn_stock_drivers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          license_plate: string | null
+          name: string
+          phone: string
+          status: string
+          total_deliveries: number
+          updated_at: string
+          user_id: string | null
+          vehicle_type: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          license_plate?: string | null
+          name: string
+          phone: string
+          status?: string
+          total_deliveries?: number
+          updated_at?: string
+          user_id?: string | null
+          vehicle_type?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          license_plate?: string | null
+          name?: string
+          phone?: string
+          status?: string
+          total_deliveries?: number
+          updated_at?: string
+          user_id?: string | null
+          vehicle_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hn_stock_drivers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hn_stock_employees: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          role: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hn_stock_employees_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hn_stock_merchants: {
+        Row: {
+          api_key: string | null
+          bank_account_number: string | null
+          bank_name: string | null
+          company_name: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          preferred_warehouse: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          api_key?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          company_name?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone: string
+          preferred_warehouse?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          api_key?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          company_name?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          preferred_warehouse?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hn_stock_merchants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hn_stock_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      hn_stock_orders: {
+        Row: {
+          branding_logo_url: string | null
+          city: string | null
+          cod_amount: number | null
+          confirmation_note: string | null
+          confirmation_status: string | null
+          confirmed_at: string | null
+          confirmed_by: string | null
+          created_at: string
+          customer_address: string
+          customer_name: string
+          customer_phone: string
+          delivery_fee: number | null
+          driver_id: string | null
+          external_order_id: string | null
+          external_source: string | null
+          id: string
+          merchant_id: string
+          notes: string | null
+          order_number: string
+          packaging_fee: number | null
+          packaging_type: string | null
+          print_approved: boolean | null
+          print_approved_by: string | null
+          print_notes: string | null
+          product_id: string | null
+          quantity: number
+          status: string
+          total_amount: number
+          updated_at: string
+          warehouse_id: string | null
+        }
+        Insert: {
+          branding_logo_url?: string | null
+          city?: string | null
+          cod_amount?: number | null
+          confirmation_note?: string | null
+          confirmation_status?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          customer_address: string
+          customer_name: string
+          customer_phone: string
+          delivery_fee?: number | null
+          driver_id?: string | null
+          external_order_id?: string | null
+          external_source?: string | null
+          id?: string
+          merchant_id: string
+          notes?: string | null
+          order_number: string
+          packaging_fee?: number | null
+          packaging_type?: string | null
+          print_approved?: boolean | null
+          print_approved_by?: string | null
+          print_notes?: string | null
+          product_id?: string | null
+          quantity?: number
+          status?: string
+          total_amount: number
+          updated_at?: string
+          warehouse_id?: string | null
+        }
+        Update: {
+          branding_logo_url?: string | null
+          city?: string | null
+          cod_amount?: number | null
+          confirmation_note?: string | null
+          confirmation_status?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          customer_address?: string
+          customer_name?: string
+          customer_phone?: string
+          delivery_fee?: number | null
+          driver_id?: string | null
+          external_order_id?: string | null
+          external_source?: string | null
+          id?: string
+          merchant_id?: string
+          notes?: string | null
+          order_number?: string
+          packaging_fee?: number | null
+          packaging_type?: string | null
+          print_approved?: boolean | null
+          print_approved_by?: string | null
+          print_notes?: string | null
+          product_id?: string | null
+          quantity?: number
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hn_stock_orders_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "hn_stock_drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hn_stock_orders_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "hn_stock_merchants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hn_stock_orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "hn_stock_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hn_stock_orders_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "hn_stock_warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hn_stock_payouts: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          created_at: string
+          id: string
+          merchant_id: string
+          method: string
+          processed_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          created_at?: string
+          id?: string
+          merchant_id: string
+          method?: string
+          processed_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          merchant_id?: string
+          method?: string
+          processed_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hn_stock_payouts_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "hn_stock_merchants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hn_stock_products: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          marketplace_listed: boolean
+          merchant_id: string
+          name: string
+          price: number
+          sku: string
+          stock_quantity: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          marketplace_listed?: boolean
+          merchant_id: string
+          name: string
+          price: number
+          sku: string
+          stock_quantity?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          marketplace_listed?: boolean
+          merchant_id?: string
+          name?: string
+          price?: number
+          sku?: string
+          stock_quantity?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hn_stock_products_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "hn_stock_merchants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hn_stock_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string
+          id: string
+          merchant_id: string
+          order_id: string | null
+          type: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description: string
+          id?: string
+          merchant_id: string
+          order_id?: string | null
+          type: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string
+          id?: string
+          merchant_id?: string
+          order_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hn_stock_transactions_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "hn_stock_merchants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hn_stock_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "hn_stock_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hn_stock_warehouse_inventory: {
+        Row: {
+          id: string
+          merchant_id: string
+          product_id: string
+          quantity: number
+          reserved_quantity: number
+          updated_at: string
+          warehouse_id: string
+        }
+        Insert: {
+          id?: string
+          merchant_id: string
+          product_id: string
+          quantity?: number
+          reserved_quantity?: number
+          updated_at?: string
+          warehouse_id: string
+        }
+        Update: {
+          id?: string
+          merchant_id?: string
+          product_id?: string
+          quantity?: number
+          reserved_quantity?: number
+          updated_at?: string
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hn_stock_warehouse_inventory_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "hn_stock_merchants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hn_stock_warehouse_inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "hn_stock_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hn_stock_warehouse_inventory_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "hn_stock_warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hn_stock_warehouses: {
+        Row: {
+          address: string | null
+          city: string
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city: string
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       import_logs: {
         Row: {
           categories_count: number
