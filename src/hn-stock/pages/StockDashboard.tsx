@@ -11,7 +11,7 @@ const StockDashboard = () => {
         supabase.from("hn_stock_products").select("id", { count: "exact", head: true }),
         supabase.from("hn_stock_orders").select("id, status, total_amount", { count: "exact" }),
         supabase.from("hn_stock_merchants").select("id", { count: "exact", head: true }),
-        (supabase as any).from("hn_stock_shipments").select("id, status", { count: "exact" }),
+        supabase.from("hn_stock_shipments").select("id, status", { count: "exact" }),
       ]);
 
       const orderData = orders.data || [];
