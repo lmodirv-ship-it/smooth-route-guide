@@ -160,6 +160,50 @@ const LanguageManagement = () => {
     }
   };
 
+  const autoTranslateNamespace = async () => {
+    if (!selectedLocale) return;
+    // Get source translations (Arabic as base)
+    const { data: arTrans } = await supabase
+      .from("platform_translations")
+      .select("*")
+      .eq("locale", "ar")
+      .eq("namespace", selectedNs);
+    if (!arTrans || arTrans.length === 0) {
+      toast({ title: "❌ لا توجد ترجمات عربية للمرجع", variant: "destructive" });
+      return;
+    }
+    // Filter keys not yet translated
+    const existingKeys = new Set(filteredTranslations.map(t => t.key));
+    const toTranslate = arTrans.filter(t => !existingKeys.has(t.key));
+    if (toTranslate.length === 0) {
+      toast({ title: "✅ جميع المفاتيح مترجمة بالفعل" });
+      return;
+    }
+    try {
+      const texts = toTranslate.map(t => t.value);
+      // Batch in chunks of 100
+      const results: string[] = [];
+      for (let i = 0; i < texts.length; i += 100) {
+        const chunk = texts.slice(i, i + 100);
+        const res = await translate(chunk, selectedLocale, "ar");
+        results.push(...res.map(r => r.text));
+      }
+      // Insert all
+      const inserts = toTranslate.map((t, i) => ({
+        locale: selectedLocale,
+        namespace: selectedNs,
+        key: t.key,
+        value: results[i],
+      }));
+      const { error } = await supabase.from("platform_translations").insert(inserts);
+      if (error) throw error;
+      toast({ title: `✅ تمت ترجمة ${inserts.length} مفتاح تلقائياً` });
+      await loadTranslations(selectedLocale);
+    } catch (err: any) {
+      toast({ title: "❌ خطأ في الترجمة", description: err.message, variant: "destructive" });
+    }
+  };
+
   const filteredTranslations = translations.filter(t => t.namespace === selectedNs);
 
   if (loading) return <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
