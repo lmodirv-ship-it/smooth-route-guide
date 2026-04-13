@@ -123,7 +123,7 @@ if (-not $DryRun -and -not $SkipBuild) {
 # Step 5: Deploy to server
 Write-Step 5 $totalSteps "Deploying to server ($ServerIP)..."
 if (-not $SkipServer -and -not $DryRun) {
-    $sshCmd = "cd $ServerRepo; git fetch origin main; git reset --hard origin/main; rsync -a --delete dist/ /var/www/html/; rsync -a --delete dist-admin/ /var/www/admin/; rsync -a --delete dist-call-center/ /var/www/call-center/ 2>/dev/null; rsync -a --delete dist-supervisor/ /var/www/supervisor/ 2>/dev/null; rsync -a --delete dist-driver-ride/ /var/www/driver-ride/ 2>/dev/null; rsync -a --delete dist-driver-delivery/ /var/www/driver-delivery/ 2>/dev/null; rsync -a --delete dist-hn-stock/ /var/www/hn-stock/ 2>/dev/null; sudo nginx -t; sudo systemctl reload nginx; echo DEPLOY_OK"
+    $sshCmd = "cd $ServerRepo; git fetch origin main; git reset --hard origin/main; bash scripts/server/auto-deploy.sh && echo DEPLOY_OK"
     $result = ssh "$ServerUser@$ServerIP" $sshCmd 2>&1
     if ($result -match "DEPLOY_OK") {
         Write-Ok "Server deployed and Nginx reloaded"
