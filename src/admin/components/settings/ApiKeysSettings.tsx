@@ -45,6 +45,13 @@ const API_KEY_FIELDS: ApiKeyField[] = [
     placeholder: "AIza...",
     group: "google",
   },
+  {
+    key: "google_translate_api_key",
+    label: "Google Cloud Translation API Key",
+    description: "مفتاح الترجمة التلقائية للمحتوى والواجهات (يستخدم نفس مفتاح Maps إذا كان مفعلاً مع Translation API)",
+    placeholder: "AIza...",
+    group: "google",
+  },
   // Payment Services
   {
     key: "paypal_client_id",
