@@ -129,7 +129,24 @@ Deno.serve(async (req) => {
     await enforceRateLimit(req, "distance-matrix", 30, 60);
     const { driverLocation, customerLocation, destination, units } = await parseJson(req, requestSchema);
 
-    const apiKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
+    // Try env secret first, then fall back to app_settings in DB
+    let apiKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
+    if (!apiKey || apiKey === "") {
+      try {
+        const sbUrl = Deno.env.get("SUPABASE_URL") || "";
+        const sbKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_ANON_KEY") || "";
+        if (sbUrl && sbKey) {
+          const res = await fetch(`${sbUrl}/rest/v1/app_settings?key=eq.api_keys&select=value`, {
+            headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` },
+          });
+          if (res.ok) {
+            const rows = await res.json();
+            const stored = rows?.[0]?.value;
+            apiKey = stored?.google_maps_api_key || stored?.google_directions_api_key || "";
+          }
+        }
+      } catch { /* skip */ }
+    }
     if (!apiKey) {
       console.error(`[distance-matrix][${requestId}] missing_google_maps_api_key`);
       const fallback = buildFallbackResponse(driverLocation, customerLocation, destination, "missing_api_key");
