@@ -172,7 +172,7 @@ const Prospecting = () => {
       if (dbPriorityFilter !== "all") query = query.eq("call_priority", dbPriorityFilter);
       if (dbRatingFilter === "high") query = query.gte("rating", 4);
       if (dbSearch.trim()) {
-        query = query.or(`name.ilike.%${dbSearch.trim()}%,phone.ilike.%${dbSearch.trim()}%,prospect_code.ilike.%${dbSearch.trim()}%`);
+        query = query.or(`name.ilike.%${dbSearch.trim()}%,phone.ilike.%${dbSearch.trim()}%,email.ilike.%${dbSearch.trim()}%,prospect_code.ilike.%${dbSearch.trim()}%`);
       }
 
       const { data, error, count } = await query;
