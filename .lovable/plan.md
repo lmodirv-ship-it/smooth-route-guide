@@ -1,52 +1,39 @@
 
 
-# خطة نشر HN-STOCK كموقع مستقل ومعزول تماماً
+# تطوير نظام التنقيب عن الشركاء
 
-## المبدأ
-كل مشروع معزول بالكامل: ملفات منفصلة، قاعدة بيانات منفصلة، عملية Node منفصلة، server block منفصل. لا تداخل بين المشاريع الثلاثة.
+## التحسينات المقترحة
 
-## البنية على السيرفر (213.156.132.166)
+### 1. تفاصيل الشريك المحتمل (Sheet/Panel)
+- إضافة `ProspectDetailSheet` يفتح عند النقر على أي صف في الجدول
+- يعرض: كل البيانات + حقل ملاحظات قابل للتعديل + سجل التواصل + روابط سريعة (اتصال/واتساب/إيميل)
+- زر فتح الموقع الإلكتروني وخريطة Google
 
-```text
-/var/www/
-├── hn-driver/          ← الموقع الرئيسي (hn-driver.com)
-│   ├── dist/
-│   └── dist-admin/
-├── souk-hn/            ← Souk-HN (hn-driver.online)
-│   └── dist/
-└── hn-stock/           ← HN-STOCK (hn-driver.site) ← جديد
-    ├── dist/           ← React frontend
-    ├── server/         ← Express API
-    ├── .env            ← إعدادات خاصة بـ HN-STOCK فقط
-    └── node_modules/
-```
+### 2. بحث نصي + فلترة متقدمة
+- إضافة حقل بحث نصي (بالاسم/الهاتف/الرمز) في تبويب قاعدة البيانات
+- فلتر بالأولوية (`call_priority`) وفلتر بالتقييم (4+ نجوم)
+- ترتيب حسب التاريخ/التقييم/الأولوية
 
-## ما سيتم تنفيذه
+### 3. إجراءات جماعية (Bulk Actions)
+- Checkbox لتحديد عدة شركاء في تبويب قاعدة البيانات
+- أزرار: تغيير الحالة جماعياً، حذف جماعي، إرسال جماعي لـ MailBluster
+- تحديد/إلغاء تحديد الكل
 
-### 1. سكريبت إعداد السيرفر (`scripts/server/setup-hn-stock.sh`)
-- إنشاء مجلد `/var/www/hn-stock/` مستقل
-- إعداد Nginx server block منفصل في ملف مستقل (`/etc/nginx/sites-available/hn-stock`)
-- Reverse proxy: `/` → ملفات React الثابتة، `/api` → Express على منفذ `5050` (مختلف عن باقي المشاريع)
-- إعداد PM2 باسم `hn-stock-api` (معزول عن أي عملية أخرى)
-- إنشاء قاعدة بيانات PostgreSQL مستقلة (`hn_stock_db`) بمستخدم خاص
+### 4. تحويل لشريك رسمي
+- زر "تحويل لشريك" في تفاصيل الشريك المحتمل
+- ينشئ سجل متجر (`stores`) أو سائق (`drivers`) تلقائياً حسب الفئة
+- يغير حالة الشريك المحتمل إلى `converted`
 
-### 2. تحديث `src/config/domain.ts`
-- إضافة `hn-driver.site` و `hn-driver.online` إلى `ALL_DOMAINS`
-- إضافة ثوابت المشاريع المستقلة
+## الملفات المتأثرة
 
-### 3. تحديث `src/pages/HNGroupePortal.tsx`
-- تحديث رابط Souk-HN → `https://www.hn-driver.online`
-- إضافة بطاقة HN-STOCK → `https://www.hn-driver.site`
+| ملف | التغيير |
+|------|---------|
+| `src/admin/pages/Prospecting.tsx` | إضافة بحث نصي، إجراءات جماعية، فتح التفاصيل |
+| `src/admin/components/ProspectDetailSheet.tsx` | **جديد** — لوحة تفاصيل الشريك المحتمل |
 
-## مبدأ العزل الكامل
-
-| العنصر | hn-driver.com | hn-driver.online | hn-driver.site |
-|--------|--------------|------------------|----------------|
-| المجلد | `/var/www/hn-driver/` | `/var/www/souk-hn/` | `/var/www/hn-stock/` |
-| Nginx | ملف config مستقل | ملف config مستقل | ملف config مستقل |
-| قاعدة البيانات | Supabase Cloud | خاصة | `hn_stock_db` (PostgreSQL محلي) |
-| العملية | ثابت (Vite) | — | PM2: `hn-stock-api` (منفذ 5050) |
-| SSL | شهادة مستقلة | شهادة مستقلة | شهادة مستقلة |
-
-هذا يضمن أن تعطل أي مشروع لا يؤثر على الآخرين إطلاقاً.
+## التفاصيل التقنية
+- `ProspectDetailSheet` يستخدم مكون `Sheet` الموجود
+- البحث النصي يستخدم `ilike` في Supabase query
+- الإجراءات الجماعية تستخدم `update` مع `in` filter
+- التحويل لشريك يُدخل في جدول `stores` مع ربط `prospect_id`
 
