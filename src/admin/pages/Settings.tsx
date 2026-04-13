@@ -242,6 +242,10 @@ const AdminSettings = () => {
         <TabsContent value="languages" className="mt-4">
           <LanguageManagement />
         </TabsContent>
+
+        <TabsContent value="api_keys" className="mt-4">
+          <ApiKeysSettings />
+        </TabsContent>
       </Tabs>
     </div>
   );
