@@ -7,7 +7,7 @@ const StockCallCenter = () => {
   const { data: logs, isLoading } = useQuery({
     queryKey: ["hn-stock-call-logs"],
     queryFn: async () => {
-      const { data } = await supabase.from("hn_stock_call_logs").select("*").order("created_at", { ascending: false }).limit(50);
+      const { data } = await supabase.from("hn_stock_call_logs").select("*").order("called_at", { ascending: false }).limit(50);
       return data || [];
     },
   });
@@ -33,8 +33,8 @@ const StockCallCenter = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead><tr className="border-b text-muted-foreground">
-                  <th className="text-right py-3 px-4">العميل</th>
-                  <th className="text-right py-3 px-4">الهاتف</th>
+                  <th className="text-right py-3 px-4">المشغّل</th>
+                  <th className="text-right py-3 px-4">الطلب</th>
                   <th className="text-right py-3 px-4">النتيجة</th>
                   <th className="text-right py-3 px-4">ملاحظات</th>
                   <th className="text-right py-3 px-4">التاريخ</th>
@@ -42,16 +42,16 @@ const StockCallCenter = () => {
                 <tbody>
                   {logs.map((l: any) => (
                     <tr key={l.id} className="border-b last:border-0 hover:bg-muted/50">
-                      <td className="py-3 px-4">{l.customer_name || "—"}</td>
-                      <td className="py-3 px-4 font-mono text-xs">{l.customer_phone || "—"}</td>
+                      <td className="py-3 px-4">{l.operator_name || "—"}</td>
+                      <td className="py-3 px-4 font-mono text-xs">{l.order_id?.slice(0, 8) || "—"}</td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-0.5 rounded-full text-xs ${l.result === "confirmed" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}>
-                          {statusLabels[l.result] || l.result}
+                        <span className={`px-2 py-0.5 rounded-full text-xs ${l.call_status === "confirmed" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}>
+                          {statusLabels[l.call_status] || l.call_status}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-xs text-muted-foreground max-w-[200px] truncate">{l.notes || "—"}</td>
                       <td className="py-3 px-4 text-xs text-muted-foreground">
-                        {new Date(l.created_at).toLocaleDateString("ar-MA")}
+                        {new Date(l.called_at).toLocaleDateString("ar-MA")}
                       </td>
                     </tr>
                   ))}
