@@ -8,15 +8,15 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { to: "/", icon: LayoutDashboard, label: "لوحة التحكم", labelFr: "Tableau de bord" },
-  { to: "/products", icon: Package, label: "المنتجات", labelFr: "Produits" },
-  { to: "/orders", icon: ShoppingCart, label: "الطلبات", labelFr: "Commandes" },
-  { to: "/shipments", icon: Truck, label: "الشحنات", labelFr: "Expéditions" },
-  { to: "/merchants", icon: Users, label: "التجار", labelFr: "Marchands" },
-  { to: "/warehouses", icon: Warehouse, label: "المستودعات", labelFr: "Entrepôts" },
-  { to: "/drivers", icon: Car, label: "السائقين", labelFr: "Chauffeurs" },
-  { to: "/call-center", icon: Headphones, label: "مركز الاتصال", labelFr: "Centre d'appels" },
-  { to: "/transactions", icon: DollarSign, label: "المعاملات", labelFr: "Transactions" },
+  { to: "/dashboard", icon: LayoutDashboard, label: "لوحة التحكم", labelFr: "Tableau de bord" },
+  { to: "/dashboard/products", icon: Package, label: "المنتجات", labelFr: "Produits" },
+  { to: "/dashboard/orders", icon: ShoppingCart, label: "الطلبات", labelFr: "Commandes" },
+  { to: "/dashboard/shipments", icon: Truck, label: "الشحنات", labelFr: "Expéditions" },
+  { to: "/dashboard/merchants", icon: Users, label: "التجار", labelFr: "Marchands" },
+  { to: "/dashboard/warehouses", icon: Warehouse, label: "المستودعات", labelFr: "Entrepôts" },
+  { to: "/dashboard/drivers", icon: Car, label: "السائقين", labelFr: "Chauffeurs" },
+  { to: "/dashboard/call-center", icon: Headphones, label: "مركز الاتصال", labelFr: "Centre d'appels" },
+  { to: "/dashboard/transactions", icon: DollarSign, label: "المعاملات", labelFr: "Transactions" },
 ];
 
 const HNStockLayout = () => {
@@ -58,11 +58,11 @@ const HNStockLayout = () => {
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto p-2 space-y-1">
           {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === "/"}
-              onClick={() => setMobileOpen(false)}
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === "/dashboard"}
+                onClick={() => setMobileOpen(false)}
               className={({ isActive }) => cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                 isActive
