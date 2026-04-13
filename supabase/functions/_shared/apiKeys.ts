@@ -95,3 +95,18 @@ export async function getMailBlusterKey(): Promise<string | null> {
     ["mailbluster_api_key"],
   );
 }
+
+export async function getPayPalCredentials(): Promise<{ clientId: string; secret: string; env: string } | null> {
+  const settings = await loadAppSettingsKeys();
+  
+  // Also check paypal_settings in app_settings
+  let ppClientId = Deno.env.get("PAYPAL_CLIENT_ID_LIVE") || Deno.env.get("PAYPAL_CLIENT_ID") || "";
+  let ppSecret = Deno.env.get("PAYPAL_SECRET_LIVE") || Deno.env.get("PAYPAL_SECRET_KEY") || "";
+  let ppEnv = Deno.env.get("PAYPAL_ENV") || "sandbox";
+
+  if (!ppClientId) ppClientId = settings["paypal_client_id"] || "";
+  if (!ppSecret) ppSecret = settings["paypal_secret_key"] || "";
+
+  if (!ppClientId || !ppSecret) return null;
+  return { clientId: ppClientId, secret: ppSecret, env: ppEnv };
+}
