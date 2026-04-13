@@ -31,6 +31,7 @@ const NAMESPACES = ["common", "auth", "welcome", "customer", "driver", "delivery
 
 const LanguageManagement = () => {
   const { t } = useI18n();
+  const { translate, loading: translating } = useGoogleTranslate();
   const [languages, setLanguages] = useState<PlatformLanguage[]>([]);
   const [translations, setTranslations] = useState<TranslationEntry[]>([]);
   const [loading, setLoading] = useState(true);
