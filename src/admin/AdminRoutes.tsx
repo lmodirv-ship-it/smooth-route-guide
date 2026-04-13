@@ -44,6 +44,7 @@ import PayPalLivePayments from "@/admin/pages/PayPalLivePayments";
 import CouponsManagement from "@/admin/pages/CouponsManagement";
 import Prospecting from "@/admin/pages/Prospecting";
 import MailBlusterTemplates from "@/admin/pages/MailBlusterTemplates";
+import ApiKeysPage from "@/admin/pages/ApiKeys";
 
 // Supervisor layout & pages
 import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
@@ -122,6 +123,7 @@ export const adminRouteElements = (
       <Route path="coupons" element={<CouponsManagement />} />
       <Route path="prospecting" element={<Prospecting />} />
       <Route path="mailbluster" element={<MailBlusterTemplates />} />
+      <Route path="api-keys" element={<ApiKeysPage />} />
     </Route>
 
     <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><CallCenterLayout /></RequireRole>}>
