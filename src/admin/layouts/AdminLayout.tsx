@@ -126,6 +126,7 @@ const AdminLayout = () => {
     { path: "/admin/coupons", icon: Ticket, label: "🎟️ كوبونات الخصم" },
     { path: "/admin/prospecting", icon: Search, label: "🔍 التنقيب عن الشركاء" },
     { path: "/admin/mailbluster", icon: Mail, label: "📧 نماذج المراسلات" },
+    { path: "/admin/api-keys", icon: Shield, label: "🔑 مفاتيح API" },
   ];
 
   useEffect(() => {
