@@ -36,7 +36,7 @@ fi
 
 # 4. Create web root directories
 echo "[4/6] Creating web directories..."
-sudo mkdir -p /var/www/html /var/www/admin /var/www/call-center /var/www/supervisor /var/www/driver-ride /var/www/driver-delivery
+sudo mkdir -p /var/www/html /var/www/admin /var/www/call-center /var/www/supervisor /var/www/driver-ride /var/www/driver-delivery /var/www/hn-stock
 
 # 5. Setup webhook as systemd service
 echo "[5/6] Setting up webhook service..."
