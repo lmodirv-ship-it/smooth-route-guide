@@ -220,7 +220,6 @@ const AdminDashboardPage = () => {
 
   useEffect(() => {
     void fetchDashboardData();
-    const interval = setInterval(() => void fetchDashboardData(), 10000);
     const channel = supabase.channel("dash-rt")
       .on("postgres_changes", { event: "*", schema: "public", table: "ride_requests" }, fetchDashboardData)
       .on("postgres_changes", { event: "*", schema: "public", table: "trips" }, fetchDashboardData)
@@ -228,7 +227,7 @@ const AdminDashboardPage = () => {
       .on("postgres_changes", { event: "*", schema: "public", table: "delivery_orders" }, fetchDashboardData)
       .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, fetchDashboardData)
       .subscribe();
-    return () => { clearInterval(interval); supabase.removeChannel(channel); };
+    return () => { supabase.removeChannel(channel); };
   }, [fetchDashboardData]);
 
   const dateLocale = locale === "ar" ? "ar-MA" : locale === "fr" ? "fr-FR" : locale === "es" ? "es-ES" : "en-US";
