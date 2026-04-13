@@ -595,6 +595,7 @@ const Prospecting = () => {
                       <TableHead className="w-10">
                         <Checkbox checked={selected.size === results.length && results.length > 0} onCheckedChange={toggleAll} />
                       </TableHead>
+                      <TableHead>المرجع</TableHead>
                       <TableHead>الاسم</TableHead>
                       <TableHead>الهاتف</TableHead>
                       <TableHead>الإيميل</TableHead>
@@ -608,6 +609,7 @@ const Prospecting = () => {
                     {results.map((r) => (
                       <TableRow key={r.google_place_id}>
                         <TableCell><Checkbox checked={selected.has(r.google_place_id)} onCheckedChange={() => toggleSelect(r.google_place_id)} /></TableCell>
+                        <TableCell className="font-mono text-xs text-primary font-bold whitespace-nowrap">{r.google_place_id?.slice(0, 16) || "—"}</TableCell>
                         <TableCell className="font-medium">{r.name}</TableCell>
                         <TableCell>
                           {r.phone ? <span className="flex items-center gap-1 text-sm"><Phone className="w-3 h-3" /> {r.phone}</span> : <span className="text-muted-foreground text-xs">—</span>}
