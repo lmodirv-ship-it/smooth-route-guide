@@ -117,6 +117,15 @@ const Prospecting = () => {
   const [dbCities, setDbCities] = useState<string[]>([]);
   const [stats, setStats] = useState<Stats>({ total: 0, withPhone: 0, synced: 0, byStatus: {}, byCategory: {} });
 
+  // New: text search, bulk selection, detail sheet, priority filter
+  const [dbSearch, setDbSearch] = useState("");
+  const [dbPriorityFilter, setDbPriorityFilter] = useState("all");
+  const [dbRatingFilter, setDbRatingFilter] = useState("all");
+  const [dbSelected, setDbSelected] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState(false);
+  const [selectedProspect, setSelectedProspect] = useState<DBProspect | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+
   // Load stats
   const loadStats = useCallback(async () => {
     try {
