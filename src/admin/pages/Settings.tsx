@@ -19,6 +19,7 @@ import DriverSettings from "@/admin/components/settings/DriverSettings";
 import CommunicationSettings from "@/admin/components/settings/CommunicationSettings";
 import StoreSettings from "@/admin/components/settings/StoreSettings";
 import CommissionSettings from "@/admin/components/settings/CommissionSettings";
+import ApiKeysSettings from "@/admin/components/settings/ApiKeysSettings";
 
 const AdminSettings = () => {
   const { t } = useI18n();
