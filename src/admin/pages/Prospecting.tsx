@@ -780,6 +780,11 @@ const Prospecting = () => {
                               ) : <span className="text-muted-foreground text-xs">—</span>}
                             </TableCell>
                             <TableCell>
+                              {p.email ? (
+                                <a href={`mailto:${p.email}`} className="text-primary hover:underline text-sm truncate max-w-[180px] block">{p.email}</a>
+                              ) : <span className="text-muted-foreground text-xs">—</span>}
+                            </TableCell>
+                            <TableCell>
                               <span className="flex items-center gap-1">
                                 <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {p.rating || 0}
                               </span>
