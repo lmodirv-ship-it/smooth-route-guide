@@ -10,9 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Search, Download, Loader2, MapPin, Phone, Star, Globe, Store, Bike, Truck,
   UtensilsCrossed, Send, Database, RefreshCw, CheckCircle2, Users, Building2,
-  PhoneCall, TrendingUp, Eye, MailCheck, AlertCircle
+  PhoneCall, TrendingUp, Eye, MailCheck, AlertCircle, Trash2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import ProspectDetailSheet from "@/admin/components/ProspectDetailSheet";
 import { toast } from "sonner";
 
 type ProspectResult = {
