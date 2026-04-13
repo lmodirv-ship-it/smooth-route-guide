@@ -744,6 +744,7 @@ const Prospecting = () => {
                         <TableHead>الفئة</TableHead>
                         <TableHead>المدينة</TableHead>
                         <TableHead>الهاتف</TableHead>
+                        <TableHead>الإيميل</TableHead>
                         <TableHead>التقييم</TableHead>
                         <TableHead>الحالة</TableHead>
                         <TableHead>الاتصال</TableHead>
