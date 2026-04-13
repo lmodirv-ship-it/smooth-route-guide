@@ -23,20 +23,33 @@ interface CustomApiKey {
 }
 
 const API_KEY_FIELDS: ApiKeyField[] = [
+  // Google Services
   { key: "google_maps_api_key", label: "Google Maps API Key", description: "مفتاح Google Maps للخرائط، تقدير المسافات، والملاحة الحية", placeholder: "AIza...", group: "google" },
   { key: "google_places_api_key", label: "Google Places API Key", description: "مفتاح Google Places للبحث عن المطاعم والمتاجر والشركاء", placeholder: "AIza...", group: "google" },
   { key: "google_geocoding_api_key", label: "Google Geocoding API Key", description: "مفتاح تحويل العناوين إلى إحداثيات والعكس", placeholder: "AIza...", group: "google" },
   { key: "google_directions_api_key", label: "Google Directions API Key", description: "مفتاح حساب المسارات والاتجاهات بين النقاط", placeholder: "AIza...", group: "google" },
   { key: "google_translate_api_key", label: "Google Cloud Translation API Key", description: "مفتاح الترجمة التلقائية للمحتوى والواجهات", placeholder: "AIza...", group: "google" },
-  { key: "paypal_client_id", label: "PayPal Client ID", description: "معرف تطبيق PayPal للمدفوعات", placeholder: "AX...", group: "payment" },
+  // Payment Services
+  { key: "paypal_client_id", label: "PayPal Client ID (Sandbox)", description: "معرف تطبيق PayPal للمدفوعات (وضع الاختبار)", placeholder: "AX...", group: "payment" },
+  { key: "paypal_client_id_live", label: "PayPal Client ID (Live)", description: "معرف تطبيق PayPal للمدفوعات الحقيقية", placeholder: "AX...", group: "payment" },
+  { key: "paypal_secret_key", label: "PayPal Secret Key", description: "المفتاح السري لتطبيق PayPal", placeholder: "EL...", group: "payment" },
+  { key: "paypal_env", label: "PayPal Environment", description: "بيئة PayPal: sandbox أو live", placeholder: "sandbox", group: "payment" },
   { key: "stripe_publishable_key", label: "Stripe Publishable Key", description: "مفتاح Stripe العام للمدفوعات", placeholder: "pk_live_...", group: "payment" },
+  { key: "stripe_secret_key", label: "Stripe Secret Key", description: "المفتاح السري لـ Stripe (يستخدم في الخادم فقط)", placeholder: "sk_live_...", group: "payment" },
+  // Communication - Twilio
+  { key: "twilio_api_key", label: "Twilio API Key", description: "مفتاح Twilio للمكالمات الهاتفية والرسائل النصية و TURN servers", placeholder: "SK...", group: "communication" },
+  { key: "twilio_phone_number", label: "Twilio Phone Number", description: "رقم هاتف Twilio المستخدم لإرسال المكالمات والرسائل", placeholder: "+1...", group: "communication" },
+  // Communication - Email
   { key: "mailbluster_api_key", label: "MailBluster API Key", description: "مفتاح MailBluster لإدارة حملات البريد الإلكتروني", placeholder: "...", group: "communication" },
+  // Platform
+  { key: "lovable_api_key", label: "Lovable API Key", description: "مفتاح Lovable AI للمساعد الذكي، الشات بوت، وتوليد المحتوى", placeholder: "...", group: "platform" },
 ];
 
 const GROUP_LABELS: Record<string, { label: string }> = {
   google: { label: "🗺️ خدمات Google" },
   payment: { label: "💳 خدمات الدفع" },
-  communication: { label: "📧 التواصل" },
+  communication: { label: "📞 التواصل والرسائل" },
+  platform: { label: "🤖 المنصة والذكاء الاصطناعي" },
 };
 
 const ApiKeysSettings = () => {
