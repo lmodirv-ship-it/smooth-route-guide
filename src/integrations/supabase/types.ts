@@ -2442,6 +2442,88 @@ export type Database = {
           },
         ]
       }
+      hn_stock_shipments: {
+        Row: {
+          cod_amount: number | null
+          created_at: string
+          delivered_at: string | null
+          delivery_address: string | null
+          delivery_city: string | null
+          delivery_phone: string | null
+          driver_id: string | null
+          id: string
+          is_cod: boolean | null
+          merchant_id: string | null
+          notes: string | null
+          order_id: string | null
+          recipient_name: string | null
+          shipped_at: string | null
+          status: string
+          tracking_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          cod_amount?: number | null
+          created_at?: string
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_city?: string | null
+          delivery_phone?: string | null
+          driver_id?: string | null
+          id?: string
+          is_cod?: boolean | null
+          merchant_id?: string | null
+          notes?: string | null
+          order_id?: string | null
+          recipient_name?: string | null
+          shipped_at?: string | null
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cod_amount?: number | null
+          created_at?: string
+          delivered_at?: string | null
+          delivery_address?: string | null
+          delivery_city?: string | null
+          delivery_phone?: string | null
+          driver_id?: string | null
+          id?: string
+          is_cod?: boolean | null
+          merchant_id?: string | null
+          notes?: string | null
+          order_id?: string | null
+          recipient_name?: string | null
+          shipped_at?: string | null
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hn_stock_shipments_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "hn_stock_drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hn_stock_shipments_merchant_id_fkey"
+            columns: ["merchant_id"]
+            isOneToOne: false
+            referencedRelation: "hn_stock_merchants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hn_stock_shipments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "hn_stock_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hn_stock_transactions: {
         Row: {
           amount: number
