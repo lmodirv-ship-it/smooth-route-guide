@@ -3,7 +3,7 @@
 # HN Driver — Auto Deploy Script (runs on your VPS)
 # Triggered by GitHub Webhook on every push
 # ═══════════════════════════════════════════════════════════
-set -e
+set -euo pipefail
 
 LOG_FILE="/var/log/hn-deploy.log"
 REPO_DIR="/var/www/hn-driver"
@@ -24,60 +24,60 @@ log "🚀 Starting auto-deploy..."
 
 cd "$REPO_DIR"
 
+# 0. Ensure pnpm is available
+if ! command -v pnpm &>/dev/null; then
+  log "[0] Installing pnpm globally..."
+  npm install -g pnpm@latest
+fi
+
 # 1. Pull latest from GitHub
-log "[1/5] Pulling latest code..."
+log "[1/6] Pulling latest code..."
 git fetch origin main
 git reset --hard origin/main
 
-# 2. Install dependencies
-log "[2/5] Installing dependencies..."
-npm install --legacy-peer-deps 2>&1 | tail -5
-if [ $? -ne 0 ]; then
-  log "❌ npm install failed! Aborting deploy."
-  exit 1
-fi
+# 2. Install dependencies (pnpm enforced by project)
+log "[2/6] Installing dependencies..."
+pnpm install --frozen-lockfile 2>&1 | tail -5
+log "  ✓ Dependencies installed"
 
-# 3. Build all modules
-log "[3/5] Building modules..."
+# 3. Build all modules using project scripts
+log "[3/6] Building modules..."
 
-# Main client app
-npx vite build 2>&1 | tail -2
+pnpm build 2>&1 | tail -3
 log "  ✓ Client built"
 
-# Admin panel
-npx vite build --config vite.config.admin.ts 2>&1 | tail -2
+pnpm build:admin 2>&1 | tail -3
 log "  ✓ Admin built"
 
-# Call Center
-npx vite build --config vite.config.call-center.ts 2>&1 | tail -2
-log "  ✓ Call Center built"
+pnpm build:client 2>&1 | tail -3
+log "  ✓ Call Center / Supervisor built"
 
-# Supervisor
-npx vite build --config vite.config.supervisor.ts 2>&1 | tail -2
-log "  ✓ Supervisor built"
-
-# Driver Ride
-npx vite build --config vite.config.driver-ride.ts 2>&1 | tail -2
+pnpm build:driver-ride 2>&1 | tail -3
 log "  ✓ Driver Ride built"
 
-# Driver Delivery
-npx vite build --config vite.config.driver-delivery.ts 2>&1 | tail -2
+pnpm build:driver-delivery 2>&1 | tail -3
 log "  ✓ Driver Delivery built"
 
-# HN Stock
-npx vite build --config vite.config.hn-stock.ts 2>&1 | tail -2
+pnpm build:hn-stock 2>&1 | tail -3
 log "  ✓ HN Stock built"
 
 # 4. Copy to web roots
 log "[4/6] Deploying to web roots..."
-mkdir -p /var/www/driver-ride /var/www/driver-delivery /var/www/hn-stock
+mkdir -p /var/www/html /var/www/admin /var/www/call-center /var/www/supervisor /var/www/driver-ride /var/www/driver-delivery /var/www/hn-stock
+
 rsync -a --delete dist/             /var/www/html/
 rsync -a --delete dist-admin/       /var/www/admin/
 rsync -a --delete dist-call-center/ /var/www/call-center/ 2>/dev/null || true
 rsync -a --delete dist-supervisor/  /var/www/supervisor/  2>/dev/null || true
 rsync -a --delete dist-driver-ride/ /var/www/driver-ride/ 2>/dev/null || true
 rsync -a --delete dist-driver-delivery/ /var/www/driver-delivery/ 2>/dev/null || true
-rsync -a --delete dist-hn-stock/    /var/www/hn-stock/    2>/dev/null || true
+
+# HN-Stock: entry file is hn-stock.html — copy and rename to index.html for Nginx
+rsync -a --delete dist-hn-stock/    /var/www/hn-stock/
+if [ -f /var/www/hn-stock/hn-stock.html ] && [ ! -f /var/www/hn-stock/index.html ]; then
+  cp /var/www/hn-stock/hn-stock.html /var/www/hn-stock/index.html
+  log "  ✓ Created index.html from hn-stock.html"
+fi
 
 # 5. Ensure Nginx has ride & delivery subdomains
 log "[5/6] Checking Nginx subdomains..."
