@@ -71,6 +71,7 @@ $builds = @{
     "supervisor"      = @{ config = "vite.config.supervisor.ts"; dist = "dist-supervisor" }
     "driver-ride"     = @{ config = "vite.config.driver-ride.ts"; dist = "dist-driver-ride" }
     "driver-delivery" = @{ config = "vite.config.driver-delivery.ts"; dist = "dist-driver-delivery" }
+    "hn-stock"        = @{ config = "vite.config.hn-stock.ts"; dist = "dist-hn-stock" }
 }
 
 if (-not $SkipBuild) {
@@ -103,7 +104,7 @@ if (-not $SkipBuild) {
 # Step 4: Commit dist files
 Write-Step 4 $totalSteps "Committing build output..."
 if (-not $DryRun -and -not $SkipBuild) {
-    $distDirs = @("dist", "dist-admin", "dist-call-center", "dist-supervisor", "dist-driver-ride", "dist-driver-delivery")
+    $distDirs = @("dist", "dist-admin", "dist-call-center", "dist-supervisor", "dist-driver-ride", "dist-driver-delivery", "dist-hn-stock")
     foreach ($d in $distDirs) {
         if (Test-Path $d) { git add $d -f 2>$null }
     }
@@ -122,7 +123,7 @@ if (-not $DryRun -and -not $SkipBuild) {
 # Step 5: Deploy to server
 Write-Step 5 $totalSteps "Deploying to server ($ServerIP)..."
 if (-not $SkipServer -and -not $DryRun) {
-    $sshCmd = "cd $ServerRepo; git fetch origin main; git reset --hard origin/main; rsync -a --delete dist/ /var/www/html/; rsync -a --delete dist-admin/ /var/www/admin/; rsync -a --delete dist-call-center/ /var/www/call-center/ 2>/dev/null; rsync -a --delete dist-supervisor/ /var/www/supervisor/ 2>/dev/null; rsync -a --delete dist-driver-ride/ /var/www/driver-ride/ 2>/dev/null; rsync -a --delete dist-driver-delivery/ /var/www/driver-delivery/ 2>/dev/null; sudo nginx -t; sudo systemctl reload nginx; echo DEPLOY_OK"
+    $sshCmd = "cd $ServerRepo; git fetch origin main; git reset --hard origin/main; rsync -a --delete dist/ /var/www/html/; rsync -a --delete dist-admin/ /var/www/admin/; rsync -a --delete dist-call-center/ /var/www/call-center/ 2>/dev/null; rsync -a --delete dist-supervisor/ /var/www/supervisor/ 2>/dev/null; rsync -a --delete dist-driver-ride/ /var/www/driver-ride/ 2>/dev/null; rsync -a --delete dist-driver-delivery/ /var/www/driver-delivery/ 2>/dev/null; rsync -a --delete dist-hn-stock/ /var/www/hn-stock/ 2>/dev/null; sudo nginx -t; sudo systemctl reload nginx; echo DEPLOY_OK"
     $result = ssh "$ServerUser@$ServerIP" $sshCmd 2>&1
     if ($result -match "DEPLOY_OK") {
         Write-Ok "Server deployed and Nginx reloaded"
