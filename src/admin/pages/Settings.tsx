@@ -19,6 +19,7 @@ import DriverSettings from "@/admin/components/settings/DriverSettings";
 import CommunicationSettings from "@/admin/components/settings/CommunicationSettings";
 import StoreSettings from "@/admin/components/settings/StoreSettings";
 import CommissionSettings from "@/admin/components/settings/CommissionSettings";
+import ApiKeysSettings from "@/admin/components/settings/ApiKeysSettings";
 
 const AdminSettings = () => {
   const { t } = useI18n();
@@ -187,6 +188,7 @@ const AdminSettings = () => {
           <TabsTrigger value="geo" className="text-xs">🌍 الجغرافيا</TabsTrigger>
           <TabsTrigger value="visibility" className="text-xs">👁️ الإظهار</TabsTrigger>
           <TabsTrigger value="languages" className="text-xs">🌐 اللغات</TabsTrigger>
+          <TabsTrigger value="api_keys" className="text-xs">🔑 مفاتيح API</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="mt-4">
@@ -239,6 +241,10 @@ const AdminSettings = () => {
 
         <TabsContent value="languages" className="mt-4">
           <LanguageManagement />
+        </TabsContent>
+
+        <TabsContent value="api_keys" className="mt-4">
+          <ApiKeysSettings />
         </TabsContent>
       </Tabs>
     </div>
