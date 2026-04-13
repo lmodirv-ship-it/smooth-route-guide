@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, enforceRateLimit, handleError, parseJson, sanitizePlainText, z } from "../_shared/security.ts";
+import { getGooglePlacesKey } from "../_shared/apiKeys.ts";
 
 const requestSchema = z.object({
   city: z.string().trim().max(80).optional(),
@@ -280,25 +281,8 @@ serve(async (req) => {
     await enforceRateLimit(req, "google-places-search", 20, 60);
     const { city, type, useGoogle, area } = await parseJson(req, requestSchema);
     
-    // Try env secret first, then fall back to app_settings
-    let googleMapsApiKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
-    if (!googleMapsApiKey || googleMapsApiKey === "") {
-      try {
-        const sbUrl = Deno.env.get("SUPABASE_URL") || "";
-        const sbKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_ANON_KEY") || "";
-        if (sbUrl && sbKey) {
-          const res = await fetch(`${sbUrl}/rest/v1/app_settings?key=eq.api_keys&select=value`, {
-            headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` },
-          });
-          if (res.ok) {
-            const rows = await res.json();
-            if (rows?.[0]?.value?.google_maps_api_key) {
-              googleMapsApiKey = rows[0].value.google_maps_api_key;
-            }
-          }
-        }
-      } catch { /* skip */ }
-    }
+    // Get Google API key via centralized helper
+    const googleMapsApiKey = await getGooglePlacesKey();
     
     const safeCity = sanitizePlainText(city || "Tanger", 80);
     const safeType = sanitizePlainText(type || "restaurant", 40);

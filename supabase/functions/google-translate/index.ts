@@ -1,3 +1,5 @@
+import { getGoogleTranslateKey } from "../_shared/apiKeys.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -28,18 +30,7 @@ Deno.serve(async (req) => {
     }
 
     // Get API key: env first, then app_settings fallback
-    let apiKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
-
-    if (!apiKey) {
-      const sbUrl = Deno.env.get("SUPABASE_URL")!;
-      const sbKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-      const res = await fetch(
-        `${sbUrl}/rest/v1/app_settings?key=eq.api_keys&select=value`,
-        { headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` } }
-      );
-      const rows = await res.json();
-      apiKey = rows?.[0]?.value?.google_maps_api_key || rows?.[0]?.value?.google_translate_api_key;
-    }
+    const apiKey = await getGoogleTranslateKey();
 
     if (!apiKey) {
       return new Response(JSON.stringify({ error: "Google API key not configured" }), {

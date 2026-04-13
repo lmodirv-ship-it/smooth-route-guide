@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "../_shared/security.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { getMailBlusterKey } from "../_shared/apiKeys.ts";
 
 const MAILBLUSTER_API = "https://api.mailbluster.com/api";
 
@@ -10,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const apiKey = Deno.env.get("MAILBLUSTER_API_KEY");
+    const apiKey = await getMailBlusterKey();
     if (!apiKey) {
       return new Response(JSON.stringify({ error: "MAILBLUSTER_API_KEY not configured" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
