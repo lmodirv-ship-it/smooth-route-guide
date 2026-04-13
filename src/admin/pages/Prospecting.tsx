@@ -10,9 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Search, Download, Loader2, MapPin, Phone, Star, Globe, Store, Bike, Truck,
   UtensilsCrossed, Send, Database, RefreshCw, CheckCircle2, Users, Building2,
-  PhoneCall, TrendingUp, Eye, MailCheck, AlertCircle
+  PhoneCall, TrendingUp, Eye, MailCheck, AlertCircle, Trash2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import ProspectDetailSheet from "@/admin/components/ProspectDetailSheet";
 import { toast } from "sonner";
 
 type ProspectResult = {
@@ -116,6 +117,15 @@ const Prospecting = () => {
   const [dbCities, setDbCities] = useState<string[]>([]);
   const [stats, setStats] = useState<Stats>({ total: 0, withPhone: 0, synced: 0, byStatus: {}, byCategory: {} });
 
+  // New: text search, bulk selection, detail sheet, priority filter
+  const [dbSearch, setDbSearch] = useState("");
+  const [dbPriorityFilter, setDbPriorityFilter] = useState("all");
+  const [dbRatingFilter, setDbRatingFilter] = useState("all");
+  const [dbSelected, setDbSelected] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState(false);
+  const [selectedProspect, setSelectedProspect] = useState<DBProspect | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+
   // Load stats
   const loadStats = useCallback(async () => {
     try {
@@ -159,17 +169,23 @@ const Prospecting = () => {
       if (dbFilter !== "all") query = query.eq("category", dbFilter);
       if (dbCityFilter !== "all") query = query.eq("city", dbCityFilter);
       if (dbStatusFilter !== "all") query = query.eq("status", dbStatusFilter);
+      if (dbPriorityFilter !== "all") query = query.eq("call_priority", dbPriorityFilter);
+      if (dbRatingFilter === "high") query = query.gte("rating", 4);
+      if (dbSearch.trim()) {
+        query = query.or(`name.ilike.%${dbSearch.trim()}%,phone.ilike.%${dbSearch.trim()}%,prospect_code.ilike.%${dbSearch.trim()}%`);
+      }
 
       const { data, error, count } = await query;
       if (error) throw error;
       setDbProspects((data || []) as unknown as DBProspect[]);
       setDbTotal(count || 0);
+      setDbSelected(new Set());
     } catch (e: any) {
       toast.error("فشل تحميل البيانات: " + e.message);
     } finally {
       setDbLoading(false);
     }
-  }, [dbFilter, dbCityFilter, dbStatusFilter]);
+  }, [dbFilter, dbCityFilter, dbStatusFilter, dbPriorityFilter, dbRatingFilter, dbSearch]);
 
   useEffect(() => {
     loadStats();
@@ -179,6 +195,93 @@ const Prospecting = () => {
   useEffect(() => {
     if (activeTab === "database") loadDbProspects();
   }, [activeTab, loadDbProspects]);
+
+  // Bulk actions
+  const toggleDbSelect = (id: string) => {
+    setDbSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleDbSelectAll = () => {
+    if (dbSelected.size === dbProspects.length) setDbSelected(new Set());
+    else setDbSelected(new Set(dbProspects.map((p) => p.id)));
+  };
+
+  const bulkUpdateStatus = async (newStatus: string) => {
+    if (dbSelected.size === 0) return;
+    setBulkAction(true);
+    try {
+      const ids = Array.from(dbSelected);
+      const { error } = await supabase
+        .from("prospects")
+        .update({ status: newStatus, updated_at: new Date().toISOString() } as any)
+        .in("id", ids);
+      if (error) throw error;
+      toast.success(`تم تحديث ${ids.length} شريك إلى "${STATUS_MAP[newStatus]?.label || newStatus}"`);
+      loadDbProspects();
+      loadStats();
+    } catch (e: any) {
+      toast.error("فشل التحديث: " + e.message);
+    } finally {
+      setBulkAction(false);
+    }
+  };
+
+  const bulkDelete = async () => {
+    if (dbSelected.size === 0) return;
+    if (!confirm(`هل أنت متأكد من حذف ${dbSelected.size} شريك محتمل؟`)) return;
+    setBulkAction(true);
+    try {
+      const ids = Array.from(dbSelected);
+      const { error } = await supabase.from("prospects").delete().in("id", ids);
+      if (error) throw error;
+      toast.success(`تم حذف ${ids.length} شريك`);
+      loadDbProspects();
+      loadStats();
+    } catch (e: any) {
+      toast.error("فشل الحذف: " + e.message);
+    } finally {
+      setBulkAction(false);
+    }
+  };
+
+  const bulkSyncMailBluster = async () => {
+    if (dbSelected.size === 0) return;
+    setBulkAction(true);
+    try {
+      const selectedProspects = dbProspects.filter((p) => dbSelected.has(p.id));
+      const { data, error } = await supabase.functions.invoke("mailbluster-sync", {
+        body: {
+          action: "sync_leads",
+          leads: selectedProspects.map((r) => ({
+            name: r.name, phone: r.phone, address: r.address, area: r.area,
+            category: r.category, website: r.website, rating: r.rating, google_place_id: r.google_place_id,
+          })),
+        },
+      });
+      if (error) throw error;
+      toast.success(`تم إرسال ${data?.synced || 0} جهة اتصال إلى MailBluster`);
+      loadDbProspects();
+    } catch (e: any) {
+      toast.error("فشل الإرسال: " + e.message);
+    } finally {
+      setBulkAction(false);
+    }
+  };
+
+  const openProspectDetail = (p: DBProspect) => {
+    setSelectedProspect(p);
+    setDetailOpen(true);
+  };
+
+  const handleProspectUpdate = (updated: DBProspect) => {
+    setDbProspects((prev) => prev.map((p) => p.id === updated.id ? updated : p));
+    setSelectedProspect(updated);
+    loadStats();
+  };
 
   const handleSearch = useCallback(async () => {
     setLoading(true);
@@ -546,32 +649,82 @@ const Prospecting = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Search bar */}
               <div className="flex gap-3 mb-4 flex-wrap">
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="بحث بالاسم، الهاتف، أو الرمز..."
+                    value={dbSearch}
+                    onChange={(e) => setDbSearch(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && loadDbProspects()}
+                    className="pr-9"
+                  />
+                </div>
                 <Select value={dbCityFilter} onValueChange={setDbCityFilter}>
-                  <SelectTrigger className="w-48"><SelectValue placeholder="المدينة" /></SelectTrigger>
+                  <SelectTrigger className="w-40"><SelectValue placeholder="المدينة" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">جميع المدن</SelectItem>
                     {dbCities.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
                   </SelectContent>
                 </Select>
                 <Select value={dbFilter} onValueChange={setDbFilter}>
-                  <SelectTrigger className="w-48"><SelectValue placeholder="الفئة" /></SelectTrigger>
+                  <SelectTrigger className="w-40"><SelectValue placeholder="الفئة" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">جميع الفئات</SelectItem>
                     {BUSINESS_TYPES.map((bt) => (<SelectItem key={bt.value} value={bt.value}>{bt.label}</SelectItem>))}
                   </SelectContent>
                 </Select>
                 <Select value={dbStatusFilter} onValueChange={setDbStatusFilter}>
-                  <SelectTrigger className="w-40"><SelectValue placeholder="الحالة" /></SelectTrigger>
+                  <SelectTrigger className="w-36"><SelectValue placeholder="الحالة" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">جميع الحالات</SelectItem>
                     {Object.entries(STATUS_MAP).map(([k, v]) => (<SelectItem key={k} value={k}>{v.label}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+                <Select value={dbPriorityFilter} onValueChange={setDbPriorityFilter}>
+                  <SelectTrigger className="w-36"><SelectValue placeholder="الأولوية" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">جميع الأولويات</SelectItem>
+                    <SelectItem value="high">عالية</SelectItem>
+                    <SelectItem value="normal">عادية</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={dbRatingFilter} onValueChange={setDbRatingFilter}>
+                  <SelectTrigger className="w-36"><SelectValue placeholder="التقييم" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">جميع التقييمات</SelectItem>
+                    <SelectItem value="high">4+ نجوم</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button onClick={loadDbProspects} variant="outline" size="icon" disabled={dbLoading}>
                   <RefreshCw className={`w-4 h-4 ${dbLoading ? "animate-spin" : ""}`} />
                 </Button>
               </div>
+
+              {/* Bulk Action Toolbar */}
+              {dbSelected.size > 0 && (
+                <div className="flex items-center gap-2 mb-4 p-3 rounded-lg bg-muted/50 border flex-wrap">
+                  <Badge variant="secondary">{dbSelected.size} مختار</Badge>
+                  <Select onValueChange={(v) => bulkUpdateStatus(v)}>
+                    <SelectTrigger className="w-40 h-8 text-xs">
+                      <SelectValue placeholder="تغيير الحالة" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(STATUS_MAP).map(([k, v]) => (
+                        <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button onClick={bulkSyncMailBluster} disabled={bulkAction} variant="outline" size="sm" className="gap-1.5">
+                    {bulkAction ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                    MailBluster
+                  </Button>
+                  <Button onClick={bulkDelete} disabled={bulkAction} variant="destructive" size="sm" className="gap-1.5">
+                    <Trash2 className="w-3.5 h-3.5" /> حذف
+                  </Button>
+                </div>
+              )}
 
               {dbLoading ? (
                 <div className="py-12 text-center"><Loader2 className="w-8 h-8 mx-auto animate-spin text-muted-foreground" /></div>
@@ -580,17 +733,21 @@ const Prospecting = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                         <TableHead>الرمز</TableHead>
-                         <TableHead>الاسم</TableHead>
+                        <TableHead className="w-10">
+                          <Checkbox
+                            checked={dbSelected.size === dbProspects.length && dbProspects.length > 0}
+                            onCheckedChange={toggleDbSelectAll}
+                          />
+                        </TableHead>
+                        <TableHead>الرمز</TableHead>
+                        <TableHead>الاسم</TableHead>
                         <TableHead>الفئة</TableHead>
                         <TableHead>المدينة</TableHead>
                         <TableHead>الهاتف</TableHead>
-                        <TableHead>الإيميل</TableHead>
                         <TableHead>التقييم</TableHead>
                         <TableHead>الحالة</TableHead>
                         <TableHead>الاتصال</TableHead>
                         <TableHead>MailBluster</TableHead>
-                        <TableHead>المصدر</TableHead>
                         <TableHead>التاريخ</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -599,7 +756,13 @@ const Prospecting = () => {
                         const statusInfo = STATUS_MAP[p.status] || STATUS_MAP.new;
                         const callInfo = CALL_STATUS_MAP[p.call_status] || CALL_STATUS_MAP.pending;
                         return (
-                          <TableRow key={p.id}>
+                          <TableRow key={p.id} className="cursor-pointer" onClick={() => openProspectDetail(p)}>
+                            <TableCell onClick={(e) => e.stopPropagation()}>
+                              <Checkbox
+                                checked={dbSelected.has(p.id)}
+                                onCheckedChange={() => toggleDbSelect(p.id)}
+                              />
+                            </TableCell>
                             <TableCell className="font-mono text-xs font-bold text-primary">{p.prospect_code || "—"}</TableCell>
                             <TableCell className="font-medium max-w-[180px] truncate">{p.name}</TableCell>
                             <TableCell>
@@ -610,14 +773,9 @@ const Prospecting = () => {
                             <TableCell className="text-sm">{p.city}</TableCell>
                             <TableCell>
                               {p.phone ? (
-                                <a href={`tel:${p.phone}`} className="flex items-center gap-1 text-sm text-primary hover:underline">
+                                <span className="flex items-center gap-1 text-sm">
                                   <Phone className="w-3 h-3" /> {p.phone}
-                                </a>
-                              ) : <span className="text-muted-foreground text-xs">—</span>}
-                            </TableCell>
-                            <TableCell>
-                              {p.email ? (
-                                <a href={`mailto:${p.email}`} className="text-primary hover:underline text-sm">{p.email}</a>
+                                </span>
                               ) : <span className="text-muted-foreground text-xs">—</span>}
                             </TableCell>
                             <TableCell>
@@ -625,7 +783,7 @@ const Prospecting = () => {
                                 <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {p.rating || 0}
                               </span>
                             </TableCell>
-                            <TableCell>
+                            <TableCell onClick={(e) => e.stopPropagation()}>
                               <Select value={p.status || "new"} onValueChange={(v) => updateProspectStatus(p.id, v)}>
                                 <SelectTrigger className="h-7 text-xs w-[120px] p-1">
                                   <Badge className={`${statusInfo.color} text-xs`}>{statusInfo.label}</Badge>
@@ -647,11 +805,6 @@ const Prospecting = () => {
                                 <Badge variant="secondary" className="text-xs">—</Badge>
                               )}
                             </TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className="text-xs">
-                                {p.source === "google_auto" ? "تلقائي" : "يدوي"}
-                              </Badge>
-                            </TableCell>
                             <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                               {new Date(p.created_at).toLocaleDateString("ar-MA")}
                             </TableCell>
@@ -660,7 +813,7 @@ const Prospecting = () => {
                       })}
                       {dbProspects.length === 0 && (
                         <TableRow>
-                          <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
+                          <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                             <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-30" />
                             لا توجد بيانات. ابحث يدوياً أو شغّل التنقيب التلقائي لبدء الجمع
                           </TableCell>
@@ -674,6 +827,14 @@ const Prospecting = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Prospect Detail Sheet */}
+      <ProspectDetailSheet
+        prospect={selectedProspect}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        onUpdate={handleProspectUpdate}
+      />
     </div>
   );
 };
