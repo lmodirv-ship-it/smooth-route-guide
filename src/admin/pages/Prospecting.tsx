@@ -169,17 +169,23 @@ const Prospecting = () => {
       if (dbFilter !== "all") query = query.eq("category", dbFilter);
       if (dbCityFilter !== "all") query = query.eq("city", dbCityFilter);
       if (dbStatusFilter !== "all") query = query.eq("status", dbStatusFilter);
+      if (dbPriorityFilter !== "all") query = query.eq("call_priority", dbPriorityFilter);
+      if (dbRatingFilter === "high") query = query.gte("rating", 4);
+      if (dbSearch.trim()) {
+        query = query.or(`name.ilike.%${dbSearch.trim()}%,phone.ilike.%${dbSearch.trim()}%,prospect_code.ilike.%${dbSearch.trim()}%`);
+      }
 
       const { data, error, count } = await query;
       if (error) throw error;
       setDbProspects((data || []) as unknown as DBProspect[]);
       setDbTotal(count || 0);
+      setDbSelected(new Set());
     } catch (e: any) {
       toast.error("فشل تحميل البيانات: " + e.message);
     } finally {
       setDbLoading(false);
     }
-  }, [dbFilter, dbCityFilter, dbStatusFilter]);
+  }, [dbFilter, dbCityFilter, dbStatusFilter, dbPriorityFilter, dbRatingFilter, dbSearch]);
 
   useEffect(() => {
     loadStats();
@@ -189,6 +195,93 @@ const Prospecting = () => {
   useEffect(() => {
     if (activeTab === "database") loadDbProspects();
   }, [activeTab, loadDbProspects]);
+
+  // Bulk actions
+  const toggleDbSelect = (id: string) => {
+    setDbSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleDbSelectAll = () => {
+    if (dbSelected.size === dbProspects.length) setDbSelected(new Set());
+    else setDbSelected(new Set(dbProspects.map((p) => p.id)));
+  };
+
+  const bulkUpdateStatus = async (newStatus: string) => {
+    if (dbSelected.size === 0) return;
+    setBulkAction(true);
+    try {
+      const ids = Array.from(dbSelected);
+      const { error } = await supabase
+        .from("prospects")
+        .update({ status: newStatus, updated_at: new Date().toISOString() } as any)
+        .in("id", ids);
+      if (error) throw error;
+      toast.success(`تم تحديث ${ids.length} شريك إلى "${STATUS_MAP[newStatus]?.label || newStatus}"`);
+      loadDbProspects();
+      loadStats();
+    } catch (e: any) {
+      toast.error("فشل التحديث: " + e.message);
+    } finally {
+      setBulkAction(false);
+    }
+  };
+
+  const bulkDelete = async () => {
+    if (dbSelected.size === 0) return;
+    if (!confirm(`هل أنت متأكد من حذف ${dbSelected.size} شريك محتمل؟`)) return;
+    setBulkAction(true);
+    try {
+      const ids = Array.from(dbSelected);
+      const { error } = await supabase.from("prospects").delete().in("id", ids);
+      if (error) throw error;
+      toast.success(`تم حذف ${ids.length} شريك`);
+      loadDbProspects();
+      loadStats();
+    } catch (e: any) {
+      toast.error("فشل الحذف: " + e.message);
+    } finally {
+      setBulkAction(false);
+    }
+  };
+
+  const bulkSyncMailBluster = async () => {
+    if (dbSelected.size === 0) return;
+    setBulkAction(true);
+    try {
+      const selectedProspects = dbProspects.filter((p) => dbSelected.has(p.id));
+      const { data, error } = await supabase.functions.invoke("mailbluster-sync", {
+        body: {
+          action: "sync_leads",
+          leads: selectedProspects.map((r) => ({
+            name: r.name, phone: r.phone, address: r.address, area: r.area,
+            category: r.category, website: r.website, rating: r.rating, google_place_id: r.google_place_id,
+          })),
+        },
+      });
+      if (error) throw error;
+      toast.success(`تم إرسال ${data?.synced || 0} جهة اتصال إلى MailBluster`);
+      loadDbProspects();
+    } catch (e: any) {
+      toast.error("فشل الإرسال: " + e.message);
+    } finally {
+      setBulkAction(false);
+    }
+  };
+
+  const openProspectDetail = (p: DBProspect) => {
+    setSelectedProspect(p);
+    setDetailOpen(true);
+  };
+
+  const handleProspectUpdate = (updated: DBProspect) => {
+    setDbProspects((prev) => prev.map((p) => p.id === updated.id ? updated : p));
+    setSelectedProspect(updated);
+    loadStats();
+  };
 
   const handleSearch = useCallback(async () => {
     setLoading(true);
