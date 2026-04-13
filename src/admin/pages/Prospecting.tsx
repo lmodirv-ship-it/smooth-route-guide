@@ -172,7 +172,7 @@ const Prospecting = () => {
       if (dbPriorityFilter !== "all") query = query.eq("call_priority", dbPriorityFilter);
       if (dbRatingFilter === "high") query = query.gte("rating", 4);
       if (dbSearch.trim()) {
-        query = query.or(`name.ilike.%${dbSearch.trim()}%,phone.ilike.%${dbSearch.trim()}%,prospect_code.ilike.%${dbSearch.trim()}%`);
+        query = query.or(`name.ilike.%${dbSearch.trim()}%,phone.ilike.%${dbSearch.trim()}%,email.ilike.%${dbSearch.trim()}%,prospect_code.ilike.%${dbSearch.trim()}%`);
       }
 
       const { data, error, count } = await query;
@@ -744,6 +744,7 @@ const Prospecting = () => {
                         <TableHead>الفئة</TableHead>
                         <TableHead>المدينة</TableHead>
                         <TableHead>الهاتف</TableHead>
+                        <TableHead>الإيميل</TableHead>
                         <TableHead>التقييم</TableHead>
                         <TableHead>الحالة</TableHead>
                         <TableHead>الاتصال</TableHead>
@@ -776,6 +777,11 @@ const Prospecting = () => {
                                 <span className="flex items-center gap-1 text-sm">
                                   <Phone className="w-3 h-3" /> {p.phone}
                                 </span>
+                              ) : <span className="text-muted-foreground text-xs">—</span>}
+                            </TableCell>
+                            <TableCell>
+                              {p.email ? (
+                                <a href={`mailto:${p.email}`} className="text-primary hover:underline text-sm truncate max-w-[180px] block">{p.email}</a>
                               ) : <span className="text-muted-foreground text-xs">—</span>}
                             </TableCell>
                             <TableCell>
@@ -813,7 +819,7 @@ const Prospecting = () => {
                       })}
                       {dbProspects.length === 0 && (
                         <TableRow>
-                          <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                          <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
                             <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-30" />
                             لا توجد بيانات. ابحث يدوياً أو شغّل التنقيب التلقائي لبدء الجمع
                           </TableCell>
