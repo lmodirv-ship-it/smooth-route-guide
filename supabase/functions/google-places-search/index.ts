@@ -8,6 +8,21 @@ const requestSchema = z.object({
   area: z.string().trim().max(80).optional(),
 });
 
+// Type mapping for Google Places API (New)
+const TYPE_MAP: Record<string, string> = {
+  restaurant: "restaurant",
+  cafe: "cafe",
+  pharmacy: "pharmacy",
+  grocery_or_supermarket: "supermarket",
+  bakery: "bakery",
+  clothing_store: "clothing_store",
+  electronics_store: "electronics_store",
+  florist: "florist",
+  courier: "courier_service",
+  moving_company: "moving_company",
+  store: "store",
+};
+
 const MOCK_DATA: Record<string, any[]> = {
   restaurant: [
     { name: "Restaurant El Korsan", address: "85, Rue de la Kasbah, Tanger", area: "Kasbah", lat: 35.7873, lng: -5.8137, phone: "+212 539 935 885", rating: 4.5, google_place_id: "mock_elkorsan_001", category: "restaurant" },
@@ -88,8 +103,173 @@ const MOCK_DATA: Record<string, any[]> = {
   ],
 };
 
-// Flatten all mock data for "all" queries
 const ALL_MOCK = Object.values(MOCK_DATA).flat();
+
+// Try Google Places API (New) first, then legacy, then mock
+async function searchGooglePlacesNew(query: string, apiKey: string, safeType: string): Promise<any[] | null> {
+  try {
+    const includedType = TYPE_MAP[safeType] || "";
+    const body: any = {
+      textQuery: query,
+      languageCode: "fr",
+      maxResultCount: 20,
+    };
+    if (includedType) {
+      body.includedType = includedType;
+    }
+
+    const response = await fetch("https://places.googleapis.com/v1/places:searchText", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey,
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.internationalPhoneNumber,places.websiteUri,places.photos,places.currentOpeningHours",
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json();
+    console.log("Places API (New) status:", response.status, "results:", data.places?.length || 0);
+
+    if (response.ok && data.places?.length > 0) {
+      return await Promise.all(data.places.slice(0, 15).map(async (place: any) => {
+        const addressParts = (place.formattedAddress || "").split(",");
+        const areaLabel = addressParts.length > 1 ? addressParts[addressParts.length - 2]?.trim() : "";
+        const phone = place.internationalPhoneNumber || "";
+        const website = place.websiteUri || "";
+
+        let email = "";
+        if (website) {
+          try {
+            const siteRes = await fetch(website, {
+              headers: { "User-Agent": "HN-Driver-Bot/1.0" },
+              redirect: "follow",
+            });
+            if (siteRes.ok) {
+              const html = await siteRes.text();
+              const emailRegex = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
+              const emails = html.match(emailRegex) || [];
+              const filtered = emails.filter((e: string) =>
+                !e.includes("example.com") && !e.includes("sentry") &&
+                !e.includes("webpack") && !e.includes("wixpress") &&
+                !e.endsWith(".png") && !e.endsWith(".jpg")
+              );
+              if (filtered.length > 0) email = filtered[0];
+            }
+          } catch { /* skip */ }
+        }
+
+        let imageUrl = "";
+        if (place.photos?.length > 0) {
+          const photoName = place.photos[0].name;
+          imageUrl = `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=400&key=${apiKey}`;
+        }
+
+        return {
+          name: sanitizePlainText(place.displayName?.text || "", 120),
+          address: sanitizePlainText(place.formattedAddress || "", 220),
+          area: sanitizePlainText(areaLabel || "", 80),
+          lat: Number(place.location?.latitude || 0),
+          lng: Number(place.location?.longitude || 0),
+          phone: sanitizePlainText(phone, 40),
+          email: sanitizePlainText(email, 120),
+          rating: Number(place.rating || 0),
+          image_url: imageUrl,
+          is_open: place.currentOpeningHours?.openNow ?? true,
+          google_place_id: sanitizePlainText(place.id || "", 160),
+          category: safeType,
+          website: sanitizePlainText(website, 200),
+        };
+      }));
+    }
+    
+    // Log error details
+    if (!response.ok) {
+      console.error("Places API (New) error:", JSON.stringify(data));
+    }
+    return null;
+  } catch (e) {
+    console.error("Places API (New) exception:", e);
+    return null;
+  }
+}
+
+// Legacy Places API fallback
+async function searchGooglePlacesLegacy(query: string, apiKey: string, safeType: string): Promise<any[] | null> {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${apiKey}&language=fr`;
+    const response = await fetch(url);
+    const data = await response.json();
+    console.log("Legacy Places API status:", data.status, "results:", data.results?.length || 0);
+
+    if (data.status === "OK" && data.results?.length > 0) {
+      return await Promise.all(data.results.slice(0, 15).map(async (place: any) => {
+        const addressParts = (place.formatted_address || "").split(",");
+        const areaLabel = addressParts.length > 1 ? addressParts[addressParts.length - 2]?.trim() : "";
+
+        let phone = "";
+        let website = "";
+        if (place.place_id) {
+          try {
+            const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=formatted_phone_number,international_phone_number,website&key=${apiKey}&language=fr`;
+            const detailRes = await fetch(detailUrl);
+            const detailData = await detailRes.json();
+            if (detailData.status === "OK" && detailData.result) {
+              phone = detailData.result.international_phone_number || detailData.result.formatted_phone_number || "";
+              website = detailData.result.website || "";
+            }
+          } catch { /* skip */ }
+        }
+
+        let email = "";
+        if (website) {
+          try {
+            const siteRes = await fetch(website, {
+              headers: { "User-Agent": "HN-Driver-Bot/1.0" },
+              redirect: "follow",
+            });
+            if (siteRes.ok) {
+              const html = await siteRes.text();
+              const emailRegex = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
+              const emails = html.match(emailRegex) || [];
+              const filtered = emails.filter((e: string) =>
+                !e.includes("example.com") && !e.includes("sentry") &&
+                !e.includes("webpack") && !e.includes("wixpress") &&
+                !e.endsWith(".png") && !e.endsWith(".jpg")
+              );
+              if (filtered.length > 0) email = filtered[0];
+            }
+          } catch { /* skip */ }
+        }
+
+        let imageUrl = "";
+        if (place.photos?.length > 0) {
+          imageUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${place.photos[0].photo_reference}&key=${apiKey}`;
+        }
+
+        return {
+          name: sanitizePlainText(place.name || "", 120),
+          address: sanitizePlainText(place.formatted_address || "", 220),
+          area: sanitizePlainText(areaLabel || "", 80),
+          lat: Number(place.geometry?.location?.lat || 0),
+          lng: Number(place.geometry?.location?.lng || 0),
+          phone: sanitizePlainText(phone, 40),
+          email: sanitizePlainText(email, 120),
+          rating: Number(place.rating || 0),
+          image_url: imageUrl,
+          is_open: place.opening_hours?.open_now ?? true,
+          google_place_id: sanitizePlainText(place.place_id || "", 160),
+          category: safeType,
+          website: sanitizePlainText(website, 200),
+        };
+      }));
+    }
+    return null;
+  } catch (e) {
+    console.error("Legacy Places API exception:", e);
+    return null;
+  }
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -108,90 +288,20 @@ serve(async (req) => {
       const areaQuery = safeArea
         ? `${safeType} in ${safeArea}, ${safeCity}, Morocco`
         : `${safeType} in ${safeCity}, Morocco`;
-      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(areaQuery)}&key=${googleMapsApiKey}&language=fr`;
 
-      console.log("Google Places API URL:", areaQuery);
-      const response = await fetch(url);
-      const data = await response.json();
-      console.log("Google Places API status:", data.status, "results:", data.results?.length || 0, "error:", data.error_message || "none");
+      // Try New API first, then Legacy
+      let results = await searchGooglePlacesNew(areaQuery, googleMapsApiKey, safeType);
+      
+      if (!results) {
+        console.log("New API failed, trying legacy...");
+        results = await searchGooglePlacesLegacy(areaQuery, googleMapsApiKey, safeType);
+      }
 
-      if (data.status === "OK" && data.results?.length > 0) {
-        const placesToDetail = data.results.slice(0, 15);
-        const detailedRestaurants = await Promise.all(
-          placesToDetail.map(async (place: any) => {
-            const addressParts = (place.formatted_address || "").split(",");
-            const areaLabel = addressParts.length > 1 ? addressParts[addressParts.length - 2]?.trim() : "";
-
-            let phone = "";
-            let website = "";
-            if (place.place_id) {
-              try {
-                const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=formatted_phone_number,international_phone_number,website,url,editorial_summary&key=${googleMapsApiKey}&language=fr`;
-                const detailRes = await fetch(detailUrl);
-                const detailData = await detailRes.json();
-                if (detailData.status === "OK" && detailData.result) {
-                  phone = detailData.result.international_phone_number || detailData.result.formatted_phone_number || "";
-                  website = detailData.result.website || "";
-                }
-              } catch (e) {
-                console.error("Place details error:", e);
-              }
-            }
-
-            let email = "";
-            if (website) {
-              try {
-                const siteRes = await fetch(website, {
-                  headers: { "User-Agent": "HN-Driver-Bot/1.0" },
-                  redirect: "follow",
-                });
-                if (siteRes.ok) {
-                  const html = await siteRes.text();
-                  const emailRegex = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
-                  const emails = html.match(emailRegex) || [];
-                  const filtered = emails.filter((e: string) =>
-                    !e.includes("example.com") &&
-                    !e.includes("sentry") &&
-                    !e.includes("webpack") &&
-                    !e.includes("wixpress") &&
-                    !e.endsWith(".png") &&
-                    !e.endsWith(".jpg")
-                  );
-                  if (filtered.length > 0) email = filtered[0];
-                }
-              } catch (e) {
-                // Website scraping failed, skip
-              }
-            }
-
-            let imageUrl = "";
-            if (place.photos && place.photos.length > 0) {
-              const photoRef = place.photos[0].photo_reference;
-              imageUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photo_reference=${photoRef}&key=${googleMapsApiKey}`;
-            }
-
-            return {
-              name: sanitizePlainText(place.name || "", 120),
-              address: sanitizePlainText(place.formatted_address || "", 220),
-              area: sanitizePlainText(areaLabel || "", 80),
-              lat: Number(place.geometry?.location?.lat || 0),
-              lng: Number(place.geometry?.location?.lng || 0),
-              phone: sanitizePlainText(phone, 40),
-              email: sanitizePlainText(email, 120),
-              rating: Number(place.rating || 0),
-              image_url: imageUrl,
-              is_open: place.opening_hours?.open_now ?? true,
-              google_place_id: sanitizePlainText(place.place_id || "", 160),
-              category: safeType,
-              website: sanitizePlainText(website, 200),
-            };
-          })
-        );
-
+      if (results && results.length > 0) {
         return new Response(JSON.stringify({
-          restaurants: detailedRestaurants,
+          restaurants: results,
           source: "google",
-          total: detailedRestaurants.length,
+          total: results.length,
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -212,7 +322,6 @@ serve(async (req) => {
       filtered = filtered.filter((item) => item.area.toLowerCase().includes(safeArea.toLowerCase()));
     }
 
-    // Add is_open and image_url defaults for mock data
     filtered = filtered.map(item => ({
       ...item,
       is_open: item.is_open ?? true,
