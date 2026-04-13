@@ -25,7 +25,7 @@ const StockLogin = () => {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast({ title: "تم تسجيل الدخول ✅" });
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err: any) {
       let msg = err?.message || "حدث خطأ";
       if (msg.includes("Invalid login credentials")) msg = "بريد أو كلمة مرور غير صحيحة";

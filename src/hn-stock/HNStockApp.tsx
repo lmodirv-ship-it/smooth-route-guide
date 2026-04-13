@@ -22,9 +22,10 @@ const HNStockApp = () => {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route path="/landing" element={<StockLanding />} />
+          <Route path="/" element={<StockLanding />} />
+          <Route path="/landing" element={<Navigate to="/" replace />} />
           <Route path="/login" element={<StockLogin />} />
-          <Route path="/" element={<HNStockLayout />}>
+          <Route path="/dashboard" element={<HNStockLayout />}>
             <Route index element={<StockDashboard />} />
             <Route path="products" element={<StockProducts />} />
             <Route path="orders" element={<StockOrders />} />
@@ -35,7 +36,7 @@ const HNStockApp = () => {
             <Route path="call-center" element={<StockCallCenter />} />
             <Route path="transactions" element={<StockTransactions />} />
           </Route>
-          <Route path="*" element={<Navigate to="/landing" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
       <Toaster />
