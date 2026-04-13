@@ -21,20 +21,22 @@ const statusColors: Record<string, string> = {
   failed: "bg-red-100 text-red-800", returned: "bg-orange-100 text-orange-800",
 };
 
+const db = supabase as any;
+
 const StockShipments = () => {
   const queryClient = useQueryClient();
 
   const { data: shipments, isLoading } = useQuery({
     queryKey: ["hn-stock-shipments"],
     queryFn: async () => {
-      const { data } = await supabase.from("hn_stock_shipments").select("*").order("created_at", { ascending: false }).limit(100);
+      const { data } = await db.from("hn_stock_shipments").select("*").order("created_at", { ascending: false }).limit(100);
       return data || [];
     },
   });
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase.from("hn_stock_shipments").update({ status }).eq("id", id);
+      const { error } = await db.from("hn_stock_shipments").update({ status }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {

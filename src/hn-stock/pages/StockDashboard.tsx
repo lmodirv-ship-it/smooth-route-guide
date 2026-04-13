@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, ShoppingCart, Truck, Users, Warehouse, DollarSign, TrendingUp, AlertCircle } from "lucide-react";
+import { Package, ShoppingCart, Truck, Users, DollarSign, AlertCircle } from "lucide-react";
 
 const StockDashboard = () => {
   const { data: stats } = useQuery({
@@ -11,13 +11,14 @@ const StockDashboard = () => {
         supabase.from("hn_stock_products").select("id", { count: "exact", head: true }),
         supabase.from("hn_stock_orders").select("id, status, total_amount", { count: "exact" }),
         supabase.from("hn_stock_merchants").select("id", { count: "exact", head: true }),
-        supabase.from("hn_stock_shipments").select("id, status", { count: "exact" }),
+        (supabase as any).from("hn_stock_shipments").select("id, status", { count: "exact" }),
       ]);
 
       const orderData = orders.data || [];
       const pendingOrders = orderData.filter((o: any) => o.status === "pending").length;
       const totalRevenue = orderData.reduce((sum: number, o: any) => sum + (Number(o.total_amount) || 0), 0);
-      const activeShipments = (shipments.data || []).filter((s: any) => !["delivered", "cancelled"].includes(s.status)).length;
+      const shipmentData = shipments.data || [];
+      const activeShipments = shipmentData.filter((s: any) => !["delivered", "cancelled"].includes(s.status)).length;
 
       return {
         products: products.count || 0,
@@ -61,7 +62,6 @@ const StockDashboard = () => {
         ))}
       </div>
 
-      {/* Recent orders */}
       <RecentOrders />
     </div>
   );
@@ -90,14 +90,9 @@ const RecentOrders = () => {
   };
 
   const statusLabels: Record<string, string> = {
-    pending: "معلق",
-    confirmed: "مؤكد",
-    processing: "قيد المعالجة",
-    shipped: "تم الشحن",
-    delivered: "تم التسليم",
-    cancelled: "ملغي",
-    returned: "مرتجع",
-    refunded: "مسترد",
+    pending: "معلق", confirmed: "مؤكد", processing: "قيد المعالجة",
+    shipped: "تم الشحن", delivered: "تم التسليم", cancelled: "ملغي",
+    returned: "مرتجع", refunded: "مسترد",
   };
 
   return (
