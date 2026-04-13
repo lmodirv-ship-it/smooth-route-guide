@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Globe, Plus, Trash2, Save, Loader2, ToggleLeft, ToggleRight, Edit2, X, Check } from "lucide-react";
+import { Globe, Plus, Trash2, Save, Loader2, ToggleLeft, ToggleRight, Edit2, X, Check, Languages } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/context";
+import { useGoogleTranslate } from "@/hooks/useGoogleTranslate";
 
 interface PlatformLanguage {
   id: string;
