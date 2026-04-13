@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Key, Eye, EyeOff, Save, Loader2, CheckCircle, AlertCircle, ShieldCheck, Lock } from "lucide-react";
+import { Key, Eye, EyeOff, Save, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -88,9 +88,6 @@ const ApiKeysSettings = () => {
   const [visibility, setVisibility] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [statuses, setStatuses] = useState<Record<string, "saved" | "error" | null>>({});
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
-  const [authLoading, setAuthLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -107,31 +104,6 @@ const ApiKeysSettings = () => {
     load();
   }, []);
 
-  const handleReAuth = async () => {
-    setAuthLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user?.email) throw new Error("لا يوجد بريد إلكتروني");
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email: user.email,
-        password,
-      });
-
-      if (error) {
-        toast({ title: "❌ كلمة المرور غير صحيحة", variant: "destructive" });
-        return;
-      }
-
-      setIsAuthenticated(true);
-      toast({ title: "✅ تم التحقق بنجاح" });
-    } catch (err: any) {
-      toast({ title: "❌ فشل التحقق", description: err?.message, variant: "destructive" });
-    } finally {
-      setAuthLoading(false);
-      setPassword("");
-    }
-  };
 
   const maskKey = (key: string) => {
     if (!key || key.length < 8) return "••••••••";
@@ -178,36 +150,6 @@ const ApiKeysSettings = () => {
     }
   };
 
-  // Password re-auth gate
-  if (!isAuthenticated) {
-    return (
-      <Card className="border-primary/20 max-w-md mx-auto mt-10">
-        <CardHeader className="text-center">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-            <Lock className="w-8 h-8 text-primary" />
-          </div>
-          <CardTitle className="text-xl">🔐 تأكيد الهوية</CardTitle>
-          <p className="text-sm text-muted-foreground mt-2">
-            أدخل كلمة المرور للوصول إلى مفاتيح API المحمية
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Input
-            dir="ltr"
-            type="password"
-            placeholder="كلمة المرور"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleReAuth()}
-          />
-          <Button onClick={handleReAuth} disabled={authLoading || !password} className="w-full gap-2">
-            {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-            تأكيد والدخول
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
 
   const groups = [...new Set(API_KEY_FIELDS.map(f => f.group))];
 
