@@ -64,15 +64,20 @@ log "  ✓ Driver Ride built"
 npx vite build --config vite.config.driver-delivery.ts 2>&1 | tail -2
 log "  ✓ Driver Delivery built"
 
+# HN Stock
+npx vite build --config vite.config.hn-stock.ts 2>&1 | tail -2
+log "  ✓ HN Stock built"
+
 # 4. Copy to web roots
 log "[4/6] Deploying to web roots..."
-mkdir -p /var/www/driver-ride /var/www/driver-delivery
+mkdir -p /var/www/driver-ride /var/www/driver-delivery /var/www/hn-stock
 rsync -a --delete dist/             /var/www/html/
 rsync -a --delete dist-admin/       /var/www/admin/
 rsync -a --delete dist-call-center/ /var/www/call-center/ 2>/dev/null || true
 rsync -a --delete dist-supervisor/  /var/www/supervisor/  2>/dev/null || true
 rsync -a --delete dist-driver-ride/ /var/www/driver-ride/ 2>/dev/null || true
 rsync -a --delete dist-driver-delivery/ /var/www/driver-delivery/ 2>/dev/null || true
+rsync -a --delete dist-hn-stock/    /var/www/hn-stock/    2>/dev/null || true
 
 # 5. Ensure Nginx has ride & delivery subdomains
 log "[5/6] Checking Nginx subdomains..."
