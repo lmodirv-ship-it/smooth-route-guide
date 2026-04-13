@@ -288,7 +288,16 @@ const LanguageManagement = () => {
       {selectedLocale && (
         <div className="border-t border-border pt-4 space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">{filteredTranslations.length} ترجمة</p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-muted-foreground">{filteredTranslations.length} ترجمة</p>
+              {selectedLocale !== "ar" && (
+                <Button size="sm" variant="outline" onClick={autoTranslateNamespace} disabled={translating}
+                  className="gap-1 text-xs">
+                  {translating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Languages className="w-3.5 h-3.5" />}
+                  ترجمة تلقائية ({selectedNs})
+                </Button>
+              )}
+            </div>
             <h4 className="font-semibold text-foreground">
               ترجمات: {languages.find(l => l.code === selectedLocale)?.label} ({selectedLocale})
             </h4>
