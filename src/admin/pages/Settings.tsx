@@ -188,6 +188,7 @@ const AdminSettings = () => {
           <TabsTrigger value="geo" className="text-xs">🌍 الجغرافيا</TabsTrigger>
           <TabsTrigger value="visibility" className="text-xs">👁️ الإظهار</TabsTrigger>
           <TabsTrigger value="languages" className="text-xs">🌐 اللغات</TabsTrigger>
+          <TabsTrigger value="api_keys" className="text-xs">🔑 مفاتيح API</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="mt-4">
