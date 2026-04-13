@@ -27,14 +27,14 @@ const StockShipments = () => {
   const { data: shipments, isLoading } = useQuery({
     queryKey: ["hn-stock-shipments"],
     queryFn: async () => {
-      const { data } = await supabase.from("hn_stock_shipments").select("*").order("created_at", { ascending: false }).limit(100);
+      const { data } = await (supabase as any).from("hn_stock_shipments").select("*").order("created_at", { ascending: false }).limit(100);
       return data || [];
     },
   });
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase.from("hn_stock_shipments").update({ status }).eq("id", id);
+      const { error } = await (supabase as any).from("hn_stock_shipments").update({ status }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
