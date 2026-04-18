@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import {
   Car, Truck, Printer, Globe, Film, Brain, Store, Crown, Sparkles,
-  ArrowUpRight, Search, LayoutGrid, Rocket, Zap, Building2,
+  ArrowUpRight, Search, LayoutGrid, Rocket, Zap, Building2, BookOpen, TrendingUp, Cloud,
 } from "lucide-react";
 import { type LucideIcon } from "lucide-react";
 
@@ -24,6 +24,18 @@ interface ProjectCard {
 }
 
 const PROJECTS: ProjectCard[] = [
+  {
+    name: "HN Driver",
+    nameAr: "HN درايفر",
+    description: "المنصة الأم للنقل والتوصيل — رحلات الركاب وخدمات التوصيل اللحظية",
+    icon: Car,
+    url: "https://www.hn-driver.com",
+    gradient: "from-orange-400 via-red-500 to-rose-600",
+    glow: "shadow-orange-500/40",
+    category: "transport",
+    status: "live",
+    featured: true,
+  },
   {
     name: "Souk-HN Express",
     nameAr: "سوق HN إكسبريس",
@@ -124,6 +136,50 @@ const PROJECTS: ProjectCard[] = [
     gradient: "from-sky-400 via-blue-500 to-indigo-600",
     glow: "shadow-sky-500/40",
     category: "media",
+    status: "live",
+  },
+  {
+    name: "HN Book",
+    nameAr: "HN بوك",
+    description: "منصة إعادة البيع والكتب الرقمية",
+    icon: BookOpen,
+    url: "https://hn-book.lovable.app",
+    gradient: "from-stone-400 via-amber-600 to-yellow-700",
+    glow: "shadow-amber-600/40",
+    category: "commerce",
+    status: "live",
+  },
+  {
+    name: "Profitable Ventures Hub",
+    nameAr: "مركز المشاريع الرابحة",
+    description: "تصميم وطباعة البطاقات الاحترافية في دقائق",
+    icon: TrendingUp,
+    url: "https://profitable-ventures-hub.lovable.app",
+    gradient: "from-lime-400 via-green-500 to-emerald-600",
+    glow: "shadow-lime-500/40",
+    category: "commerce",
+    status: "live",
+  },
+  {
+    name: "Cloud Harmony",
+    nameAr: "كلاود هارموني",
+    description: "حلول سحابية متناغمة لإدارة البيانات والخدمات",
+    icon: Cloud,
+    url: "https://cloud-harmony.lovable.app",
+    gradient: "from-cyan-300 via-sky-400 to-blue-500",
+    glow: "shadow-cyan-400/40",
+    category: "services",
+    status: "live",
+  },
+  {
+    name: "HN Print GR",
+    nameAr: "HN برينت GR",
+    description: "خدمات الطباعة الفاخرة والتصاميم المتميزة",
+    icon: Printer,
+    url: "https://hn-print-gr.lovable.app",
+    gradient: "from-yellow-500 via-amber-600 to-orange-700",
+    glow: "shadow-yellow-600/40",
+    category: "services",
     status: "live",
   },
 ];
