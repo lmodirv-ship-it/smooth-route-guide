@@ -79,6 +79,7 @@ const Cart = lazy(() => import("@/pages/delivery/Cart"));
 
 const DynamicPage = lazy(() => import("@/pages/DynamicPage"));
 const HNGroupePortal = lazy(() => import("@/pages/HNGroupePortal"));
+const AllProjects = lazy(() => import("@/pages/AllProjects"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
 
@@ -87,6 +88,7 @@ export const mainRouteElements = (
     {/* ─── Public pages (no layout wrapper needed) ─── */}
     <Route path="/" element={<LandingPage />} />
     <Route path="/hn-groupe" element={<LazyPage component={HNGroupePortal} />} />
+    <Route path="/projects" element={<LazyPage component={AllProjects} />} />
     <Route path="/splash" element={<Splash />} />
     <Route path="/welcome" element={<Welcome />} />
     <Route path="/login" element={<AuthPage />} />
