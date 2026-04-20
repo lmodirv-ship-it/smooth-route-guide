@@ -1,40 +1,34 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, Loader2, ShieldCheck, Sparkles } from "lucide-react";
+import { Mail, Loader2, ShieldCheck, Sparkles, Send, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 import {
-  getAuthTimeoutMessage,
   getUserRolesWithTimeout,
-  isServiceTimeoutError,
-  signInWithPasswordWithTimeout,
   signOutWithTimeout,
   useAuthReady,
 } from "@/hooks/useAuthReady";
 
+/** Admins authorized to receive Magic Link login. Add more as needed. */
+const ALLOWED_ADMIN_EMAILS = new Set<string>([
+  "lmodirv@gmail.com",
+]);
+
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [sent, setSent] = useState(false);
   const { ready, session } = useAuthReady();
 
   useEffect(() => {
     let mounted = true;
-
-    if (!ready) {
-      setChecking(true);
-      return () => { mounted = false; };
-    }
-
-    if (!session) {
-      setChecking(false);
-      return () => { mounted = false; };
-    }
+    if (!ready) { setChecking(true); return () => { mounted = false; }; }
+    if (!session) { setChecking(false); return () => { mounted = false; }; }
 
     void (async () => {
       try {
@@ -57,29 +51,35 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      toast({ title: "يرجى ملء جميع الحقول", variant: "destructive" });
+    const normalized = email.trim().toLowerCase();
+    if (!normalized) {
+      toast({ title: "يرجى إدخال البريد الإلكتروني", variant: "destructive" });
+      return;
+    }
+    if (!ALLOWED_ADMIN_EMAILS.has(normalized)) {
+      toast({
+        title: "غير مصرح",
+        description: "هذا البريد غير مرخّص لدخول لوحة الإدارة",
+        variant: "destructive",
+      });
       return;
     }
 
     setLoading(true);
     try {
-      const { data, error } = await signInWithPasswordWithTimeout({ email, password });
+      const redirectTo = `${window.location.origin}/admin/login`;
+      const { error } = await supabase.auth.signInWithOtp({
+        email: normalized,
+        options: {
+          emailRedirectTo: redirectTo,
+          shouldCreateUser: false,
+        },
+      });
       if (error) throw error;
-
-      const roles = await getUserRolesWithTimeout(data.user.id);
-      if (!roles.some((r) => r === "admin")) {
-        await signOutWithTimeout();
-        toast({ title: "غير مصرح", description: "هذا الحساب ليس لديه صلاحيات المسؤول", variant: "destructive" });
-        setLoading(false);
-        return;
-      }
-      toast({ title: "تم تسجيل الدخول بنجاح ✅" });
-      navigate("/admin", { replace: true });
+      setSent(true);
+      toast({ title: "تم إرسال رابط الدخول ✉️", description: "تحقق من بريدك واضغط على الرابط للدخول." });
     } catch (err: any) {
-      let msg = err?.message || "حدث خطأ غير متوقع";
-      if (msg.includes("Invalid login credentials")) msg = "بريد أو كلمة مرور غير صحيحة";
-      if (isServiceTimeoutError(err)) msg = getAuthTimeoutMessage("login");
+      const msg = err?.message || "تعذر إرسال رابط الدخول";
       toast({ title: "خطأ", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
@@ -123,47 +123,66 @@ const AdminLogin = () => {
               <h1 className="text-3xl font-bold text-foreground tracking-tight">لوحة الإدارة</h1>
               <div className="flex items-center justify-center gap-2 mt-2">
                 <Sparkles className="w-4 h-4 text-primary" />
-                <p className="text-sm text-muted-foreground font-medium">HN Driver — Admin Panel</p>
+                <p className="text-sm text-muted-foreground font-medium">دخول آمن عبر البريد فقط</p>
                 <Sparkles className="w-4 h-4 text-primary" />
               </div>
             </div>
           </motion.div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground block">البريد الإلكتروني</label>
-              <div className="relative group">
-                <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@example.com" type="email"
-                  className="bg-secondary/50 border-border/50 h-13 rounded-xl pr-12 text-base transition-all duration-200 focus:bg-secondary/80 focus:border-primary/50" />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Mail className="w-4 h-4 text-primary" />
-                </div>
+          {sent ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center space-y-4 py-6"
+            >
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-9 h-9 text-primary" />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground block">كلمة المرور</label>
-              <div className="relative group">
-                <Input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
-                  type={showPassword ? "text" : "password"}
-                  className="bg-secondary/50 border-border/50 h-13 rounded-xl pr-12 pl-12 text-base transition-all duration-200 focus:bg-secondary/80 focus:border-primary/50" />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Lock className="w-4 h-4 text-primary" />
+              <h2 className="text-xl font-bold text-foreground">تحقّق من بريدك</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                أرسلنا رابط الدخول إلى<br />
+                <span className="font-semibold text-foreground">{email}</span><br />
+                اضغط على الرابط في الرسالة للدخول مباشرة.
+              </p>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => { setSent(false); setEmail(""); }}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                استخدام بريد آخر
+              </Button>
+            </motion.div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground block">البريد الإلكتروني للمسؤول</label>
+                <div className="relative group">
+                  <Input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="admin@example.com"
+                    type="email"
+                    autoFocus
+                    className="bg-secondary/50 border-border/50 h-13 rounded-xl pr-12 text-base transition-all duration-200 focus:bg-secondary/80 focus:border-primary/50"
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Mail className="w-4 h-4 text-primary" />
+                  </div>
                 </div>
-                <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg hover:bg-secondary flex items-center justify-center transition-colors">
-                  {showPassword ? <EyeOff className="w-4 h-4 text-muted-foreground" /> : <Eye className="w-4 h-4 text-muted-foreground" />}
-                </button>
+                <p className="text-xs text-muted-foreground pt-1">
+                  سيتم إرسال رابط دخول آمن إلى بريدك. لا حاجة لكلمة مرور.
+                </p>
               </div>
-            </div>
 
-            <Button type="submit" disabled={loading}
-              className="w-full h-13 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-bold text-lg shadow-lg shadow-primary/20">
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                <span className="flex items-center gap-2"><ShieldCheck className="w-5 h-5" />دخول</span>
-              )}
-            </Button>
-          </form>
+              <Button type="submit" disabled={loading}
+                className="w-full h-13 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-bold text-lg shadow-lg shadow-primary/20">
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                  <span className="flex items-center gap-2"><Send className="w-5 h-5" />إرسال رابط الدخول</span>
+                )}
+              </Button>
+            </form>
+          )}
         </div>
       </motion.div>
     </div>
