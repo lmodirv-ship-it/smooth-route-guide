@@ -265,6 +265,52 @@ const PaymentMethodPicker = ({
         </div>
       )}
 
+      {/* CMI Info */}
+      {selected === "cmi" && (
+        <div className="space-y-2 p-4 rounded-xl border border-primary/30 bg-secondary/20" dir="rtl">
+          <div className="flex items-center gap-2 justify-center mb-1">
+            <CreditCard className="w-5 h-5 text-primary" />
+            <p className="text-sm font-bold text-foreground">الدفع عبر CMI 🇲🇦</p>
+          </div>
+          <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-center">
+            <p className="text-foreground font-bold">المبلغ: <span className="text-primary text-lg">{amount} DH</span></p>
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            بوابة الدفع المعتمدة من بنك المغرب — ادعم Visa، Mastercard، وبطاقات CMI المحلية
+          </p>
+          <div className="p-3 rounded-lg bg-muted/50 text-right space-y-1">
+            <p className="text-xs font-bold text-foreground">📋 الخطوات:</p>
+            <p className="text-xs text-muted-foreground">1. اضغط "تأكيد الدفع" أسفله</p>
+            <p className="text-xs text-muted-foreground">2. سيتم تحويلك لبوابة CMI الآمنة</p>
+            <p className="text-xs text-muted-foreground">3. أدخل بيانات البطاقة وأكمل العملية</p>
+            <p className="text-xs text-muted-foreground">4. سيتم تفعيل طلبك تلقائياً بعد التأكيد</p>
+          </div>
+        </div>
+      )}
+
+      {/* PayZone Info */}
+      {selected === "payzone" && (
+        <div className="space-y-2 p-4 rounded-xl border border-primary/30 bg-secondary/20" dir="rtl">
+          <div className="flex items-center gap-2 justify-center mb-1">
+            <CreditCard className="w-5 h-5 text-primary" />
+            <p className="text-sm font-bold text-foreground">الدفع عبر PayZone 💠</p>
+          </div>
+          <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-center">
+            <p className="text-foreground font-bold">المبلغ: <span className="text-primary text-lg">{amount} DH</span></p>
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            بوابة دفع مغربية احترافية — تدعم البطاقات البنكية والمحافظ الإلكترونية
+          </p>
+          <div className="p-3 rounded-lg bg-muted/50 text-right space-y-1">
+            <p className="text-xs font-bold text-foreground">📋 الخطوات:</p>
+            <p className="text-xs text-muted-foreground">1. اضغط "تأكيد الدفع" أسفله</p>
+            <p className="text-xs text-muted-foreground">2. سيتم تحويلك لبوابة PayZone</p>
+            <p className="text-xs text-muted-foreground">3. اختر طريقة الدفع المناسبة وأكمل العملية</p>
+            <p className="text-xs text-muted-foreground">4. سيتم تفعيل طلبك تلقائياً بعد التأكيد</p>
+          </div>
+        </div>
+      )}
+
       <button
         onClick={handlePay}
         disabled={processing || externalLoading}
