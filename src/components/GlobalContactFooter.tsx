@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, Car, UtensilsCrossed, Gift, Globe } from "lucide-react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 const GlobalContactFooter = () => {
@@ -100,6 +101,27 @@ const GlobalContactFooter = () => {
             {phone}
           </span>
         </a>
+      </motion.div>
+
+      {/* Growth quick links */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="absolute bottom-2 flex flex-wrap items-center justify-center gap-2 text-xs"
+      >
+        <Link to="/join-driver" className="flex items-center gap-1 px-3 py-1 rounded-full bg-secondary/60 hover:bg-primary/20 text-foreground/80 hover:text-primary transition-colors">
+          <Car className="w-3 h-3" /> انضم كسائق
+        </Link>
+        <Link to="/join-restaurant" className="flex items-center gap-1 px-3 py-1 rounded-full bg-secondary/60 hover:bg-primary/20 text-foreground/80 hover:text-primary transition-colors">
+          <UtensilsCrossed className="w-3 h-3" /> سجل مطعمك
+        </Link>
+        <Link to="/invite" className="flex items-center gap-1 px-3 py-1 rounded-full bg-secondary/60 hover:bg-primary/20 text-foreground/80 hover:text-primary transition-colors">
+          <Gift className="w-3 h-3" /> ادعُ صديقاً
+        </Link>
+        <Link to="/cities" className="flex items-center gap-1 px-3 py-1 rounded-full bg-secondary/60 hover:bg-primary/20 text-foreground/80 hover:text-primary transition-colors">
+          <Globe className="w-3 h-3" /> المدن
+        </Link>
       </motion.div>
     </div>
   );
