@@ -5,7 +5,7 @@ import { usePayPal } from "@/hooks/usePayPal";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 
-export type PaymentMethod = "cash" | "wallet" | "paypal" | "stripe" | "bank_transfer" | "agency_transfer";
+export type PaymentMethod = "cash" | "wallet" | "paypal" | "stripe" | "bank_transfer" | "agency_transfer" | "cmi" | "payzone";
 
 interface Props {
   selected: PaymentMethod;
@@ -57,8 +57,10 @@ const PaymentMethodPicker = ({
   const methods = [
     { id: "cash" as PaymentMethod, label: "💵 نقداً", desc: "الدفع عند التأكيد" },
     { id: "wallet" as PaymentMethod, label: "👛 محفظة", desc: `${walletBalance.toFixed(2)} DH` },
+    { id: "cmi" as PaymentMethod, label: "🇲🇦 CMI", desc: "البطاقة البنكية المغربية (Visa, Mastercard, CMI)" },
+    { id: "payzone" as PaymentMethod, label: "💠 PayZone", desc: "بوابة دفع مغربية معتمدة" },
     { id: "stripe" as PaymentMethod, label: "💳 Stripe", desc: "Visa, Mastercard, Apple Pay, Google Pay" },
-    { id: "bank_transfer" as PaymentMethod, label: "🏦 بطاقة بنكية / تحويل", desc: "تحويل بنكي مباشر" },
+    { id: "bank_transfer" as PaymentMethod, label: "🏦 تحويل بنكي مباشر", desc: "RIB / IBAN" },
     { id: "agency_transfer" as PaymentMethod, label: "📍 تحويل عبر وكالة", desc: "Wafacash, Cash Plus, Barid..." },
     { id: "paypal" as PaymentMethod, label: "💎 PayPal", desc: "دفع إلكتروني آمن" },
   ];
