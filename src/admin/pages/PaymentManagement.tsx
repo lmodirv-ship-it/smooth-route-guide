@@ -165,7 +165,7 @@ const PaymentManagement = () => {
                       <td className="p-2 font-bold">{Number(t.amount).toFixed(2)} DH</td>
                       <td className="p-2">
                         <Badge variant="outline" className="gap-1">
-                          {t.payment_method === "cash" ? "💵" : t.payment_method === "wallet" ? "👛" : t.payment_method === "agency_transfer" ? "📍" : t.payment_method === "bank_transfer" ? "🏦" : "💎"}
+                          {t.payment_method === "cash" ? "💵" : t.payment_method === "wallet" ? "👛" : t.payment_method === "agency_transfer" ? "📍" : t.payment_method === "bank_transfer" ? "🏦" : t.payment_method === "cmi" ? "🇲🇦" : t.payment_method === "payzone" ? "💠" : t.payment_method === "paypal" ? "💎" : "💳"}
                           {t.payment_method}
                         </Badge>
                       </td>

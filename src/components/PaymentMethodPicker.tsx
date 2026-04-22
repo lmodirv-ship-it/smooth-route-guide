@@ -5,7 +5,7 @@ import { usePayPal } from "@/hooks/usePayPal";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 
-export type PaymentMethod = "cash" | "wallet" | "paypal" | "stripe" | "bank_transfer" | "agency_transfer";
+export type PaymentMethod = "cash" | "wallet" | "paypal" | "stripe" | "bank_transfer" | "agency_transfer" | "cmi" | "payzone";
 
 interface Props {
   selected: PaymentMethod;
@@ -57,8 +57,10 @@ const PaymentMethodPicker = ({
   const methods = [
     { id: "cash" as PaymentMethod, label: "💵 نقداً", desc: "الدفع عند التأكيد" },
     { id: "wallet" as PaymentMethod, label: "👛 محفظة", desc: `${walletBalance.toFixed(2)} DH` },
+    { id: "cmi" as PaymentMethod, label: "🇲🇦 CMI", desc: "البطاقة البنكية المغربية (Visa, Mastercard, CMI)" },
+    { id: "payzone" as PaymentMethod, label: "💠 PayZone", desc: "بوابة دفع مغربية معتمدة" },
     { id: "stripe" as PaymentMethod, label: "💳 Stripe", desc: "Visa, Mastercard, Apple Pay, Google Pay" },
-    { id: "bank_transfer" as PaymentMethod, label: "🏦 بطاقة بنكية / تحويل", desc: "تحويل بنكي مباشر" },
+    { id: "bank_transfer" as PaymentMethod, label: "🏦 تحويل بنكي مباشر", desc: "RIB / IBAN" },
     { id: "agency_transfer" as PaymentMethod, label: "📍 تحويل عبر وكالة", desc: "Wafacash, Cash Plus, Barid..." },
     { id: "paypal" as PaymentMethod, label: "💎 PayPal", desc: "دفع إلكتروني آمن" },
   ];
@@ -155,6 +157,22 @@ const PaymentMethodPicker = ({
           }
           onPaymentComplete("paypal", result.transactionId);
         }
+
+      } else if (selected === "cmi" || selected === "payzone") {
+        const provider = selected;
+        const { data: txn, error } = await supabase.from("payment_transactions").insert({
+          user_id: user.id, amount, currency: "MAD", transaction_type: "payment",
+          payment_method: provider, provider, status: "pending",
+          reference_type: referenceType || null, reference_id: referenceId || null,
+          metadata: { gateway: provider, awaiting_redirect: true },
+        }).select("id").single();
+        if (error) throw error;
+        toast.success(
+          provider === "cmi"
+            ? "تم تسجيل طلب الدفع عبر CMI ✅ سيتم تفعيله بعد تأكيد البنك"
+            : "تم تسجيل طلب الدفع عبر PayZone ✅ سيتم تفعيله بعد تأكيد البوابة"
+        );
+        onPaymentComplete(provider, txn?.id);
       }
     } catch (err: any) {
       toast.error(err.message || "خطأ في عملية الدفع");
@@ -243,6 +261,52 @@ const PaymentMethodPicker = ({
             <p className="text-xs text-muted-foreground">3. التقط صورة لوصل التحويل</p>
             <p className="text-xs text-muted-foreground">4. أرسل الصورة عبر الدردشة الداخلية للمدير أو مركز الاتصال</p>
             <p className="text-xs text-muted-foreground">5. سيتم تفعيل باقتك فور التأكد من التحويل</p>
+          </div>
+        </div>
+      )}
+
+      {/* CMI Info */}
+      {selected === "cmi" && (
+        <div className="space-y-2 p-4 rounded-xl border border-primary/30 bg-secondary/20" dir="rtl">
+          <div className="flex items-center gap-2 justify-center mb-1">
+            <CreditCard className="w-5 h-5 text-primary" />
+            <p className="text-sm font-bold text-foreground">الدفع عبر CMI 🇲🇦</p>
+          </div>
+          <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-center">
+            <p className="text-foreground font-bold">المبلغ: <span className="text-primary text-lg">{amount} DH</span></p>
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            بوابة الدفع المعتمدة من بنك المغرب — ادعم Visa، Mastercard، وبطاقات CMI المحلية
+          </p>
+          <div className="p-3 rounded-lg bg-muted/50 text-right space-y-1">
+            <p className="text-xs font-bold text-foreground">📋 الخطوات:</p>
+            <p className="text-xs text-muted-foreground">1. اضغط "تأكيد الدفع" أسفله</p>
+            <p className="text-xs text-muted-foreground">2. سيتم تحويلك لبوابة CMI الآمنة</p>
+            <p className="text-xs text-muted-foreground">3. أدخل بيانات البطاقة وأكمل العملية</p>
+            <p className="text-xs text-muted-foreground">4. سيتم تفعيل طلبك تلقائياً بعد التأكيد</p>
+          </div>
+        </div>
+      )}
+
+      {/* PayZone Info */}
+      {selected === "payzone" && (
+        <div className="space-y-2 p-4 rounded-xl border border-primary/30 bg-secondary/20" dir="rtl">
+          <div className="flex items-center gap-2 justify-center mb-1">
+            <CreditCard className="w-5 h-5 text-primary" />
+            <p className="text-sm font-bold text-foreground">الدفع عبر PayZone 💠</p>
+          </div>
+          <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-center">
+            <p className="text-foreground font-bold">المبلغ: <span className="text-primary text-lg">{amount} DH</span></p>
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            بوابة دفع مغربية احترافية — تدعم البطاقات البنكية والمحافظ الإلكترونية
+          </p>
+          <div className="p-3 rounded-lg bg-muted/50 text-right space-y-1">
+            <p className="text-xs font-bold text-foreground">📋 الخطوات:</p>
+            <p className="text-xs text-muted-foreground">1. اضغط "تأكيد الدفع" أسفله</p>
+            <p className="text-xs text-muted-foreground">2. سيتم تحويلك لبوابة PayZone</p>
+            <p className="text-xs text-muted-foreground">3. اختر طريقة الدفع المناسبة وأكمل العملية</p>
+            <p className="text-xs text-muted-foreground">4. سيتم تفعيل طلبك تلقائياً بعد التأكيد</p>
           </div>
         </div>
       )}
