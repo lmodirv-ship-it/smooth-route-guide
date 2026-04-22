@@ -3417,6 +3417,8 @@ export type Database = {
           name: string
           phone: string | null
           referral_code: string | null
+          referral_count: number
+          referred_by: string | null
           user_code: string | null
         }
         Insert: {
@@ -3433,6 +3435,8 @@ export type Database = {
           name?: string
           phone?: string | null
           referral_code?: string | null
+          referral_count?: number
+          referred_by?: string | null
           user_code?: string | null
         }
         Update: {
@@ -3449,6 +3453,8 @@ export type Database = {
           name?: string
           phone?: string | null
           referral_code?: string | null
+          referral_count?: number
+          referred_by?: string | null
           user_code?: string | null
         }
         Relationships: []
