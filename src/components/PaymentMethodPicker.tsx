@@ -157,6 +157,22 @@ const PaymentMethodPicker = ({
           }
           onPaymentComplete("paypal", result.transactionId);
         }
+
+      } else if (selected === "cmi" || selected === "payzone") {
+        const provider = selected;
+        const { data: txn, error } = await supabase.from("payment_transactions").insert({
+          user_id: user.id, amount, currency: "MAD", transaction_type: "payment",
+          payment_method: provider, provider, status: "pending",
+          reference_type: referenceType || null, reference_id: referenceId || null,
+          metadata: { gateway: provider, awaiting_redirect: true },
+        }).select("id").single();
+        if (error) throw error;
+        toast.success(
+          provider === "cmi"
+            ? "تم تسجيل طلب الدفع عبر CMI ✅ سيتم تفعيله بعد تأكيد البنك"
+            : "تم تسجيل طلب الدفع عبر PayZone ✅ سيتم تفعيله بعد تأكيد البوابة"
+        );
+        onPaymentComplete(provider, txn?.id);
       }
     } catch (err: any) {
       toast.error(err.message || "خطأ في عملية الدفع");
