@@ -108,7 +108,7 @@ const GlobalContactFooter = () => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="absolute bottom-2 flex flex-wrap items-center justify-center gap-2 text-xs"
+        className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs"
       >
         <Link to="/join-driver" className="flex items-center gap-1 px-3 py-1 rounded-full bg-secondary/60 hover:bg-primary/20 text-foreground/80 hover:text-primary transition-colors">
           <Car className="w-3 h-3" /> انضم كسائق
