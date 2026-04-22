@@ -114,6 +114,7 @@ const AdminLayout = () => {
     { path: "/admin/themes", icon: Palette, label: "Themes" },
     { path: "/admin/ads", icon: Monitor, label: "Ads Management" },
     { path: "/admin/analytics", icon: BarChart3, label: "تحليلات الزوار" },
+    { path: "/admin/growth", icon: BarChart3, label: "📈 تحليلات النمو" },
     { path: "/admin/versions", icon: GitBranch, label: "إدارة الإصدارات" },
     { path: "/admin/settings", icon: Settings, label: t.admin.settingsMenu },
     { path: "/admin/pages", icon: FileText, label: "إدارة الصفحات" },
