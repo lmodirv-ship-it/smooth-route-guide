@@ -329,6 +329,9 @@ export default function LandingPage() {
           {/* ═══ Free Period Banner ═══ */}
           <FreePeriodHeroBanner />
 
+          {/* ═══ Launch Promo (free first ride + referral) ═══ */}
+          <LaunchPromoBanner />
+
           {/* ═══ Videos at the top ═══ */}
           <VideoShowcaseSection />
 
