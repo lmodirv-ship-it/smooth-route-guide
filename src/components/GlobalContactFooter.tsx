@@ -54,7 +54,7 @@ const GlobalContactFooter = () => {
   const whatsappNumber = phone.replace(/[\s+\-()]/g, "");
 
   return (
-    <div className="w-full py-4 px-4 flex justify-center">
+    <div className="w-full py-4 px-4 flex flex-col items-center">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
