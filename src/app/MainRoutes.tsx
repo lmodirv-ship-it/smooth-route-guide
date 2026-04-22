@@ -78,6 +78,11 @@ const DeliverySupport = lazy(() => import("@/pages/delivery/DeliverySupport"));
 const Cart = lazy(() => import("@/pages/delivery/Cart"));
 
 const DynamicPage = lazy(() => import("@/pages/DynamicPage"));
+const JoinDriver = lazy(() => import("@/pages/JoinDriver"));
+const JoinRestaurant = lazy(() => import("@/pages/JoinRestaurant"));
+const Invite = lazy(() => import("@/pages/Invite"));
+const CityPage = lazy(() => import("@/pages/CityPage"));
+const CitiesIndex = lazy(() => import("@/pages/CitiesIndex"));
 const HNGroupePortal = lazy(() => import("@/pages/HNGroupePortal"));
 const AllProjects = lazy(() => import("@/pages/AllProjects"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
@@ -156,6 +161,13 @@ export const mainRouteElements = (
       <Route path="/ai" element={<RequireRole><LazyPage component={AgentHub} /></RequireRole>} />
       <Route path="/assistant" element={<RequireRole><LazyPage component={AIAssistant} /></RequireRole>} />
     </Route>
+
+    {/* ─── Growth: Landing pages, referral, city SEO ─── */}
+    <Route path="/join-driver" element={<LazyPage component={JoinDriver} />} />
+    <Route path="/join-restaurant" element={<LazyPage component={JoinRestaurant} />} />
+    <Route path="/invite" element={<LazyPage component={Invite} />} />
+    <Route path="/cities" element={<LazyPage component={CitiesIndex} />} />
+    <Route path="/city/:slug" element={<LazyPage component={CityPage} />} />
 
     {/* ─── Privacy Policy ─── */}
     <Route path="/privacy" element={<LazyPage component={PrivacyPolicy} />} />
