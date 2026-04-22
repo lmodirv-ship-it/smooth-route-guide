@@ -33,6 +33,10 @@ export default function BrandingSettings() {
     googleAdsId: "",
     googleAnalyticsId: "",
     googleAdsConversionLabel: "",
+    tiktokPixelId: "",
+    snapPixelId: "",
+    linkedinPartnerId: "",
+    twitterPixelId: "",
     metaTitle: "HN Driver — Smart Management",
     metaDescription: "The most powerful ride & delivery platform",
     customCss: "",
@@ -148,6 +152,10 @@ export default function BrandingSettings() {
             <Field label="Google Ads ID (AW-...)" value={settings.googleAdsId} field="googleAdsId" />
             <Field label="Google Analytics ID (G-...)" value={settings.googleAnalyticsId} field="googleAnalyticsId" />
             <Field label="Google Ads Conversion Label" value={settings.googleAdsConversionLabel} field="googleAdsConversionLabel" />
+            <Field label="TikTok Pixel ID" value={settings.tiktokPixelId} field="tiktokPixelId" />
+            <Field label="Snapchat Pixel ID" value={settings.snapPixelId} field="snapPixelId" />
+            <Field label="LinkedIn Partner ID" value={settings.linkedinPartnerId} field="linkedinPartnerId" />
+            <Field label="X (Twitter) Pixel ID" value={settings.twitterPixelId} field="twitterPixelId" />
           </div>
         </div>
       </div>

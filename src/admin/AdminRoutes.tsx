@@ -33,6 +33,7 @@ import CityActivation from "@/admin/pages/CityActivation";
 import ThemesPage from "@/admin/pages/Themes";
 import AdsManagement from "@/admin/pages/AdsManagement";
 import VisitorAnalytics from "@/admin/pages/VisitorAnalytics";
+import GrowthAnalytics from "@/admin/pages/GrowthAnalytics";
 import VersionManager from "@/admin/pages/VersionManager";
 import PageManagement from "@/admin/pages/PageManagement";
 import DatabaseManager from "@/admin/pages/DatabaseManager";
@@ -108,6 +109,7 @@ export const adminRouteElements = (
       <Route path="themes" element={<ThemesPage />} />
       <Route path="ads" element={<AdsManagement />} />
       <Route path="analytics" element={<VisitorAnalytics />} />
+      <Route path="growth" element={<GrowthAnalytics />} />
       <Route path="versions" element={<VersionManager />} />
       <Route path="settings" element={<AdminSettings />} />
       <Route path="pages" element={<PageManagement />} />
