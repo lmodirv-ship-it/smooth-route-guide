@@ -3289,6 +3289,51 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_revenue: {
+        Row: {
+          commission_amount: number
+          commission_rate: number
+          created_at: string
+          currency: string
+          driver_id: string | null
+          driver_net: number
+          gross_amount: number
+          id: string
+          notes: string | null
+          source_id: string | null
+          source_type: string
+          user_id: string | null
+        }
+        Insert: {
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          currency?: string
+          driver_id?: string | null
+          driver_net?: number
+          gross_amount?: number
+          id?: string
+          notes?: string | null
+          source_id?: string | null
+          source_type: string
+          user_id?: string | null
+        }
+        Update: {
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          currency?: string
+          driver_id?: string | null
+          driver_net?: number
+          gross_amount?: number
+          id?: string
+          notes?: string | null
+          source_id?: string | null
+          source_type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       platform_translations: {
         Row: {
           created_at: string

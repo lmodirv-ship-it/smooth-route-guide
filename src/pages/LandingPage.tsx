@@ -25,6 +25,7 @@ import HeroPromoFlash from "@/components/HeroPromoFlash";
 import TangierSocialProof from "@/components/TangierSocialProof";
 import VideoShowcaseSection from "@/components/VideoShowcaseSection";
 import FreePeriodHeroBanner from "@/components/FreePeriodHeroBanner";
+import LaunchPromoBanner from "@/components/LaunchPromoBanner";
 import StickyCTABar from "@/components/StickyCTABar";
 import logo from "@/assets/hn-driver-badge.png";
 import iconVtcCar from "@/assets/icon-vtc-car-hn.png";
@@ -327,6 +328,9 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 relative z-10 pt-20 pb-8">
           {/* ═══ Free Period Banner ═══ */}
           <FreePeriodHeroBanner />
+
+          {/* ═══ Launch Promo (free first ride + referral) ═══ */}
+          <LaunchPromoBanner />
 
           {/* ═══ Videos at the top ═══ */}
           <VideoShowcaseSection />
