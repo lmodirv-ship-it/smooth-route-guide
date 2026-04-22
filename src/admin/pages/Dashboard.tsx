@@ -7,6 +7,7 @@ import { useAdminGeo } from "@/admin/contexts/AdminGeoContext";
 import { useNearbyDrivers } from "@/hooks/useNearbyDrivers";
 import LeafletMap from "@/components/LeafletMap";
 import { useI18n } from "@/i18n/context";
+import PlatformRevenueWidget from "@/admin/components/PlatformRevenueWidget";
 
 interface DashboardStats {
   requestsToday: number;
@@ -290,6 +291,9 @@ const AdminDashboardPage = () => {
           <StatCard key={i} icon={stat.icon} label={stat.label} value={stat.value} color={stat.color} isCurrency={stat.isCurrency} index={i} />
         ))}
       </div>
+
+      {/* Platform Revenue (auto-commissions) */}
+      <PlatformRevenueWidget />
 
       {/* Map + Driver Status */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
