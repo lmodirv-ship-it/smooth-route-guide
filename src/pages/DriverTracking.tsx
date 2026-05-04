@@ -13,7 +13,6 @@ import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 import { usePricingSettings } from "@/hooks/usePricingSettings";
 import { useI18n } from "@/i18n/context";
 import { useCall as useInAppCall } from "@/contexts/CallContext";
-import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = (v: number) => (v * Math.PI) / 180;

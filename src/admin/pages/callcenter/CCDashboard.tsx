@@ -28,7 +28,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useCall as useInAppCall } from "@/contexts/CallContext";
-import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 const ORDER_STAGES = [
   { key: "pending", label: "بانتظار", icon: "⏳" },

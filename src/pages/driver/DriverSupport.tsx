@@ -9,7 +9,6 @@ import { toast } from "@/hooks/use-toast";
 import { useI18n } from "@/i18n/context";
 import { supabase } from "@/integrations/supabase/client";
 import { useCall as useInAppCall } from "@/contexts/CallContext";
-import InAppCallDialog from "@/components/calls/InAppCallDialog";
 
 const DriverSupport = () => {
   const navigate = useNavigate();

@@ -8,7 +8,6 @@ import LeafletMap from "@/components/LeafletMap";
 import TrackingInfoTable from "@/components/TrackingInfoTable";
 import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 import { useCall as useInAppCall } from "@/contexts/CallContext";
-import InAppCallDialog from "@/components/calls/InAppCallDialog";
 import TipDialog from "@/components/driver/TipDialog";
 import RatingDialog from "@/components/RatingDialog";
 import { toast } from "@/hooks/use-toast";
