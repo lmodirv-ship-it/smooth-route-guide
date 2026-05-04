@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, DollarSign, Clock, Shield, TrendingUp, Users, ArrowRight, CheckCircle2, Star, Globe } from "lucide-react";
+import { Car, DollarSign, Clock, Shield, TrendingUp, Users, ArrowRight, CheckCircle2, Star, Globe, Gift, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PageMeta from "@/components/PageMeta";
@@ -9,6 +9,8 @@ import { trackEvent } from "@/components/TrackingScripts";
 import { captureAttribution } from "@/lib/utm";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+const ADMIN_WHATSAPP = "212600000000"; // يستبدل برقم الإدارة الفعلي
 
 const benefits = [
   { icon: DollarSign, title: "أرباح حقيقية", desc: "اربح حتى 8000 درهم شهرياً", color: "text-success" },
@@ -28,6 +30,8 @@ const steps = [
 
 const JoinDriver = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const referralCode = searchParams.get("ref") || "";
   const [form, setForm] = useState({ name: "", phone: "", city: "", email: "" });
   const [loading, setLoading] = useState(false);
 
@@ -43,9 +47,12 @@ const JoinDriver = () => {
     const { error } = await supabase.from("hn_driver_leads").insert({
       business_name: form.name,
       phone: form.phone,
+      whatsapp: form.phone,
       city: form.city || null,
+      email: form.email || null,
       segment: "driver_signup",
-      source: attr.utm_source || "organic",
+      source: attr.utm_source || (referralCode ? `referral:${referralCode}` : "organic"),
+      referral_code: referralCode || null,
       status: "new",
     });
     setLoading(false);
@@ -54,6 +61,12 @@ const JoinDriver = () => {
     trackEvent("CompleteRegistration", { content_name: "Driver Lead" });
     toast.success("✅ شكراً! سنتواصل معك قريباً");
     setTimeout(() => navigate("/auth/driver?ref=join-driver"), 1500);
+  };
+
+  const openWhatsApp = () => {
+    const msg = encodeURIComponent(`السلام عليكم، أريد الانضمام كسائق في HN Driver.\nالاسم: ${form.name || "..."}\nالمدينة: ${form.city || "..."}`);
+    window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${msg}`, "_blank");
+    trackEvent("Contact", { content_name: "WhatsApp Driver Inquiry" });
   };
 
   return (
