@@ -298,7 +298,7 @@ const AdminRestaurants = () => {
 
   const openAddStore = () => {
     setEditingStore(null);
-    setStoreForm({ name: "", description: "", address: "", phone: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5, commission_rate: 5 });
+    setStoreForm({ name: "", description: "", address: "", phone: "", email: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5, commission_rate: 5 });
     setShowStoreDialog(true);
   };
 
