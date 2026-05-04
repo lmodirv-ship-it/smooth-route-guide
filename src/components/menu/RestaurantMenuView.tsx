@@ -1,0 +1,267 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ArrowRight, Star, Clock, MapPin, Plus, Minus, ShoppingCart, UtensilsCrossed, Package, Eye } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "@/hooks/use-toast";
+
+interface Props {
+  storeId: string;
+  mode?: "customer" | "readonly";
+  /** Override back navigation (e.g. admin/cc) */
+  onBack?: () => void;
+}
+
+const RestaurantMenuView = ({ storeId, mode = "customer", onBack }: Props) => {
+  const navigate = useNavigate();
+  const isReadonly = mode === "readonly";
+  // Cart hook is only used in customer mode
+  const cart = useCart();
+  const { addItem, items, totalItems, totalPrice, updateQuantity } = cart;
+
+  const [store, setStore] = useState<any>(null);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    if (!storeId) return;
+    setLoading(true);
+    const catFilter = isReadonly
+      ? supabase.from("menu_categories").select("*").eq("store_id", storeId).order("sort_order")
+      : supabase.from("menu_categories").select("*").eq("store_id", storeId).eq("is_active", true).order("sort_order");
+    const itemFilter = isReadonly
+      ? supabase.from("menu_items").select("*").eq("store_id", storeId).order("sort_order")
+      : supabase.from("menu_items").select("*").eq("store_id", storeId).eq("is_available", true).order("sort_order");
+
+    const [storeRes, catRes, itemsRes] = await Promise.all([
+      supabase.from("stores").select("*").eq("id", storeId).single(),
+      catFilter,
+      itemFilter,
+    ]);
+    setStore(storeRes.data);
+    setCategories(catRes.data || []);
+    setMenuItems(itemsRes.data || []);
+    if (catRes.data?.length && !activeCategory) setActiveCategory(catRes.data[0].id);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchData(); /* eslint-disable-next-line */ }, [storeId]);
+
+  useEffect(() => {
+    if (!storeId) return;
+    const ch1 = supabase.channel("menu-cats-rt-" + storeId).on("postgres_changes", { event: "*", schema: "public", table: "menu_categories" }, () => fetchData()).subscribe();
+    const ch2 = supabase.channel("menu-items-rt-" + storeId).on("postgres_changes", { event: "*", schema: "public", table: "menu_items" }, () => fetchData()).subscribe();
+    return () => { supabase.removeChannel(ch1); supabase.removeChannel(ch2); };
+    // eslint-disable-next-line
+  }, [storeId]);
+
+  const getItemQuantity = (menuItemId: string) =>
+    items.find((i) => i.menuItemId === menuItemId)?.quantity || 0;
+
+  const handleAdd = (item: any) => {
+    if (isReadonly) return;
+    addItem({
+      menuItemId: item.id,
+      name: item.name_ar,
+      price: item.price,
+      storeId: store.id,
+      storeName: store.name,
+    });
+    toast({ title: `تمت إضافة ${item.name_ar}`, description: `${item.price} DH` });
+  };
+
+  const filteredItems = menuItems.filter((i) => i.category_id === activeCategory);
+  const handleBack = () => (onBack ? onBack() : navigate(-1));
+
+  if (loading) {
+    return (
+      <div className="min-h-screen delivery-bg p-5 space-y-4" dir="rtl">
+        <Skeleton className="h-40 rounded-2xl" />
+        <Skeleton className="h-10 rounded-xl" />
+        <Skeleton className="h-24 rounded-2xl" />
+        <Skeleton className="h-24 rounded-2xl" />
+      </div>
+    );
+  }
+
+  if (!store) {
+    return (
+      <div className="min-h-screen delivery-bg flex items-center justify-center" dir="rtl">
+        <p className="text-muted-foreground">المطعم غير موجود</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen delivery-bg pb-28" dir="rtl">
+      {/* Store Header */}
+      <div className="relative rounded-b-3xl overflow-hidden">
+        {store.image_url ? (
+          <div className="h-44 relative">
+            <img src={store.image_url} alt={store.name} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+          </div>
+        ) : (
+          <div className="bg-gradient-to-br from-primary/70 via-accent/50 to-secondary pt-6 pb-6 px-5">
+            <div className="h-20" />
+          </div>
+        )}
+        <div className="absolute top-0 left-0 right-0 px-5 pt-6">
+          <div className="flex items-center justify-between">
+            <button onClick={handleBack} className="p-2 rounded-xl bg-black/30 backdrop-blur-sm">
+              <ArrowRight className="w-5 h-5 text-primary-foreground" />
+            </button>
+            {isReadonly ? (
+              <Badge className="bg-black/40 backdrop-blur-sm border border-white/20 text-primary-foreground gap-1">
+                <Eye className="w-3 h-3" /> عرض فقط
+              </Badge>
+            ) : (
+              <button onClick={() => navigate("/delivery/cart")} className="p-2 rounded-xl bg-black/30 backdrop-blur-sm relative">
+                <ShoppingCart className="w-5 h-5 text-primary-foreground" />
+                {totalItems > 0 && (
+                  <Badge className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0 min-w-[18px] h-[18px]">
+                    {totalItems}
+                  </Badge>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="px-5 pb-4 -mt-8 relative z-10">
+          <div className="flex items-end gap-3">
+            <div className="w-16 h-16 rounded-2xl glass-card border-2 border-border flex items-center justify-center text-3xl overflow-hidden flex-shrink-0">
+              {store.image_url ? (
+                <img src={store.image_url} className="w-full h-full object-cover" />
+              ) : (
+                <UtensilsCrossed className="w-7 h-7 text-muted-foreground/40" />
+              )}
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">{store.name}</h1>
+              <p className="text-xs text-muted-foreground mt-0.5">{store.description}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1 text-amber-400 font-semibold"><Star className="w-3.5 h-3.5 fill-amber-400" />{store.rating}</span>
+            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{store.delivery_time_min}-{store.delivery_time_max} دقيقة</span>
+            <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{store.address?.split("،")[0]}</span>
+          </div>
+          <p className="text-xs font-bold text-primary mt-2">توصيل: {store.delivery_fee} DH</p>
+          {isReadonly && (
+            <div className="flex items-center gap-3 mt-3 text-[11px] text-muted-foreground">
+              <span>الفئات: <b className="text-foreground">{categories.length}</b></span>
+              <span>المنتجات: <b className="text-foreground">{menuItems.length}</b></span>
+              {store.phone && <span dir="ltr">📞 {store.phone}</span>}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Category Tabs */}
+      <div className="px-5 mt-4">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
+                activeCategory === cat.id
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "glass-card text-muted-foreground"
+              }`}
+            >
+              {cat.name_ar}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Menu Items */}
+      <div className="px-5 mt-4 space-y-3">
+        {filteredItems.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">لا توجد منتجات في هذه الفئة</p>
+        ) : (
+          filteredItems.map((item, i) => {
+            const qty = isReadonly ? 0 : getItemQuantity(item.id);
+            return (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="glass-card rounded-2xl p-4 flex items-center gap-3"
+              >
+                <div className="w-16 h-16 rounded-xl bg-secondary/40 overflow-hidden flex-shrink-0">
+                  {item.image_url ? (
+                    <img src={item.image_url} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center"><Package className="w-5 h-5 text-muted-foreground/30" /></div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-foreground text-sm">{item.name_ar}</h3>
+                  <p className="text-[11px] text-muted-foreground/70 mt-0.5">{item.name_fr}</p>
+                  {item.description_ar && (
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.description_ar}</p>
+                  )}
+                  <p className="text-sm font-bold text-primary mt-2">
+                    {item.price} DH
+                    {isReadonly && item.is_available === false && (
+                      <Badge variant="outline" className="mr-2 text-[10px]">غير متوفر</Badge>
+                    )}
+                  </p>
+                </div>
+                {!isReadonly && (
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {qty > 0 ? (
+                      <div className="flex items-center gap-2 bg-secondary rounded-xl px-2 py-1">
+                        <button onClick={() => updateQuantity(item.id, qty - 1)} className="w-7 h-7 rounded-lg glass-card flex items-center justify-center">
+                          <Minus className="w-3.5 h-3.5 text-foreground" />
+                        </button>
+                        <span className="text-sm font-bold text-foreground min-w-[20px] text-center">{qty}</span>
+                        <button onClick={() => handleAdd(item)} className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+                          <Plus className="w-3.5 h-3.5 text-primary-foreground" />
+                        </button>
+                      </div>
+                    ) : (
+                      <Button size="sm" onClick={() => handleAdd(item)} className="rounded-xl gap-1">
+                        <Plus className="w-4 h-4" />
+                        أضف
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </motion.div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Cart Footer (customer only) */}
+      {!isReadonly && totalItems > 0 && (
+        <motion.div
+          initial={{ y: 80 }}
+          animate={{ y: 0 }}
+          className="fixed bottom-0 left-0 right-0 glass-card border-t border-border p-4 z-50"
+        >
+          <Button
+            onClick={() => navigate("/delivery/cart")}
+            className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold text-base gap-2"
+          >
+            <ShoppingCart className="w-5 h-5" />
+            عرض السلة ({totalItems})
+            <span className="mr-auto font-bold">{totalPrice.toFixed(0)} DH</span>
+          </Button>
+        </motion.div>
+      )}
+    </div>
+  );
+};
+
+export default RestaurantMenuView;
