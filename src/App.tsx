@@ -42,12 +42,14 @@ const AppInner = () => {
   useTheme(); // Load and apply active theme from DB
   return (
     <BrowserRouter>
-      <Routes>
-        {mainRouteElements}
-        {adminRouteElements}
-      </Routes>
-      <HNChatbot />
-      <GlobalCallProvider />
+      <CallProvider>
+        <Routes>
+          {mainRouteElements}
+          {adminRouteElements}
+        </Routes>
+        <HNChatbot />
+        <GlobalCallProvider />
+      </CallProvider>
     </BrowserRouter>
   );
 };
