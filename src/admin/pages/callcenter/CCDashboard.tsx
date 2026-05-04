@@ -101,7 +101,7 @@ const CCDashboard = () => {
   const triggerAutoScan = async () => {
     setTriggeringScan(true);
     try {
-      const { error } = await supabase.functions.invoke("auto-prospect", { body: { sync_mailbluster: false } });
+      const { error } = await supabase.functions.invoke("auto-prospect", { body: { sync_mailbluster: true } });
       if (error) throw error;
       toast({ title: "🔍 بدأ البحث التلقائي عن شركاء جدد..." });
       setTimeout(fetchProspects, 3000);
