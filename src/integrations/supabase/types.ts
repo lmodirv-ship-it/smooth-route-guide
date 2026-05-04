@@ -3630,10 +3630,67 @@ export type Database = {
         }
         Relationships: []
       }
+      prospect_menu_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          currency: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean | null
+          name: string
+          price: number | null
+          prospect_id: string
+          sort_order: number | null
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          name: string
+          price?: number | null
+          prospect_id: string
+          sort_order?: number | null
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          name?: string
+          price?: number | null
+          prospect_id?: string
+          sort_order?: number | null
+          source?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospect_menu_items_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prospects: {
         Row: {
           address: string | null
           area: string | null
+          business_status: string | null
           call_center_queued: boolean | null
           call_notes: string | null
           call_priority: string | null
@@ -3644,24 +3701,36 @@ export type Database = {
           city: string
           country: string | null
           created_at: string
+          description: string | null
           email: string | null
+          enriched_at: string | null
           google_place_id: string | null
           id: string
+          lat: number | null
+          lng: number | null
+          logo_url: string | null
           mailbluster_synced: boolean | null
           mailbluster_synced_at: string | null
+          menu_scraped_at: string | null
           name: string
           notes: string | null
+          opening_hours: Json | null
           phone: string | null
+          photo_url: string | null
+          photos: Json | null
+          price_level: number | null
           prospect_code: string | null
           rating: number | null
           source: string | null
           status: string | null
           updated_at: string
+          user_ratings_total: number | null
           website: string | null
         }
         Insert: {
           address?: string | null
           area?: string | null
+          business_status?: string | null
           call_center_queued?: boolean | null
           call_notes?: string | null
           call_priority?: string | null
@@ -3672,24 +3741,36 @@ export type Database = {
           city?: string
           country?: string | null
           created_at?: string
+          description?: string | null
           email?: string | null
+          enriched_at?: string | null
           google_place_id?: string | null
           id?: string
+          lat?: number | null
+          lng?: number | null
+          logo_url?: string | null
           mailbluster_synced?: boolean | null
           mailbluster_synced_at?: string | null
+          menu_scraped_at?: string | null
           name?: string
           notes?: string | null
+          opening_hours?: Json | null
           phone?: string | null
+          photo_url?: string | null
+          photos?: Json | null
+          price_level?: number | null
           prospect_code?: string | null
           rating?: number | null
           source?: string | null
           status?: string | null
           updated_at?: string
+          user_ratings_total?: number | null
           website?: string | null
         }
         Update: {
           address?: string | null
           area?: string | null
+          business_status?: string | null
           call_center_queued?: boolean | null
           call_notes?: string | null
           call_priority?: string | null
@@ -3700,19 +3781,30 @@ export type Database = {
           city?: string
           country?: string | null
           created_at?: string
+          description?: string | null
           email?: string | null
+          enriched_at?: string | null
           google_place_id?: string | null
           id?: string
+          lat?: number | null
+          lng?: number | null
+          logo_url?: string | null
           mailbluster_synced?: boolean | null
           mailbluster_synced_at?: string | null
+          menu_scraped_at?: string | null
           name?: string
           notes?: string | null
+          opening_hours?: Json | null
           phone?: string | null
+          photo_url?: string | null
+          photos?: Json | null
+          price_level?: number | null
           prospect_code?: string | null
           rating?: number | null
           source?: string | null
           status?: string | null
           updated_at?: string
+          user_ratings_total?: number | null
           website?: string | null
         }
         Relationships: []
