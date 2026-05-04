@@ -38,12 +38,14 @@ const AdminRestaurants = () => {
   const [bulkMenuProgress, setBulkMenuProgress] = useState<{ current: number; total: number } | null>(null);
 
   const generateMenusForAllEmpty = async () => {
-    const emptyStores = stores.filter((s) => !menuItems.some((i) => i.store_id === s.id));
+    const emptyStores = stores.filter(
+      (s) => !menuItems.some((i) => i.store_id === s.id) || !s.email || s.email.trim() === ""
+    );
     if (!emptyStores.length) {
-      toast({ title: "✅ كل المطاعم لديها قوائم" });
+      toast({ title: "✅ كل المطاعم لديها قوائم وإيمايل" });
       return;
     }
-    if (!confirm(`سيتم توليد قوائم لـ ${emptyStores.length} مطعم. هل تريد المتابعة؟`)) return;
+    if (!confirm(`سيتم توليد قوائم/إيمايلات لـ ${emptyStores.length} مطعم. هل تريد المتابعة؟`)) return;
     setBulkMenuProgress({ current: 0, total: emptyStores.length });
     let ok = 0, fail = 0;
     for (let i = 0; i < emptyStores.length; i++) {
