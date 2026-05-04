@@ -64,8 +64,8 @@ const DriverPackages = () => {
   useEffect(() => { fetchData(); }, []);
 
   const handleSave = async () => {
-    if (!form.name_ar || form.price <= 0) {
-      toast({ title: "خطأ", description: "يرجى ملء جميع الحقول المطلوبة", variant: "destructive" });
+    if (!form.name_ar || form.price < 0) {
+      toast({ title: "خطأ", description: "يرجى ملء الاسم العربي والسعر (يمكن أن يكون 0 للباقات المجانية)", variant: "destructive" });
       return;
     }
     const payload = {
