@@ -164,6 +164,7 @@ export const adminRouteElements = (
       <Route path="tickets" element={L(Tickets)} />
       <Route path="delivery" element={L(DeliveryOrdersCC)} />
       <Route path="restaurants" element={L(RestaurantsCC)} />
+      <Route path="restaurants/:id/menu" element={L(CCRestaurantMenu)} />
       <Route path="auto-import" element={L(AutoImport)} />
       <Route path="google-import" element={L(GoogleMapsImport)} />
       <Route path="emergency" element={L(Emergency)} />
