@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  Loader2, Bell, ArrowRight, Eye, Headphones, Zap, CheckCircle, Send, XCircle, Clock, Truck, Package, Phone, Store, MapPin, User, PhoneCall
+  Loader2, Bell, ArrowRight, Eye, Headphones, Zap, CheckCircle, Send, XCircle, Clock, Truck, Package, Phone, Store, MapPin, User, PhoneCall, Search, Building2, Star, Globe, MessageCircle, RefreshCw, TrendingUp
 } from "lucide-react";
 import packageImg from "@/assets/icons/package-real.png";
 import checkImg from "@/assets/icons/check-real.png";
@@ -53,6 +53,71 @@ const CCDashboard = () => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const inAppCall = useInAppCall();
+
+  // ───── Prospecting (شركاء محتملين) ─────
+  const [prospects, setProspects] = useState<any[]>([]);
+  const [prospectFilter, setProspectFilter] = useState<"all" | "pending" | "callback" | "no_answer" | "called">("pending");
+  const [prospectCityFilter, setProspectCityFilter] = useState<string>("all");
+  const [prospectStats, setProspectStats] = useState({ total: 0, pending: 0, called: 0, interested: 0, converted: 0 });
+  const [prospectLoading, setProspectLoading] = useState(false);
+  const [triggeringScan, setTriggeringScan] = useState(false);
+
+  const fetchProspects = useCallback(async () => {
+    setProspectLoading(true);
+    const { data } = await supabase
+      .from("prospects")
+      .select("*")
+      .order("call_priority", { ascending: false })
+      .order("rating", { ascending: false })
+      .limit(80);
+    setProspects(data || []);
+    const { data: all } = await supabase.from("prospects").select("status, call_status");
+    if (all) {
+      setProspectStats({
+        total: all.length,
+        pending: all.filter((p: any) => p.call_status === "pending").length,
+        called: all.filter((p: any) => p.call_status === "called").length,
+        interested: all.filter((p: any) => p.status === "interested").length,
+        converted: all.filter((p: any) => p.status === "converted").length,
+      });
+    }
+    setProspectLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchProspects();
+    const ch = supabase.channel("cc-prospects-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "prospects" }, fetchProspects)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [fetchProspects]);
+
+  const updateProspect = async (id: string, updates: Record<string, any>) => {
+    const { error } = await supabase.from("prospects").update(updates).eq("id", id);
+    if (error) toast({ title: "خطأ", description: error.message, variant: "destructive" });
+    else { toast({ title: "تم التحديث ✅" }); fetchProspects(); }
+  };
+
+  const triggerAutoScan = async () => {
+    setTriggeringScan(true);
+    try {
+      const { error } = await supabase.functions.invoke("auto-prospect", { body: { sync_mailbluster: false } });
+      if (error) throw error;
+      toast({ title: "🔍 بدأ البحث التلقائي عن شركاء جدد..." });
+      setTimeout(fetchProspects, 3000);
+    } catch (e: any) {
+      toast({ title: "خطأ", description: e.message, variant: "destructive" });
+    } finally {
+      setTriggeringScan(false);
+    }
+  };
+
+  const prospectCities = Array.from(new Set(prospects.map((p) => p.city).filter(Boolean)));
+  const filteredProspects = prospects.filter((p) => {
+    if (prospectFilter !== "all" && p.call_status !== prospectFilter) return false;
+    if (prospectCityFilter !== "all" && p.city !== prospectCityFilter) return false;
+    return true;
+  });
 
   const fetchAll = useCallback(async () => {
     const today = new Date().toISOString().slice(0, 10);
@@ -533,6 +598,208 @@ const CCDashboard = () => {
           </div>
         </motion.div>
       )}
+
+      {/* ───────── Prospecting — التنقيب عن الشركاء ───────── */}
+      <div>
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-[10px] rounded-lg gap-1 text-primary hover:bg-primary/10 h-7 px-2"
+              onClick={() => navigate("/call-center/prospecting")}
+            >
+              <Eye className="w-3 h-3" />الصفحة الكاملة
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-[10px] rounded-lg gap-1 h-7 px-2 border-primary/30 text-primary"
+              onClick={triggerAutoScan}
+              disabled={triggeringScan}
+            >
+              {triggeringScan ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+              بحث تلقائي عن شركاء
+            </Button>
+          </div>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Search className="w-4 h-4 text-primary" />
+            التنقيب عن الشركاء
+          </h2>
+        </div>
+
+        {/* Prospect stats */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
+          {[
+            { label: "الإجمالي", value: prospectStats.total, color: "text-foreground", bg: "from-slate-500/20 to-slate-600/10" },
+            { label: "في الانتظار", value: prospectStats.pending, color: "text-amber-400", bg: "from-amber-500/20 to-orange-600/10" },
+            { label: "تم الاتصال", value: prospectStats.called, color: "text-blue-400", bg: "from-blue-500/20 to-cyan-600/10" },
+            { label: "مهتم", value: prospectStats.interested, color: "text-emerald-400", bg: "from-emerald-500/20 to-green-600/10" },
+            { label: "شريك ✓", value: prospectStats.converted, color: "text-purple-400", bg: "from-purple-500/20 to-violet-600/10" },
+          ].map((s, i) => (
+            <div key={i} className={`rounded-xl bg-gradient-to-br ${s.bg} border border-white/[0.06] p-2.5 text-center`}>
+              <p className={`text-xl font-black ${s.color}`}>{s.value}</p>
+              <p className="text-[9px] text-muted-foreground/70 mt-0.5">{s.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-1.5 mb-3 justify-end">
+          {prospectCities.length > 0 && (
+            <select
+              value={prospectCityFilter}
+              onChange={(e) => setProspectCityFilter(e.target.value)}
+              className="text-[10px] px-2 py-1 rounded-lg bg-white/[0.04] border border-white/[0.08] text-foreground"
+            >
+              <option value="all">كل المدن</option>
+              {prospectCities.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          )}
+          {[
+            { key: "pending", label: "في الانتظار", icon: "⏳" },
+            { key: "callback", label: "إعادة اتصال", icon: "🔁" },
+            { key: "no_answer", label: "لم يرد", icon: "📵" },
+            { key: "called", label: "تم الاتصال", icon: "✅" },
+            { key: "all", label: "الكل", icon: "📋" },
+          ].map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setProspectFilter(t.key as any)}
+              className={`text-[10px] px-2.5 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1 ${
+                prospectFilter === t.key
+                  ? "bg-primary/20 text-primary border border-primary/30"
+                  : "bg-white/[0.04] text-muted-foreground border border-white/[0.06] hover:bg-white/[0.08]"
+              }`}
+            >
+              <span>{t.icon}</span>{t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Prospects table */}
+        <div className="rounded-2xl bg-gradient-to-b from-black/30 to-black/10 border border-white/[0.06] overflow-hidden backdrop-blur-sm">
+          <div className="max-h-[420px] overflow-y-auto">
+            <table className="w-full">
+              <thead className="sticky top-0 bg-black/60 backdrop-blur-md z-10">
+                <tr className="border-b border-white/[0.08]">
+                  <th className="p-2.5 text-center text-[11px] font-bold text-foreground/80">إجراءات</th>
+                  <th className="p-2.5 text-center text-[11px] font-bold text-foreground/80">حالة الاتصال</th>
+                  <th className="p-2.5 text-center text-[11px] font-bold text-foreground/80">التقييم</th>
+                  <th className="p-2.5 text-right text-[11px] font-bold text-foreground/80">الفئة</th>
+                  <th className="p-2.5 text-right text-[11px] font-bold text-foreground/80">المدينة / المنطقة</th>
+                  <th className="p-2.5 text-right text-[11px] font-bold text-foreground/80">الهاتف</th>
+                  <th className="p-2.5 text-right text-[11px] font-bold text-foreground/80">الشريك المحتمل</th>
+                </tr>
+              </thead>
+              <tbody>
+                {prospectLoading && (
+                  <tr><td colSpan={7} className="p-8 text-center"><Loader2 className="w-5 h-5 animate-spin text-primary mx-auto" /></td></tr>
+                )}
+                {!prospectLoading && filteredProspects.length === 0 && (
+                  <tr><td colSpan={7} className="p-10 text-center text-muted-foreground/50 text-sm">لا يوجد شركاء محتملين مطابقين</td></tr>
+                )}
+                {filteredProspects.map((p) => {
+                  const wa = (p.phone || "").replace(/\D/g, "");
+                  const callStatusColors: Record<string, string> = {
+                    pending: "bg-amber-500/20 text-amber-400",
+                    called: "bg-emerald-500/20 text-emerald-400",
+                    no_answer: "bg-yellow-500/20 text-yellow-400",
+                    callback: "bg-purple-500/20 text-purple-400",
+                    no_phone: "bg-red-500/20 text-red-400",
+                  };
+                  const callStatusLabels: Record<string, string> = {
+                    pending: "⏳ في الانتظار",
+                    called: "✅ تم الاتصال",
+                    no_answer: "📵 لم يرد",
+                    callback: "🔁 إعادة اتصال",
+                    no_phone: "🚫 بدون هاتف",
+                  };
+                  return (
+                    <tr key={p.id} className="border-b border-white/[0.05] last:border-0 hover:bg-white/[0.03] transition-colors">
+                      <td className="p-2 text-center">
+                        <div className="flex items-center justify-center gap-1 flex-wrap">
+                          {p.phone && (
+                            <>
+                              <a href={`tel:${p.phone}`} onClick={() => updateProspect(p.id, { call_status: "called"})}>
+                                <button className="px-1.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors" title="اتصال">
+                                  <Phone className="w-3 h-3" />
+                                </button>
+                              </a>
+                              {wa && (
+                                <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer">
+                                  <button className="px-1.5 py-1 rounded-lg bg-green-600/20 text-green-400 hover:bg-green-600/30 transition-colors" title="واتساب">
+                                    <MessageCircle className="w-3 h-3" />
+                                  </button>
+                                </a>
+                              )}
+                            </>
+                          )}
+                          <button
+                            onClick={() => updateProspect(p.id, { call_status: "no_answer" })}
+                            className="px-1.5 py-1 rounded-lg bg-yellow-500/20 text-yellow-400 text-[9px] font-bold hover:bg-yellow-500/30 transition-colors"
+                            title="لم يرد"
+                          >📵</button>
+                          <button
+                            onClick={() => updateProspect(p.id, { call_status: "callback" })}
+                            className="px-1.5 py-1 rounded-lg bg-purple-500/20 text-purple-400 text-[9px] font-bold hover:bg-purple-500/30 transition-colors"
+                            title="إعادة الاتصال"
+                          >🔁</button>
+                          <button
+                            onClick={() => updateProspect(p.id, { status: "interested", call_status: "called" })}
+                            className="px-1.5 py-1 rounded-lg bg-emerald-600/30 text-emerald-300 text-[9px] font-bold hover:bg-emerald-600/40 transition-colors"
+                            title="مهتم"
+                          >⭐</button>
+                          <button
+                            onClick={() => updateProspect(p.id, { status: "not_interested", call_status: "called" })}
+                            className="px-1.5 py-1 rounded-lg bg-red-500/20 text-red-400 text-[9px] font-bold hover:bg-red-500/30 transition-colors"
+                            title="غير مهتم"
+                          >✕</button>
+                          {p.website && (
+                            <a href={p.website} target="_blank" rel="noreferrer">
+                              <button className="px-1.5 py-1 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors" title="الموقع">
+                                <Globe className="w-3 h-3" />
+                              </button>
+                            </a>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-2 text-center">
+                        <span className={`inline-block text-[9px] px-2 py-1 rounded-full font-bold ${callStatusColors[p.call_status] || "bg-muted"}`}>
+                          {callStatusLabels[p.call_status] || p.call_status}
+                        </span>
+                      </td>
+                      <td className="p-2 text-center">
+                        {p.rating > 0 ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] text-amber-400 font-bold">
+                            <Star className="w-3 h-3 fill-amber-400" />{Number(p.rating).toFixed(1)}
+                          </span>
+                        ) : <span className="text-[10px] text-muted-foreground/40">—</span>}
+                      </td>
+                      <td className="p-2 text-right text-[10px] text-foreground/70">{p.category || "—"}</td>
+                      <td className="p-2 text-right text-[10px] text-foreground/70">
+                        <div className="flex items-center gap-1 justify-end">
+                          <span>{p.city || "—"}</span>
+                          {p.area && <span className="text-muted-foreground/50">· {p.area}</span>}
+                          <MapPin className="w-3 h-3 text-muted-foreground/40" />
+                        </div>
+                      </td>
+                      <td className="p-2 text-right text-[10px] font-mono text-foreground/80">{p.phone || <span className="text-red-400/60">بدون</span>}</td>
+                      <td className="p-2 text-right">
+                        <p className="text-xs font-bold text-foreground/90 flex items-center gap-1 justify-end">
+                          {p.name}
+                          {p.call_priority === "high" && <span className="text-[8px] px-1 py-0.5 rounded bg-red-500/20 text-red-400">🔥</span>}
+                        </p>
+                        {p.address && <p className="text-[9px] text-muted-foreground/50 truncate max-w-[200px] mr-auto">{p.address}</p>}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
       {/* Cancel Dialog */}
       <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
