@@ -202,12 +202,7 @@ const DriverDelivery = () => {
   const acceptOrder = async (orderId: string) => {
     if (!driverId) return;
     setAccepting(orderId);
-    if (subscriptionExpired) {
-      toast({ title: "اشتراك مطلوب", description: "يجب الاشتراك في باقة لقبول الطلبات", variant: "destructive" });
-      navigate("/driver/subscription");
-      setAccepting(null);
-      return;
-    }
+    // Subscription gate disabled — platform is free
     const order = enrichedOrders.find(o => o.id === orderId);
     const { error } = await supabase.from("delivery_orders")
       .update({
@@ -280,18 +275,7 @@ const DriverDelivery = () => {
         </div>
       </div>
 
-      {/* Subscription expired banner */}
-      {subscriptionExpired && (
-        <div className="shrink-0 bg-destructive/10 border-t border-destructive/30 px-4 py-2">
-          <button onClick={() => navigate("/driver/subscription")} className="w-full flex items-center justify-between">
-            <Crown className="w-5 h-5 text-destructive" />
-            <div className="text-right">
-              <p className="text-destructive font-bold text-sm">⚠️ اشتراكك منتهي</p>
-              <p className="text-muted-foreground text-xs">اضغط لتجديد الاشتراك</p>
-            </div>
-          </button>
-        </div>
-      )}
+      {/* Subscription expired banner — disabled (platform is free) */}
 
       {/* Active order banner → go to tracking */}
       {activeOrder && (

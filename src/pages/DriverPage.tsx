@@ -215,10 +215,7 @@ const DriverPage = () => {
   }, [selectedOrder]);
 
   const handleAccept = async (orderId: string) => {
-    if (subscriptionExpired) {
-      toast({ title: "اشتراك مطلوب", description: "يجب الاشتراك في باقة لقبول الطلبات", variant: "destructive" });
-      navigate("/driver/subscription"); return;
-    }
+    // Subscription gate disabled — platform is free
     if (activeRideId) {
       toast({ title: t.driver.activeRide, description: t.driver.completeCurrentFirst, variant: "destructive" });
       navigate(`/driver/tracking?id=${activeRideId}`); return;
@@ -282,18 +279,7 @@ const DriverPage = () => {
         </div>
       </div>
 
-      {/* Subscription expired banner */}
-      {subscriptionExpired && (
-        <div className="shrink-0 bg-destructive/10 border-t border-destructive/30 px-4 py-2">
-          <button onClick={() => navigate("/driver/subscription")} className="w-full flex items-center justify-between">
-            <Crown className="w-5 h-5 text-destructive" />
-            <div className="text-right">
-              <p className="text-destructive font-bold text-sm">⚠️ اشتراكك منتهي</p>
-              <p className="text-muted-foreground text-xs">اضغط لتجديد الاشتراك</p>
-            </div>
-          </button>
-        </div>
-      )}
+      {/* Subscription expired banner — disabled (platform is free) */}
 
       {/* Active ride banner */}
       {activeRideId && (
