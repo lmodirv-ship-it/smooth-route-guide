@@ -116,21 +116,17 @@ const HNChatbot = () => {
 
   return (
     <>
-      <AnimatePresence>
-        {!open && (
-          <motion.button
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0 }}
-            onClick={() => setOpen(true)}
-            className="fixed bottom-6 right-6 z-[9998] h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-xl hover:shadow-2xl hover:scale-110 transition-all flex items-center justify-center"
-            title="تحدث مع أمين"
-          >
-            <MessageCircle className="w-7 h-7" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive rounded-full animate-pulse" />
-          </motion.button>
-        )}
-      </AnimatePresence>
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          className="fixed top-2 right-2 z-[9998] h-9 px-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all flex items-center gap-1.5 text-xs font-bold"
+          title="تحدث مع أمين"
+        >
+          <Bot className="w-4 h-4" />
+          أمين
+          <span className="w-2 h-2 bg-success rounded-full animate-pulse" />
+        </button>
+      )}
 
       {open &&
         createPortal(
