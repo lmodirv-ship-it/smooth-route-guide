@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, Search, Eye, Wallet, Filter, SortAsc, SortDesc,
-  Download, ChevronLeft, ChevronRight, UserCheck, RefreshCw,
+  Download, ChevronLeft, ChevronRight, UserCheck, RefreshCw, Trash2, Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import ClientDetailSheet from "@/admin/components/ClientDetailSheet";
 import BalanceBars from "@/admin/components/BalanceBars";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
 
 const ROLE_LABELS: Record<string, string> = {
   user: "عميل", admin: "مسؤول", moderator: "مشرف", agent: "مركز اتصال",
