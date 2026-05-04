@@ -341,10 +341,17 @@ const AdminClients = () => {
                       className="border-b border-border/40 hover:bg-secondary/20 transition-colors group"
                     >
                       <td className="p-3">
-                        <Button size="sm" variant="outline" onClick={() => openDetail(client.id)}
-                          className="text-xs h-7 gap-1 text-info border-info/30 opacity-70 group-hover:opacity-100 transition-opacity">
-                          <Eye className="w-3 h-3" />عرض
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="outline" onClick={() => openDetail(client.id)}
+                            className="text-xs h-7 gap-1 text-info border-info/30 opacity-70 group-hover:opacity-100 transition-opacity">
+                            <Eye className="w-3 h-3" />عرض
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => setDeleteTarget(client)}
+                            disabled={client.roles.includes("admin")}
+                            className="text-xs h-7 gap-1 text-destructive border-destructive/30 opacity-70 group-hover:opacity-100 transition-opacity hover:bg-destructive/10">
+                            <Trash2 className="w-3 h-3" />حذف
+                          </Button>
+                        </div>
                       </td>
                       <td className="p-3">
                         {client.pendingRechargeCount > 0 ? (
