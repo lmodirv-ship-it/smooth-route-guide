@@ -108,8 +108,6 @@ const AdminLayout = () => {
     { path: "/admin/zones", icon: MapPin, label: t.admin.zonesPricing },
     { path: "/admin/city-activation", icon: Globe, label: "تنشيط المدن" },
     { path: "/admin/commission-rates", icon: Percent, label: t.admin.commissionRates },
-    { path: "/admin/smart-assistant", icon: Bot, label: t.admin.smartAssistantPage },
-    { path: "/admin/sub-assistants", icon: BrainCircuit, label: t.admin.subAssistants },
     { path: "/admin/driver-packages", icon: Package, label: "باقات السائقين" },
     { path: "/admin/messaging", icon: MessageSquare, label: "المحادثات الداخلية" },
     { path: "/admin/community-chat", icon: MessagesSquare, label: "الدردشة المجتمعية" },
