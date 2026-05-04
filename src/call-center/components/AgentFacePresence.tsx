@@ -80,22 +80,24 @@ const AgentFacePresence = () => {
     setFaceDetected(false);
   }, [endPresenceInterval]);
 
-  const toggleCamera = useCallback(() => {
+  const toggleCamera = useCallback(async () => {
     if (cameraActive) {
       stopCamera();
       setShowVideo(false);
     } else {
       setShowVideo(true);
-      if (modelsLoaded) startCamera();
+      await ensureModels();
+      startCamera();
     }
-  }, [cameraActive, modelsLoaded, startCamera, stopCamera]);
+  }, [cameraActive, ensureModels, startCamera, stopCamera]);
 
   // Face detection loop
   useEffect(() => {
     if (!cameraActive || !modelsLoaded) return;
 
     const detect = async () => {
-      if (!videoRef.current) return;
+      if (!videoRef.current || !faceapiRef.current) return;
+      const faceapi = faceapiRef.current;
       const result = await faceapi.detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 }));
       const detected = !!result;
       
