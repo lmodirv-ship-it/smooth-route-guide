@@ -340,24 +340,7 @@ const DeliveryTracking = () => {
           </motion.div>
         )}
       </motion.div>
-
-      <InAppCallDialog
-        incomingCall={inAppCall.incomingCall}
-        activeCall={inAppCall.activeCall}
-        localStream={inAppCall.localStream}
-        remoteStream={inAppCall.remoteStream}
-        isMuted={inAppCall.isMuted}
-        isVideoEnabled={inAppCall.isVideoEnabled}
-        busy={inAppCall.busy}
-        callDuration={inAppCall.callDuration}
-        connectionQuality={inAppCall.connectionQuality}
-        onAccept={inAppCall.acceptCall}
-        onEnd={inAppCall.endCall}
-        onToggleMute={inAppCall.toggleMute}
-        onToggleVideo={inAppCall.toggleVideo}
-      />
-
-      {/* Tip Dialog */}
+{/* Tip Dialog */}
       {order && order.driver_id && currentUserId && (
         <TipDialog
           open={showTip}

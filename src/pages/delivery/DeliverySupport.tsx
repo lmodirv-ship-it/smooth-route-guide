@@ -174,24 +174,7 @@ const DeliverySupport = () => {
           )}
         </Button>
       </div>
-
-      <InAppCallDialog
-        incomingCall={inAppCall.incomingCall}
-        activeCall={inAppCall.activeCall}
-        localStream={inAppCall.localStream}
-        remoteStream={inAppCall.remoteStream}
-        isMuted={inAppCall.isMuted}
-        isVideoEnabled={inAppCall.isVideoEnabled}
-        callDuration={inAppCall.callDuration}
-        connectionQuality={inAppCall.connectionQuality}
-        busy={inAppCall.busy}
-        onAccept={inAppCall.acceptCall}
-        
-        onEnd={inAppCall.endCall}
-        onToggleMute={inAppCall.toggleMute}
-        onToggleVideo={inAppCall.toggleVideo}
-      />
-    </div>
+</div>
   );
 };
 

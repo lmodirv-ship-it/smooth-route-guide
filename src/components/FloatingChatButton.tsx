@@ -110,23 +110,7 @@ const FloatingChatButton = () => {
 
   return (
     <>
-      <InAppCallDialog
-        incomingCall={inAppCall.incomingCall}
-        activeCall={inAppCall.activeCall}
-        localStream={inAppCall.localStream}
-        remoteStream={inAppCall.remoteStream}
-        isMuted={inAppCall.isMuted}
-        isVideoEnabled={inAppCall.isVideoEnabled}
-        busy={inAppCall.busy}
-        callDuration={inAppCall.callDuration}
-        connectionQuality={inAppCall.connectionQuality}
-        onAccept={inAppCall.acceptCall}
-        onEnd={inAppCall.endCall}
-        onToggleMute={inAppCall.toggleMute}
-        onToggleVideo={inAppCall.toggleVideo}
-      />
-
-      <button
+<button
         onClick={() => setOpen(!open)}
         className="p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground transition-all"
         title="جهات الاتصال والدردشة"
