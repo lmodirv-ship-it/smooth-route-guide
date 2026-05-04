@@ -50,6 +50,15 @@ import DeliveryOrdersCC from "./pages/callcenter/DeliveryOrdersCC";
 import RestaurantsCC from "./pages/callcenter/RestaurantsCC";
 import AutoImport from "./pages/callcenter/AutoImport";
 import GoogleMapsImport from "./pages/callcenter/GoogleMapsImport";
+import Relations360 from "./pages/callcenter/Relations360";
+import InternalMessaging from "./pages/callcenter/InternalMessaging";
+import AssistantKnowledge from "./pages/callcenter/AssistantKnowledge";
+import WalletRechargeRequests from "./pages/callcenter/WalletRechargeRequests";
+import PaymentManagement from "./pages/PaymentManagement";
+import Prospecting from "./pages/Prospecting";
+import VisitorAnalytics from "./pages/VisitorAnalytics";
+import CommunityChat from "@/pages/CommunityChat";
+import { AdminGeoProvider } from "./contexts/AdminGeoContext";
 
 // Admin-specific login page
 import AdminLogin from "./pages/AdminLogin";
@@ -103,7 +112,7 @@ const AdminApp = () => (
             <Route path="/admin/*" element={<Navigate to="/" replace />} />
 
             {/* Call Center */}
-            <Route path="/call-center" element={<RequireRole allowed={["admin", "agent"]}><CallCenterLayout /></RequireRole>}>
+            <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><AdminGeoProvider><CallCenterLayout /></AdminGeoProvider></RequireRole>}>
               <Route index element={<CCDashboard />} />
               <Route path="incoming" element={<IncomingCalls />} />
               <Route path="manual-booking" element={<ManualBooking />} />
@@ -119,6 +128,16 @@ const AdminApp = () => (
               <Route path="emergency" element={<Emergency />} />
               <Route path="history" element={<CallHistory />} />
               <Route path="reports" element={<CCReports />} />
+              <Route path="map" element={<AdminLiveMap />} />
+              <Route path="alerts" element={<AdminAlerts />} />
+              <Route path="relations" element={<Relations360 />} />
+              <Route path="messaging" element={<InternalMessaging />} />
+              <Route path="knowledge" element={<AssistantKnowledge />} />
+              <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
+              <Route path="payments" element={<PaymentManagement />} />
+              <Route path="prospecting" element={<Prospecting />} />
+              <Route path="analytics" element={<VisitorAnalytics />} />
+              <Route path="community" element={<CommunityChat />} />
             </Route>
 
             {/* Catch-all */}
