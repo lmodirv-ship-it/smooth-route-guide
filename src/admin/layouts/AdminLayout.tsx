@@ -114,6 +114,7 @@ const AdminLayout = () => {
     { path: "/admin/community-chat", icon: MessagesSquare, label: "الدردشة المجتمعية" },
     { path: "/admin/themes", icon: Palette, label: "Themes" },
     { path: "/admin/ads", icon: Monitor, label: "Ads Management" },
+    { path: "/admin/partner-sites", icon: Monitor, label: "🌐 المواقع الشريكة" },
     { path: "/admin/analytics", icon: BarChart3, label: "تحليلات الزوار" },
     { path: "/admin/growth", icon: BarChart3, label: "📈 تحليلات النمو" },
     { path: "/admin/versions", icon: GitBranch, label: "إدارة الإصدارات" },
