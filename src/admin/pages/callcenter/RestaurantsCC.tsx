@@ -51,10 +51,58 @@ const RestaurantsCC = () => {
   const [storeDialog, setStoreDialog] = useState(false);
   const [editingStore, setEditingStore] = useState<any>(null);
   const [storeForm, setStoreForm] = useState({
-    name: "", category: "restaurant", address: "", phone: "",
+    name: "", category: "restaurant", address: "", phone: "", email: "",
     delivery_time_min: 20, delivery_time_max: 40, is_open: true,
     description: "", delivery_fee: 10, min_order: 0, zone_id: "",
   });
+  const [bulkMenuProgress, setBulkMenuProgress] = useState<{ current: number; total: number } | null>(null);
+
+  const generateMenuForStore = async (store: any) => {
+    const { data, error } = await supabase.functions.invoke("generate-menu", {
+      body: { restaurantName: store.name, restaurantCategory: store.category || "restaurant", restaurantAddress: store.address || "" },
+    });
+    if (error) throw error;
+    const menu = data?.menu;
+    if (!menu?.categories?.length) throw new Error("AI returned empty menu");
+    let cats = 0, items = 0;
+    for (let i = 0; i < menu.categories.length; i++) {
+      const c = menu.categories[i];
+      const { data: catRow, error: catErr } = await supabase.from("menu_categories")
+        .insert({ store_id: store.id, name_ar: c.name_ar, name_fr: c.name_fr || c.name_ar, sort_order: i })
+        .select("id").single();
+      if (catErr) continue;
+      cats++;
+      const payload = (c.items || []).map((it: any, j: number) => ({
+        store_id: store.id, category_id: catRow.id, name_ar: it.name_ar, name_fr: it.name_fr || it.name_ar,
+        description_ar: it.description_ar || "", price: Number(it.price) || 0, is_available: true, sort_order: j,
+      }));
+      if (payload.length) {
+        const { error: itErr } = await supabase.from("menu_items").insert(payload);
+        if (!itErr) items += payload.length;
+      }
+    }
+    return { cats, items };
+  };
+
+  const generateMenusForAllEmpty = async () => {
+    const { data: allItems } = await supabase.from("menu_items").select("store_id");
+    const storesWithItems = new Set((allItems || []).map((i: any) => i.store_id));
+    const emptyStores = stores.filter((s) => !storesWithItems.has(s.id));
+    if (!emptyStores.length) { toast({ title: "✅ كل المطاعم لديها قوائم" }); return; }
+    if (!confirm(`سيتم توليد قوائم لـ ${emptyStores.length} مطعم. متابعة؟`)) return;
+    setBulkMenuProgress({ current: 0, total: emptyStores.length });
+    let ok = 0, fail = 0;
+    for (let i = 0; i < emptyStores.length; i++) {
+      setBulkMenuProgress({ current: i + 1, total: emptyStores.length });
+      try {
+        const { cats, items } = await generateMenuForStore(emptyStores[i]);
+        if (cats > 0 && items > 0) ok++; else fail++;
+      } catch { fail++; }
+    }
+    setBulkMenuProgress(null);
+    toast({ title: `✅ تم: ${ok} | ❌ فشل: ${fail}` });
+    fetchStores();
+  };
   const [storeImageFile, setStoreImageFile] = useState<File | null>(null);
   const [savingStore, setSavingStore] = useState(false);
 
