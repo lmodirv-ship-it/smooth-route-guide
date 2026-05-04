@@ -253,15 +253,21 @@ export default function ClientDetailSheet({ clientId, open, onOpenChange, onClie
                         checked={active}
                         onCheckedChange={async (checked) => {
                           if (!clientId) return;
+                          const isOwner = (profile?.email || "").toLowerCase() === "lmodirv@gmail.com";
                           if (checked) {
+                            // Non-owners: only ONE role allowed → replace existing roles
+                            if (!isOwner && roles.length > 0) {
+                              const { error: dErr } = await supabase.from("user_roles").delete().eq("user_id", clientId);
+                              if (dErr) { toast({ title: "خطأ", description: dErr.message, variant: "destructive" }); return; }
+                            }
                             const { error } = await supabase.from("user_roles").insert({ user_id: clientId, role: r.key });
                             if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
                             if (r.key === "driver" || r.key === "delivery") {
                               const { data: ex } = await supabase.from("drivers").select("id").eq("user_id", clientId).maybeSingle();
                               if (!ex) await supabase.from("drivers").insert({ user_id: clientId, status: "inactive", driver_type: r.key === "delivery" ? "delivery" : "ride" });
                             }
-                            setRoles(prev => [...prev, r.key]);
-                            toast({ title: `✅ تم تفعيل "${r.label}"` });
+                            setRoles(isOwner ? [...roles, r.key] : [r.key]);
+                            toast({ title: isOwner ? `✅ تم تفعيل "${r.label}"` : `🔁 تم تغيير الدور إلى "${r.label}"` });
                           } else {
                             const { error } = await supabase.from("user_roles").delete().eq("user_id", clientId).eq("role", r.key);
                             if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
