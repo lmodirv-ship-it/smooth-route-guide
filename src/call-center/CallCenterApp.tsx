@@ -41,9 +41,14 @@ import GoogleMapsImport from "@/admin/pages/callcenter/GoogleMapsImport";
 import AssistantKnowledge from "@/admin/pages/callcenter/AssistantKnowledge";
 import InternalMessaging from "@/admin/pages/callcenter/InternalMessaging";
 import Relations360 from "@/admin/pages/callcenter/Relations360";
+import WalletRechargeRequests from "@/admin/pages/callcenter/WalletRechargeRequests";
 import AdminLiveMap from "@/admin/pages/LiveMap";
 import AdminAlerts from "@/admin/pages/Alerts";
 import CommunityChat from "@/pages/CommunityChat";
+import PaymentManagement from "@/admin/pages/PaymentManagement";
+import Prospecting from "@/admin/pages/Prospecting";
+import VisitorAnalytics from "@/admin/pages/VisitorAnalytics";
+import { AdminGeoProvider } from "@/admin/contexts/AdminGeoContext";
 
 import ThemeLoader from "@/components/ThemeLoader";
 import TrackingScripts from "@/components/TrackingScripts";
@@ -64,7 +69,7 @@ const CallCenterApp = () => (
             <Route path="/login" element={<CallCenterLogin />} />
 
             {/* Call Center pages */}
-            <Route path="/" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><SessionTracker><CallCenterLayout /></SessionTracker></RequireRole>}>
+            <Route path="/" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><SessionTracker><AdminGeoProvider><CallCenterLayout /></AdminGeoProvider></SessionTracker></RequireRole>}>
               <Route index element={<CCDashboard />} />
               <Route path="incoming" element={<IncomingCalls />} />
               <Route path="manual-booking" element={<ManualBooking />} />
@@ -86,6 +91,10 @@ const CallCenterApp = () => (
               <Route path="messaging" element={<InternalMessaging />} />
               <Route path="community" element={<CommunityChat />} />
               <Route path="relations" element={<Relations360 />} />
+              <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
+              <Route path="payments" element={<PaymentManagement />} />
+              <Route path="prospecting" element={<Prospecting />} />
+              <Route path="analytics" element={<VisitorAnalytics />} />
             </Route>
 
             {/* Redirects */}
