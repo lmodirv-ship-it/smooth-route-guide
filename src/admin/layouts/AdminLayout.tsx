@@ -330,6 +330,31 @@ const AdminLayout = () => {
                   <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input placeholder={t.admin.searchPlaceholder} className="bg-secondary/60 border-border h-9 rounded-lg pr-9 text-sm" />
                 </div>
+                {/* Ask Amin (Smart Assistant) — quick search */}
+                <div className="relative w-44 md:w-72 hidden md:block">
+                  <Bot className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                  <Input
+                    placeholder="اسأل أمين..."
+                    className="bg-primary/5 border-primary/30 focus-visible:ring-primary/40 h-9 rounded-lg pr-9 pl-9 text-sm"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        const q = (e.currentTarget.value || "").trim();
+                        if (!q) return;
+                        setAiOpen(true);
+                        sendAiMessage(q);
+                        e.currentTarget.value = "";
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setAiOpen(true)}
+                    className="absolute left-1 top-1/2 -translate-y-1/2 text-[10px] px-2 py-1 rounded-md bg-primary/15 text-primary hover:bg-primary/25"
+                    title="فتح المساعد"
+                  >
+                    أمين
+                  </button>
+                </div>
               </div>
             )}
           </div>
