@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import CinematicParticles from "@/components/CinematicParticles";
 import GlobalContactFooter from "@/components/GlobalContactFooter";
 import AdsSection from "@/components/AdsSection";
-import SignupPopup from "@/components/SignupPopup";
 import SignupBanner from "@/components/SignupBanner";
 // VisitorCounter already imported above
 import HeroPromoFlash from "@/components/HeroPromoFlash";
@@ -901,7 +900,6 @@ export default function LandingPage() {
       <AdsSection />
 
       {/* ─── Signup Conversion Components ─── */}
-      <SignupPopup />
       <SignupBanner />
       <StickyCTABar />
     </div>
