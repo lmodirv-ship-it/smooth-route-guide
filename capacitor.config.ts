@@ -19,8 +19,11 @@ const config: CapacitorConfig = {
       backgroundColor: "#111827",
       style: "DARK",
     },
+    App: {
+      // Deep links: open https://www.hn-driver.com/* inside the app
+      // Configured in AndroidManifest.xml via cap sync.
+    },
   },
 };
 
 export default config;
-
