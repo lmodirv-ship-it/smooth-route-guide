@@ -54,6 +54,71 @@ const CCDashboard = () => {
   const [cancelReason, setCancelReason] = useState("");
   const inAppCall = useInAppCall();
 
+  // ───── Prospecting (شركاء محتملين) ─────
+  const [prospects, setProspects] = useState<any[]>([]);
+  const [prospectFilter, setProspectFilter] = useState<"all" | "pending" | "callback" | "no_answer" | "called">("pending");
+  const [prospectCityFilter, setProspectCityFilter] = useState<string>("all");
+  const [prospectStats, setProspectStats] = useState({ total: 0, pending: 0, called: 0, interested: 0, converted: 0 });
+  const [prospectLoading, setProspectLoading] = useState(false);
+  const [triggeringScan, setTriggeringScan] = useState(false);
+
+  const fetchProspects = useCallback(async () => {
+    setProspectLoading(true);
+    const { data } = await supabase
+      .from("prospects")
+      .select("*")
+      .order("call_priority", { ascending: false })
+      .order("rating", { ascending: false })
+      .limit(80);
+    setProspects(data || []);
+    const { data: all } = await supabase.from("prospects").select("status, call_status");
+    if (all) {
+      setProspectStats({
+        total: all.length,
+        pending: all.filter((p: any) => p.call_status === "pending").length,
+        called: all.filter((p: any) => p.call_status === "called").length,
+        interested: all.filter((p: any) => p.status === "interested").length,
+        converted: all.filter((p: any) => p.status === "converted").length,
+      });
+    }
+    setProspectLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchProspects();
+    const ch = supabase.channel("cc-prospects-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "prospects" }, fetchProspects)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [fetchProspects]);
+
+  const updateProspect = async (id: string, updates: Record<string, any>) => {
+    const { error } = await supabase.from("prospects").update(updates).eq("id", id);
+    if (error) toast({ title: "خطأ", description: error.message, variant: "destructive" });
+    else { toast({ title: "تم التحديث ✅" }); fetchProspects(); }
+  };
+
+  const triggerAutoScan = async () => {
+    setTriggeringScan(true);
+    try {
+      const { error } = await supabase.functions.invoke("auto-prospect", { body: { sync_mailbluster: false } });
+      if (error) throw error;
+      toast({ title: "🔍 بدأ البحث التلقائي عن شركاء جدد..." });
+      setTimeout(fetchProspects, 3000);
+    } catch (e: any) {
+      toast({ title: "خطأ", description: e.message, variant: "destructive" });
+    } finally {
+      setTriggeringScan(false);
+    }
+  };
+
+  const prospectCities = Array.from(new Set(prospects.map((p) => p.city).filter(Boolean)));
+  const filteredProspects = prospects.filter((p) => {
+    if (prospectFilter !== "all" && p.call_status !== prospectFilter) return false;
+    if (prospectCityFilter !== "all" && p.city !== prospectCityFilter) return false;
+    return true;
+  });
+
   const fetchAll = useCallback(async () => {
     const today = new Date().toISOString().slice(0, 10);
     const [
