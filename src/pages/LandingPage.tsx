@@ -27,6 +27,7 @@ import HeroPromoFlash from "@/components/HeroPromoFlash";
 import TangierSocialProof from "@/components/TangierSocialProof";
 import VideoShowcaseSection from "@/components/VideoShowcaseSection";
 import FreePeriodHeroBanner from "@/components/FreePeriodHeroBanner";
+import ApkDownloadHero from "@/components/ApkDownloadHero";
 import LaunchPromoBanner from "@/components/LaunchPromoBanner";
 import StickyCTABar from "@/components/StickyCTABar";
 import logo from "@/assets/hn-driver-badge.png";
@@ -370,6 +371,9 @@ export default function LandingPage() {
 
         {/* Hero Content */}
         <div className="container mx-auto px-4 relative z-10 pt-20 pb-8">
+          {/* ═══ APK Download CTA ═══ */}
+          <ApkDownloadHero />
+
           {/* ═══ Free Period Banner ═══ */}
           <FreePeriodHeroBanner />
 
