@@ -4519,6 +4519,7 @@ export type Database = {
           delivery_time_max: number | null
           delivery_time_min: number | null
           description: string | null
+          email: string | null
           google_place_id: string | null
           id: string
           image_url: string | null
@@ -4546,6 +4547,7 @@ export type Database = {
           delivery_time_max?: number | null
           delivery_time_min?: number | null
           description?: string | null
+          email?: string | null
           google_place_id?: string | null
           id?: string
           image_url?: string | null
@@ -4573,6 +4575,7 @@ export type Database = {
           delivery_time_max?: number | null
           delivery_time_min?: number | null
           description?: string | null
+          email?: string | null
           google_place_id?: string | null
           id?: string
           image_url?: string | null
