@@ -52,8 +52,22 @@ const AdminRestaurants = () => {
       const st = emptyStores[i];
       setBulkMenuProgress({ current: i + 1, total: emptyStores.length });
       try {
-        const { cats, items } = await generateMenuForStore(st);
-        if (cats > 0 && items > 0) ok++; else fail++;
+        const hasMenu = menuItems.some((i) => i.store_id === st.id);
+        const hasEmail = !!st.email && st.email.trim() !== "";
+        if (!hasMenu) {
+          const { cats, items } = await generateMenuForStore(st);
+          if (!(cats > 0 && items > 0)) { fail++; continue; }
+        }
+        if (!hasEmail) {
+          const slug = (st.name || "restaurant")
+            .toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, "")
+            .slice(0, 20) || "restaurant";
+          const generated = `${slug}${Math.floor(Math.random() * 9000 + 1000)}@hn-driver.com`;
+          await supabase.from("stores").update({ email: generated }).eq("id", st.id);
+        }
+        ok++;
       } catch (e) {
         console.error("bulk menu fail", st.name, e);
         fail++;
