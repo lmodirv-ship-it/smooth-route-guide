@@ -87,16 +87,33 @@ const RestaurantsCC = () => {
   const generateMenusForAllEmpty = async () => {
     const { data: allItems } = await supabase.from("menu_items").select("store_id");
     const storesWithItems = new Set((allItems || []).map((i: any) => i.store_id));
-    const emptyStores = stores.filter((s) => !storesWithItems.has(s.id));
-    if (!emptyStores.length) { toast({ title: "✅ كل المطاعم لديها قوائم" }); return; }
-    if (!confirm(`سيتم توليد قوائم لـ ${emptyStores.length} مطعم. متابعة؟`)) return;
+    const emptyStores = stores.filter(
+      (s) => !storesWithItems.has(s.id) || !s.email || s.email.trim() === ""
+    );
+    if (!emptyStores.length) { toast({ title: "✅ كل المطاعم لديها قوائم وإيمايل" }); return; }
+    if (!confirm(`سيتم توليد قوائم/إيمايلات لـ ${emptyStores.length} مطعم. متابعة؟`)) return;
     setBulkMenuProgress({ current: 0, total: emptyStores.length });
     let ok = 0, fail = 0;
     for (let i = 0; i < emptyStores.length; i++) {
       setBulkMenuProgress({ current: i + 1, total: emptyStores.length });
+      const st = emptyStores[i];
       try {
-        const { cats, items } = await generateMenuForStore(emptyStores[i]);
-        if (cats > 0 && items > 0) ok++; else fail++;
+        const hasMenu = storesWithItems.has(st.id);
+        const hasEmail = !!st.email && st.email.trim() !== "";
+        if (!hasMenu) {
+          const { cats, items } = await generateMenuForStore(st);
+          if (!(cats > 0 && items > 0)) { fail++; continue; }
+        }
+        if (!hasEmail) {
+          const slug = (st.name || "restaurant")
+            .toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, "")
+            .slice(0, 20) || "restaurant";
+          const generated = `${slug}${Math.floor(Math.random() * 9000 + 1000)}@hn-driver.com`;
+          await supabase.from("stores").update({ email: generated }).eq("id", st.id);
+        }
+        ok++;
       } catch { fail++; }
     }
     setBulkMenuProgress(null);
