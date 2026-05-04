@@ -259,6 +259,9 @@ const RestaurantsCC = () => {
     s.name?.toLowerCase().includes(search.toLowerCase()) ||
     (s.address || "").toLowerCase().includes(search.toLowerCase())
   );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  useEffect(() => { setPage(1); }, [search]);
 
   const generateRestaurants = async () => {
     if (selectedCountry === "all") {
