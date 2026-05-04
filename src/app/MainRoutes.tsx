@@ -17,15 +17,15 @@ const LazyPage = ({ component: Component }: { component: React.LazyExoticCompone
   </Suspense>
 );
 
-// ─── Core (public) pages — eagerly loaded ───
-import LandingPage from "@/pages/LandingPage";
-import Splash from "@/pages/Splash";
-import Welcome from "@/pages/Welcome";
-import AuthPage from "@/pages/AuthPage";
-import CompleteProfile from "@/pages/CompleteProfile";
-import ForgotPassword from "@/pages/ForgotPassword";
-import ResetPassword from "@/pages/ResetPassword";
-import NotFound from "@/pages/NotFound";
+// ─── Core pages — lazy loaded for fast initial bootstrap ───
+const LandingPage = lazy(() => import("@/pages/LandingPage"));
+const Splash = lazy(() => import("@/pages/Splash"));
+const Welcome = lazy(() => import("@/pages/Welcome"));
+const AuthPage = lazy(() => import("@/pages/AuthPage"));
+const CompleteProfile = lazy(() => import("@/pages/CompleteProfile"));
+const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // ─── Heavy pages — lazy loaded ───
 const CustomerTracking = lazy(() => import("@/pages/CustomerTracking"));
