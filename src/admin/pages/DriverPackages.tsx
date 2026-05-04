@@ -64,16 +64,13 @@ const DriverPackages = () => {
   useEffect(() => { fetchData(); }, []);
 
   const handleSave = async () => {
-    // Only Arabic name is required — price can be 0 (free packages)
-    if (!form.name_ar?.trim()) {
-      toast({ title: "الاسم العربي مطلوب", variant: "destructive" });
-      return;
-    }
+    // No blocking validation — auto-fill missing values so save always succeeds
+    const fallbackName = form.name_ar?.trim() || form.name_fr?.trim() || form.name_en?.trim() || "باقة جديدة";
     const payload = {
       ...form,
-      name_ar: form.name_ar.trim(),
-      name_fr: form.name_fr?.trim() || form.name_ar.trim(),
-      name_en: form.name_en?.trim() || form.name_ar.trim(),
+      name_ar: fallbackName,
+      name_fr: form.name_fr?.trim() || fallbackName,
+      name_en: form.name_en?.trim() || fallbackName,
       price: Math.max(0, Number(form.price) || 0),
       duration_days: Math.max(1, Number(form.duration_days) || 30),
       original_price: form.original_price > 0 ? form.original_price : null,
