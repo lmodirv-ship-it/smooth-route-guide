@@ -91,16 +91,16 @@ const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
 export const mainRouteElements = (
   <>
     {/* ─── Public pages (no layout wrapper needed) ─── */}
-    <Route path="/" element={<LandingPage />} />
+    <Route path="/" element={<LazyPage component={LandingPage} />} />
     <Route path="/hn-groupe" element={<LazyPage component={HNGroupePortal} />} />
     <Route path="/projects" element={<LazyPage component={AllProjects} />} />
-    <Route path="/splash" element={<Splash />} />
-    <Route path="/welcome" element={<Welcome />} />
-    <Route path="/login" element={<AuthPage />} />
-    <Route path="/auth/:role" element={<AuthPage />} />
-    <Route path="/complete-profile" element={<RequireRole><CompleteProfile /></RequireRole>} />
-    <Route path="/forgot-password" element={<ForgotPassword />} />
-    <Route path="/reset-password" element={<ResetPassword />} />
+    <Route path="/splash" element={<LazyPage component={Splash} />} />
+    <Route path="/welcome" element={<LazyPage component={Welcome} />} />
+    <Route path="/login" element={<LazyPage component={AuthPage} />} />
+    <Route path="/auth/:role" element={<LazyPage component={AuthPage} />} />
+    <Route path="/complete-profile" element={<RequireRole><LazyPage component={CompleteProfile} /></RequireRole>} />
+    <Route path="/forgot-password" element={<LazyPage component={ForgotPassword} />} />
+    <Route path="/reset-password" element={<LazyPage component={ResetPassword} />} />
     <Route path="/community" element={<RequireRole><LazyPage component={CommunityChat} /></RequireRole>} />
 
     {/* ═══════════════════════════════════════════
