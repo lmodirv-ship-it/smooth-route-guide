@@ -213,7 +213,14 @@ const DriverSubscription = () => {
                     </div>
 
                     <Button
-                      onClick={() => setSelectedPkg(pkg)}
+                      onClick={() => {
+                        if (Number(pkg.price) <= 1) {
+                          setSelectedPkg(pkg);
+                          handlePaymentComplete("wallet");
+                        } else {
+                          setSelectedPkg(pkg);
+                        }
+                      }}
                       disabled={subscribing === pkg.id}
                         className={`w-full h-12 rounded-xl font-bold text-base ${
                         pkg.is_featured
@@ -221,11 +228,11 @@ const DriverSubscription = () => {
                           : "bg-secondary text-foreground hover:bg-secondary/80"
                       }`}
                     >
-                      {subscribing === pkg.id ? "جاري الاشتراك..." : "اشترك الآن"}
+                      {subscribing === pkg.id ? "جاري الاشتراك..." : (Number(pkg.price) <= 1 ? "تفعيل مجاني" : "اشترك الآن")}
                     </Button>
 
-                    {/* Payment picker for selected package */}
-                    {selectedPkg?.id === pkg.id && (
+                    {/* Payment picker for selected package (skip for free packages) */}
+                    {selectedPkg?.id === pkg.id && Number(pkg.price) > 1 && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 pt-4 border-t border-border">
                         <PaymentMethodPicker
                           selected={paymentMethod}
