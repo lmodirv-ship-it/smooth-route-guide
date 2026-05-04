@@ -35,6 +35,32 @@ const AdminRestaurants = () => {
   const [saving, setSaving] = useState(false);
   const [autoMenu, setAutoMenu] = useState(true);
   const [generatingMenuFor, setGeneratingMenuFor] = useState<string | null>(null);
+  const [bulkMenuProgress, setBulkMenuProgress] = useState<{ current: number; total: number } | null>(null);
+
+  const generateMenusForAllEmpty = async () => {
+    const emptyStores = stores.filter((s) => !menuItems.some((i) => i.store_id === s.id));
+    if (!emptyStores.length) {
+      toast({ title: "✅ كل المطاعم لديها قوائم" });
+      return;
+    }
+    if (!confirm(`سيتم توليد قوائم لـ ${emptyStores.length} مطعم. هل تريد المتابعة؟`)) return;
+    setBulkMenuProgress({ current: 0, total: emptyStores.length });
+    let ok = 0, fail = 0;
+    for (let i = 0; i < emptyStores.length; i++) {
+      const st = emptyStores[i];
+      setBulkMenuProgress({ current: i + 1, total: emptyStores.length });
+      try {
+        const { cats, items } = await generateMenuForStore(st);
+        if (cats > 0 && items > 0) ok++; else fail++;
+      } catch (e) {
+        console.error("bulk menu fail", st.name, e);
+        fail++;
+      }
+    }
+    setBulkMenuProgress(null);
+    toast({ title: `✅ تم: ${ok} | ❌ فشل: ${fail}` });
+    fetchAll();
+  };
 
   // Generate menu for one store via AI and persist to DB
   const generateMenuForStore = async (store: any): Promise<{ cats: number; items: number }> => {
