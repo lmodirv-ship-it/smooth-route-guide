@@ -135,6 +135,25 @@ export default function LandingPage() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Load partner sites from DB (admin-managed)
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from("partner_sites")
+        .select("*")
+        .eq("is_visible", true)
+        .neq("status", "hidden")
+        .order("sort_order", { ascending: true });
+      if (data) setDbPartnerSites(data as DbPartnerSite[]);
+    };
+    load();
+    const ch = supabase
+      .channel("partner_sites_public")
+      .on("postgres_changes", { event: "*", schema: "public", table: "partner_sites" }, load)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, []);
+
   const services = [
     { icon: Car, title: lt.rideTitle, desc: lt.rideDesc, glow: "glow-ring-orange" },
     { icon: Package, title: lt.deliveryTitle, desc: lt.deliveryDesc, glow: "glow-ring-blue" },
