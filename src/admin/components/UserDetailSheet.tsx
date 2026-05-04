@@ -83,20 +83,34 @@ export default function UserDetailSheet({ user, open, onOpenChange, currentUserI
   if (!user) return null;
   const isSelf = user.id === currentUserId;
 
-  const toggleRole = (role: string) => {
+  const OWNER_EMAIL = "lmodirv@gmail.com";
+  const isOwner = user.email?.toLowerCase() === OWNER_EMAIL;
+  const isAdminUser = selectedRoles.includes("admin");
+  const isCurrentlyAdmin = user.roles.includes("admin");
+
+  const setSingleRole = (role: string) => {
+    if (isOwner) return;
+    setSelectedRoles([role]);
+  };
+
+  const toggleAdminExtra = (role: string, checked: boolean) => {
+    if (isOwner) return;
     setSelectedRoles(prev => {
-      if (prev.includes(role)) {
-        if (role === "admin" && isSelf) { toast({ title: "⚠️ لا يمكنك إزالة دور المسؤول عن نفسك", variant: "destructive" }); return prev; }
-        if (prev.length === 1) return prev;
-        return prev.filter(r => r !== role);
-      }
-      return [...prev, role];
+      const base = prev.filter(r => r !== role);
+      return checked ? [...base, role] : base;
     });
   };
 
   const handleSaveRoles = async () => {
-    if (saving) return;
-    if (isSelf && !selectedRoles.includes("admin")) { toast({ title: "⚠️ لا يمكنك إزالة دور المسؤول عن نفسك", variant: "destructive" }); return; }
+    if (saving || isOwner) return;
+    if (isSelf && !selectedRoles.includes("admin")) {
+      toast({ title: "⚠️ لا يمكنك إزالة دور المسؤول عن نفسك", variant: "destructive" });
+      return;
+    }
+    if (selectedRoles.length === 0) {
+      toast({ title: "⚠️ يجب اختيار دور واحد على الأقل", variant: "destructive" });
+      return;
+    }
     const sortedOld = [...user.roles].sort().join(",");
     const sortedNew = [...selectedRoles].sort().join(",");
     if (sortedOld === sortedNew) return;
@@ -104,7 +118,10 @@ export default function UserDetailSheet({ user, open, onOpenChange, currentUserI
     setSaving(true);
     try {
       await supabase.from("user_roles").delete().eq("user_id", user.id);
-      await supabase.from("user_roles").insert(selectedRoles.map(role => ({ user_id: user.id, role: role as AppRole })));
+      const { error: insErr } = await supabase
+        .from("user_roles")
+        .insert(selectedRoles.map(role => ({ user_id: user.id, role: role as AppRole })));
+      if (insErr) throw insErr;
 
       if (selectedRoles.includes("driver") && !user.roles.includes("driver")) {
         const { data: ex } = await supabase.from("drivers").select("id").eq("user_id", user.id).maybeSingle();
