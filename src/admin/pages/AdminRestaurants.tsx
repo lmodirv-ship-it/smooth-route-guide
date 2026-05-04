@@ -282,7 +282,11 @@ const AdminRestaurants = () => {
     <div className="space-y-6" dir={dir}>
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Store className="w-6 h-6" /> {tr.title}</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <label className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border border-border bg-secondary/40 cursor-pointer">
+            <Switch checked={autoMenu} onCheckedChange={setAutoMenu} />
+            <span className="font-medium">توليد القائمة تلقائياً مع المطعم</span>
+          </label>
           <Button onClick={generateRestaurants} disabled={generating} className="gap-1 bg-green-600 hover:bg-green-700 text-white">
             {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} {tr.generate}
           </Button>
