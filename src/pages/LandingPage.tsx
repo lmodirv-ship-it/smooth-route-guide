@@ -46,6 +46,7 @@ import projAiVision from "@/assets/project-ai-vision.png";
 import projCloud from "@/assets/project-cloud.png";
 import projAiVideo from "@/assets/project-ai-video.png";
 import projLivraisonExpress from "@/assets/project-livraison-express.jpg";
+import { HN_PROJECTS } from "@/data/hnGroupeProjects";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -867,31 +868,60 @@ export default function LandingPage() {
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[
-              { name: "HN Driver", desc: "منصة النقل والتوصيل الذكية", img: projHnDriver, url: "https://smooth-route-guide.lovable.app", status: "published" },
-              { name: "Souk-HN Express", desc: "سوق إلكتروني متكامل للتجارة", img: projSoukHn, url: "https://lovable.dev", status: "published" },
-              { name: "HN Print GR", desc: "منصة الطباعة والتصميم الاحترافي", img: projHnPrint, url: "https://lovable.dev", status: "published" },
-              { name: "Grand Tanger Print Studio", desc: "استوديو طباعة احترافي بطنجة", img: projGtStudio, url: "https://lovable.dev", status: "active" },
-              { name: "AI Scene Studio", desc: "استوديو ذكاء اصطناعي للمشاهد", img: projAiScene, url: "https://lovable.dev", status: "active" },
-              { name: "AI Studio Vision", desc: "رؤية ذكية بتقنية AI", img: projAiVision, url: "https://lovable.dev", status: "active" },
-              { name: "Cloud Harmony", desc: "خدمات سحابية متناغمة", img: projCloud, url: "https://lovable.dev", status: "active" },
-              { name: "Ai Video HN", desc: "إنتاج فيديو بالذكاء الاصطناعي", img: projAiVideo, url: "https://hn-aivideo.lovable.app/", status: "active" },
-              { name: "Livraison Express", desc: "خدمة التوصيل السريع الاحترافية", img: projLivraisonExpress, url: "https://lovable.dev", status: "published" },
-            ].map((project, i) => (
-              <motion.a key={project.name} href={project.url} target="_blank" rel="noopener noreferrer" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i} className="group relative rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 block">
-                <div className="w-16 h-16 rounded-xl overflow-hidden mb-4 group-hover:scale-110 transition-transform shadow-lg">
-                  <img src={project.img} alt={project.name} className="w-full h-full object-cover" loading="lazy" />
-                </div>
-                <h3 className="text-lg font-bold text-foreground mb-2">{project.name}</h3>
-                <p className="text-sm text-muted-foreground mb-3">{project.desc}</p>
-                {project.status === "published" && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
-                    <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                    منشور
-                  </span>
-                )}
-              </motion.a>
-            ))}
+            {HN_PROJECTS.map((project, i) => {
+              const Icon = project.icon;
+              return (
+                <motion.a
+                  key={project.id}
+                  href={project.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={fadeUp}
+                  custom={i}
+                  className="group relative rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 block"
+                >
+                  <div className={`w-16 h-16 rounded-xl mb-4 flex items-center justify-center bg-gradient-to-br ${project.gradient} ${project.glow} shadow-lg group-hover:scale-110 transition-transform`}>
+                    <Icon className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-lg font-bold text-foreground">{project.nameAr}</h3>
+                    {project.featured && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary">مميز</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground/80 mb-1">{project.name}</p>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{project.description}</p>
+                  <div className="flex items-center justify-between">
+                    {project.status === "live" ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-success">
+                        <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                        منشور
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                        <span className="w-2 h-2 rounded-full bg-muted-foreground" />
+                        قريباً
+                      </span>
+                    )}
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /> {project.rating}
+                    </span>
+                  </div>
+                </motion.a>
+              );
+            })}
+          </div>
+          <div className="text-center mt-10">
+            <button
+              onClick={() => navigate("/projects")}
+              className="inline-flex items-center gap-2 gradient-primary text-primary-foreground font-bold rounded-full px-8 py-3 glow-primary hover:opacity-90 transition-opacity"
+            >
+              عرض جميع المشاريع
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </section>
