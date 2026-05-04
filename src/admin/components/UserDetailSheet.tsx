@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
+import { Crown, Lock } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -81,20 +83,34 @@ export default function UserDetailSheet({ user, open, onOpenChange, currentUserI
   if (!user) return null;
   const isSelf = user.id === currentUserId;
 
-  const toggleRole = (role: string) => {
+  const OWNER_EMAIL = "lmodirv@gmail.com";
+  const isOwner = user.email?.toLowerCase() === OWNER_EMAIL;
+  const isAdminUser = selectedRoles.includes("admin");
+  const isCurrentlyAdmin = user.roles.includes("admin");
+
+  const setSingleRole = (role: string) => {
+    if (isOwner) return;
+    setSelectedRoles([role]);
+  };
+
+  const toggleAdminExtra = (role: string, checked: boolean) => {
+    if (isOwner) return;
     setSelectedRoles(prev => {
-      if (prev.includes(role)) {
-        if (role === "admin" && isSelf) { toast({ title: "⚠️ لا يمكنك إزالة دور المسؤول عن نفسك", variant: "destructive" }); return prev; }
-        if (prev.length === 1) return prev;
-        return prev.filter(r => r !== role);
-      }
-      return [...prev, role];
+      const base = prev.filter(r => r !== role);
+      return checked ? [...base, role] : base;
     });
   };
 
   const handleSaveRoles = async () => {
-    if (saving) return;
-    if (isSelf && !selectedRoles.includes("admin")) { toast({ title: "⚠️ لا يمكنك إزالة دور المسؤول عن نفسك", variant: "destructive" }); return; }
+    if (saving || isOwner) return;
+    if (isSelf && !selectedRoles.includes("admin")) {
+      toast({ title: "⚠️ لا يمكنك إزالة دور المسؤول عن نفسك", variant: "destructive" });
+      return;
+    }
+    if (selectedRoles.length === 0) {
+      toast({ title: "⚠️ يجب اختيار دور واحد على الأقل", variant: "destructive" });
+      return;
+    }
     const sortedOld = [...user.roles].sort().join(",");
     const sortedNew = [...selectedRoles].sort().join(",");
     if (sortedOld === sortedNew) return;
@@ -102,7 +118,10 @@ export default function UserDetailSheet({ user, open, onOpenChange, currentUserI
     setSaving(true);
     try {
       await supabase.from("user_roles").delete().eq("user_id", user.id);
-      await supabase.from("user_roles").insert(selectedRoles.map(role => ({ user_id: user.id, role: role as AppRole })));
+      const { error: insErr } = await supabase
+        .from("user_roles")
+        .insert(selectedRoles.map(role => ({ user_id: user.id, role: role as AppRole })));
+      if (insErr) throw insErr;
 
       if (selectedRoles.includes("driver") && !user.roles.includes("driver")) {
         const { data: ex } = await supabase.from("drivers").select("id").eq("user_id", user.id).maybeSingle();
@@ -238,20 +257,74 @@ export default function UserDetailSheet({ user, open, onOpenChange, currentUserI
 
           <Separator />
 
-          {/* Roles Management */}
+          {/* Roles Management — single primary role + admin toggle */}
           <div className="space-y-3">
-            <p className="text-sm font-semibold text-foreground flex items-center gap-2"><UserCog className="w-4 h-4" /> إدارة الأدوار</p>
-            <div className="grid grid-cols-2 gap-2">
-              {Object.entries(ROLE_LABELS).map(([key, label]) => (
-                <label key={key} className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors text-sm ${selectedRoles.includes(key) ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}>
-                  <Checkbox checked={selectedRoles.includes(key)} onCheckedChange={() => toggleRole(key)} />
-                  <Badge className={`text-xs ${ROLE_COLORS[key] || ROLE_COLORS.user}`}>{label}</Badge>
-                </label>
-              ))}
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <UserCog className="w-4 h-4" /> إدارة الأدوار
+              </p>
+              {isOwner && (
+                <Badge className="gap-1 bg-amber-500/15 text-amber-600 border-amber-500/30">
+                  <Crown className="w-3 h-3" /> المالك
+                </Badge>
+              )}
             </div>
-            <Button onClick={handleSaveRoles} disabled={saving || selectedRoles.length === 0} className="w-full gap-2" size="sm">
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} حفظ الأدوار
-            </Button>
+
+            {isOwner ? (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-foreground flex items-start gap-2">
+                <Lock className="w-4 h-4 mt-0.5 text-amber-600" />
+                <div>
+                  <p className="font-semibold">حساب المالك محمي</p>
+                  <p className="text-xs text-muted-foreground">لا يمكن تعديل أدوار المالك ({OWNER_EMAIL}).</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="text-xs text-muted-foreground">اختر دوراً واحداً رئيسياً (يمكن إضافة المسؤول كصلاحية إضافية فقط)</p>
+                <RadioGroup
+                  value={selectedRoles.find(r => r !== "admin") || ""}
+                  onValueChange={setSingleRole}
+                  className="grid grid-cols-2 gap-2"
+                >
+                  {Object.entries(ROLE_LABELS).filter(([k]) => k !== "admin").map(([key, label]) => {
+                    const checked = selectedRoles.includes(key);
+                    return (
+                      <label
+                        key={key}
+                        className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors text-sm ${checked ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"}`}
+                      >
+                        <RadioGroupItem value={key} />
+                        <Badge className={`text-xs ${ROLE_COLORS[key] || ROLE_COLORS.user}`}>{label}</Badge>
+                      </label>
+                    );
+                  })}
+                </RadioGroup>
+
+                <div className="flex items-center justify-between p-3 rounded-lg border border-destructive/30 bg-destructive/5">
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-destructive" />
+                    <div>
+                      <p className="text-sm font-semibold">صلاحيات المسؤول (Admin)</p>
+                      <p className="text-xs text-muted-foreground">يمنح وصولاً كاملاً للوحة الإدارة</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={isAdminUser}
+                    onCheckedChange={(c) => {
+                      if (isSelf && isCurrentlyAdmin && !c) {
+                        toast({ title: "⚠️ لا يمكنك إزالة دور المسؤول عن نفسك", variant: "destructive" });
+                        return;
+                      }
+                      toggleAdminExtra("admin", c);
+                    }}
+                  />
+                </div>
+
+                <Button onClick={handleSaveRoles} disabled={saving || selectedRoles.length === 0} className="w-full gap-2" size="sm">
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} حفظ الأدوار
+                </Button>
+              </>
+            )}
           </div>
 
           <Separator />
