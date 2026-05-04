@@ -176,6 +176,7 @@ const AdminLayout = () => {
 
   return (
     <AdminGeoProvider>
+    <CallProvider>
     <GlobalNotificationListener />
     <div className="min-h-screen gradient-dark flex" dir={dir}>
       {/* Sidebar */}
@@ -466,6 +467,7 @@ const AdminLayout = () => {
     </div>
     
     {isVisible("contact_footer") && <GlobalContactFooter />}
+    </CallProvider>
     </AdminGeoProvider>
   );
 };
