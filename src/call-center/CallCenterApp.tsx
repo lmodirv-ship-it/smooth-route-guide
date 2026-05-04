@@ -36,6 +36,7 @@ import CallHistory from "@/admin/pages/callcenter/CallHistory";
 import CCReports from "@/admin/pages/callcenter/CCReports";
 import DeliveryOrdersCC from "@/admin/pages/callcenter/DeliveryOrdersCC";
 import RestaurantsCC from "@/admin/pages/callcenter/RestaurantsCC";
+import CCRestaurantMenu from "@/admin/pages/callcenter/CCRestaurantMenu";
 import AutoImport from "@/admin/pages/callcenter/AutoImport";
 import GoogleMapsImport from "@/admin/pages/callcenter/GoogleMapsImport";
 import AssistantKnowledge from "@/admin/pages/callcenter/AssistantKnowledge";
@@ -80,6 +81,7 @@ const CallCenterApp = () => (
               <Route path="tickets" element={<Tickets />} />
               <Route path="delivery" element={<DeliveryOrdersCC />} />
               <Route path="restaurants" element={<RestaurantsCC />} />
+              <Route path="restaurants/:id/menu" element={<CCRestaurantMenu />} />
               <Route path="auto-import" element={<AutoImport />} />
               <Route path="google-import" element={<GoogleMapsImport />} />
               <Route path="emergency" element={<Emergency />} />

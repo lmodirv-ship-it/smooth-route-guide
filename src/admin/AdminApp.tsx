@@ -24,6 +24,7 @@ import AdminDocuments from "./pages/Documents";
 import AdminDeliveryOrders from "./pages/DeliveryOrders";
 import AdminCallCenter from "./pages/AdminCallCenter";
 import AdminRestaurants from "./pages/AdminRestaurants";
+import AdminRestaurantMenu from "./pages/AdminRestaurantMenu";
 import ZonesManagement from "./pages/ZonesManagement";
 import AdminSettings from "./pages/Settings";
 import SetupAdmin from "./pages/SetupAdmin";
@@ -48,6 +49,7 @@ import CallHistory from "./pages/callcenter/CallHistory";
 import CCReports from "./pages/callcenter/CCReports";
 import DeliveryOrdersCC from "./pages/callcenter/DeliveryOrdersCC";
 import RestaurantsCC from "./pages/callcenter/RestaurantsCC";
+import CCRestaurantMenu from "./pages/callcenter/CCRestaurantMenu";
 import AutoImport from "./pages/callcenter/AutoImport";
 import GoogleMapsImport from "./pages/callcenter/GoogleMapsImport";
 import Relations360 from "./pages/callcenter/Relations360";
@@ -98,6 +100,7 @@ const AdminApp = () => (
               <Route path="delivery" element={<AdminDeliveryOrders />} />
               <Route path="call-center" element={<AdminCallCenter />} />
               <Route path="restaurants" element={<AdminRestaurants />} />
+              <Route path="restaurants/:id/menu" element={<AdminRestaurantMenu />} />
               <Route path="zones" element={<ZonesManagement />} />
               <Route path="ads" element={<AdsManagement />} />
               <Route path="settings" element={<AdminSettings />} />
@@ -123,6 +126,7 @@ const AdminApp = () => (
               <Route path="tickets" element={<Tickets />} />
               <Route path="delivery" element={<DeliveryOrdersCC />} />
               <Route path="restaurants" element={<RestaurantsCC />} />
+              <Route path="restaurants/:id/menu" element={<CCRestaurantMenu />} />
               <Route path="auto-import" element={<AutoImport />} />
               <Route path="google-import" element={<GoogleMapsImport />} />
               <Route path="emergency" element={<Emergency />} />
