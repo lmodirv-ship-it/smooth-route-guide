@@ -78,7 +78,7 @@ const DriverSubscription = () => {
   return (
     <div className="min-h-screen gradient-dark pb-8" dir="rtl">
       {/* Header */}
-      <div className="glass-strong sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
+      <div className="glass-strong sticky top-0 z-30 px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-secondary">
           <ArrowRight className="w-5 h-5 text-muted-foreground" />
         </button>
@@ -166,20 +166,20 @@ const DriverSubscription = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className={`relative rounded-2xl p-5 border transition-all overflow-hidden ${
+                    className={`relative rounded-2xl p-5 mt-4 border transition-all ${
                       pkg.is_featured
                         ? "glass-card-gold"
                         : "gradient-card"
                     }`}
                   >
                     {pkg.is_featured && (
-                      <div className="absolute -top-3 right-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold text-xs px-4 py-1 rounded-full">
+                      <div className="absolute -top-3 right-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold text-xs px-4 py-1 rounded-full shadow-lg z-10 whitespace-nowrap">
                         ⭐ الأكثر شعبية
                       </div>
                     )}
 
                     {discount(pkg) > 0 && (
-                      <div className="absolute -top-3 left-4 bg-red-500 text-white font-bold text-xs px-3 py-1 rounded-full">
+                      <div className="absolute -top-3 left-4 bg-red-500 text-white font-bold text-xs px-3 py-1 rounded-full shadow-lg z-10 whitespace-nowrap">
                         خصم {discount(pkg)}%
                       </div>
                     )}
@@ -190,7 +190,11 @@ const DriverSubscription = () => {
                         <p className="text-muted-foreground text-sm">{pkg.description_ar || `${pkg.duration_days} يوم`}</p>
                       </div>
                       <div className="text-left">
-                        <p className="text-foreground font-bold text-2xl">{pkg.price} <span className="text-sm text-muted-foreground">DH</span></p>
+                        <p className="text-foreground font-bold text-2xl">
+                          {Number(pkg.price) <= 1
+                            ? <span className="text-emerald-400">مجاني</span>
+                            : <>{pkg.price} <span className="text-sm text-muted-foreground">DH</span></>}
+                        </p>
                         {pkg.original_price && pkg.original_price > pkg.price && (
                           <p className="text-muted-foreground text-sm line-through">{pkg.original_price} DH</p>
                         )}
