@@ -34,20 +34,75 @@ export function useDriverSubscription() {
   const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
-    // Platform is free for all registered users — no subscription required
-    setIsExpired(false);
-    setDaysLeft(9999);
-    setActiveSubscription({
-      id: "free-platform",
-      status: "free",
-      starts_at: new Date().toISOString(),
-      expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-      orders_used: 0,
-      km_used: 0,
-      package_name: "منصة مجانية",
-      duration_days: 365,
-    });
-    setLoading(false);
+    const check = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setLoading(false); return; }
+
+      const { data: fpRow } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "free_period")
+        .maybeSingle();
+
+      const fp = fpRow?.value as any;
+      const now = Date.now();
+
+      if (fp?.enabled && fp?.from && fp?.to) {
+        const fromDate = new Date(fp.from + "T00:00:00Z");
+        const toDate = new Date(fp.to + "T23:59:59Z");
+        if (now >= fromDate.getTime() && now <= toDate.getTime()) {
+          const days = Math.max(0, Math.ceil((toDate.getTime() - now) / (1000 * 60 * 60 * 24)));
+          setIsExpired(false);
+          setDaysLeft(days);
+          setActiveSubscription({
+            id: "free-period",
+            status: "free",
+            starts_at: fromDate.toISOString(),
+            expires_at: toDate.toISOString(),
+            orders_used: 0,
+            km_used: 0,
+            package_name: fp.label_ar || "فترة مجانية",
+            duration_days: days,
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
+      const nowIso = new Date().toISOString();
+      const { data } = await supabase
+        .from("driver_subscriptions")
+        .select("*, driver_packages(name_ar, duration_days)")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .gte("expires_at", nowIso)
+        .order("expires_at", { ascending: false })
+        .limit(1) as any;
+
+      if (data && data.length > 0) {
+        const sub = data[0];
+        const expires = new Date(sub.expires_at);
+        const days = Math.max(0, Math.ceil((expires.getTime() - now) / (1000 * 60 * 60 * 24)));
+        setDaysLeft(days);
+        setIsExpired(false);
+        setActiveSubscription({
+          id: sub.id,
+          status: sub.status,
+          starts_at: sub.starts_at,
+          expires_at: sub.expires_at,
+          orders_used: sub.orders_used,
+          km_used: sub.km_used,
+          package_name: sub.driver_packages?.name_ar || "باقة",
+          duration_days: sub.driver_packages?.duration_days || 30,
+        });
+      } else {
+        setIsExpired(true);
+        setDaysLeft(0);
+        setActiveSubscription(null);
+      }
+      setLoading(false);
+    };
+    check();
   }, []);
 
   return { activeSubscription, loading, daysLeft, isExpired };
