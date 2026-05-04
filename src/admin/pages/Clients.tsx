@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, Search, Eye, Wallet, Filter, SortAsc, SortDesc,
-  Download, ChevronLeft, ChevronRight, UserCheck, RefreshCw,
+  Download, ChevronLeft, ChevronRight, UserCheck, RefreshCw, Trash2, Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import ClientDetailSheet from "@/admin/components/ClientDetailSheet";
 import BalanceBars from "@/admin/components/BalanceBars";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
 
 const ROLE_LABELS: Record<string, string> = {
   user: "عميل", admin: "مسؤول", moderator: "مشرف", agent: "مركز اتصال",
@@ -52,6 +57,24 @@ const AdminClients = () => {
   const [page, setPage] = useState(0);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Client | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const { data, error } = await supabase.functions.invoke("admin-delete-user", {
+      body: { user_id: deleteTarget.id },
+    });
+    setDeleting(false);
+    if (error || (data as any)?.error) {
+      toast({ title: "فشل الحذف", description: error?.message || (data as any)?.error, variant: "destructive" });
+      return;
+    }
+    toast({ title: "تم حذف العميل بنجاح" });
+    setClients(cs => cs.filter(c => c.id !== deleteTarget.id));
+    setDeleteTarget(null);
+  };
 
   const fetchClients = async () => {
     setLoading(true);
@@ -318,10 +341,17 @@ const AdminClients = () => {
                       className="border-b border-border/40 hover:bg-secondary/20 transition-colors group"
                     >
                       <td className="p-3">
-                        <Button size="sm" variant="outline" onClick={() => openDetail(client.id)}
-                          className="text-xs h-7 gap-1 text-info border-info/30 opacity-70 group-hover:opacity-100 transition-opacity">
-                          <Eye className="w-3 h-3" />عرض
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="outline" onClick={() => openDetail(client.id)}
+                            className="text-xs h-7 gap-1 text-info border-info/30 opacity-70 group-hover:opacity-100 transition-opacity">
+                            <Eye className="w-3 h-3" />عرض
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => setDeleteTarget(client)}
+                            disabled={client.roles.includes("admin")}
+                            className="text-xs h-7 gap-1 text-destructive border-destructive/30 opacity-70 group-hover:opacity-100 transition-opacity hover:bg-destructive/10">
+                            <Trash2 className="w-3 h-3" />حذف
+                          </Button>
+                        </div>
                       </td>
                       <td className="p-3">
                         {client.pendingRechargeCount > 0 ? (
@@ -405,6 +435,27 @@ const AdminClients = () => {
         onOpenChange={setSheetOpen}
         onClientUpdated={fetchClients}
       />
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>حذف العميل نهائياً؟</AlertDialogTitle>
+            <AlertDialogDescription>
+              سيتم حذف <strong>{deleteTarget?.name || deleteTarget?.email}</strong> وجميع بياناته من النظام. هذا الإجراء لا يمكن التراجع عنه.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleDelete(); }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <><Loader2 className="w-4 h-4 ml-1 animate-spin" />جاري الحذف...</> : "نعم، احذف"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
