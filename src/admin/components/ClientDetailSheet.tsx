@@ -231,6 +231,54 @@ export default function ClientDetailSheet({ clientId, open, onOpenChange, onClie
 
             <Separator />
 
+            {/* Role Management — list with toggle switches (placed above profile edit) */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <UserPlus className="w-4 h-4 text-primary" /> الأدوار والصلاحيات
+                </p>
+                <span className="text-[10px] text-muted-foreground">{roles.length} مفعّل</span>
+              </div>
+
+              <div className="rounded-xl border border-border bg-secondary/20 divide-y divide-border/60">
+                {ALL_ROLES.map(r => {
+                  const active = roles.includes(r.key);
+                  return (
+                    <div key={r.key} className="flex items-center justify-between px-3 py-2">
+                      <div className="flex items-center gap-2 text-sm text-foreground">
+                        <span className="text-base leading-none">{r.icon}</span>
+                        <span>{r.label}</span>
+                      </div>
+                      <Switch
+                        checked={active}
+                        onCheckedChange={async (checked) => {
+                          if (!clientId) return;
+                          if (checked) {
+                            const { error } = await supabase.from("user_roles").insert({ user_id: clientId, role: r.key });
+                            if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
+                            if (r.key === "driver" || r.key === "delivery") {
+                              const { data: ex } = await supabase.from("drivers").select("id").eq("user_id", clientId).maybeSingle();
+                              if (!ex) await supabase.from("drivers").insert({ user_id: clientId, status: "inactive", driver_type: r.key === "delivery" ? "delivery" : "ride" });
+                            }
+                            setRoles(prev => [...prev, r.key]);
+                            toast({ title: `✅ تم تفعيل "${r.label}"` });
+                          } else {
+                            const { error } = await supabase.from("user_roles").delete().eq("user_id", clientId).eq("role", r.key);
+                            if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
+                            setRoles(prev => prev.filter(x => x !== r.key));
+                            toast({ title: `تم إلغاء "${r.label}"` });
+                          }
+                          onClientUpdated?.();
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <Separator />
+
             {/* Editable Profile Info */}
             <div className="space-y-4">
               <p className="text-sm font-bold text-foreground flex items-center gap-2">
