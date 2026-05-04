@@ -2,184 +2,197 @@
  * Admin Panel — self-contained module.
  * All admin dashboard (/admin/*) and call-center (/call-center/*) routes.
  * Shares the same Supabase database as the main app.
+ *
+ * ⚡ Performance: All pages are lazy-loaded to keep the initial bundle tiny.
  */
 import { Route } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import RequireRole from "@/components/RequireRole";
 
-// Admin layout & pages
-import AdminLayout from "@/admin/layouts/AdminLayout";
-import AdminDashboardPage from "@/admin/pages/Dashboard";
-import RegisteredUsers from "@/admin/pages/RegisteredUsers";
-import AdminRideRequests from "@/admin/pages/RideRequests";
-import AdminDrivers from "@/admin/pages/Drivers";
-import DriverPipeline from "@/admin/pages/DriverPipeline";
-import AdminClients from "@/admin/pages/Clients";
-import AdminEarnings from "@/admin/pages/Earnings";
-import AdminLiveMap from "@/admin/pages/LiveMap";
-import AdminAlerts from "@/admin/pages/Alerts";
-import AdminDocuments from "@/admin/pages/Documents";
-import AdminDeliveryOrders from "@/admin/pages/DeliveryOrders";
-import AdminCallCenter from "@/admin/pages/AdminCallCenter";
-import AdminRestaurants from "@/admin/pages/AdminRestaurants";
-import ZonesManagement from "@/admin/pages/ZonesManagement";
-import AdminSettings from "@/admin/pages/Settings";
-import CommissionRatesPage from "@/admin/pages/CommissionRates";
-import SmartAssistantPage from "@/admin/pages/SmartAssistant";
-import SubAssistantsPage from "@/admin/pages/SubAssistants";
-import SupervisorsPage from "@/admin/pages/Supervisors";
-import SetupAdmin from "@/admin/pages/SetupAdmin";
-import DriverPackages from "@/admin/pages/DriverPackages";
-import AdminCommunityChat from "@/admin/pages/AdminCommunityChat";
-import CityActivation from "@/admin/pages/CityActivation";
-import ThemesPage from "@/admin/pages/Themes";
-import AdsManagement from "@/admin/pages/AdsManagement";
-import VisitorAnalytics from "@/admin/pages/VisitorAnalytics";
-import GrowthAnalytics from "@/admin/pages/GrowthAnalytics";
-import VersionManager from "@/admin/pages/VersionManager";
-import PageManagement from "@/admin/pages/PageManagement";
-import DatabaseManager from "@/admin/pages/DatabaseManager";
-import PermissionsManagement from "@/admin/pages/PermissionsManagement";
-import SystemHealthCheck from "@/admin/pages/SystemHealthCheck";
-import PaymentManagement from "@/admin/pages/PaymentManagement";
-import PayPalSettings from "@/admin/pages/PayPalSettings";
-import PayPalLivePayments from "@/admin/pages/PayPalLivePayments";
-import CouponsManagement from "@/admin/pages/CouponsManagement";
-import Prospecting from "@/admin/pages/Prospecting";
-import MailBlusterTemplates from "@/admin/pages/MailBlusterTemplates";
-import ApiKeysPage from "@/admin/pages/ApiKeys";
-import PartnerSitesManagement from "@/admin/pages/PartnerSitesManagement";
-import UtmBuilder from "@/admin/pages/UtmBuilder";
-import CampaignsDashboard from "@/admin/pages/CampaignsDashboard";
+// ─── Lazy wrapper ───
+const Loading = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+  </div>
+);
+const L = (Comp: React.LazyExoticComponent<any>) => (
+  <Suspense fallback={<Loading />}><Comp /></Suspense>
+);
 
-// Supervisor layout & pages
-import SupervisorLayout from "@/admin/layouts/SupervisorLayout";
-import SupervisorDashboard from "@/admin/pages/supervisor/SupervisorDashboard";
-import SupervisorDrivers from "@/admin/pages/supervisor/SupervisorDrivers";
-import SupervisorDelivery from "@/admin/pages/supervisor/SupervisorDelivery";
-import SupervisorCallCenter from "@/admin/pages/supervisor/SupervisorCallCenter";
-import SupervisorAgentDetail from "@/admin/pages/supervisor/SupervisorAgentDetail";
-import SupervisorRestaurants from "@/admin/pages/supervisor/SupervisorRestaurants";
+// Admin layout & pages — lazy
+const AdminLayout = lazy(() => import("@/admin/layouts/AdminLayout"));
+const AdminDashboardPage = lazy(() => import("@/admin/pages/Dashboard"));
+const RegisteredUsers = lazy(() => import("@/admin/pages/RegisteredUsers"));
+const AdminRideRequests = lazy(() => import("@/admin/pages/RideRequests"));
+const AdminDrivers = lazy(() => import("@/admin/pages/Drivers"));
+const DriverPipeline = lazy(() => import("@/admin/pages/DriverPipeline"));
+const AdminClients = lazy(() => import("@/admin/pages/Clients"));
+const AdminEarnings = lazy(() => import("@/admin/pages/Earnings"));
+const AdminLiveMap = lazy(() => import("@/admin/pages/LiveMap"));
+const AdminAlerts = lazy(() => import("@/admin/pages/Alerts"));
+const AdminDocuments = lazy(() => import("@/admin/pages/Documents"));
+const AdminDeliveryOrders = lazy(() => import("@/admin/pages/DeliveryOrders"));
+const AdminCallCenter = lazy(() => import("@/admin/pages/AdminCallCenter"));
+const AdminRestaurants = lazy(() => import("@/admin/pages/AdminRestaurants"));
+const ZonesManagement = lazy(() => import("@/admin/pages/ZonesManagement"));
+const AdminSettings = lazy(() => import("@/admin/pages/Settings"));
+const CommissionRatesPage = lazy(() => import("@/admin/pages/CommissionRates"));
+const SmartAssistantPage = lazy(() => import("@/admin/pages/SmartAssistant"));
+const SubAssistantsPage = lazy(() => import("@/admin/pages/SubAssistants"));
+const SupervisorsPage = lazy(() => import("@/admin/pages/Supervisors"));
+const SetupAdmin = lazy(() => import("@/admin/pages/SetupAdmin"));
+const DriverPackages = lazy(() => import("@/admin/pages/DriverPackages"));
+const AdminCommunityChat = lazy(() => import("@/admin/pages/AdminCommunityChat"));
+const CityActivation = lazy(() => import("@/admin/pages/CityActivation"));
+const ThemesPage = lazy(() => import("@/admin/pages/Themes"));
+const AdsManagement = lazy(() => import("@/admin/pages/AdsManagement"));
+const VisitorAnalytics = lazy(() => import("@/admin/pages/VisitorAnalytics"));
+const GrowthAnalytics = lazy(() => import("@/admin/pages/GrowthAnalytics"));
+const VersionManager = lazy(() => import("@/admin/pages/VersionManager"));
+const PageManagement = lazy(() => import("@/admin/pages/PageManagement"));
+const DatabaseManager = lazy(() => import("@/admin/pages/DatabaseManager"));
+const PermissionsManagement = lazy(() => import("@/admin/pages/PermissionsManagement"));
+const SystemHealthCheck = lazy(() => import("@/admin/pages/SystemHealthCheck"));
+const PaymentManagement = lazy(() => import("@/admin/pages/PaymentManagement"));
+const PayPalSettings = lazy(() => import("@/admin/pages/PayPalSettings"));
+const PayPalLivePayments = lazy(() => import("@/admin/pages/PayPalLivePayments"));
+const CouponsManagement = lazy(() => import("@/admin/pages/CouponsManagement"));
+const Prospecting = lazy(() => import("@/admin/pages/Prospecting"));
+const MailBlusterTemplates = lazy(() => import("@/admin/pages/MailBlusterTemplates"));
+const ApiKeysPage = lazy(() => import("@/admin/pages/ApiKeys"));
+const PartnerSitesManagement = lazy(() => import("@/admin/pages/PartnerSitesManagement"));
+const UtmBuilder = lazy(() => import("@/admin/pages/UtmBuilder"));
+const CampaignsDashboard = lazy(() => import("@/admin/pages/CampaignsDashboard"));
 
-// Call Center layout & pages
-import CallCenterLayout from "@/admin/layouts/CallCenterLayout";
-import CCDashboard from "@/admin/pages/callcenter/CCDashboard";
-import IncomingCalls from "@/admin/pages/callcenter/IncomingCalls";
-import ManualBooking from "@/admin/pages/callcenter/ManualBooking";
-import RideAssign from "@/admin/pages/callcenter/RideAssign";
-import CustomerSearch from "@/admin/pages/callcenter/CustomerSearch";
-import DriverSearchCC from "@/admin/pages/callcenter/DriverSearchCC";
-import Complaints from "@/admin/pages/callcenter/Complaints";
-import Tickets from "@/admin/pages/callcenter/Tickets";
-import Emergency from "@/admin/pages/callcenter/Emergency";
-import CallHistory from "@/admin/pages/callcenter/CallHistory";
-import CCReports from "@/admin/pages/callcenter/CCReports";
-import DeliveryOrdersCC from "@/admin/pages/callcenter/DeliveryOrdersCC";
-import RestaurantsCC from "@/admin/pages/callcenter/RestaurantsCC";
-import AutoImport from "@/admin/pages/callcenter/AutoImport";
-import GoogleMapsImport from "@/admin/pages/callcenter/GoogleMapsImport";
-import AssistantKnowledge from "@/admin/pages/callcenter/AssistantKnowledge";
-import InternalMessaging from "@/admin/pages/callcenter/InternalMessaging";
-import Relations360 from "@/admin/pages/callcenter/Relations360";
-import WalletRechargeRequests from "@/admin/pages/callcenter/WalletRechargeRequests";
-import CallCenterLogin from "@/admin/pages/CallCenterLogin";
-import AdminLogin from "@/admin/pages/AdminLogin";
-import CommunityChat from "@/pages/CommunityChat";
+// Supervisor
+const SupervisorLayout = lazy(() => import("@/admin/layouts/SupervisorLayout"));
+const SupervisorDashboard = lazy(() => import("@/admin/pages/supervisor/SupervisorDashboard"));
+const SupervisorDrivers = lazy(() => import("@/admin/pages/supervisor/SupervisorDrivers"));
+const SupervisorDelivery = lazy(() => import("@/admin/pages/supervisor/SupervisorDelivery"));
+const SupervisorCallCenter = lazy(() => import("@/admin/pages/supervisor/SupervisorCallCenter"));
+const SupervisorAgentDetail = lazy(() => import("@/admin/pages/supervisor/SupervisorAgentDetail"));
+const SupervisorRestaurants = lazy(() => import("@/admin/pages/supervisor/SupervisorRestaurants"));
+
+// Call Center
+const CallCenterLayout = lazy(() => import("@/admin/layouts/CallCenterLayout"));
+const CCDashboard = lazy(() => import("@/admin/pages/callcenter/CCDashboard"));
+const IncomingCalls = lazy(() => import("@/admin/pages/callcenter/IncomingCalls"));
+const ManualBooking = lazy(() => import("@/admin/pages/callcenter/ManualBooking"));
+const RideAssign = lazy(() => import("@/admin/pages/callcenter/RideAssign"));
+const CustomerSearch = lazy(() => import("@/admin/pages/callcenter/CustomerSearch"));
+const DriverSearchCC = lazy(() => import("@/admin/pages/callcenter/DriverSearchCC"));
+const Complaints = lazy(() => import("@/admin/pages/callcenter/Complaints"));
+const Tickets = lazy(() => import("@/admin/pages/callcenter/Tickets"));
+const Emergency = lazy(() => import("@/admin/pages/callcenter/Emergency"));
+const CallHistory = lazy(() => import("@/admin/pages/callcenter/CallHistory"));
+const CCReports = lazy(() => import("@/admin/pages/callcenter/CCReports"));
+const DeliveryOrdersCC = lazy(() => import("@/admin/pages/callcenter/DeliveryOrdersCC"));
+const RestaurantsCC = lazy(() => import("@/admin/pages/callcenter/RestaurantsCC"));
+const AutoImport = lazy(() => import("@/admin/pages/callcenter/AutoImport"));
+const GoogleMapsImport = lazy(() => import("@/admin/pages/callcenter/GoogleMapsImport"));
+const AssistantKnowledge = lazy(() => import("@/admin/pages/callcenter/AssistantKnowledge"));
+const InternalMessaging = lazy(() => import("@/admin/pages/callcenter/InternalMessaging"));
+const Relations360 = lazy(() => import("@/admin/pages/callcenter/Relations360"));
+const WalletRechargeRequests = lazy(() => import("@/admin/pages/callcenter/WalletRechargeRequests"));
+const CallCenterLogin = lazy(() => import("@/admin/pages/CallCenterLogin"));
+const AdminLogin = lazy(() => import("@/admin/pages/AdminLogin"));
+const CommunityChat = lazy(() => import("@/pages/CommunityChat"));
 
 export const adminRouteElements = (
   <>
-    <Route path="/admin/login" element={<AdminLogin />} />
-    <Route path="/call-center/login" element={<CallCenterLogin />} />
-    <Route path="/setup-admin" element={<RequireRole><SetupAdmin /></RequireRole>} />
+    <Route path="/admin/login" element={L(AdminLogin)} />
+    <Route path="/call-center/login" element={L(CallCenterLogin)} />
+    <Route path="/setup-admin" element={<RequireRole>{L(SetupAdmin)}</RequireRole>} />
 
-    <Route path="/admin" element={<RequireRole allowed={["admin"]}><AdminLayout /></RequireRole>}>
-      <Route index element={<AdminDashboardPage />} />
-      <Route path="supervisors" element={<SupervisorsPage />} />
-      <Route path="users" element={<RegisteredUsers />} />
-      <Route path="requests" element={<AdminRideRequests />} />
-      <Route path="drivers" element={<AdminDrivers />} />
-      <Route path="driver-pipeline" element={<DriverPipeline />} />
-      <Route path="clients" element={<AdminClients />} />
-      <Route path="earnings" element={<AdminEarnings />} />
-      <Route path="map" element={<AdminLiveMap />} />
-      <Route path="alerts" element={<AdminAlerts />} />
-      <Route path="documents" element={<AdminDocuments />} />
-      <Route path="delivery" element={<AdminDeliveryOrders />} />
-      <Route path="call-center" element={<AdminCallCenter />} />
-      <Route path="restaurants" element={<AdminRestaurants />} />
-      <Route path="zones" element={<ZonesManagement />} />
-      <Route path="city-activation" element={<CityActivation />} />
-      <Route path="commission-rates" element={<CommissionRatesPage />} />
-      <Route path="smart-assistant" element={<SmartAssistantPage />} />
-      <Route path="sub-assistants" element={<SubAssistantsPage />} />
-      <Route path="driver-packages" element={<DriverPackages />} />
-      <Route path="themes" element={<ThemesPage />} />
-      <Route path="ads" element={<AdsManagement />} />
-      <Route path="analytics" element={<VisitorAnalytics />} />
-      <Route path="growth" element={<GrowthAnalytics />} />
-      <Route path="utm-builder" element={<UtmBuilder />} />
-      <Route path="campaigns" element={<CampaignsDashboard />} />
-      <Route path="versions" element={<VersionManager />} />
-      <Route path="settings" element={<AdminSettings />} />
-      <Route path="pages" element={<PageManagement />} />
-      <Route path="database" element={<DatabaseManager />} />
-      <Route path="permissions" element={<PermissionsManagement />} />
-      <Route path="messaging" element={<InternalMessaging />} />
-      <Route path="community-chat" element={<AdminCommunityChat />} />
-      <Route path="health-check" element={<SystemHealthCheck />} />
-      <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
-      <Route path="payments" element={<PaymentManagement />} />
-      <Route path="paypal-settings" element={<PayPalSettings />} />
-      <Route path="paypal-live" element={<PayPalLivePayments />} />
-      <Route path="coupons" element={<CouponsManagement />} />
-      <Route path="prospecting" element={<Prospecting />} />
-      <Route path="mailbluster" element={<MailBlusterTemplates />} />
-      <Route path="api-keys" element={<ApiKeysPage />} />
-      <Route path="partner-sites" element={<PartnerSitesManagement />} />
+    <Route path="/admin" element={<RequireRole allowed={["admin"]}>{L(AdminLayout)}</RequireRole>}>
+      <Route index element={L(AdminDashboardPage)} />
+      <Route path="supervisors" element={L(SupervisorsPage)} />
+      <Route path="users" element={L(RegisteredUsers)} />
+      <Route path="requests" element={L(AdminRideRequests)} />
+      <Route path="drivers" element={L(AdminDrivers)} />
+      <Route path="driver-pipeline" element={L(DriverPipeline)} />
+      <Route path="clients" element={L(AdminClients)} />
+      <Route path="earnings" element={L(AdminEarnings)} />
+      <Route path="map" element={L(AdminLiveMap)} />
+      <Route path="alerts" element={L(AdminAlerts)} />
+      <Route path="documents" element={L(AdminDocuments)} />
+      <Route path="delivery" element={L(AdminDeliveryOrders)} />
+      <Route path="call-center" element={L(AdminCallCenter)} />
+      <Route path="restaurants" element={L(AdminRestaurants)} />
+      <Route path="zones" element={L(ZonesManagement)} />
+      <Route path="city-activation" element={L(CityActivation)} />
+      <Route path="commission-rates" element={L(CommissionRatesPage)} />
+      <Route path="smart-assistant" element={L(SmartAssistantPage)} />
+      <Route path="sub-assistants" element={L(SubAssistantsPage)} />
+      <Route path="driver-packages" element={L(DriverPackages)} />
+      <Route path="themes" element={L(ThemesPage)} />
+      <Route path="ads" element={L(AdsManagement)} />
+      <Route path="analytics" element={L(VisitorAnalytics)} />
+      <Route path="growth" element={L(GrowthAnalytics)} />
+      <Route path="utm-builder" element={L(UtmBuilder)} />
+      <Route path="campaigns" element={L(CampaignsDashboard)} />
+      <Route path="versions" element={L(VersionManager)} />
+      <Route path="settings" element={L(AdminSettings)} />
+      <Route path="pages" element={L(PageManagement)} />
+      <Route path="database" element={L(DatabaseManager)} />
+      <Route path="permissions" element={L(PermissionsManagement)} />
+      <Route path="messaging" element={L(InternalMessaging)} />
+      <Route path="community-chat" element={L(AdminCommunityChat)} />
+      <Route path="health-check" element={L(SystemHealthCheck)} />
+      <Route path="wallet-recharge" element={L(WalletRechargeRequests)} />
+      <Route path="payments" element={L(PaymentManagement)} />
+      <Route path="paypal-settings" element={L(PayPalSettings)} />
+      <Route path="paypal-live" element={L(PayPalLivePayments)} />
+      <Route path="coupons" element={L(CouponsManagement)} />
+      <Route path="prospecting" element={L(Prospecting)} />
+      <Route path="mailbluster" element={L(MailBlusterTemplates)} />
+      <Route path="api-keys" element={L(ApiKeysPage)} />
+      <Route path="partner-sites" element={L(PartnerSitesManagement)} />
     </Route>
 
-    <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}><CallCenterLayout /></RequireRole>}>
-      <Route index element={<CCDashboard />} />
-      <Route path="incoming" element={<IncomingCalls />} />
-      <Route path="manual-booking" element={<ManualBooking />} />
-      <Route path="ride-assign" element={<RideAssign />} />
-      <Route path="customers" element={<CustomerSearch />} />
-      <Route path="drivers" element={<DriverSearchCC />} />
-      <Route path="complaints" element={<Complaints />} />
-      <Route path="tickets" element={<Tickets />} />
-      <Route path="delivery" element={<DeliveryOrdersCC />} />
-      <Route path="restaurants" element={<RestaurantsCC />} />
-      <Route path="auto-import" element={<AutoImport />} />
-      <Route path="google-import" element={<GoogleMapsImport />} />
-      <Route path="emergency" element={<Emergency />} />
-      <Route path="history" element={<CallHistory />} />
-      <Route path="reports" element={<CCReports />} />
-      <Route path="map" element={<AdminLiveMap />} />
-      <Route path="alerts" element={<AdminAlerts />} />
-      <Route path="knowledge" element={<AssistantKnowledge />} />
-      <Route path="messaging" element={<InternalMessaging />} />
-      <Route path="community" element={<CommunityChat />} />
-      <Route path="analytics" element={<VisitorAnalytics />} />
-      <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
-      <Route path="payments" element={<PaymentManagement />} />
-      <Route path="prospecting" element={<Prospecting />} />
-      <Route path="relations" element={<Relations360 />} />
+    <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}>{L(CallCenterLayout)}</RequireRole>}>
+      <Route index element={L(CCDashboard)} />
+      <Route path="incoming" element={L(IncomingCalls)} />
+      <Route path="manual-booking" element={L(ManualBooking)} />
+      <Route path="ride-assign" element={L(RideAssign)} />
+      <Route path="customers" element={L(CustomerSearch)} />
+      <Route path="drivers" element={L(DriverSearchCC)} />
+      <Route path="complaints" element={L(Complaints)} />
+      <Route path="tickets" element={L(Tickets)} />
+      <Route path="delivery" element={L(DeliveryOrdersCC)} />
+      <Route path="restaurants" element={L(RestaurantsCC)} />
+      <Route path="auto-import" element={L(AutoImport)} />
+      <Route path="google-import" element={L(GoogleMapsImport)} />
+      <Route path="emergency" element={L(Emergency)} />
+      <Route path="history" element={L(CallHistory)} />
+      <Route path="reports" element={L(CCReports)} />
+      <Route path="map" element={L(AdminLiveMap)} />
+      <Route path="alerts" element={L(AdminAlerts)} />
+      <Route path="knowledge" element={L(AssistantKnowledge)} />
+      <Route path="messaging" element={L(InternalMessaging)} />
+      <Route path="community" element={L(CommunityChat)} />
+      <Route path="analytics" element={L(VisitorAnalytics)} />
+      <Route path="wallet-recharge" element={L(WalletRechargeRequests)} />
+      <Route path="payments" element={L(PaymentManagement)} />
+      <Route path="prospecting" element={L(Prospecting)} />
+      <Route path="relations" element={L(Relations360)} />
     </Route>
 
     {/* ═══ Supervisor Panel ═══ */}
-    <Route path="/supervisor" element={<RequireRole allowed={["moderator"]}><SupervisorLayout /></RequireRole>}>
-      <Route index element={<SupervisorDashboard />} />
-      <Route path="drivers" element={<SupervisorDrivers />} />
-      <Route path="delivery" element={<SupervisorDelivery />} />
-      <Route path="call-center" element={<SupervisorCallCenter />} />
-      <Route path="agent/:agentId" element={<SupervisorAgentDetail />} />
-      <Route path="restaurants" element={<SupervisorRestaurants />} />
-      <Route path="city-activation" element={<CityActivation />} />
-      <Route path="messaging" element={<InternalMessaging />} />
-      <Route path="community" element={<CommunityChat />} />
-      <Route path="analytics" element={<VisitorAnalytics />} />
-      <Route path="wallet-recharge" element={<WalletRechargeRequests />} />
-      <Route path="payments" element={<PaymentManagement />} />
-      <Route path="prospecting" element={<Prospecting />} />
+    <Route path="/supervisor" element={<RequireRole allowed={["moderator"]}>{L(SupervisorLayout)}</RequireRole>}>
+      <Route index element={L(SupervisorDashboard)} />
+      <Route path="drivers" element={L(SupervisorDrivers)} />
+      <Route path="delivery" element={L(SupervisorDelivery)} />
+      <Route path="call-center" element={L(SupervisorCallCenter)} />
+      <Route path="agent/:agentId" element={L(SupervisorAgentDetail)} />
+      <Route path="restaurants" element={L(SupervisorRestaurants)} />
+      <Route path="city-activation" element={L(CityActivation)} />
+      <Route path="messaging" element={L(InternalMessaging)} />
+      <Route path="community" element={L(CommunityChat)} />
+      <Route path="analytics" element={L(VisitorAnalytics)} />
+      <Route path="wallet-recharge" element={L(WalletRechargeRequests)} />
+      <Route path="payments" element={L(PaymentManagement)} />
+      <Route path="prospecting" element={L(Prospecting)} />
     </Route>
   </>
 );

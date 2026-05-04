@@ -17,15 +17,15 @@ const LazyPage = ({ component: Component }: { component: React.LazyExoticCompone
   </Suspense>
 );
 
-// ─── Core (public) pages — eagerly loaded ───
-import LandingPage from "@/pages/LandingPage";
-import Splash from "@/pages/Splash";
-import Welcome from "@/pages/Welcome";
-import AuthPage from "@/pages/AuthPage";
-import CompleteProfile from "@/pages/CompleteProfile";
-import ForgotPassword from "@/pages/ForgotPassword";
-import ResetPassword from "@/pages/ResetPassword";
-import NotFound from "@/pages/NotFound";
+// ─── Core pages — lazy loaded for fast initial bootstrap ───
+const LandingPage = lazy(() => import("@/pages/LandingPage"));
+const Splash = lazy(() => import("@/pages/Splash"));
+const Welcome = lazy(() => import("@/pages/Welcome"));
+const AuthPage = lazy(() => import("@/pages/AuthPage"));
+const CompleteProfile = lazy(() => import("@/pages/CompleteProfile"));
+const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // ─── Heavy pages — lazy loaded ───
 const CustomerTracking = lazy(() => import("@/pages/CustomerTracking"));
@@ -91,16 +91,16 @@ const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
 export const mainRouteElements = (
   <>
     {/* ─── Public pages (no layout wrapper needed) ─── */}
-    <Route path="/" element={<LandingPage />} />
+    <Route path="/" element={<LazyPage component={LandingPage} />} />
     <Route path="/hn-groupe" element={<LazyPage component={HNGroupePortal} />} />
     <Route path="/projects" element={<LazyPage component={AllProjects} />} />
-    <Route path="/splash" element={<Splash />} />
-    <Route path="/welcome" element={<Welcome />} />
-    <Route path="/login" element={<AuthPage />} />
-    <Route path="/auth/:role" element={<AuthPage />} />
-    <Route path="/complete-profile" element={<RequireRole><CompleteProfile /></RequireRole>} />
-    <Route path="/forgot-password" element={<ForgotPassword />} />
-    <Route path="/reset-password" element={<ResetPassword />} />
+    <Route path="/splash" element={<LazyPage component={Splash} />} />
+    <Route path="/welcome" element={<LazyPage component={Welcome} />} />
+    <Route path="/login" element={<LazyPage component={AuthPage} />} />
+    <Route path="/auth/:role" element={<LazyPage component={AuthPage} />} />
+    <Route path="/complete-profile" element={<RequireRole><LazyPage component={CompleteProfile} /></RequireRole>} />
+    <Route path="/forgot-password" element={<LazyPage component={ForgotPassword} />} />
+    <Route path="/reset-password" element={<LazyPage component={ResetPassword} />} />
     <Route path="/community" element={<RequireRole><LazyPage component={CommunityChat} /></RequireRole>} />
 
     {/* ═══════════════════════════════════════════
@@ -203,6 +203,6 @@ export const mainRouteElements = (
     {/* Catch-all driver-panel/* → driver/* */}
     <Route path="/driver-panel/*" element={<Navigate to="/driver" replace />} />
 
-    <Route path="*" element={<NotFound />} />
+    <Route path="*" element={<LazyPage component={NotFound} />} />
   </>
 );
