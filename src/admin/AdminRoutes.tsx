@@ -115,6 +115,8 @@ export const adminRouteElements = (
       <Route path="ads" element={<AdsManagement />} />
       <Route path="analytics" element={<VisitorAnalytics />} />
       <Route path="growth" element={<GrowthAnalytics />} />
+      <Route path="utm-builder" element={<UtmBuilder />} />
+      <Route path="campaigns" element={<CampaignsDashboard />} />
       <Route path="versions" element={<VersionManager />} />
       <Route path="settings" element={<AdminSettings />} />
       <Route path="pages" element={<PageManagement />} />
