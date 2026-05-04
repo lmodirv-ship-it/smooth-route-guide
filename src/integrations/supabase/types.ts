@@ -3068,6 +3068,75 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_sites: {
+        Row: {
+          category: string
+          created_at: string
+          custom_screenshot_url: string | null
+          description_ar: string
+          description_en: string
+          gradient: string
+          icon_name: string
+          id: string
+          is_featured: boolean
+          is_visible: boolean
+          name_ar: string
+          name_en: string
+          rating: number
+          slug: string
+          sort_order: number
+          status: string
+          tags: string[]
+          updated_at: string
+          url: string
+          users_label: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          custom_screenshot_url?: string | null
+          description_ar?: string
+          description_en?: string
+          gradient?: string
+          icon_name?: string
+          id?: string
+          is_featured?: boolean
+          is_visible?: boolean
+          name_ar: string
+          name_en: string
+          rating?: number
+          slug: string
+          sort_order?: number
+          status?: string
+          tags?: string[]
+          updated_at?: string
+          url: string
+          users_label?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          custom_screenshot_url?: string | null
+          description_ar?: string
+          description_en?: string
+          gradient?: string
+          icon_name?: string
+          id?: string
+          is_featured?: boolean
+          is_visible?: boolean
+          name_ar?: string
+          name_en?: string
+          rating?: number
+          slug?: string
+          sort_order?: number
+          status?: string
+          tags?: string[]
+          updated_at?: string
+          url?: string
+          users_label?: string
+        }
+        Relationships: []
+      }
       payment_methods: {
         Row: {
           created_at: string

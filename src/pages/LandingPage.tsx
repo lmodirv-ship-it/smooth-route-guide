@@ -47,6 +47,27 @@ import projCloud from "@/assets/project-cloud.png";
 import projAiVideo from "@/assets/project-ai-video.png";
 import projLivraisonExpress from "@/assets/project-livraison-express.jpg";
 import { HN_PROJECTS } from "@/data/hnGroupeProjects";
+import { screenshotUrl } from "@/lib/screenshotUrl";
+import * as LucideIcons from "lucide-react";
+
+type DbPartnerSite = {
+  id: string;
+  slug: string;
+  name_ar: string;
+  name_en: string;
+  description_ar: string;
+  description_en: string;
+  url: string;
+  tags: string[];
+  status: string;
+  is_featured: boolean;
+  sort_order: number;
+  custom_screenshot_url: string | null;
+  icon_name: string;
+  gradient: string;
+  rating: number;
+  users_label: string;
+};
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -91,6 +112,7 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [storeDialogOpen, setStoreDialogOpen] = useState(false);
+  const [dbPartnerSites, setDbPartnerSites] = useState<DbPartnerSite[]>([]);
   const lt = t.landing;
 
   // Auto-redirect logged-in users to their dashboard
@@ -111,6 +133,25 @@ export default function LandingPage() {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Load partner sites from DB (admin-managed)
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from("partner_sites")
+        .select("*")
+        .eq("is_visible", true)
+        .neq("status", "hidden")
+        .order("sort_order", { ascending: true });
+      if (data) setDbPartnerSites(data as DbPartnerSite[]);
+    };
+    load();
+    const ch = supabase
+      .channel("partner_sites_public")
+      .on("postgres_changes", { event: "*", schema: "public", table: "partner_sites" }, load)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
   const services = [
@@ -508,27 +549,45 @@ export default function LandingPage() {
           </motion.div>
 
           {(() => {
-            const previewMap: Record<string, string> = {
-              "hn-driver": projHnDriver,
-              "souk-hn": projSoukHn,
-              "hn-stock": projLivraisonExpress,
-              "car-wash": projCloud,
-              "tangier-print": projGtStudio,
-              "agency-hub": projHnPrint,
-              "ai-scene": projAiScene,
-              "ai-vision": projAiVision,
-              "hn-cima": projAiVideo,
-              "studio-hn": projAiScene,
-              "hn-book": projHnPrint,
-              "profitable-ventures": projGtStudio,
-              "cloud-harmony": projCloud,
-              "hn-print-gr": projHnPrint,
-            };
+            // Use DB sites if available, fallback to static HN_PROJECTS
+            const items = dbPartnerSites.length > 0
+              ? dbPartnerSites.map((s) => ({
+                  id: s.id,
+                  nameAr: s.name_ar,
+                  name: s.name_en || s.name_ar,
+                  description: dir === "rtl" ? s.description_ar : (s.description_en || s.description_ar),
+                  url: s.url,
+                  tags: s.tags || [],
+                  status: s.status,
+                  featured: s.is_featured,
+                  gradient: s.gradient,
+                  glow: "shadow-primary/30",
+                  iconName: s.icon_name,
+                  rating: s.rating,
+                  users: s.users_label,
+                  preview: s.custom_screenshot_url || screenshotUrl(s.url, 800, 500),
+                }))
+              : HN_PROJECTS.map((p) => ({
+                  id: p.id,
+                  nameAr: p.nameAr,
+                  name: p.name,
+                  description: p.description,
+                  url: p.url,
+                  tags: p.tags,
+                  status: p.status,
+                  featured: !!p.featured,
+                  gradient: p.gradient,
+                  glow: p.glow,
+                  iconName: "Globe",
+                  rating: p.rating,
+                  users: p.users,
+                  preview: screenshotUrl(p.url, 800, 500),
+                }));
+
             return (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-                {HN_PROJECTS.map((project, i) => {
-                  const Icon = project.icon;
-                  const preview = previewMap[project.id] || projHnDriver;
+                {items.map((project, i) => {
+                  const Icon = (LucideIcons as any)[project.iconName] || LucideIcons.Globe;
                   const domain = project.url.replace(/^https?:\/\//, "").replace(/\/$/, "");
                   return (
                     <motion.a
@@ -544,13 +603,14 @@ export default function LandingPage() {
                       whileHover={{ y: -6 }}
                       className="group relative rounded-2xl glass-card border border-border/50 hover:border-primary/50 transition-all duration-500 overflow-hidden flex flex-col"
                     >
-                      {/* Preview */}
+                      {/* Live screenshot preview */}
                       <div className="relative aspect-[16/10] overflow-hidden bg-secondary/40">
                         <img
-                          src={preview}
+                          src={project.preview}
                           alt={project.name}
                           loading="lazy"
-                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "0.2"; }}
+                          className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
                         <div className={`absolute top-3 left-3 w-10 h-10 rounded-xl bg-gradient-to-br ${project.gradient} ${project.glow} shadow-lg flex items-center justify-center`}>
@@ -577,7 +637,6 @@ export default function LandingPage() {
                         <p className="text-xs md:text-sm text-muted-foreground mb-4 line-clamp-2 flex-1">
                           {project.description}
                         </p>
-                        {/* Tags */}
                         <div className="flex flex-wrap gap-1.5 mb-3">
                           {project.tags.map((tag) => (
                             <span
@@ -588,7 +647,6 @@ export default function LandingPage() {
                             </span>
                           ))}
                         </div>
-                        {/* Footer */}
                         <div className="flex items-center justify-between pt-3 border-t border-border/30">
                           {project.status === "live" ? (
                             <span className="inline-flex items-center gap-1 text-[11px] font-medium text-success">
