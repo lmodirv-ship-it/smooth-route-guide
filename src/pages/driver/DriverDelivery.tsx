@@ -202,12 +202,7 @@ const DriverDelivery = () => {
   const acceptOrder = async (orderId: string) => {
     if (!driverId) return;
     setAccepting(orderId);
-    if (subscriptionExpired) {
-      toast({ title: "اشتراك مطلوب", description: "يجب الاشتراك في باقة لقبول الطلبات", variant: "destructive" });
-      navigate("/driver/subscription");
-      setAccepting(null);
-      return;
-    }
+    // Subscription gate disabled — platform is free
     const order = enrichedOrders.find(o => o.id === orderId);
     const { error } = await supabase.from("delivery_orders")
       .update({
