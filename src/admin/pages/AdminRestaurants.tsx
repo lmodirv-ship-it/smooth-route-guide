@@ -50,13 +50,18 @@ const AdminRestaurants = () => {
     if (!menu?.categories?.length) throw new Error("AI returned empty menu");
 
     let catCount = 0, itemCount = 0;
+    const errors: string[] = [];
     for (let i = 0; i < menu.categories.length; i++) {
       const c = menu.categories[i];
       const { data: catRow, error: catErr } = await supabase
         .from("menu_categories")
         .insert({ store_id: store.id, name_ar: c.name_ar, name_fr: c.name_fr || c.name_ar, sort_order: i })
         .select("id").single();
-      if (catErr) continue;
+      if (catErr) {
+        console.error("[generateMenuForStore] category insert failed", catErr, { store: store.name });
+        errors.push(`cat: ${catErr.message}`);
+        continue;
+      }
       catCount++;
       const itemsPayload = (c.items || []).map((it: any, j: number) => ({
         store_id: store.id,
@@ -70,8 +75,16 @@ const AdminRestaurants = () => {
       }));
       if (itemsPayload.length) {
         const { error: itErr } = await supabase.from("menu_items").insert(itemsPayload);
-        if (!itErr) itemCount += itemsPayload.length;
+        if (itErr) {
+          console.error("[generateMenuForStore] items insert failed", itErr, { store: store.name });
+          errors.push(`items: ${itErr.message}`);
+        } else {
+          itemCount += itemsPayload.length;
+        }
       }
+    }
+    if (catCount === 0 && errors.length) {
+      throw new Error(errors[0]);
     }
     return { cats: catCount, items: itemCount };
   };
@@ -162,15 +175,26 @@ const AdminRestaurants = () => {
       if (autoMenu && inserted?.length) {
         toast({ title: `🍽️ توليد القوائم لـ ${inserted.length} مطعم...` });
         let okCount = 0;
+        let lastError = "";
         for (const st of inserted) {
           try {
-            await generateMenuForStore(st);
-            okCount++;
-          } catch (e) {
+            const { cats, items } = await generateMenuForStore(st);
+            if (cats > 0 && items > 0) okCount++;
+            else lastError = `لم يتم إدراج أي عناصر لـ ${st.name}`;
+          } catch (e: any) {
+            lastError = e?.message || String(e);
             console.error("auto menu failed for", st.name, e);
           }
         }
-        toast({ title: `✅ تم توليد قوائم ${okCount}/${inserted.length} مطعم` });
+        if (okCount === inserted.length) {
+          toast({ title: `✅ تم توليد قوائم ${okCount}/${inserted.length} مطعم` });
+        } else {
+          toast({
+            title: `⚠️ توليد القوائم: ${okCount}/${inserted.length}`,
+            description: lastError || "بعض القوائم فشلت",
+            variant: "destructive",
+          });
+        }
       }
 
       setGeneratedStores([]);
