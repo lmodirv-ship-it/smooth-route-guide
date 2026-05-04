@@ -491,6 +491,7 @@ const RestaurantsCC = () => {
                     <TableCell className="font-mono text-sm font-bold">{store.store_code || "—"}</TableCell>
                     <TableCell className="font-bold">{store.name}</TableCell>
                     <TableCell className="text-muted-foreground text-sm" dir="ltr">{store.phone || "—"}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs" dir="ltr">{store.email || "—"}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{store.address || "—"}</TableCell>
                     <TableCell className="text-sm">{store.city || "—"}</TableCell>
                     <TableCell className="text-sm">{store.country || "—"}</TableCell>
