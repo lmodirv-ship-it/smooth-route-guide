@@ -520,10 +520,15 @@ const Prospecting = () => {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsList className="grid w-full grid-cols-3 max-w-2xl">
+          <TabsTrigger value="gallery" className="gap-2">🖼️ معرض بصري</TabsTrigger>
           <TabsTrigger value="search" className="gap-2"><Search className="w-4 h-4" /> بحث يدوي</TabsTrigger>
           <TabsTrigger value="database" className="gap-2"><Database className="w-4 h-4" /> قاعدة البيانات ({stats.total})</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="gallery" className="space-y-4">
+          <ProspectsGallery />
+        </TabsContent>
 
         {/* Manual Search Tab */}
         <TabsContent value="search" className="space-y-4">
