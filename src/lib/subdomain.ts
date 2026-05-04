@@ -36,7 +36,7 @@ export function detectSubdomain(): SubdomainApp {
   }
 
   // Supported root domains
-  const SUPPORTED_DOMAINS = ["hn-driver.com", "hn-driver.net"];
+  const SUPPORTED_DOMAINS = ["hn-driver.com", "hn-driver.net", "hndriver.company"];
 
   // Extract first part of hostname
   const parts = hostname.split(".");

@@ -14,6 +14,11 @@ export const LEGACY_DOMAIN = "hn-driver.net";
 export const LEGACY_URL = "https://www.hn-driver.net";
 export const LEGACY_ADMIN_URL = "https://admin.hn-driver.net";
 
+/** Alternate .company domain — purchased via Lovable */
+export const COMPANY_DOMAIN = "hndriver.company";
+export const COMPANY_URL = "https://www.hndriver.company";
+export const COMPANY_ADMIN_URL = "https://admin.hndriver.company";
+
 /** Server IPs */
 export const SERVERS = {
   primary: "213.156.132.166",
@@ -51,8 +56,18 @@ export const SOUK_HN = {
   url: "https://www.hn-driver.online",
 } as const;
 
+/** Alternate .company subdomains (purchased via Lovable) */
+export const COMPANY_SUBDOMAINS = {
+  main: "https://www.hndriver.company",
+  admin: "https://admin.hndriver.company",
+  driver: "https://driver.hndriver.company",
+  client: "https://client.hndriver.company",
+  delivery: "https://delivery.hndriver.company",
+  callcenter: "https://call.hndriver.company",
+} as const;
+
 /** All supported domains for CORS / auth redirect checks */
-export const ALL_DOMAINS = ["hn-driver.com", "hn-driver.net", "hn-driver.online", "hn-driver.site"] as const;
+export const ALL_DOMAINS = ["hn-driver.com", "hn-driver.net", "hn-driver.online", "hn-driver.site", "hndriver.company"] as const;
 
 /** Main pages with their full URLs — useful for sitemaps, sharing, etc. */
 export const MAIN_PAGES = {
