@@ -37,6 +37,8 @@ const RestaurantsCC = () => {
   const [zones, setZones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 25;
   const [selectedStore, setSelectedStore] = useState<any>(null);
   const [generatedStores, setGeneratedStores] = useState<any[]>([]);
   const [generating, setGenerating] = useState(false);
