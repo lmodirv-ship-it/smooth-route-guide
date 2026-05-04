@@ -57,6 +57,24 @@ const AdminClients = () => {
   const [page, setPage] = useState(0);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Client | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const { data, error } = await supabase.functions.invoke("admin-delete-user", {
+      body: { user_id: deleteTarget.id },
+    });
+    setDeleting(false);
+    if (error || (data as any)?.error) {
+      toast({ title: "فشل الحذف", description: error?.message || (data as any)?.error, variant: "destructive" });
+      return;
+    }
+    toast({ title: "تم حذف العميل بنجاح" });
+    setClients(cs => cs.filter(c => c.id !== deleteTarget.id));
+    setDeleteTarget(null);
+  };
 
   const fetchClients = async () => {
     setLoading(true);
