@@ -164,6 +164,7 @@ export const mainRouteElements = (
 
     {/* ─── Growth: Landing pages, referral, city SEO ─── */}
     <Route path="/join-driver" element={<LazyPage component={JoinDriver} />} />
+    <Route path="/drivers/join" element={<LazyPage component={JoinDriver} />} />
     <Route path="/join-restaurant" element={<LazyPage component={JoinRestaurant} />} />
     <Route path="/invite" element={<LazyPage component={Invite} />} />
     <Route path="/cities" element={<LazyPage component={CitiesIndex} />} />
