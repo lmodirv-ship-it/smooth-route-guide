@@ -452,6 +452,9 @@ const RestaurantsCC = () => {
                         <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-primary/30 text-primary" onClick={() => enterStore(store)}>
                           <FolderOpen className="w-3.5 h-3.5" />القائمة
                         </Button>
+                        <Button size="sm" variant="outline" className="h-8 text-xs gap-1" onClick={() => window.open(`/call-center/restaurants/${store.id}/menu`, "_blank")} title="عرض كما يراها الزبون">
+                          <UtensilsCrossed className="w-3.5 h-3.5" />عرض الزبون
+                        </Button>
                         <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-info/30 text-info" onClick={() => openStoreForm(store)}>
                           <Edit className="w-3.5 h-3.5" />تعديل
                         </Button>

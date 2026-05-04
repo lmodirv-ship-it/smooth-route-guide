@@ -443,9 +443,12 @@ const AdminRestaurants = () => {
                        <TableCell>
                          <div className="flex gap-1 flex-wrap">
                            <Button size="sm" variant="outline" onClick={() => openEditStore(s)} title="تعديل"><Pencil className="w-3 h-3" /></Button>
-                           <Button size="sm" variant="outline" onClick={() => setSelectedStore(s.id)} title="عرض القائمة">
-                             <UtensilsCrossed className="w-3 h-3" />
-                           </Button>
+                            <Button size="sm" variant="outline" onClick={() => setSelectedStore(s.id)} title="عرض القائمة">
+                              <UtensilsCrossed className="w-3 h-3" />
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => window.open(`/admin/restaurants/${s.id}/menu`, "_blank") } title="عرض كما يراها الزبون">
+                              <Store className="w-3 h-3" />
+                            </Button>
                            <Button
                              size="sm"
                              variant="outline"

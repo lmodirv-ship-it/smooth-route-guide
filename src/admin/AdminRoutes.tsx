@@ -34,6 +34,8 @@ const AdminDocuments = lazy(() => import("@/admin/pages/Documents"));
 const AdminDeliveryOrders = lazy(() => import("@/admin/pages/DeliveryOrders"));
 const AdminCallCenter = lazy(() => import("@/admin/pages/AdminCallCenter"));
 const AdminRestaurants = lazy(() => import("@/admin/pages/AdminRestaurants"));
+const AdminRestaurantMenu = lazy(() => import("@/admin/pages/AdminRestaurantMenu"));
+const CCRestaurantMenu = lazy(() => import("@/admin/pages/callcenter/CCRestaurantMenu"));
 const ZonesManagement = lazy(() => import("@/admin/pages/ZonesManagement"));
 const AdminSettings = lazy(() => import("@/admin/pages/Settings"));
 const CommissionRatesPage = lazy(() => import("@/admin/pages/CommissionRates"));
@@ -119,6 +121,7 @@ export const adminRouteElements = (
       <Route path="delivery" element={L(AdminDeliveryOrders)} />
       <Route path="call-center" element={L(AdminCallCenter)} />
       <Route path="restaurants" element={L(AdminRestaurants)} />
+      <Route path="restaurants/:id/menu" element={L(AdminRestaurantMenu)} />
       <Route path="zones" element={L(ZonesManagement)} />
       <Route path="city-activation" element={L(CityActivation)} />
       <Route path="commission-rates" element={L(CommissionRatesPage)} />
@@ -161,6 +164,7 @@ export const adminRouteElements = (
       <Route path="tickets" element={L(Tickets)} />
       <Route path="delivery" element={L(DeliveryOrdersCC)} />
       <Route path="restaurants" element={L(RestaurantsCC)} />
+      <Route path="restaurants/:id/menu" element={L(CCRestaurantMenu)} />
       <Route path="auto-import" element={L(AutoImport)} />
       <Route path="google-import" element={L(GoogleMapsImport)} />
       <Route path="emergency" element={L(Emergency)} />
