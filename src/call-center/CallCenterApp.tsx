@@ -85,6 +85,7 @@ const CallCenterApp = () => (
               <Route path="knowledge" element={<AssistantKnowledge />} />
               <Route path="messaging" element={<InternalMessaging />} />
               <Route path="community" element={<CommunityChat />} />
+              <Route path="relations" element={<Relations360 />} />
             </Route>
 
             {/* Redirects */}
