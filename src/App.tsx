@@ -20,6 +20,7 @@ import TrackingScripts from "@/components/TrackingScripts";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import HNChatbot from "@/components/HNChatbot";
 import GlobalCallProvider from "@/components/calls/GlobalCallProvider";
+import { CallProvider } from "@/contexts/CallContext";
 
 // ─── Module route elements ───
 import { mainRouteElements } from "./app/index";
