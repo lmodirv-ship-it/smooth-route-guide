@@ -6,12 +6,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+
 function getDb() {
-  return createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    { auth: { persistSession: false } }
-  );
+  return createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 }
 
 function json(body: unknown, status = 200) {
@@ -21,16 +21,60 @@ function json(body: unknown, status = 200) {
   });
 }
 
+interface AuthContext {
+  userId: string;
+  isAdmin: boolean;
+  isAgent: boolean;
+  merchantId: string | null;
+}
+
+async function authenticate(req: Request): Promise<AuthContext | Response> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return json({ error: "unauthorized" }, 401);
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+  const userClient = createClient(SUPABASE_URL, ANON_KEY, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const { data: claims, error } = await userClient.auth.getClaims(token);
+  if (error || !claims?.claims?.sub) {
+    return json({ error: "unauthorized" }, 401);
+  }
+  const userId = claims.claims.sub as string;
+
+  const admin = getDb();
+  const [{ data: roles }, { data: merchant }] = await Promise.all([
+    admin.from("user_roles").select("role").eq("user_id", userId),
+    admin.from("hn_stock_merchants").select("id").eq("user_id", userId).maybeSingle(),
+  ]);
+
+  const roleSet = new Set((roles || []).map((r: any) => r.role));
+  return {
+    userId,
+    isAdmin: roleSet.has("admin"),
+    isAgent: roleSet.has("agent"),
+    merchantId: (merchant as any)?.id ?? null,
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    const auth = await authenticate(req);
+    if (auth instanceof Response) return auth;
+
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
     const db = getDb();
 
-    // ── STATS ──
+    // ── STATS (admin/agent only) ──
     if (action === "stats") {
+      if (!auth.isAdmin && !auth.isAgent) {
+        return json({ error: "forbidden" }, 403);
+      }
       const [products, orders, merchants, shipments] = await Promise.all([
         db.from("hn_stock_products").select("id", { count: "exact", head: true }),
         db.from("hn_stock_orders").select("id, status, total_amount"),
@@ -61,18 +105,32 @@ serve(async (req) => {
         return json({ error: "missing_required_fields" }, 400);
       }
 
-      // Fetch products
+      // Authorization: admin/agent OR merchant operating on own record
+      if (!auth.isAdmin && !auth.isAgent && auth.merchantId !== merchant_id) {
+        return json({ error: "forbidden" }, 403);
+      }
+
+      // Fetch products and verify they belong to this merchant
       const productIds = items.map((i: any) => i.product_id);
-      const { data: products } = await db.from("hn_stock_products").select("id, name, price, quantity").in("id", productIds);
+      const { data: products } = await db
+        .from("hn_stock_products")
+        .select("id, name, price, quantity, merchant_id")
+        .in("id", productIds);
       const productMap = new Map((products || []).map((p: any) => [p.id, p]));
 
       let totalAmount = 0;
       const orderItems: any[] = [];
 
       for (const item of items) {
-        const product = productMap.get(item.product_id);
+        const product: any = productMap.get(item.product_id);
         if (!product) return json({ error: `product_not_found: ${item.product_id}` }, 400);
+        if (product.merchant_id && product.merchant_id !== merchant_id) {
+          return json({ error: "product_merchant_mismatch" }, 403);
+        }
         if (product.quantity < item.quantity) return json({ error: `insufficient_stock: ${product.name}` }, 400);
+        if (!Number.isFinite(item.quantity) || item.quantity <= 0 || item.quantity > 1000) {
+          return json({ error: "invalid_quantity" }, 400);
+        }
         totalAmount += product.price * item.quantity;
         orderItems.push({ product_id: item.product_id, name: product.name, quantity: item.quantity, price: product.price });
       }
@@ -90,7 +148,7 @@ serve(async (req) => {
 
       // Decrement stock
       for (const item of items) {
-        const product = productMap.get(item.product_id)!;
+        const product: any = productMap.get(item.product_id)!;
         await db.from("hn_stock_products").update({ quantity: product.quantity - item.quantity }).eq("id", item.product_id);
       }
 
@@ -109,6 +167,11 @@ serve(async (req) => {
 
       const { data: order } = await db.from("hn_stock_orders").select("*").eq("id", order_id).single();
       if (!order) return json({ error: "order_not_found" }, 404);
+
+      // Authorization
+      if (!auth.isAdmin && !auth.isAgent && auth.merchantId !== order.merchant_id) {
+        return json({ error: "forbidden" }, 403);
+      }
 
       const trackingNumber = "SHP-" + Date.now().toString(36).toUpperCase();
 
@@ -136,6 +199,21 @@ serve(async (req) => {
     if (action === "update_shipment" && req.method === "POST") {
       const { shipment_id, status } = await req.json();
       if (!shipment_id || !status) return json({ error: "missing_fields" }, 400);
+
+      const ALLOWED_STATUSES = new Set([
+        "preparing", "ready", "picked_up", "in_transit", "out_for_delivery",
+        "delivered", "failed", "returned", "cancelled",
+      ]);
+      if (!ALLOWED_STATUSES.has(status)) {
+        return json({ error: "invalid_status" }, 400);
+      }
+
+      const { data: existing } = await db.from("hn_stock_shipments").select("merchant_id").eq("id", shipment_id).single();
+      if (!existing) return json({ error: "shipment_not_found" }, 404);
+
+      if (!auth.isAdmin && !auth.isAgent && auth.merchantId !== existing.merchant_id) {
+        return json({ error: "forbidden" }, 403);
+      }
 
       const updates: any = { status };
       if (status === "delivered") updates.delivered_at = new Date().toISOString();
