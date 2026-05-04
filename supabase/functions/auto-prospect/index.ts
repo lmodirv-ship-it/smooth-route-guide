@@ -114,16 +114,28 @@ serve(async (req) => {
 
             if (existing) continue; // Already in DB
 
-            // Get details (phone, website)
+            // Get rich details (phone, website, photos, hours, geo)
             let phone = "";
             let website = "";
+            let openingHours: any = null;
+            let userRatingsTotal = 0;
+            let businessStatus = "";
+            let priceLevel: number | null = null;
+            let photoRefs: string[] = [];
             try {
-              const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=formatted_phone_number,international_phone_number,website&key=${googleMapsKey}&language=fr`;
+              const detailFields = "formatted_phone_number,international_phone_number,website,opening_hours,user_ratings_total,business_status,price_level,photos,editorial_summary,geometry";
+              const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=${detailFields}&key=${googleMapsKey}&language=fr`;
               const detailRes = await fetch(detailUrl);
               const detailData = await detailRes.json();
               if (detailData.status === "OK" && detailData.result) {
-                phone = detailData.result.international_phone_number || detailData.result.formatted_phone_number || "";
-                website = detailData.result.website || "";
+                const r = detailData.result;
+                phone = r.international_phone_number || r.formatted_phone_number || "";
+                website = r.website || "";
+                openingHours = r.opening_hours?.weekday_text ? { weekday_text: r.opening_hours.weekday_text, open_now: r.opening_hours.open_now } : null;
+                userRatingsTotal = Number(r.user_ratings_total || 0);
+                businessStatus = r.business_status || "";
+                priceLevel = typeof r.price_level === "number" ? r.price_level : null;
+                photoRefs = (r.photos || []).slice(0, 10).map((p: any) => p.photo_reference).filter(Boolean);
               }
             } catch (e) {
               console.error("Place details error:", e);
@@ -132,7 +144,18 @@ serve(async (req) => {
             const addressParts = (place.formatted_address || "").split(",");
             const area = addressParts.length > 1 ? addressParts[addressParts.length - 2]?.trim() : "";
 
-            // Insert into prospects table
+            // Build photo URLs (Google Places Photos API)
+            const photoUrl = (ref: string, w = 800) =>
+              `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${w}&photo_reference=${ref}&key=${googleMapsKey}`;
+            const photos = photoRefs.map(ref => ({
+              url: photoUrl(ref, 800),
+              thumb: photoUrl(ref, 300),
+            }));
+            const mainPhoto = photos[0]?.url || (place.photos?.[0]?.photo_reference ? photoUrl(place.photos[0].photo_reference, 800) : null);
+
+            const lat = place.geometry?.location?.lat ?? null;
+            const lng = place.geometry?.location?.lng ?? null;
+
             const prospect = {
               name: (place.name || "").substring(0, 200),
               phone: phone.substring(0, 40),
@@ -143,6 +166,15 @@ serve(async (req) => {
               category: type,
               rating: Number(place.rating || 0),
               website: (website || "").substring(0, 300),
+              photo_url: mainPhoto,
+              photos,
+              lat,
+              lng,
+              opening_hours: openingHours,
+              user_ratings_total: userRatingsTotal,
+              business_status: businessStatus,
+              price_level: priceLevel,
+              enriched_at: new Date().toISOString(),
               google_place_id: place.place_id,
               source: "google_auto",
               status: "new",
