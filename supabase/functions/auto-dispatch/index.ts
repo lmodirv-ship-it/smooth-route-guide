@@ -26,6 +26,37 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Auth: require either valid CRON_SECRET header (for scheduled calls)
+  // or admin/agent JWT (for manual triggers).
+  const cronSecret = Deno.env.get("CRON_SECRET");
+  const providedSecret = req.headers.get("x-cron-secret");
+  let authorized = !!(cronSecret && providedSecret && providedSecret === cronSecret);
+
+  if (!authorized) {
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      try {
+        const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
+          global: { headers: { Authorization: authHeader } },
+        });
+        const { data: claims } = await userClient.auth.getClaims(authHeader.replace("Bearer ", ""));
+        const userId = claims?.claims?.sub;
+        if (userId) {
+          const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+          const { data: roles } = await admin.from("user_roles").select("role").eq("user_id", userId);
+          authorized = !!roles?.some((r: any) => r.role === "admin" || r.role === "agent");
+        }
+      } catch (_) { /* fall through */ }
+    }
+  }
+
+  if (!authorized) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 

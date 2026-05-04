@@ -38,9 +38,40 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Auth: require valid CRON_SECRET header (cron) or admin JWT (manual trigger)
+  const cronSecret = Deno.env.get("CRON_SECRET");
+  const providedSecret = req.headers.get("x-cron-secret");
+  let authorized = !!(cronSecret && providedSecret && providedSecret === cronSecret);
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  if (!authorized) {
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      try {
+        const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+          global: { headers: { Authorization: authHeader } },
+        });
+        const { data: claims } = await userClient.auth.getClaims(authHeader.replace("Bearer ", ""));
+        const userId = claims?.claims?.sub;
+        if (userId) {
+          const admin = createClient(supabaseUrl, supabaseKey);
+          const { data: roles } = await admin.from("user_roles").select("role").eq("user_id", userId);
+          authorized = !!roles?.some((r: any) => r.role === "admin");
+        }
+      } catch (_) { /* ignore */ }
+    }
+  }
+
+  if (!authorized) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const googleMapsKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
     const mailblusterKey = Deno.env.get("MAILBLUSTER_API_KEY");
 
