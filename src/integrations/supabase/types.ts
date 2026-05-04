@@ -1897,48 +1897,72 @@ export type Database = {
       hn_driver_leads: {
         Row: {
           address: string | null
+          assigned_to: string | null
           business_name: string
           category: string | null
           city: string | null
+          converted_user_id: string | null
           created_at: string
           date_added: string | null
+          email: string | null
           id: string
+          last_contact_at: string | null
+          notes: string | null
           phone: string | null
           rating: number | null
+          referral_code: string | null
           segment: string | null
           source: string | null
           status: string | null
           total_ratings: number | null
+          trips_after_conversion: number
+          whatsapp: string | null
         }
         Insert: {
           address?: string | null
+          assigned_to?: string | null
           business_name?: string
           category?: string | null
           city?: string | null
+          converted_user_id?: string | null
           created_at?: string
           date_added?: string | null
+          email?: string | null
           id?: string
+          last_contact_at?: string | null
+          notes?: string | null
           phone?: string | null
           rating?: number | null
+          referral_code?: string | null
           segment?: string | null
           source?: string | null
           status?: string | null
           total_ratings?: number | null
+          trips_after_conversion?: number
+          whatsapp?: string | null
         }
         Update: {
           address?: string | null
+          assigned_to?: string | null
           business_name?: string
           category?: string | null
           city?: string | null
+          converted_user_id?: string | null
           created_at?: string
           date_added?: string | null
+          email?: string | null
           id?: string
+          last_contact_at?: string | null
+          notes?: string | null
           phone?: string | null
           rating?: number | null
+          referral_code?: string | null
           segment?: string | null
           source?: string | null
           status?: string | null
           total_ratings?: number | null
+          trips_after_conversion?: number
+          whatsapp?: string | null
         }
         Relationships: []
       }
