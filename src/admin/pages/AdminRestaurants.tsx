@@ -28,7 +28,7 @@ const AdminRestaurants = () => {
   const [showItemDialog, setShowItemDialog] = useState(false);
   const [editingStore, setEditingStore] = useState<any>(null);
   const [editingItem, setEditingItem] = useState<any>(null);
-  const [storeForm, setStoreForm] = useState({ name: "", description: "", address: "", phone: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5, commission_rate: 5 });
+  const [storeForm, setStoreForm] = useState({ name: "", description: "", address: "", phone: "", email: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5, commission_rate: 5 });
   const [itemForm, setItemForm] = useState({ name_ar: "", name_fr: "", description_ar: "", price: 0, category_id: "", is_available: true });
   const [generatedStores, setGeneratedStores] = useState<any[]>([]);
   const [generating, setGenerating] = useState(false);
@@ -292,13 +292,13 @@ const AdminRestaurants = () => {
 
   const openEditStore = (store: any) => {
     setEditingStore(store);
-    setStoreForm({ name: store.name, description: store.description || "", address: store.address || "", phone: store.phone || "", delivery_fee: store.delivery_fee || 10, delivery_time_min: store.delivery_time_min || 20, delivery_time_max: store.delivery_time_max || 40, rating: store.rating || 4.5, commission_rate: store.commission_rate ?? 5 });
+    setStoreForm({ name: store.name, description: store.description || "", address: store.address || "", phone: store.phone || "", email: store.email || "", delivery_fee: store.delivery_fee || 10, delivery_time_min: store.delivery_time_min || 20, delivery_time_max: store.delivery_time_max || 40, rating: store.rating || 4.5, commission_rate: store.commission_rate ?? 5 });
     setShowStoreDialog(true);
   };
 
   const openAddStore = () => {
     setEditingStore(null);
-    setStoreForm({ name: "", description: "", address: "", phone: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5, commission_rate: 5 });
+    setStoreForm({ name: "", description: "", address: "", phone: "", email: "", delivery_fee: 10, delivery_time_min: 20, delivery_time_max: 40, rating: 4.5, commission_rate: 5 });
     setShowStoreDialog(true);
   };
 
@@ -415,6 +415,7 @@ const AdminRestaurants = () => {
                       <TableHead>{tr.code}</TableHead>
                       <TableHead>{tr.name}</TableHead>
                       <TableHead>{tr.phone}</TableHead>
+                      <TableHead>Email</TableHead>
                       <TableHead>{tr.address}</TableHead>
                       <TableHead>المدينة</TableHead>
                       <TableHead>البلد</TableHead>
@@ -431,6 +432,7 @@ const AdminRestaurants = () => {
                         <TableCell className="font-mono text-sm font-bold">{s.store_code || "—"}</TableCell>
                         <TableCell className="font-bold">{s.name}</TableCell>
                         <TableCell className="text-muted-foreground direction-ltr">{s.phone || "—"}</TableCell>
+                        <TableCell className="text-muted-foreground direction-ltr text-xs">{s.email || "—"}</TableCell>
                         <TableCell className="text-muted-foreground">{s.address}</TableCell>
                         <TableCell className="text-sm">{s.city || "—"}</TableCell>
                         <TableCell className="text-sm">{s.country || "—"}</TableCell>
@@ -577,6 +579,7 @@ const AdminRestaurants = () => {
             <div><Label>{tr.description}</Label><Input value={storeForm.description} onChange={(e) => setStoreForm({ ...storeForm, description: e.target.value })} /></div>
             <div><Label>{tr.address}</Label><Input value={storeForm.address} onChange={(e) => setStoreForm({ ...storeForm, address: e.target.value })} /></div>
             <div><Label>{tr.phone}</Label><Input value={storeForm.phone} onChange={(e) => setStoreForm({ ...storeForm, phone: e.target.value })} /></div>
+            <div><Label>Email</Label><Input type="email" value={storeForm.email} onChange={(e) => setStoreForm({ ...storeForm, email: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>{tr.deliveryFee} (DH)</Label><Input type="number" value={storeForm.delivery_fee} onChange={(e) => setStoreForm({ ...storeForm, delivery_fee: +e.target.value })} /></div>
               <div><Label>{tr.rating}</Label><Input type="number" step="0.1" value={storeForm.rating} onChange={(e) => setStoreForm({ ...storeForm, rating: +e.target.value })} /></div>
