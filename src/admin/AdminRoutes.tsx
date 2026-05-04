@@ -121,6 +121,7 @@ export const adminRouteElements = (
       <Route path="delivery" element={L(AdminDeliveryOrders)} />
       <Route path="call-center" element={L(AdminCallCenter)} />
       <Route path="restaurants" element={L(AdminRestaurants)} />
+      <Route path="restaurants/:id/menu" element={L(AdminRestaurantMenu)} />
       <Route path="zones" element={L(ZonesManagement)} />
       <Route path="city-activation" element={L(CityActivation)} />
       <Route path="commission-rates" element={L(CommissionRatesPage)} />
