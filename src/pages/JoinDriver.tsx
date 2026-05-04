@@ -96,17 +96,43 @@ const JoinDriver = () => {
         </motion.div>
       </section>
 
+      {/* Promo Banner: 0% commission */}
+      <section className="px-6 -mt-4 mb-8">
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }}
+          className="max-w-4xl mx-auto rounded-2xl p-5 md:p-6 bg-gradient-to-r from-success/20 via-success/10 to-primary/10 border-2 border-success/40 relative overflow-hidden">
+          <div className="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-full bg-success text-success-foreground font-bold animate-pulse">
+            عرض محدود
+          </div>
+          <div className="flex items-center gap-4 flex-wrap justify-center text-center md:text-right">
+            <Gift className="w-12 h-12 text-success flex-shrink-0" />
+            <div>
+              <h3 className="text-xl md:text-2xl font-bold text-foreground">
+                <span className="text-success">0% عمولة</span> لأول 30 يوم!
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                احتفظ بكل أرباحك الشهر الأول. سجل الآن واحصل على 50 درهم بونص ترحيبي.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
       {/* Form */}
       <section className="px-6 pb-12">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
           className="max-w-md mx-auto glass-card rounded-2xl p-6 border border-primary/20">
           <h2 className="text-xl font-bold text-foreground mb-1 text-center">سجل بياناتك الآن</h2>
           <p className="text-sm text-muted-foreground text-center mb-5">سنتواصل معك خلال 24 ساعة</p>
+          {referralCode && (
+            <div className="mb-3 p-2 rounded-lg bg-primary/10 border border-primary/30 text-xs text-center text-primary">
+              ✨ كود الإحالة: <span className="font-bold">{referralCode}</span>
+            </div>
+          )}
           <div className="space-y-3">
             <Input placeholder="الاسم الكامل" value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               className="bg-secondary border-border h-11" />
-            <Input placeholder="رقم الهاتف" type="tel" value={form.phone}
+            <Input placeholder="رقم الهاتف / واتساب" type="tel" value={form.phone}
               onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
               className="bg-secondary border-border h-11" />
             <Input placeholder="المدينة" value={form.city}
@@ -118,6 +144,14 @@ const JoinDriver = () => {
             <Button onClick={submit} disabled={loading}
               className="w-full gradient-primary text-primary-foreground h-12 text-base font-bold">
               {loading ? "جاري الإرسال..." : "ابدأ الآن مجاناً"} <ArrowRight className="w-4 h-4 mr-2" />
+            </Button>
+            <div className="relative my-2">
+              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
+              <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">أو</span></div>
+            </div>
+            <Button onClick={openWhatsApp} variant="outline"
+              className="w-full h-12 border-green-500/50 text-green-600 hover:bg-green-500/10 font-bold">
+              <MessageCircle className="w-5 h-5 ml-2" /> تواصل مباشرة عبر واتساب
             </Button>
           </div>
         </motion.div>
