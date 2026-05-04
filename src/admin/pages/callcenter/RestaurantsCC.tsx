@@ -471,6 +471,7 @@ const RestaurantsCC = () => {
                   <TableHead className="text-right">الرقم</TableHead>
                   <TableHead className="text-right">الاسم</TableHead>
                   <TableHead className="text-right">الهاتف</TableHead>
+                  <TableHead className="text-right">Email</TableHead>
                   <TableHead className="text-right">العنوان</TableHead>
                   <TableHead className="text-right">المدينة</TableHead>
                   <TableHead className="text-right">البلد</TableHead>
