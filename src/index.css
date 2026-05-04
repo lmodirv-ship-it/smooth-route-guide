@@ -828,7 +828,6 @@
       0 0 30px hsl(205, 80%, 55%, 0.2),
       0 12px 40px hsl(0, 0%, 0%, 0.35);
     border-color: hsl(205, 60%, 55%, 0.3);
-    transform: perspective(800px) rotateX(0.5deg) translateY(-2px);
   }
 
 
