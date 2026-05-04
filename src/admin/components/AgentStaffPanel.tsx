@@ -106,8 +106,13 @@ const AgentStaffPanel = ({ onAgentClick }: AgentStaffPanelProps = {}) => {
 
   useEffect(() => {
     fetchAgents();
-    const interval = setInterval(fetchAgents, 30000); // refresh every 30s
-    return () => clearInterval(interval);
+    // Realtime only — refresh when presence/profiles change (no polling)
+    const ch = supabase
+      .channel("agent-staff-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "agent_presence" }, fetchAgents)
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, fetchAgents)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
   const totalOnline = agents.filter(a => a.status === "online").length;
