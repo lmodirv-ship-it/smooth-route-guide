@@ -484,7 +484,7 @@ const RestaurantsCC = () => {
               <TableBody>
                 {filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-10 text-muted-foreground">لا توجد مطاعم</TableCell>
+                    <TableCell colSpan={11} className="text-center py-10 text-muted-foreground">لا توجد مطاعم</TableCell>
                   </TableRow>
                 ) : pageItems.map((store) => (
                   <TableRow key={store.id} className="hover:bg-secondary/30">
