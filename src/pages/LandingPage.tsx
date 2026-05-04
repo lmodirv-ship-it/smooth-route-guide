@@ -485,7 +485,7 @@ export default function LandingPage() {
       {/* ─── Promo Images Section ─── */}
       <HeroPromoFlash />
 
-      {/* ─── Partner Sites ─── */}
+      {/* ─── Partner Sites / Lovable Projects Showcase ─── */}
       <section className="py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/10 to-background" />
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
@@ -499,23 +499,133 @@ export default function LandingPage() {
             <h2 className="text-2xl md:text-3xl font-bold font-display">
               <span className="text-gradient-primary">{dir === "rtl" ? "مواقعنا الشريكة" : "Our Partner Sites"}</span>
             </h2>
+            <p className="text-muted-foreground mt-3 max-w-2xl mx-auto text-sm md:text-base">
+              {dir === "rtl"
+                ? "منظومة كاملة من المنصات الرقمية التي طوّرتها HN — تجارة، نقل، ذكاء اصطناعي، إعلام وخدمات."
+                : "A complete ecosystem of digital platforms built by HN — commerce, transport, AI, media & services."}
+            </p>
             <div className="w-16 h-1 gradient-primary mx-auto rounded-full mt-4" />
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-4xl mx-auto">
-            {partnerSites.map((site, i) => (
-              <motion.a key={site.name} href={site.url} target="_blank" rel="noopener noreferrer" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} whileHover={{ y: -8, scale: 1.03 }} className="group relative flex flex-col items-center gap-4">
-                <div className="relative w-full aspect-square rounded-2xl glass-card group-hover:border-primary/50 transition-all duration-500 flex items-center justify-center p-5 overflow-hidden">
-                  <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: "radial-gradient(circle at 50% 50%, hsl(32 95% 55% / 0.08) 0%, transparent 70%)" }} />
-                  <img src={site.logo} alt={site.name} loading="lazy" width={512} height={512} className="relative z-10 w-4/5 h-4/5 object-contain filter brightness-95 group-hover:brightness-110 transition-all duration-500 drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]" />
-                </div>
-                <div className="text-center">
-                  <span className="block text-sm md:text-base font-bold text-foreground group-hover:text-primary transition-colors duration-300">{site.name}</span>
-                  <span className="block text-[10px] text-muted-foreground/60 mt-0.5 group-hover:text-muted-foreground transition-colors">{site.url.replace("https://", "").replace("www.", "")}</span>
-                </div>
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 group-hover:w-3/4 h-0.5 gradient-primary rounded-full transition-all duration-500" />
-              </motion.a>
-            ))}
+          {(() => {
+            const previewMap: Record<string, string> = {
+              "hn-driver": projHnDriver,
+              "souk-hn": projSoukHn,
+              "hn-stock": projLivraisonExpress,
+              "car-wash": projCloud,
+              "tangier-print": projGtStudio,
+              "agency-hub": projHnPrint,
+              "ai-scene": projAiScene,
+              "ai-vision": projAiVision,
+              "hn-cima": projAiVideo,
+              "studio-hn": projAiScene,
+              "hn-book": projHnPrint,
+              "profitable-ventures": projGtStudio,
+              "cloud-harmony": projCloud,
+              "hn-print-gr": projHnPrint,
+            };
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+                {HN_PROJECTS.map((project, i) => {
+                  const Icon = project.icon;
+                  const preview = previewMap[project.id] || projHnDriver;
+                  const domain = project.url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+                  return (
+                    <motion.a
+                      key={project.id}
+                      href={project.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true }}
+                      variants={fadeUp}
+                      custom={i}
+                      whileHover={{ y: -6 }}
+                      className="group relative rounded-2xl glass-card border border-border/50 hover:border-primary/50 transition-all duration-500 overflow-hidden flex flex-col"
+                    >
+                      {/* Preview */}
+                      <div className="relative aspect-[16/10] overflow-hidden bg-secondary/40">
+                        <img
+                          src={preview}
+                          alt={project.name}
+                          loading="lazy"
+                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
+                        <div className={`absolute top-3 left-3 w-10 h-10 rounded-xl bg-gradient-to-br ${project.gradient} ${project.glow} shadow-lg flex items-center justify-center`}>
+                          <Icon className="w-5 h-5 text-white" />
+                        </div>
+                        {project.featured && (
+                          <span className="absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/90 text-primary-foreground backdrop-blur-sm">
+                            ★ {dir === "rtl" ? "مميز" : "Featured"}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Body */}
+                      <div className="p-5 flex flex-col flex-1">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div>
+                            <h3 className="text-base md:text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                              {dir === "rtl" ? project.nameAr : project.name}
+                            </h3>
+                            <span className="text-[11px] text-muted-foreground/70" dir="ltr">{domain}</span>
+                          </div>
+                          <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 transition-all flex-shrink-0 mt-1" />
+                        </div>
+                        <p className="text-xs md:text-sm text-muted-foreground mb-4 line-clamp-2 flex-1">
+                          {project.description}
+                        </p>
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                          {project.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary/80 border border-border/50 text-muted-foreground"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                        {/* Footer */}
+                        <div className="flex items-center justify-between pt-3 border-t border-border/30">
+                          {project.status === "live" ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-success">
+                              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                              {dir === "rtl" ? "منشور" : "Live"}
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-muted-foreground">{dir === "rtl" ? "قريباً" : "Coming"}</span>
+                          )}
+                          <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                            {project.rating} · {project.users}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.a>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
+          {/* Trusted partner logos strip */}
+          <div className="mt-16 pt-10 border-t border-border/30">
+            <p className="text-center text-[11px] font-semibold uppercase tracking-[0.25em] text-muted-foreground/70 mb-8">
+              {dir === "rtl" ? "موثوق به من شركاء طموحين" : "Trusted by ambitious partners worldwide"}
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-4xl mx-auto">
+              {partnerSites.map((site, i) => (
+                <motion.a key={site.name} href={site.url} target="_blank" rel="noopener noreferrer" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i + 1} whileHover={{ y: -4, scale: 1.03 }} className="group relative flex flex-col items-center gap-3">
+                  <div className="relative w-full aspect-square rounded-2xl glass-card group-hover:border-primary/50 transition-all duration-500 flex items-center justify-center p-5 overflow-hidden">
+                    <img src={site.logo} alt={site.name} loading="lazy" width={512} height={512} className="relative z-10 w-4/5 h-4/5 object-contain filter brightness-95 group-hover:brightness-110 transition-all duration-500" />
+                  </div>
+                  <span className="text-xs md:text-sm font-bold text-foreground group-hover:text-primary transition-colors">{site.name}</span>
+                </motion.a>
+              ))}
+            </div>
           </div>
         </div>
       </section>
