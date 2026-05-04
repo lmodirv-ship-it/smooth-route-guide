@@ -34,6 +34,8 @@ const AdminDocuments = lazy(() => import("@/admin/pages/Documents"));
 const AdminDeliveryOrders = lazy(() => import("@/admin/pages/DeliveryOrders"));
 const AdminCallCenter = lazy(() => import("@/admin/pages/AdminCallCenter"));
 const AdminRestaurants = lazy(() => import("@/admin/pages/AdminRestaurants"));
+const AdminRestaurantMenu = lazy(() => import("@/admin/pages/AdminRestaurantMenu"));
+const CCRestaurantMenu = lazy(() => import("@/admin/pages/callcenter/CCRestaurantMenu"));
 const ZonesManagement = lazy(() => import("@/admin/pages/ZonesManagement"));
 const AdminSettings = lazy(() => import("@/admin/pages/Settings"));
 const CommissionRatesPage = lazy(() => import("@/admin/pages/CommissionRates"));
