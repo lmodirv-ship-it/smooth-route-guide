@@ -72,6 +72,30 @@ const UtmBuilder = () => {
         </p>
       </div>
 
+      {/* Quick Presets */}
+      <div className="glass-card rounded-2xl p-4">
+        <p className="text-sm font-bold text-foreground mb-2">⚡ قوالب جاهزة (اضغط لتعبئة الحقول)</p>
+        <div className="flex flex-wrap gap-2">
+          {QUICK_PRESETS.map((p) => (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => {
+                setBaseUrl(p.baseUrl);
+                setSource(p.source);
+                setMedium(p.medium);
+                setCampaign(p.campaign);
+                setContent(p.content || "");
+                toast.success(`تم تطبيق: ${p.label}`);
+              }}
+              className="text-xs px-3 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-foreground hover:bg-primary/20 transition"
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form */}
         <div className="lg:col-span-2 space-y-4">
