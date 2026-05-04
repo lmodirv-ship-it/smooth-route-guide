@@ -407,10 +407,32 @@ const AdminRestaurants = () => {
                          </Button>
                        </TableCell>
                        <TableCell>
-                         <div className="flex gap-2">
-                           <Button size="sm" variant="outline" onClick={() => openEditStore(s)}><Pencil className="w-3 h-3" /></Button>
-                           <Button size="sm" variant="outline" onClick={() => setSelectedStore(s.id)}>
-                             <UtensilsCrossed className="w-3 h-3 mr-1" />{tr.menu}
+                         {(() => {
+                           const count = menuItems.filter(i => i.store_id === s.id).length;
+                           return (
+                             <Badge variant="outline" className={count > 0 ? "border-emerald-500/40 text-emerald-500" : "border-orange-500/40 text-orange-500"}>
+                               {count > 0 ? `${count} منتج` : "فارغة"}
+                             </Badge>
+                           );
+                         })()}
+                       </TableCell>
+                       <TableCell>
+                         <div className="flex gap-1 flex-wrap">
+                           <Button size="sm" variant="outline" onClick={() => openEditStore(s)} title="تعديل"><Pencil className="w-3 h-3" /></Button>
+                           <Button size="sm" variant="outline" onClick={() => setSelectedStore(s.id)} title="عرض القائمة">
+                             <UtensilsCrossed className="w-3 h-3" />
+                           </Button>
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             className="text-purple-500 border-purple-500/30"
+                             disabled={generatingMenuFor === s.id}
+                             onClick={() => regenerateMenuForStore(s)}
+                             title="إعادة توليد القائمة بالذكاء الاصطناعي"
+                           >
+                             {generatingMenuFor === s.id
+                               ? <Loader2 className="w-3 h-3 animate-spin" />
+                               : <RefreshCw className="w-3 h-3" />}
                            </Button>
                          </div>
                        </TableCell>
