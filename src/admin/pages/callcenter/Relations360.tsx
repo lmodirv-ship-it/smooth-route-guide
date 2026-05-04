@@ -274,7 +274,7 @@ const Relations360 = () => {
 
   const handleCall = () => {
     if (!selected || !callCtx) return;
-    callCtx.startCall({
+    callCtx.startCallToParty({
       partyType: selected.type === "driver" ? "driver" : selected.type === "store" ? "store" : "client",
       reference: selected.code,
       name: selected.name,
