@@ -68,7 +68,10 @@ export default function CancelRideDialog({ open, onOpenChange, rideId, role, onC
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-sm rounded-2xl z-[2000]" dir="rtl">
+      <AlertDialogContent
+        className="max-w-sm rounded-2xl z-[2000] !top-auto !bottom-6 !translate-y-0 border-2 border-destructive/40 bg-card shadow-2xl shadow-destructive/20"
+        dir="rtl"
+      >
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-destructive">
             <XCircle className="w-5 h-5" />
@@ -95,8 +98,8 @@ export default function CancelRideDialog({ open, onOpenChange, rideId, role, onC
           ))}
         </div>
 
-        <AlertDialogFooter className="flex gap-2 sm:gap-2">
-          <AlertDialogCancel className="rounded-xl flex-1">تراجع</AlertDialogCancel>
+        <AlertDialogFooter className="flex flex-row gap-2 sm:gap-2 pt-2 border-t border-border">
+          <AlertDialogCancel className="rounded-xl flex-1 mt-0">تراجع</AlertDialogCancel>
           <Button
             onClick={handleCancel}
             disabled={!selectedReason || cancelling}
