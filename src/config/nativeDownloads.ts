@@ -9,6 +9,7 @@ export type NativeDownload = {
   platform: "mobile" | "desktop";
   version?: string;
   playStoreUrl?: string;
+  playStoreInternalTestUrl?: string;
 };
 
 export const nativeDownloadPageUrl = "/welcome#mobile-download";
@@ -37,6 +38,7 @@ export const nativeDownloads: NativeDownload[] = [
     platform: "mobile",
     version: "v1.0.0",
     playStoreUrl: "https://play.google.com/store/apps/details?id=com.hndriver.app",
+    playStoreInternalTestUrl: "https://play.google.com/apps/internaltest/4701458192509172324",
   },
   {
     id: "android-delivery",
