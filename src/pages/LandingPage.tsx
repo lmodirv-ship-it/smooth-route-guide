@@ -209,10 +209,15 @@ export default function LandingPage() {
     { label: dir === "rtl" ? "الخدمات" : "Services", href: "#services" },
     { label: dir === "rtl" ? "تحميل" : "Download", href: "#download" },
     { label: dir === "rtl" ? "اتصل بنا" : "Contact", href: "#contact" },
+    { label: dir === "rtl" ? "🎁 ادعُ صديق" : "🎁 Invite", href: "/invite" },
   ];
 
   const scrollToSection = (href: string) => {
     setMenuOpen(false);
+    if (href.startsWith("/")) {
+      navigate(href);
+      return;
+    }
     const el = document.querySelector(href);
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };

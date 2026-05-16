@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Gift, Users, Trophy, Share2, Copy, MessageCircle, Mail, Send, Check } from "lucide-react";
+import { Gift, Users, Trophy, Share2, Copy, MessageCircle, Mail, Send, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import PageMeta from "@/components/PageMeta";
 import { trackEvent } from "@/components/TrackingScripts";
@@ -9,9 +12,14 @@ import { toast } from "sonner";
 
 const Invite = () => {
   const [referralCode, setReferralCode] = useState<string>("");
+  const [inviterName, setInviterName] = useState<string>("");
   const [stats, setStats] = useState({ invited: 0, joined: 0, earned: 0 });
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
+  const [emailTo, setEmailTo] = useState("");
+  const [recipientName, setRecipientName] = useState("");
+  const [customMessage, setCustomMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -21,6 +29,7 @@ const Invite = () => {
       const { data: profile } = await supabase.from("profiles")
         .select("referral_code, name").eq("id", user.id).maybeSingle();
       if (profile?.referral_code) setReferralCode(profile.referral_code);
+      if (profile?.name) setInviterName(profile.name);
 
       const { data: refs } = await supabase.from("referrals")
         .select("status, reward_amount, reward_given").eq("referrer_id", user.id);
@@ -63,6 +72,42 @@ const Invite = () => {
   const shareEmail = () => {
     window.location.href = `mailto:?subject=${encodeURIComponent("انضم لـ HN Driver")}&body=${encodeURIComponent(`جرب أفضل تطبيق نقل وتوصيل: ${inviteUrl}`)}`;
     trackEvent("Share", { method: "email", content_type: "referral" });
+  };
+
+  const sendInviteEmail = async () => {
+    const email = emailTo.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("الرجاء إدخال بريد إلكتروني صحيح");
+      return;
+    }
+    setSending(true);
+    try {
+      const idempotencyKey = `invite-friend-${email}-${Date.now()}`;
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "invite-friend",
+          recipientEmail: email,
+          idempotencyKey,
+          templateData: {
+            inviterName: inviterName || undefined,
+            recipientName: recipientName.trim() || undefined,
+            inviteUrl,
+            message: customMessage.trim() || undefined,
+          },
+        },
+      });
+      if (error) throw error;
+      trackEvent("Share", { method: "email_invite", content_type: "referral" });
+      toast.success("تم إرسال الدعوة بنجاح ✉️");
+      setEmailTo("");
+      setRecipientName("");
+      setCustomMessage("");
+    } catch (e: any) {
+      console.error("Invite send failed", e);
+      toast.error(e?.message || "تعذر إرسال الدعوة، حاول مرة أخرى");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -127,6 +172,31 @@ const Invite = () => {
             <Mail className="w-5 h-5 text-warning" />
             <span className="text-xs">Email</span>
           </Button>
+        </div>
+
+        {/* Direct email invite form */}
+        <div className="glass-card rounded-2xl p-5 mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Mail className="w-5 h-5 text-primary" />
+            <h2 className="font-bold text-foreground">إرسال دعوة عبر البريد الإلكتروني</h2>
+          </div>
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="invite-email" className="text-xs text-muted-foreground mb-1 block">البريد الإلكتروني *</Label>
+              <Input id="invite-email" type="email" placeholder="friend@example.com" value={emailTo} onChange={(e) => setEmailTo(e.target.value)} className="bg-secondary border-border" dir="ltr" />
+            </div>
+            <div>
+              <Label htmlFor="invite-name" className="text-xs text-muted-foreground mb-1 block">اسم الصديق (اختياري)</Label>
+              <Input id="invite-name" placeholder="سارة" value={recipientName} onChange={(e) => setRecipientName(e.target.value)} className="bg-secondary border-border" />
+            </div>
+            <div>
+              <Label htmlFor="invite-msg" className="text-xs text-muted-foreground mb-1 block">رسالة شخصية (اختياري)</Label>
+              <Textarea id="invite-msg" placeholder="جربها معايا، خدمة رائعة!" value={customMessage} onChange={(e) => setCustomMessage(e.target.value)} maxLength={300} rows={3} className="bg-secondary border-border resize-none" />
+            </div>
+            <Button onClick={sendInviteEmail} disabled={sending || !emailTo} className="w-full gradient-primary text-primary-foreground h-11">
+              {sending ? (<><Loader2 className="w-4 h-4 ml-2 animate-spin" /> جاري الإرسال...</>) : (<><Send className="w-4 h-4 ml-2" /> إرسال الدعوة</>)}
+            </Button>
+          </div>
         </div>
 
         {/* Leaderboard */}
