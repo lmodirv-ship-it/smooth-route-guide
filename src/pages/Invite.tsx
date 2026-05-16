@@ -29,6 +29,7 @@ const Invite = () => {
       const { data: profile } = await supabase.from("profiles")
         .select("referral_code, name").eq("id", user.id).maybeSingle();
       if (profile?.referral_code) setReferralCode(profile.referral_code);
+      if (profile?.name) setInviterName(profile.name);
 
       const { data: refs } = await supabase.from("referrals")
         .select("status, reward_amount, reward_given").eq("referrer_id", user.id);
