@@ -108,13 +108,40 @@ const RegisteredUsers = () => {
   const handleQuickRole = async (user: UserRecord, role: string) => {
     const { error } = await supabase.from("user_roles").insert({ user_id: user.id, role: role as AppRole });
     if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
+
+    // Admin assignment auto-activates the account in the assigned role
+    await supabase
+      .from("profiles")
+      .update({ is_confirmed: true, is_suspended: false })
+      .eq("id", user.id);
+
     if (role === "driver" || role === "delivery") {
       const { data: ex } = await supabase.from("drivers").select("id").eq("user_id", user.id).maybeSingle();
-      if (!ex) await supabase.from("drivers").insert({ user_id: user.id, status: "inactive", driver_type: role === "delivery" ? "delivery" : "ride" });
+      if (!ex) {
+        await supabase.from("drivers").insert({ user_id: user.id, status: "active", driver_type: role === "delivery" ? "delivery" : "ride" });
+      } else {
+        await supabase.from("drivers").update({ status: "active" }).eq("user_id", user.id);
+      }
     }
-    toast({ title: `✅ تم تعيين "${user.userCode}" كـ ${ROLE_LABELS[role] || role}` });
-    setUsers(prev => prev.map(x => x.id === user.id ? { ...x, roles: [...x.roles, role] } : x));
+    toast({ title: `✅ تم تعيين وتفعيل "${user.userCode}" كـ ${ROLE_LABELS[role] || role}` });
+    setUsers(prev => prev.map(x => x.id === user.id ? { ...x, roles: [...x.roles, role], isConfirmed: true, isSuspended: false } : x));
   };
+
+  const handleActivateAccount = async (user: UserRecord) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_confirmed: true, is_suspended: false })
+      .eq("id", user.id);
+    if (error) { toast({ title: "خطأ في التفعيل", description: error.message, variant: "destructive" }); return; }
+
+    // If driver/delivery, also activate driver record
+    if (user.roles.includes("driver") || user.roles.includes("delivery")) {
+      await supabase.from("drivers").update({ status: "active" }).eq("user_id", user.id);
+    }
+    toast({ title: `✅ تم تفعيل حساب "${user.userCode}" من طرف المدير` });
+    setUsers(prev => prev.map(x => x.id === user.id ? { ...x, isConfirmed: true, isSuspended: false } : x));
+  };
+
 
   if (loading) {
     return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
@@ -212,6 +239,11 @@ const RegisteredUsers = () => {
                       <DropdownMenuItem onClick={() => openDetail(u)}>
                         <Eye className="w-4 h-4 ml-2" /> عرض الملف الكامل
                       </DropdownMenuItem>
+                      {!u.isConfirmed && (
+                        <DropdownMenuItem onClick={() => handleActivateAccount(u)} className="text-green-600 focus:text-green-600">
+                          <Check className="w-4 h-4 ml-2" /> تفعيل الحساب من طرف المدير
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       {!u.roles.includes("moderator") && !u.roles.includes("admin") && (
                         <DropdownMenuItem onClick={() => handleQuickRole(u, "moderator")}>
