@@ -190,6 +190,72 @@ export type Database = {
           },
         ]
       }
+      analytics_events: {
+        Row: {
+          browser: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          device_type: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          os: string | null
+          page_path: string | null
+          referrer: string | null
+          scroll_depth: number | null
+          session_id: string | null
+          time_on_page_ms: number | null
+          traffic_source: string | null
+          user_id: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          os?: string | null
+          page_path?: string | null
+          referrer?: string | null
+          scroll_depth?: number | null
+          session_id?: string | null
+          time_on_page_ms?: number | null
+          traffic_source?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          browser?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          os?: string | null
+          page_path?: string | null
+          referrer?: string | null
+          scroll_depth?: number | null
+          session_id?: string | null
+          time_on_page_ms?: number | null
+          traffic_source?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       api_rate_limits: {
         Row: {
           created_at: string
@@ -504,6 +570,151 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      blog_comments: {
+        Row: {
+          approved: boolean
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          approved?: boolean
+          author_name: string
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          approved?: boolean
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      blog_posts: {
+        Row: {
+          category: string
+          content: string
+          countries: string[]
+          created_at: string
+          excerpt: string
+          hreflang_country: string | null
+          id: string
+          image_url: string | null
+          language: string
+          meta_description: string | null
+          meta_title: string | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          published: boolean
+          published_at: string
+          slug: string
+          title: string
+          translation_key: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          content?: string
+          countries?: string[]
+          created_at?: string
+          excerpt?: string
+          hreflang_country?: string | null
+          id?: string
+          image_url?: string | null
+          language?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          published?: boolean
+          published_at?: string
+          slug: string
+          title: string
+          translation_key?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          countries?: string[]
+          created_at?: string
+          excerpt?: string
+          hreflang_country?: string | null
+          id?: string
+          image_url?: string | null
+          language?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          published?: boolean
+          published_at?: string
+          slug?: string
+          title?: string
+          translation_key?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      blog_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          score: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_ratings_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       call_center: {
         Row: {
@@ -1189,6 +1400,9 @@ export type Database = {
           city: string | null
           country: string | null
           created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
           delivered_at: string | null
           delivery_address: string | null
           delivery_fee: number | null
@@ -1205,6 +1419,7 @@ export type Database = {
           items: Json | null
           notes: string | null
           order_code: string | null
+          payment_method: string
           picked_up_at: string | null
           pickup_address: string | null
           pickup_lat: number | null
@@ -1226,6 +1441,9 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           delivered_at?: string | null
           delivery_address?: string | null
           delivery_fee?: number | null
@@ -1242,6 +1460,7 @@ export type Database = {
           items?: Json | null
           notes?: string | null
           order_code?: string | null
+          payment_method?: string
           picked_up_at?: string | null
           pickup_address?: string | null
           pickup_lat?: number | null
@@ -1263,6 +1482,9 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           delivered_at?: string | null
           delivery_address?: string | null
           delivery_fee?: number | null
@@ -1279,6 +1501,7 @@ export type Database = {
           items?: Json | null
           notes?: string | null
           order_code?: string | null
+          payment_method?: string
           picked_up_at?: string | null
           pickup_address?: string | null
           pickup_lat?: number | null
@@ -1351,6 +1574,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      driver_candidates: {
+        Row: {
+          address: string | null
+          admin_notes: string | null
+          approved_at: string | null
+          approved_driver_id: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          full_name: string
+          id: string
+          invited_at: string | null
+          latitude: number | null
+          longitude: number | null
+          phone: string | null
+          reference_code: string | null
+          rejected_at: string | null
+          source_type: string
+          source_url: string | null
+          status: string
+          updated_at: string
+          vehicle_type: string
+          verification_status: string
+        }
+        Insert: {
+          address?: string | null
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_driver_id?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          invited_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          phone?: string | null
+          reference_code?: string | null
+          rejected_at?: string | null
+          source_type?: string
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_type?: string
+          verification_status?: string
+        }
+        Update: {
+          address?: string | null
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_driver_id?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          invited_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          phone?: string | null
+          reference_code?: string | null
+          rejected_at?: string | null
+          source_type?: string
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_type?: string
+          verification_status?: string
+        }
+        Relationships: []
       }
       driver_packages: {
         Row: {
@@ -2820,6 +3121,30 @@ export type Database = {
           },
         ]
       }
+      invite_friend: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          invited_by: string | null
+          name: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          invited_by?: string | null
+          name?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          invited_by?: string | null
+          name?: string | null
+        }
+        Relationships: []
+      }
       mailbluster_templates: {
         Row: {
           body_html: string
@@ -3630,6 +3955,48 @@ export type Database = {
         }
         Relationships: []
       }
+      prospect_categories: {
+        Row: {
+          created_at: string
+          emoji: string | null
+          group_key: string
+          id: string
+          is_active: boolean
+          label_ar: string
+          label_en: string | null
+          label_fr: string | null
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          emoji?: string | null
+          group_key: string
+          id?: string
+          is_active?: boolean
+          label_ar: string
+          label_en?: string | null
+          label_fr?: string | null
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string | null
+          group_key?: string
+          id?: string
+          is_active?: boolean
+          label_ar?: string
+          label_en?: string | null
+          label_fr?: string | null
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       prospect_menu_items: {
         Row: {
           category: string | null
@@ -3686,8 +4053,99 @@ export type Database = {
           },
         ]
       }
+      prospect_search_runs: {
+        Row: {
+          category: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          id: string
+          ok: boolean
+          results_count: number
+          source_key: string
+        }
+        Insert: {
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          ok?: boolean
+          results_count?: number
+          source_key: string
+        }
+        Update: {
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          ok?: boolean
+          results_count?: number
+          source_key?: string
+        }
+        Relationships: []
+      }
+      prospect_search_sources: {
+        Row: {
+          base_url: string | null
+          created_at: string
+          display_name: string
+          error_count: number
+          id: string
+          is_enabled: boolean
+          last_used_at: string | null
+          notes: string | null
+          priority: number
+          requires_key: boolean
+          source_key: string
+          source_type: string
+          success_count: number
+          updated_at: string
+        }
+        Insert: {
+          base_url?: string | null
+          created_at?: string
+          display_name: string
+          error_count?: number
+          id?: string
+          is_enabled?: boolean
+          last_used_at?: string | null
+          notes?: string | null
+          priority?: number
+          requires_key?: boolean
+          source_key: string
+          source_type?: string
+          success_count?: number
+          updated_at?: string
+        }
+        Update: {
+          base_url?: string | null
+          created_at?: string
+          display_name?: string
+          error_count?: number
+          id?: string
+          is_enabled?: boolean
+          last_used_at?: string | null
+          notes?: string | null
+          priority?: number
+          requires_key?: boolean
+          source_key?: string
+          source_type?: string
+          success_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       prospects: {
         Row: {
+          activity_type: string | null
           address: string | null
           area: string | null
           business_status: string | null
@@ -3722,12 +4180,15 @@ export type Database = {
           prospect_code: string | null
           rating: number | null
           source: string | null
+          source_name: string | null
+          source_url: string | null
           status: string | null
           updated_at: string
           user_ratings_total: number | null
           website: string | null
         }
         Insert: {
+          activity_type?: string | null
           address?: string | null
           area?: string | null
           business_status?: string | null
@@ -3762,12 +4223,15 @@ export type Database = {
           prospect_code?: string | null
           rating?: number | null
           source?: string | null
+          source_name?: string | null
+          source_url?: string | null
           status?: string | null
           updated_at?: string
           user_ratings_total?: number | null
           website?: string | null
         }
         Update: {
+          activity_type?: string | null
           address?: string | null
           area?: string | null
           business_status?: string | null
@@ -3802,6 +4266,8 @@ export type Database = {
           prospect_code?: string | null
           rating?: number | null
           source?: string | null
+          source_name?: string | null
+          source_url?: string | null
           status?: string | null
           updated_at?: string
           user_ratings_total?: number | null
@@ -4658,6 +5124,69 @@ export type Database = {
         }
         Relationships: []
       }
+      subdomain_access_log: {
+        Row: {
+          created_at: string
+          full_host: string | null
+          id: string
+          subdomain: string
+          target_path: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          full_host?: string | null
+          id?: string
+          subdomain: string
+          target_path?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          full_host?: string | null
+          id?: string
+          subdomain?: string
+          target_path?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      subdomain_routes: {
+        Row: {
+          allowed_roles: string[]
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          subdomain: string
+          target_path: string
+          updated_at: string
+        }
+        Insert: {
+          allowed_roles?: string[]
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          subdomain: string
+          target_path: string
+          updated_at?: string
+        }
+        Update: {
+          allowed_roles?: string[]
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          subdomain?: string
+          target_path?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -5407,6 +5936,10 @@ export type Database = {
       }
     }
     Functions: {
+      approve_driver_candidate: {
+        Args: { p_candidate_id: string }
+        Returns: string
+      }
       cleanup_old_health_data: { Args: never; Returns: undefined }
       delete_email: {
         Args: { message_id: number; queue_name: string }
@@ -5436,6 +5969,19 @@ export type Database = {
           is_nullable: string
         }[]
       }
+      growth_advanced_stats: {
+        Args: { p_from?: string; p_to?: string }
+        Returns: Json
+      }
+      growth_funnel_stats: {
+        Args: {
+          p_city?: string
+          p_from?: string
+          p_source?: string
+          p_to?: string
+        }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -5459,6 +6005,43 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      record_event: {
+        Args: {
+          p_city?: string
+          p_country?: string
+          p_device_type?: string
+          p_event_type: string
+          p_metadata?: Json
+          p_page_path?: string
+          p_session_id?: string
+          p_traffic_source?: string
+          p_utm_campaign?: string
+          p_utm_medium?: string
+          p_utm_source?: string
+        }
+        Returns: string
+      }
+      record_event_v2: {
+        Args: {
+          p_browser?: string
+          p_city?: string
+          p_country?: string
+          p_device_type?: string
+          p_event_type: string
+          p_metadata?: Json
+          p_os?: string
+          p_page_path?: string
+          p_referrer?: string
+          p_scroll_depth?: number
+          p_session_id?: string
+          p_time_on_page_ms?: number
+          p_traffic_source?: string
+          p_utm_campaign?: string
+          p_utm_medium?: string
+          p_utm_source?: string
+        }
+        Returns: string
       }
       record_visit:
         | {
