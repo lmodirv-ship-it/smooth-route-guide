@@ -239,6 +239,11 @@ const RegisteredUsers = () => {
                       <DropdownMenuItem onClick={() => openDetail(u)}>
                         <Eye className="w-4 h-4 ml-2" /> عرض الملف الكامل
                       </DropdownMenuItem>
+                      {!u.isConfirmed && (
+                        <DropdownMenuItem onClick={() => handleActivateAccount(u)} className="text-green-600 focus:text-green-600">
+                          <Check className="w-4 h-4 ml-2" /> تفعيل الحساب من طرف المدير
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       {!u.roles.includes("moderator") && !u.roles.includes("admin") && (
                         <DropdownMenuItem onClick={() => handleQuickRole(u, "moderator")}>
