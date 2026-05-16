@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Gift, Users, Trophy, Share2, Copy, MessageCircle, Mail, Send, Check } from "lucide-react";
+import { Gift, Users, Trophy, Share2, Copy, MessageCircle, Mail, Send, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import PageMeta from "@/components/PageMeta";
 import { trackEvent } from "@/components/TrackingScripts";
@@ -9,9 +12,14 @@ import { toast } from "sonner";
 
 const Invite = () => {
   const [referralCode, setReferralCode] = useState<string>("");
+  const [inviterName, setInviterName] = useState<string>("");
   const [stats, setStats] = useState({ invited: 0, joined: 0, earned: 0 });
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
+  const [emailTo, setEmailTo] = useState("");
+  const [recipientName, setRecipientName] = useState("");
+  const [customMessage, setCustomMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     const load = async () => {
