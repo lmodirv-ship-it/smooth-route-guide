@@ -5,7 +5,7 @@ import {
   BarChart3, FileText, Car, Users, TrendingUp, MapPin,
   AlertTriangle, FileCheck, Headphones, Settings, Shield,
   Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog, Percent,
-  ShieldCheck, ShieldOff, Globe, RefreshCw, BrainCircuit, Menu, MessageSquare, MessagesSquare, Package, Palette, Monitor, GitBranch, Database, Wallet, Camera, CameraOff, CreditCard, Ticket, Mail
+  ShieldCheck, ShieldOff, Globe, RefreshCw, BrainCircuit, Menu, MessageSquare, MessagesSquare, Package, Palette, Monitor, GitBranch, Database, Wallet, Camera, CameraOff, CreditCard, Ticket, Mail, Map as MapIcon
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -131,6 +131,7 @@ const AdminLayout = () => {
     { path: "/admin/prospecting", icon: Search, label: "🔍 التنقيب عن الشركاء" },
     { path: "/admin/mailbluster", icon: Mail, label: "📧 نماذج المراسلات" },
     { path: "/admin/api-keys", icon: Shield, label: "🔑 مفاتيح API" },
+    { path: "/admin/sitemap", icon: MapIcon, label: "🗺️ خريطة الموقع" },
   ];
 
   useEffect(() => {

@@ -63,6 +63,7 @@ const Prospecting = lazy(() => import("@/admin/pages/Prospecting"));
 const MailBlusterTemplates = lazy(() => import("@/admin/pages/MailBlusterTemplates"));
 const ApiKeysPage = lazy(() => import("@/admin/pages/ApiKeys"));
 const PartnerSitesManagement = lazy(() => import("@/admin/pages/PartnerSitesManagement"));
+const AdminSiteMap = lazy(() => import("@/admin/pages/SiteMap"));
 const UtmBuilder = lazy(() => import("@/admin/pages/UtmBuilder"));
 const CampaignsDashboard = lazy(() => import("@/admin/pages/CampaignsDashboard"));
 
@@ -151,6 +152,7 @@ export const adminRouteElements = (
       <Route path="mailbluster" element={L(MailBlusterTemplates)} />
       <Route path="api-keys" element={L(ApiKeysPage)} />
       <Route path="partner-sites" element={L(PartnerSitesManagement)} />
+      <Route path="sitemap" element={L(AdminSiteMap)} />
     </Route>
 
     <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}>{L(CallCenterLayout)}</RequireRole>}>
