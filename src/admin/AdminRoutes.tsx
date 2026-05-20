@@ -154,6 +154,7 @@ export const adminRouteElements = (
       <Route path="api-keys" element={L(ApiKeysPage)} />
       <Route path="partner-sites" element={L(PartnerSitesManagement)} />
       <Route path="sitemap" element={L(AdminSiteMap)} />
+      <Route path="blog" element={L(AdminBlog)} />
     </Route>
 
     <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}>{L(CallCenterLayout)}</RequireRole>}>
