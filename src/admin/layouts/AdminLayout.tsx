@@ -131,6 +131,7 @@ const AdminLayout = () => {
     { path: "/admin/prospecting", icon: Search, label: "🔍 التنقيب عن الشركاء" },
     { path: "/admin/mailbluster", icon: Mail, label: "📧 نماذج المراسلات" },
     { path: "/admin/api-keys", icon: Shield, label: "🔑 مفاتيح API" },
+    { path: "/admin/blog", icon: FileText, label: "📝 إدارة المدونة" },
     { path: "/admin/sitemap", icon: MapIcon, label: "🗺️ خريطة الموقع" },
   ];
 

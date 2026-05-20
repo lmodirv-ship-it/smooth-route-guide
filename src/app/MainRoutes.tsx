@@ -87,6 +87,8 @@ const HNGroupePortal = lazy(() => import("@/pages/HNGroupePortal"));
 const AllProjects = lazy(() => import("@/pages/AllProjects"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
+const BlogList = lazy(() => import("@/pages/BlogList"));
+const BlogArticle = lazy(() => import("@/pages/BlogArticle"));
 
 export const mainRouteElements = (
   <>
@@ -175,6 +177,10 @@ export const mainRouteElements = (
 
     {/* ─── Unsubscribe ─── */}
     <Route path="/unsubscribe" element={<LazyPage component={Unsubscribe} />} />
+
+    {/* ─── Blog (public, no auth required) ─── */}
+    <Route path="/blog" element={<LazyPage component={BlogList} />} />
+    <Route path="/blog/:idOrSlug" element={<LazyPage component={BlogArticle} />} />
 
     {/* ─── Dynamic CMS Pages ─── */}
     <Route path="/p/:slug" element={<LazyPage component={DynamicPage} />} />
