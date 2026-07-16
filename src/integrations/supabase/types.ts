@@ -6112,6 +6112,7 @@ export type Database = {
           minutes: number
         }[]
       }
+      email_queue_dispatch: { Args: never; Returns: undefined }
       enforce_rate_limit: {
         Args: {
           p_key: string
