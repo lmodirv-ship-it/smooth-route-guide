@@ -116,6 +116,7 @@ const AuthPage = () => {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading || cooldown > 0) return;
     if (!email || !password) {
       toast({ title: "يرجى ملء جميع الحقول", variant: "destructive" });
       return;
@@ -126,6 +127,7 @@ const AuthPage = () => {
     setLoading(true);
     try {
       if (isLogin) {
+
         const { error } = await signInWithPasswordWithTimeout({ email, password });
         if (error) throw error;
         toast({ title: "تم تسجيل الدخول بنجاح ✅" });
