@@ -53,6 +53,7 @@ const AuthPage = () => {
   const [authMethod, setAuthMethod] = useState<"email" | "phone">("email");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -60,6 +61,13 @@ const AuthPage = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const { ready, session } = useAuthReady();
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setInterval(() => setCooldown((c) => (c > 0 ? c - 1 : 0)), 1000);
+    return () => clearInterval(t);
+  }, [cooldown]);
+
 
   useEffect(() => {
     let mounted = true;
@@ -108,6 +116,7 @@ const AuthPage = () => {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading || cooldown > 0) return;
     if (!email || !password) {
       toast({ title: "يرجى ملء جميع الحقول", variant: "destructive" });
       return;
@@ -118,6 +127,7 @@ const AuthPage = () => {
     setLoading(true);
     try {
       if (isLogin) {
+
         const { error } = await signInWithPasswordWithTimeout({ email, password });
         if (error) throw error;
         toast({ title: "تم تسجيل الدخول بنجاح ✅" });
@@ -190,16 +200,26 @@ const AuthPage = () => {
       }
     } catch (err: any) {
       let msg = err?.message || "حدث خطأ غير متوقع";
-      if (msg.includes("Invalid login credentials")) msg = "بريد أو كلمة مرور غير صحيحة";
-      if (msg.includes("User already registered")) msg = "هذا البريد مسجل مسبقاً";
-      if (msg.includes("Password should be at least")) msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
-      if (msg.includes("password") && msg.includes("characters")) msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
-      if (isServiceTimeoutError(err)) msg = getAuthTimeoutMessage(isLogin ? "login" : "signup");
+      // Rate limit: extract seconds and start cooldown
+      const rlMatch = /after\s+(\d+)\s+seconds/i.exec(msg) || /(\d+)\s+seconds/i.exec(msg);
+      const isRateLimit = /security purposes|rate limit|only request this after/i.test(msg) || err?.status === 429;
+      if (isRateLimit) {
+        const secs = rlMatch ? parseInt(rlMatch[1], 10) : 30;
+        setCooldown(secs);
+        msg = `يرجى الانتظار ${secs} ثانية قبل المحاولة مرة أخرى (حد أمان مؤقت).`;
+      } else {
+        if (msg.includes("Invalid login credentials")) msg = "بريد أو كلمة مرور غير صحيحة";
+        if (msg.includes("User already registered")) msg = "هذا البريد مسجل مسبقاً — سجّل الدخول بدلاً من ذلك";
+        if (msg.includes("Password should be at least")) msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+        if (msg.includes("password") && msg.includes("characters")) msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+        if (isServiceTimeoutError(err)) msg = getAuthTimeoutMessage(isLogin ? "login" : "signup");
+      }
       toast({ title: "خطأ", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
+
 
   const handlePhoneUnavailable = () => {
     toast({
@@ -330,10 +350,11 @@ const AuthPage = () => {
             </button>
           )}
 
-          <Button type="submit" disabled={loading}
+          <Button type="submit" disabled={loading || cooldown > 0}
             className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-bold text-lg mt-2 hover:opacity-90 transition-opacity glow-primary">
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : isLogin ? "دخول" : "إنشاء حساب"}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : cooldown > 0 ? `انتظر ${cooldown} ث...` : isLogin ? "دخول" : "إنشاء حساب"}
           </Button>
+
 
           <div className="flex items-center gap-3 my-2">
             <div className="flex-1 h-px bg-border" />
