@@ -200,16 +200,26 @@ const AuthPage = () => {
       }
     } catch (err: any) {
       let msg = err?.message || "حدث خطأ غير متوقع";
-      if (msg.includes("Invalid login credentials")) msg = "بريد أو كلمة مرور غير صحيحة";
-      if (msg.includes("User already registered")) msg = "هذا البريد مسجل مسبقاً";
-      if (msg.includes("Password should be at least")) msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
-      if (msg.includes("password") && msg.includes("characters")) msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
-      if (isServiceTimeoutError(err)) msg = getAuthTimeoutMessage(isLogin ? "login" : "signup");
+      // Rate limit: extract seconds and start cooldown
+      const rlMatch = /after\s+(\d+)\s+seconds/i.exec(msg) || /(\d+)\s+seconds/i.exec(msg);
+      const isRateLimit = /security purposes|rate limit|only request this after/i.test(msg) || err?.status === 429;
+      if (isRateLimit) {
+        const secs = rlMatch ? parseInt(rlMatch[1], 10) : 30;
+        setCooldown(secs);
+        msg = `يرجى الانتظار ${secs} ثانية قبل المحاولة مرة أخرى (حد أمان مؤقت).`;
+      } else {
+        if (msg.includes("Invalid login credentials")) msg = "بريد أو كلمة مرور غير صحيحة";
+        if (msg.includes("User already registered")) msg = "هذا البريد مسجل مسبقاً — سجّل الدخول بدلاً من ذلك";
+        if (msg.includes("Password should be at least")) msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+        if (msg.includes("password") && msg.includes("characters")) msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+        if (isServiceTimeoutError(err)) msg = getAuthTimeoutMessage(isLogin ? "login" : "signup");
+      }
       toast({ title: "خطأ", description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
+
 
   const handlePhoneUnavailable = () => {
     toast({
