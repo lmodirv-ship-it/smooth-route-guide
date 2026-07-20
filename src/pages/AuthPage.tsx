@@ -53,6 +53,7 @@ const AuthPage = () => {
   const [authMethod, setAuthMethod] = useState<"email" | "phone">("email");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -60,6 +61,13 @@ const AuthPage = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const { ready, session } = useAuthReady();
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setInterval(() => setCooldown((c) => (c > 0 ? c - 1 : 0)), 1000);
+    return () => clearInterval(t);
+  }, [cooldown]);
+
 
   useEffect(() => {
     let mounted = true;
