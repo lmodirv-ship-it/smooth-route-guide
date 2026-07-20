@@ -350,10 +350,11 @@ const AuthPage = () => {
             </button>
           )}
 
-          <Button type="submit" disabled={loading}
+          <Button type="submit" disabled={loading || cooldown > 0}
             className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-bold text-lg mt-2 hover:opacity-90 transition-opacity glow-primary">
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : isLogin ? "دخول" : "إنشاء حساب"}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : cooldown > 0 ? `انتظر ${cooldown} ث...` : isLogin ? "دخول" : "إنشاء حساب"}
           </Button>
+
 
           <div className="flex items-center gap-3 my-2">
             <div className="flex-1 h-px bg-border" />
