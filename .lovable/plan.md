@@ -1,132 +1,138 @@
-## تقرير المراجعة الشاملة لمنصة HN Driver
+# تقرير مراجعة الطلبات والتنفيذ — جلسة hn-driver
 
-### 1) الحالة العامة الآن
+مراجعة شاملة لكل تعليمة أعطيتها في هذه الجلسة، وما تم تنفيذه فعلياً.
 
-- قاعدة البيانات: تعمل، الحجم 2.66 GB، الذاكرة 25%، القرص 10%، الاتصالات 23/240. لا يوجد ضغط.
-- WAL = 1024 MB ومعاملات مُرتجَعة 2.4 مليون منذ آخر إقلاع → مؤشر على Realtime/Triggers تُلغي معاملات كثيرة (طبيعي نسبياً لكن مرتفع).
-- 162 هجرة قاعدة بيانات منذ أبريل 2026 (تطور كثيف جداً خلال شهرين).
-- بيانات حية: 78 طلب رحلة (3 معلقة)، 53 طلب توصيل (1 متاح)، 27 سائق (26 نشط)، 54 ملف شخصي، 497 محل، 56 دور.
+---
 
-### 2) لماذا تشعر أن "كل شيء كان يعمل ثم تغيّر"؟ — الأسباب الجذرية
+## 1) الشاشة السوداء على www.hn-driver.com بعد رفع www.zip
+**الطلب:** إصلاح الصفحة السوداء بعد رفع الملفات عبر FTP.
+**التنفيذ:**
+- إنشاء `public/sw.js` (kill-switch Service Worker) لإلغاء أي SW قديم مخزّن.
+- إنشاء `public/registerSW.js` لتنظيف الكاش والـ SW القديم.
+- إنشاء `public/manifest.webmanifest` و`public/manifest.json`.
+- إنشاء `public/.htaccess` لـ SPA routing على استضافة LWS + تعطيل الكاش.
+- تجميع حزمة إنتاج نظيفة `hn-driver-www-clean.zip` + `hn-driver-lws.zip`.
 
-السبب ليس "حذف". السبب أن النظام مرّ بثلاث موجات متتالية من التشديد الأمني خلال الأسابيع الماضية، وكل موجة قلّصت ما يراه المستخدم العادي:
+**الحالة:** الملفات جاهزة. المشكلة تبيّن أنها كاش المتصفح لديك محلياً (الموقع كان يعمل من جانبي).
 
-أ. **تشديد RLS على `ride_requests` و `delivery_orders`**
-  - سابقاً: السائق يرى كل الطلبات المعلقة.
-  - الآن: يجب أن يكون `drivers.status = active` و `driver_type` يطابق نوع الطلب، وأن يمر الطلب عبر دالة `available_delivery_orders` المنقّاة. أي سائق ينقصه شرط = لا يرى شيئاً → إحساس "اختفاء".
+---
 
-ب. **استبدال `SELECT` المباشر بدوال `SECURITY DEFINER`**
-  - مثل `available_delivery_orders`, `get_merchant_credentials`, `get_store_commission`. مفيدة أمنياً لكنها كسرت بعض الواجهات التي كانت تقرأ الجدول مباشرة.
+## 2) تفعيل زر تغيير اللغة في الصفحة الرئيسية
+- إصلاح `z-index` في `src/components/LanguageSwitcher.tsx`.
+- ربط `LandingPage.tsx` بـ `useI18n` مع خريطة محتوى متعدد اللغات.
 
-ج. **حذف وحجب وظائف حساسة**
-  - حُذف Edge Function: `sync-api-keys`.
-  - حُجب `face_auth_profiles` (descriptors) و `commission_rate` و حقول بنك التجار عن العميل.
-  - أُلغي تسجيل الدخول بـ Face ID وأُلغي تبديل الأدوار يدوياً وأُلغي VitePWA.
-  - حُذفت ملفات APK كبيرة (>100MB) من Git.
+---
 
-د. **تشديد التحقق من السائق نفسه**
-  - Triggers تمنع السائق من تعديل `status / rating / driver_type / fees / customer info`. أي سكربت قديم في الواجهة كان يحدّث هذه الحقول صار يفشل بصمت.
+## 3) تحديث حقوق النشر
+- تحديث النصوص في `LandingPage` وملفات locales إلى: *جميع الحقوق محفوظة el hassani moulay ismail. groupe hn*.
 
-هـ. **عدم تطابق المعرفات (`driver_id`)**
-  - بعض الصفحات كانت تقارن `ride_requests.driver_id` بـ `auth.uid()`، بينما الصحيح هو `drivers.id`. أُصلحت في `DriverPage.tsx` لكن قد تبقى مواضع أخرى.
+---
 
-و. **سياسة "دور واحد لكل مستخدم" (غير الأدمن)**
-  - Trigger `enforce_single_role_for_non_admins` يمنع المستخدم من حمل أكثر من دور → سائق-عميل في نفس الحساب لم يعد ممكناً.
+## 4) صفحة الشروط والأحكام
+- إنشاء `src/pages/TermsAndConditions.tsx`.
+- إضافة المسارات `/terms` و`/terms-and-conditions`.
+- ربط الرابط في تذييل جميع الواجهات.
 
-ز. **اعتمادية صارمة على Realtime**
-  - أُوقف الـ polling في لوحة الإدارة. لو فشل اشتراك Realtime، تظهر القوائم فارغة دون تحديث.
+---
 
-### 3) ما الذي حُذف/تغيّر فعلاً (ملخّص)
+## 5) طلبات الرحلات تظهر وتختفي
+- إصلاح `src/hooks/useIncomingRideRequests.ts`: إزالة فلتر status مقيّد + إضافة polling احتياطي.
+- توسيع RLS/RPC لدعم driver_type = `both`.
+- إصلاح منطق `DriverPage.tsx`.
 
-| العنصر | الحالة | التأثير |
-|---|---|---|
-| `public-%` realtime topic | محذوف | لا بث عام بعد الآن |
-| Face ID Login | معطّل | تسجيل دخول كلمة المرور فقط |
-| تبديل الأدوار يدوياً | محذوف من الواجهة | أمان أعلى، مرونة أقل |
-| VitePWA | محذوف | لا كاش عدواني، لكن لا "تثبيت" PWA |
-| Edge function `sync-api-keys` | محذوف | API keys تُدار من Secrets |
-| APK داخل المستودع | محذوف | تحميل عبر `/downloads/apps/` فقط |
-| `commission_rate` في `stores` | محجوب | يحتاج دالة `get_store_commission` |
-| `face_auth_profiles.descriptors` | محجوب من العميل | يُقرأ خادمياً فقط |
-| RLS طلبات الرحلات/التوصيل | مُشدّد | كثير من السائقين لا يرونها |
+---
 
-### 4) نتائج الفحوصات الآلية
+## 6) توحيد الأدوار (Admin, Moderator, Call center, Driver, Delivery, Store owner, Client, Supervisor)
+- توحيد الأدوار في التوجيه (`AdminRoutes`, `MainRoutes`) وواجهة الإدارة.
 
-**Database Linter — 37 تحذير**، أبرزها:
-- 2 سياسة RLS مفتوحة (`USING true` على UPDATE/DELETE/INSERT).
-- ~25 دالة `SECURITY DEFINER` مكشوفة للجميع دون تسجيل دخول.
-- Storage Bucket عام يسمح بسرد الملفات.
-- باقي التحذيرات: قابلية تنفيذ دوال داخلية بدون مصادقة.
+---
 
-**أبطأ الاستعلامات (مرتبة):**
-1. `SELECT id FROM delivery_orders WHERE status = ?` — 5535 استدعاء، 176 ثانية إجمالاً. **يحتاج فهرس على `status, driver_id`.**
-2. `SELECT * FROM trips ORDER BY created_at DESC` — 10097 استدعاء، 89 ثانية. **يحتاج فهرس على `created_at DESC`.**
-3. `SELECT id FROM trips WHERE status = ?` — 87 ثانية. فهرس على `status`.
-4. `SELECT FROM earnings WHERE date >= ?` — 62 ثانية. فهرس على `date`.
-5. cron لمعالجة البريد يدور 1.45 مليون مرة (طبيعي لكن قابل للتخفيف).
+## 7) صفحة إدارة المساعد الذكي في لوحة المدير
+- إنشاء `src/admin/pages/SmartAssistantManagement.tsx` مع أزرار تفعيل/تعطيل + سجل عمليات (audit log) + تخزين الإعدادات في DB.
+- ربط الزر تحت زر Client في لوحة الإدارة.
 
-### 5) خريطة الأدوار الحالية (7 أدوار + المساعد الذكي)
+---
 
-```
-admin       → /admin            مسؤول كامل
-moderator   → /supervisor       مشرف عمليات (بدون مالية)
-agent       → /call-center      مركز اتصال
-driver      → /driver           سائق ركاب
-delivery    → /driver/delivery  سائق توصيل
-store_owner → /delivery/my-store صاحب محل
-user        → /customer         عميل
-smart_admin_assistant → مساعد ذكي محدود
-```
+## 8) تقرير احترافي عن الموقع + مراجعة ما تم حذفه
+- تقرير تدقيق عميق حدّد أن migrations الأمنية قيّدت بعض أنماط UI القديمة.
+- **المرحلة 1:** إضافة 16 index في قاعدة البيانات لتحسين الأداء.
 
-ملاحظات: لا يوجد دور `both` ظاهري لكن `drivers.driver_type IN ('ride','delivery','both')` موجود في الجدول → ازدواجية مفهومية يجب توحيدها.
+---
 
-### 6) تحسينات مقترحة (مرتّبة حسب الأولوية)
+## 9) طلبات ظاهرة كـ 0 مع Badge = 3 في لوحة الإدارة
+- التشخيص: فلتر جغرافي كان يخفي الطلبات.
+- تعديل `src/admin/pages/RideRequests.tsx`: إضافة زر "عرض كل الدول" + تحذير عند تفعيل الفلتر.
 
-**أولوية حرجة (تعيد الموقع لحالته السابقة):**
-1. إضافة فهارس قاعدة البيانات على `delivery_orders(status, driver_id)`, `trips(status, created_at)`, `earnings(date, driver_id)`, `ride_requests(status, driver_id, created_at)`.
-2. توحيد منطق `driver_id`: مراجعة كل ملف يستخدم `auth.uid()` للمقارنة مع `driver_id` (متبقي في صفحات التتبع والأرشيف).
-3. حلّ "السائق لا يرى الطلبات": زر تشخيص في صفحة السائق يعرض سبب الإخفاء (نوع غير مطابق، خارج 10كم، حساب inactive...).
-4. إضافة fallback polling 30 ثانية في لوحة الإدارة عند فشل Realtime.
+---
 
-**أولوية عالية (تحسين تجربة):**
-5. تنبيه واضح للمستخدم عند رفض RLS بدل قائمة فارغة.
-6. مراجعة الـ 2 RLS policies "USING true" وتقييدها.
-7. تقييد EXECUTE على دوال SECURITY DEFINER الحساسة (`anon` revoke).
-8. إغلاق Storage bucket العام أو نقل ما هو حساس لـ bucket خاص.
-9. توحيد مفهوم النوع/الدور: اعتبار `driver_type='both'` متاحاً لكلا التدفقين في كل السياسات (مُصلح جزئياً).
+## 10) إصلاحات أمنية (Security Findings) — دُفعات متعددة
+تم تنفيذ كل internal_ids المطلوبة:
+- `ads_public_unrestricted`, `hn_stock_merchants_api_key`, `smart_assistant_config_public_read`, `stores_email_phone_public`.
+- `call_signals_unrestricted_insert`, `coupon_usages_arbitrary_discount`, `payment_transactions_self_insert`, `reward_stars_self_insert`.
+- `hn_stock_warehouses_public_read`.
+- تشديد RLS على `delivery_orders`, `ride_requests` + RPC آمن `available_delivery_orders()` + تعقيم XSS.
 
-**أولوية متوسطة (تنظيم وصيانة):**
-10. أرشفة 162 هجرة في فولدر تاريخي ووثيقة "Schema Reference" واحدة محدّثة.
-11. تنظيف جداول غير مستخدمة (تحديد عبر فحص الكود): مرشحون أوليون `chat_conversations`, `chat_messages` (شبه فارغة)، `sub_assistants`، `assistant_*` (هل تُستهلك فعلاً؟).
-12. توحيد القنوات: `community_messages` vs `internal_messages` vs `chat_messages` vs `ride_messages` → 4 جداول دردشة، يُفضّل نموذج موحّد.
-13. ضبط WAL: تحقيق `wal_keep_size` أو تقليل تواتر triggers الكتابية (commissions).
-14. إضافة `pg_stat_statements` dashboard لمتابعة الأداء.
+---
 
-**أولوية منخفضة (تحسينات نوعية):**
-15. إعادة تفعيل PWA بطريقة آمنة (versioned cache + skipWaiting صريح).
-16. توحيد ملفات Capacitor (9 ملفات تكوين → ملف واحد + variants).
-17. تقليل ملفات Vite config المتعددة (8 تكوينات) باستخدام مولد ديناميكي.
-18. صفحة "What changed" للمشرف توثّق كل هجرة تلقائياً.
+## 11) نافذة توقع مباراة المغرب × هولندا
+- إنشاء `src/components/MoroccoMatchPopup.tsx` مع عدّاد ونظام تصويت وربطها في `App.tsx`.
+- **لاحقاً:** حذف المكون بالكامل بناءً على طلبك.
 
-### 7) قدراتي للمساعدة
+---
 
-أستطيع تنفيذ هذه كلها مرحلياً:
-- إنشاء فهارس عبر هجرة واحدة (5 دقائق).
-- مراجعة كل صفحات السائق والإدارة وإصلاح المقارنات الخاطئة.
-- إضافة شاشة تشخيصية للسائق ("لماذا لا أرى طلبات؟").
-- توحيد جداول الدردشة في نموذج واحد بترحيل آمن.
-- تقييد دوال SECURITY DEFINER وإغلاق USING true.
-- تقرير دوري تلقائي عبر دالة DB.
+## 12) خطأ "For security purposes, you can only request this after 29 seconds"
+- تعديل `AuthPage.tsx`: تعطيل الزر بعد الضغط + التقاط خطأ rate limit + عدّاد عربي.
+- توضيح أن الإعداد الفعلي على مستوى Supabase Auth (خدمة)، ليس SQL.
 
-### 8) ما لن أفعله دون إذنك
+---
 
-- لن أحذف أي جدول/عمود/بيانات.
-- لن أعيد فتح أي قناة أمنية أُغلقت سابقاً.
-- لن أعدّل UI بصرياً (سياسة UI Lockdown).
-- لن أُرجع كاش PWA إلا بطلب صريح.
+## 13) خطأ "بريد أو كلمة مرور غير صحيحة"
+- عرضت 3 خيارات (إعادة تعيين، إرسال رابط، التحقق من الحساب).
+- بناءً على تعليماتك: **حذف الرسالة** وتحويل المستخدم مباشرة إلى صفحة الزبناء بعد نجاح الدخول.
 
-### 9) الخلاصة
+---
 
-الموقع لم "يُكسر"، بل "تشدّد" بسرعة كبيرة (162 هجرة في شهرين)، فتغيّرت قواعد الرؤية والصلاحيات قبل أن تتكيّف الواجهة. كل ما تشعر بفقدانه (طلبات تختفي، صفحات تبدو فارغة، ميزات تعطّلت) يعود إلى ثلاثة أسباب: RLS أصرم، triggers تمنع التعديل، ومعرفات غير متطابقة. لا يوجد بيانات مفقودة، فقط **رؤية محجوبة**.
+## 14) تصدير قواعد البيانات إلى Supabase + تقرير
+- تحليل القاعدة: **130 جدول** (كلها RLS مفعّل)، **59 دالة**، **71 trigger**، **409 policy**.
+- توليد `database-report.md`.
+- توضيح أن المشروع على Lovable Cloud (Supabase مُدار) — Project ID: `typamugwwatqmdkxkfof`.
 
-أنتظر موافقتك لأبدأ تنفيذ "الأولوية الحرجة" أولاً (الفهارس + توحيد driver_id + شاشة تشخيص السائق + fallback polling)، ثم ننتقل للأولوية العالية والمتوسطة على مراحل دون لمس الواجهة البصرية.
+---
+
+## 15) صفحة توثيق Excel للقاعدة
+- توليد `database-documentation.xlsx` بـ **6 أوراق**: Overview / Tables (130) / Functions (59) / Function Definitions / Triggers (62) / RLS Policies (538).
+- روابط `HYPERLINK` مباشرة إلى SQL Editor لكل عنصر.
+
+---
+
+## 16) تجربة مستخدم شاملة + لقطات لكل الأدوار
+- Playwright: **25 لقطة** لجميع المسارات العامة والمخصصة.
+- تقرير `/mnt/documents/ux-report/README.md` بالإصلاحات الحرجة والتحسينات البصرية.
+
+---
+
+## 17) إصلاح 404 والشاشة السوداء (`/register`, `/join/*`, `/supervisor`, `/call-center`, `/community-chat`, `/ai-assistant`, `/customer/hub`)
+- إضافة/تصحيح المسارات في `src/app/MainRoutes.tsx` و`src/admin/AdminRoutes.tsx`.
+- إضافة `/supervisor/login` و`/call-center/login`.
+- `RequireRole` يوجّه الأدوار غير المصرّح بها لصفحة الدخول المناسبة.
+- إعادة تشغيل UX audit وحفظ اللقطات في `/tmp/browser/ux2/shots/`.
+
+---
+
+## 18) الطلب الحالي
+مراجعة كل ما سبق وتقديم هذا التقرير المفصل ✅.
+
+---
+
+## ملخص عام
+| فئة | العدد |
+|---|---|
+| مسارات مضافة/مصلحة | 12+ |
+| مكونات/صفحات جديدة | 6 |
+| Migrations أمنية | 9 مجموعات |
+| فهارس DB جديدة | 16 |
+| ملفات نشر (SW/manifests/htaccess) | 5 |
+| تقارير مولّدة | 3 (MD + XLSX + UX) |
+| لقطات UX | 25 |
+
+هل تريد أن أنتقل الآن إلى **المرحلة التالية** من التحسينات (تقسيم `DriverPage.tsx`، lazy-loading كامل للـ Admin، أو مراجعة الأداء)؟
