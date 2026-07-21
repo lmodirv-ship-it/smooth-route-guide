@@ -100,6 +100,8 @@ const InternalMessaging = lazy(() => import("@/admin/pages/callcenter/InternalMe
 const Relations360 = lazy(() => import("@/admin/pages/callcenter/Relations360"));
 const WalletRechargeRequests = lazy(() => import("@/admin/pages/callcenter/WalletRechargeRequests"));
 const CallCenterLogin = lazy(() => import("@/admin/pages/CallCenterLogin"));
+const SupervisorLoginPage = lazy(() => import("@/supervisor/SupervisorLogin"));
+
 const AdminLogin = lazy(() => import("@/admin/pages/AdminLogin"));
 const CommunityChat = lazy(() => import("@/pages/CommunityChat"));
 
@@ -107,7 +109,9 @@ export const adminRouteElements = (
   <>
     <Route path="/admin/login" element={L(AdminLogin)} />
     <Route path="/call-center/login" element={L(CallCenterLogin)} />
+    <Route path="/supervisor/login" element={L(SupervisorLoginPage)} />
     <Route path="/setup-admin" element={<RequireRole>{L(SetupAdmin)}</RequireRole>} />
+
 
     <Route path="/admin" element={<RequireRole allowed={["admin"]}>{L(AdminLayout)}</RequireRole>}>
       <Route index element={L(AdminDashboardPage)} />

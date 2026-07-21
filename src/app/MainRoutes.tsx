@@ -114,6 +114,13 @@ export const mainRouteElements = (
     <Route path="/contact" element={<LazyPage component={TopNavPage} />} />
     <Route path="/why-hn" element={<LazyPage component={WhyHNPage} />} />
     <Route path="/community" element={<RequireRole><LazyPage component={CommunityChat} /></RequireRole>} />
+    <Route path="/community-chat" element={<RequireRole><LazyPage component={CommunityChat} /></RequireRole>} />
+    <Route path="/ai-assistant" element={<RequireRole><LazyPage component={AIAssistant} /></RequireRole>} />
+    <Route path="/register" element={<Navigate to="/register/customer" replace />} />
+    <Route path="/join/driver" element={<LazyPage component={JoinDriver} />} />
+    <Route path="/join/restaurant" element={<LazyPage component={JoinRestaurant} />} />
+    <Route path="/join/store" element={<LazyPage component={JoinRestaurant} />} />
+
 
     {/* ═══════════════════════════════════════════
         MAIN APP — wrapped in MainLayout
@@ -122,6 +129,8 @@ export const mainRouteElements = (
 
       {/* ─── Customer /customer/* — hub is PUBLIC for browsing ─── */}
       <Route path="/customer" element={<LazyPage component={CustomerHub} />} />
+      <Route path="/customer/hub" element={<LazyPage component={CustomerHub} />} />
+
       <Route path="/customer/ride" element={<RequireRole allowed={["client"]}><LazyPage component={CustomerPage} /></RequireRole>} />
       <Route path="/customer/tracking" element={<RequireRole allowed={["client"]}><LazyPage component={CustomerTracking} /></RequireRole>} />
       <Route path="/customer/booking" element={<RequireRole allowed={["client"]}><LazyPage component={ClientBooking} /></RequireRole>} />
