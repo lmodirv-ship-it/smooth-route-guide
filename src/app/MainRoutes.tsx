@@ -129,6 +129,8 @@ export const mainRouteElements = (
 
       {/* ─── Customer /customer/* — hub is PUBLIC for browsing ─── */}
       <Route path="/customer" element={<LazyPage component={CustomerHub} />} />
+      <Route path="/customer/hub" element={<LazyPage component={CustomerHub} />} />
+
       <Route path="/customer/ride" element={<RequireRole allowed={["client"]}><LazyPage component={CustomerPage} /></RequireRole>} />
       <Route path="/customer/tracking" element={<RequireRole allowed={["client"]}><LazyPage component={CustomerTracking} /></RequireRole>} />
       <Route path="/customer/booking" element={<RequireRole allowed={["client"]}><LazyPage component={ClientBooking} /></RequireRole>} />
