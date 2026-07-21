@@ -107,7 +107,9 @@ export const adminRouteElements = (
   <>
     <Route path="/admin/login" element={L(AdminLogin)} />
     <Route path="/call-center/login" element={L(CallCenterLogin)} />
+    <Route path="/supervisor/login" element={L(SupervisorLoginPage)} />
     <Route path="/setup-admin" element={<RequireRole>{L(SetupAdmin)}</RequireRole>} />
+
 
     <Route path="/admin" element={<RequireRole allowed={["admin"]}>{L(AdminLayout)}</RequireRole>}>
       <Route index element={L(AdminDashboardPage)} />
