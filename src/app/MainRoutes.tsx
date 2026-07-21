@@ -114,6 +114,13 @@ export const mainRouteElements = (
     <Route path="/contact" element={<LazyPage component={TopNavPage} />} />
     <Route path="/why-hn" element={<LazyPage component={WhyHNPage} />} />
     <Route path="/community" element={<RequireRole><LazyPage component={CommunityChat} /></RequireRole>} />
+    <Route path="/community-chat" element={<RequireRole><LazyPage component={CommunityChat} /></RequireRole>} />
+    <Route path="/ai-assistant" element={<RequireRole><LazyPage component={AIAssistant} /></RequireRole>} />
+    <Route path="/register" element={<Navigate to="/register/customer" replace />} />
+    <Route path="/join/driver" element={<LazyPage component={JoinDriver} />} />
+    <Route path="/join/restaurant" element={<LazyPage component={JoinRestaurant} />} />
+    <Route path="/join/store" element={<LazyPage component={JoinRestaurant} />} />
+
 
     {/* ═══════════════════════════════════════════
         MAIN APP — wrapped in MainLayout
