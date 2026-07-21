@@ -100,6 +100,8 @@ const InternalMessaging = lazy(() => import("@/admin/pages/callcenter/InternalMe
 const Relations360 = lazy(() => import("@/admin/pages/callcenter/Relations360"));
 const WalletRechargeRequests = lazy(() => import("@/admin/pages/callcenter/WalletRechargeRequests"));
 const CallCenterLogin = lazy(() => import("@/admin/pages/CallCenterLogin"));
+const SupervisorLoginPage = lazy(() => import("@/supervisor/SupervisorLogin"));
+
 const AdminLogin = lazy(() => import("@/admin/pages/AdminLogin"));
 const CommunityChat = lazy(() => import("@/pages/CommunityChat"));
 
