@@ -511,25 +511,61 @@ function applyFilters(query: any, filters: any[]) {
   return query;
 }
 
+const APP_SETTINGS_SENSITIVE_KEYS = ["api_keys", "custom_api_keys", "paypal_settings", "stripe_settings", "twilio_settings"];
+
+function filterSensitiveAppSettingsRows(rows: any): any {
+  if (!Array.isArray(rows)) return rows;
+  return rows.filter((r: any) => !r || !APP_SETTINGS_SENSITIVE_KEYS.includes(r.key));
+}
+
+function isSensitiveAppSettingsAccess(table: string | undefined, filters?: any[], rows?: any): boolean {
+  if (table !== "app_settings") return false;
+  const keysTouched: string[] = [];
+  if (Array.isArray(filters)) {
+    for (const f of filters) {
+      if (f?.column === "key") {
+        if (Array.isArray(f.value)) keysTouched.push(...f.value.map(String));
+        else if (f.value != null) keysTouched.push(String(f.value));
+      }
+    }
+  }
+  if (Array.isArray(rows)) {
+    for (const r of rows) if (r?.key) keysTouched.push(String(r.key));
+  } else if (rows && typeof rows === "object" && (rows as any).key) {
+    keysTouched.push(String((rows as any).key));
+  }
+  return keysTouched.some((k) => APP_SETTINGS_SENSITIVE_KEYS.includes(k));
+}
+
 async function executeTool(supabase: any, name: string, args: any): Promise<string> {
   try {
     switch (name) {
       case "db_select": {
+        if (args.table === "app_settings" && isSensitiveAppSettingsAccess("app_settings", args.filters)) {
+          return JSON.stringify({ error: "Access to sensitive app_settings keys is restricted. Use manage_app_settings tool.", restricted_keys: APP_SETTINGS_SENSITIVE_KEYS });
+        }
         let q = supabase.from(args.table).select(args.columns || "*");
         if (args.filters?.length) q = applyFilters(q, args.filters);
         if (args.order_by) q = q.order(args.order_by, { ascending: args.ascending ?? false });
         q = q.limit(Math.min(args.limit || 20, 100));
         const { data, error } = await q;
         if (error) return JSON.stringify({ error: error.message });
-        return JSON.stringify({ count: data?.length || 0, data });
+        const safeData = args.table === "app_settings" ? filterSensitiveAppSettingsRows(data) : data;
+        return JSON.stringify({ count: safeData?.length || 0, data: safeData });
       }
       case "db_insert": {
+        if (isSensitiveAppSettingsAccess(args.table, undefined, args.rows)) {
+          return JSON.stringify({ error: "Insert on sensitive app_settings keys is restricted. Use manage_app_settings tool.", restricted_keys: APP_SETTINGS_SENSITIVE_KEYS });
+        }
         const { data, error } = await supabase.from(args.table).insert(args.rows).select();
         if (error) return JSON.stringify({ error: error.message });
         return JSON.stringify({ inserted: data?.length || 0, data });
       }
       case "db_update": {
         if (!args.filters?.length) return JSON.stringify({ error: "Filters required for update" });
+        if (isSensitiveAppSettingsAccess(args.table, args.filters, args.updates)) {
+          return JSON.stringify({ error: "Update on sensitive app_settings keys is restricted. Use manage_app_settings tool.", restricted_keys: APP_SETTINGS_SENSITIVE_KEYS });
+        }
         let q = supabase.from(args.table).update(args.updates);
         q = applyFilters(q, args.filters);
         const { data, error } = await q.select();
@@ -538,6 +574,11 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
       }
       case "db_delete": {
         if (!args.filters?.length) return JSON.stringify({ error: "Filters required for delete" });
+        if (args.table === "app_settings") {
+          if (isSensitiveAppSettingsAccess(args.table, args.filters)) {
+            return JSON.stringify({ error: "Delete on sensitive app_settings keys is restricted. Use manage_app_settings tool.", restricted_keys: APP_SETTINGS_SENSITIVE_KEYS });
+          }
+        }
         // Safety: count before deleting to prevent mass deletion
         let countQ = supabase.from(args.table).select("id", { count: "exact", head: true });
         countQ = applyFilters(countQ, args.filters);
@@ -591,14 +632,21 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         if (args.action === "list") {
           const { data, error } = await supabase.from("app_settings").select("*").order("key");
           if (error) return JSON.stringify({ error: error.message });
-          return JSON.stringify({ settings: data });
+          const filtered = filterSensitiveAppSettingsRows(data);
+          return JSON.stringify({ settings: filtered, restricted_keys_hidden: APP_SETTINGS_SENSITIVE_KEYS });
         }
         if (args.action === "get") {
+          if (APP_SETTINGS_SENSITIVE_KEYS.includes(args.key)) {
+            return JSON.stringify({ error: "This setting key is restricted. Use manage_app_settings tool.", restricted_keys: APP_SETTINGS_SENSITIVE_KEYS });
+          }
           const { data, error } = await supabase.from("app_settings").select("*").eq("key", args.key).maybeSingle();
           if (error) return JSON.stringify({ error: error.message });
           return JSON.stringify(data || { key: args.key, value: null, message: "Setting not found" });
         }
         if (args.action === "set") {
+          if (APP_SETTINGS_SENSITIVE_KEYS.includes(args.key)) {
+            return JSON.stringify({ error: "Writing to sensitive app_settings keys is restricted. Use manage_app_settings tool.", restricted_keys: APP_SETTINGS_SENSITIVE_KEYS });
+          }
           const { data: existing } = await supabase.from("app_settings").select("id").eq("key", args.key).maybeSingle();
           if (existing) {
             const { error } = await supabase.from("app_settings").update({ value: args.value, updated_at: new Date().toISOString() }).eq("key", args.key);
