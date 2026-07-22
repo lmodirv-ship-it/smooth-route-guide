@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, enforceRateLimit, HttpError, handleError } from "../_shared/security.ts";
+import { callAIStream } from "../_shared/aiProvider.ts";
 
 const SYSTEM_PROMPT = `أنت "أمين"، المساعد الذكي لموقع HN Driver في طنجة، المغرب.
 
