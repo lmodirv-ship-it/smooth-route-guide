@@ -554,6 +554,9 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         return JSON.stringify({ count: safeData?.length || 0, data: safeData });
       }
       case "db_insert": {
+        if (isSensitiveAppSettingsAccess(args.table, undefined, args.rows)) {
+          return JSON.stringify({ error: "Insert on sensitive app_settings keys is restricted. Use manage_app_settings tool.", restricted_keys: APP_SETTINGS_SENSITIVE_KEYS });
+        }
         const { data, error } = await supabase.from(args.table).insert(args.rows).select();
         if (error) return JSON.stringify({ error: error.message });
         return JSON.stringify({ inserted: data?.length || 0, data });
