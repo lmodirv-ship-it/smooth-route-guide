@@ -1,80 +1,70 @@
-# تنفيذ المراحل 1 → 7 بالترتيب
+# خطة التنفيذ — HN Driver: Auth، الأدوار، والجداول الأساسية
 
-سأنفّذ الحزم الأربع المركّزة (أ، ب، ج، د) التي تغطي المراحل السبع من خطتك الأصلية، بالترتيب، دون توقف بين المراحل. المرحلة 8 (الإطلاق) تأتي تلقائياً عند نشرك على `www.hn-driver.com`.
+## الوضع الحالي (تم التحقق منه)
 
----
+- **Supabase Auth**: مُفعّل عبر Lovable Cloud. تسجيل الدخول يعمل بالبريد/كلمة المرور + Google، مع حماية HIBP للكلمات المسربة.
+- **الأدوار (`app_role` enum)**: `admin`, `moderator`, `user`, `driver`, `agent`, `delivery`, `store_owner`, `smart_admin_assistant` — كلها موجودة.
+- **جدول `user_roles`** + دالة `has_role(uuid, app_role)` SECURITY DEFINER تعمل بشكل صحيح، وتُستخدم فعلياً في 409 سياسة RLS.
+- **الجداول الأساسية موجودة**: `profiles`, `drivers`, `stores`, `trips`, `delivery_orders`, `ride_requests`, `user_roles`.
+- **العميل مدمج**: `src/integrations/supabase/client.ts` (تلقائي)، مع `AuthContext` و onAuthStateChange وتوجيه حسب الدور.
 
-## المرحلة 1 — التوثيق والتحليل
+## ما سيتم تنفيذه
 
-- توليد **مخطط ERD** (Mermaid) لأهم 40 جدول → `/docs/erd.mmd`.
-- توليد **خريطة المسارات** الكاملة مع الأدوار المسموحة → `/docs/routes-map.md`.
-- توليد **فهرس Edge Functions** (اسم/غرض/مدخلات) → `/docs/edge-functions.md`.
-- تسجيل مسارات 404 في `analytics_events` (event_type = `route_404`).
+### 1. فحص Auth والأدوار وربطها بـ RLS (تحقق فقط، بدون تعديل)
+- التأكد من أن `has_role()` مستخدَمة في كل سياسات RLS الحساسة (drivers, stores, delivery_orders, ride_requests, payments).
+- التحقق من أن `handle_new_user()` تُنشئ profile + role + wallet لكل مستخدم جديد.
+- إصدار تقرير مختصر: الدور → الجداول المسموح بها → نوع الوصول (SELECT/INSERT/UPDATE/DELETE).
 
-## المرحلة 2 — الأمن (RBAC + Hardening)
+### 2. إضافة جدولين ناقصَين: `routes` و `reservations`
 
-- تفعيل **HIBP** (فحص كلمات المرور المسرّبة) عبر `configure_auth`.
-- ربط جداول `permission_roles` / `role_permissions` / `user_permission_roles` الجاهزة بواجهة أدمن → `/admin/permissions`.
-- **تفعيل MFA/TOTP** للأدمن والوكلاء (Supabase native) + شاشة إعداد في `/admin/security`.
-- إضافة **audit trigger موحّد** على الجداول المالية والحسّاسة (payments, wallet, user_roles, coupons) → `db_audit_log`.
-- **إسقاط بند HttpOnly Cookies** (غير متوافق مع SPA + Supabase JS SDK).
+**`routes`** — مسارات ثابتة/متكررة للسائقين (رحلات جماعية، خطوط توصيل):
+- `driver_id` → `drivers(id)`
+- `origin_address`, `origin_lat`, `origin_lng`
+- `destination_address`, `destination_lat`, `destination_lng`
+- `departure_time` (time)، `days_of_week` (text[])، `seats_total`, `seats_available`
+- `price_per_seat`, `currency`, `is_active`, `zone_id`
 
-## المرحلة 3 — تحسين UX
+**`reservations`** — حجوزات الزبناء على تلك المسارات:
+- `route_id` → `routes(id)`
+- `user_id` → `auth.users(id)`
+- `seats_reserved`, `pickup_address`, `pickup_lat`, `pickup_lng`
+- `status` (pending/confirmed/cancelled/completed)
+- `total_price`, `payment_status`, `reservation_code`
 
-- إضافة **`nprogress`** أثناء التنقل بين الصفحات.
-- إنشاء صفحتَي **403** و **500** (بالإضافة لـ 404 الموجودة) بروابط مفيدة.
-- توحيد **`redirectTo`** بعد تسجيل الدخول لكل الأدوار (حفظ المسار المقصود في sessionStorage).
-- **شريط إشعارات مركزي** (يستخدم `sonner` الموجود) لحالات نجاح/فشل موحّدة.
+**الفهارس**: `routes(driver_id)`, `routes(is_active, departure_time)`, `reservations(user_id, status)`, `reservations(route_id, status)`.
 
-## المرحلة 4 — الاختبارات
+**RLS المطبّقة**:
+- `routes`: يقرأها الجميع (`anon`+`authenticated`) عندما `is_active=true`؛ السائق يعدّل مساراته فقط؛ admin/agent كامل الصلاحية.
+- `reservations`: العميل يرى/يُنشئ حجوزاته فقط؛ السائق يرى حجوزات مساراته؛ admin/agent كامل الصلاحية.
+- GRANT صريح لكل جدول (authenticated + service_role، مع anon على `routes` فقط للقراءة).
 
-- **Vitest**: اختبارات لـ `RequireRole`, `useAuthReady`, `dbRoleSatisfies`, `bestDashboard`.
-- **Playwright E2E**: 5 سيناريوهات حرجة (تسجيل عميل، طلب رحلة، قبول سائق، دخول أدمن، دخول كول سنتر).
-- تشغيل الاختبارات محلياً + تقرير تغطية `vitest --coverage`.
+**Triggers**:
+- `auto_generate_reservation_code` (بادئة `B` + 6 أرقام).
+- `updated_at` عبر `set_updated_at()`.
+- تحقق من `seats_available >= 0` قبل الإدراج.
 
-## المرحلة 5 — الجداول والنسخ الاحتياطي
+### 3. تكامل الواجهة (React)
+- إضافة `src/hooks/useRoutes.ts` و `useReservations.ts` لجلب البيانات مع Realtime.
+- ربطها بلوحة السائق (عرض المسارات + الحجوزات الواردة) ولوحة العميل (تصفح المسارات + حجز مقعد).
+- استخدام `AuthContext` الحالي و `supabase.auth.getUser()` للتحقق قبل الحجز.
 
-- إضافة **تصدير CSV/Excel** من لوحة الأدمن لأهم 8 جداول تشغيلية (delivery_orders, trips, drivers, profiles, payments, ...).
-- **audit موحّد** (يُنفَّذ في المرحلة 2).
-- التأكد من أن **PITR** مفعّل على Lovable Cloud (تحقّق عبر `cloud_status`).
-- إضافة **فهارس إضافية** بعد تشخيص `slow_queries` إن وُجدت.
+## التفاصيل التقنية
 
-## المرحلة 6 — المراقبة
+```text
+auth.users ──┬── profiles (1:1)
+             ├── user_roles (1:N)  ── has_role() ── RLS
+             ├── drivers (1:1 for driver role)
+             │      └── routes (1:N)  ← جديد
+             │              └── reservations (1:N)  ← جديد
+             └── stores (1:N for store_owner)
+```
 
-- دمج **Sentry** (frontend + edge functions) عبر إضافة DSN كـ secret.
-- صفحة **`/admin/observability`** تجمع: `analytics_events`, `system_health_logs`, `alerts`, `route_404` log, `growth_funnel_stats()`.
-- **تنبيهات real-time** على `alerts` عبر Supabase Realtime → toast للأدمن الحاضر.
+- المهاجرة الجديدة إضافية فقط (لا حذف/تعديل جداول موجودة) — تطابق سياسة "additive-only".
+- لا حاجة لأي secret جديد.
+- كل النصوص العربية عبر `platform_translations` (لا نصوص مكتوبة داخل الكود).
 
-## المرحلة 7 — التوثيق النهائي
+## ما لن يُنفَّذ (خارج النطاق)
 
-- **`/docs/DEVELOPER_GUIDE.md`** — كيفية إضافة مسار/دور/جدول جديد.
-- **`/docs/ADMIN_GUIDE.md`** — دليل الأدمن وكول سنتر (بالعربية).
-- **OpenAPI/Swagger** لـ Edge Functions العامة → `/docs/openapi.yaml`.
-- تحديث `README.md` بالبنية النهائية.
-- (الفيديو التدريبي خارج نطاق الكود).
-
----
-
-## آلية التنفيذ
-
-- سأعمل بشكل متسلسل دون التوقف للسؤال بعد كل مرحلة (كما هو مسجّل في تفضيلاتك).
-- بعد كل مرحلة: رسالة قصيرة تلخّص الملفات/الجداول/الصفحات المُنشأة، ثم المتابعة.
-- **الالتزام بالقيود الموجودة في الذاكرة:**
-  - لا تغيير للـ UI البصري إلا بطلب صريح (المرحلة 3 هي إضافات لا استبدال).
-  - i18n: كل نص جديد يمرّ عبر `platform_translations` (ar/fr/en/es).
-  - Migrations إضافية فقط (لا حذف بيانات).
-  - `REPLICA IDENTITY FULL` محفوظ على `delivery_orders` و `drivers`.
-  - دور واحد لكل مستخدم (عدا الأدمن).
-  - لا إعادة إضافة Face ID login أو Role Switcher.
-
-## المخرجات النهائية
-
-- **~15 ملف توثيق جديد** في `/docs`.
-- **صفحتان جديدتان للأدمن**: `/admin/permissions`, `/admin/observability`, `/admin/security` (MFA).
-- **3 صفحات خطأ محسّنة** (403/404/500).
-- **~10 اختبارات Vitest + 5 Playwright E2E**.
-- **1 migration** لـ audit trigger موحّد + سياسات `permission_roles`.
-- **Sentry مفعّل** frontend + edge.
-- **HIBP + MFA** مفعّلان.
-
-هل أبدأ التنفيذ؟
+- تعديل بنية `profiles`/`drivers`/`stores` الحالية.
+- تغيير مزوّدي OAuth إضافيين (Apple/Facebook) — لم يُطلبوا.
+- بناء واجهات UI جديدة كاملة — سيتم فقط ربط hooks بالصفحات الموجودة.

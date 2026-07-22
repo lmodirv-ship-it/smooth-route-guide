@@ -4459,6 +4459,71 @@ export type Database = {
         }
         Relationships: []
       }
+      reservations: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          payment_status: string
+          pickup_address: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          reservation_code: string | null
+          route_id: string
+          seats_reserved: number
+          status: string
+          total_price: number
+          travel_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          payment_status?: string
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          reservation_code?: string | null
+          route_id: string
+          seats_reserved?: number
+          status?: string
+          total_price?: number
+          travel_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          payment_status?: string
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          reservation_code?: string | null
+          route_id?: string
+          seats_reserved?: number
+          status?: string
+          total_price?: number
+          travel_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservations_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       restaurant_ratings: {
         Row: {
           comment: string | null
@@ -4689,6 +4754,93 @@ export type Database = {
             columns: ["role_id"]
             isOneToOne: false
             referencedRelation: "permission_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      routes: {
+        Row: {
+          city: string | null
+          created_at: string
+          currency: string
+          days_of_week: string[]
+          departure_time: string
+          destination_address: string
+          destination_lat: number | null
+          destination_lng: number | null
+          driver_id: string
+          id: string
+          is_active: boolean
+          notes: string | null
+          origin_address: string
+          origin_lat: number | null
+          origin_lng: number | null
+          price_per_seat: number
+          route_code: string | null
+          seats_available: number
+          seats_total: number
+          updated_at: string
+          zone_id: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          currency?: string
+          days_of_week?: string[]
+          departure_time: string
+          destination_address: string
+          destination_lat?: number | null
+          destination_lng?: number | null
+          driver_id: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          origin_address: string
+          origin_lat?: number | null
+          origin_lng?: number | null
+          price_per_seat?: number
+          route_code?: string | null
+          seats_available?: number
+          seats_total?: number
+          updated_at?: string
+          zone_id?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          currency?: string
+          days_of_week?: string[]
+          departure_time?: string
+          destination_address?: string
+          destination_lat?: number | null
+          destination_lng?: number | null
+          driver_id?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          origin_address?: string
+          origin_lat?: number | null
+          origin_lng?: number | null
+          price_per_seat?: number
+          route_code?: string | null
+          seats_available?: number
+          seats_total?: number
+          updated_at?: string
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routes_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "active_drivers_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routes_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
         ]
