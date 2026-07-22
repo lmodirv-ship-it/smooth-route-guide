@@ -550,7 +550,8 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         q = q.limit(Math.min(args.limit || 20, 100));
         const { data, error } = await q;
         if (error) return JSON.stringify({ error: error.message });
-        return JSON.stringify({ count: data?.length || 0, data });
+        const safeData = args.table === "app_settings" ? filterSensitiveAppSettingsRows(data) : data;
+        return JSON.stringify({ count: safeData?.length || 0, data: safeData });
       }
       case "db_insert": {
         const { data, error } = await supabase.from(args.table).insert(args.rows).select();
