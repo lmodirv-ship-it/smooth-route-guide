@@ -6065,6 +6065,26 @@ export type Database = {
       }
     }
     Functions: {
+      admin_export_table: { Args: { _table: string }; Returns: Json[] }
+      admin_get_recent_audit: {
+        Args: { _limit?: number }
+        Returns: {
+          action: string
+          created_at: string
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string | null
+          table_name: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "db_audit_log"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       approve_driver_candidate: {
         Args: { p_candidate_id: string }
         Returns: string
@@ -6164,6 +6184,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_client_error: {
+        Args: { _context: string; _message: string; _meta?: Json }
+        Returns: undefined
       }
       move_to_dlq: {
         Args: {

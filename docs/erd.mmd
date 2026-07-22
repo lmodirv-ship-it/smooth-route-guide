@@ -1,0 +1,47 @@
+erDiagram
+  profiles ||--o{ user_roles : has
+  profiles ||--o{ wallet : owns
+  profiles ||--o{ wallet_transactions : logs
+  profiles ||--o{ notifications : receives
+  profiles ||--o{ ride_requests : creates
+  profiles ||--o{ delivery_orders : places
+  profiles ||--o{ ratings : gives
+  profiles ||--o{ referrals : refers
+  profiles ||--o{ customer_subscriptions : subscribes
+  profiles ||--o{ payment_methods : owns
+
+  drivers ||--o{ trips : performs
+  drivers ||--o{ delivery_orders : delivers
+  drivers ||--o{ ride_requests : accepts
+  drivers ||--o{ driver_work_sessions : has
+  drivers ||--o{ driver_reward_points : earns
+  drivers ||--o{ driver_tips : receives
+  drivers ||--o{ driver_subscriptions : pays
+  drivers ||--|| vehicles : uses
+
+  stores ||--o{ menu_categories : has
+  menu_categories ||--o{ menu_items : contains
+  stores ||--o{ delivery_orders : receives
+  stores ||--o{ restaurant_ratings : rated
+  stores ||--o{ commission_rates : billed
+
+  delivery_orders ||--o{ order_items : has
+  delivery_orders ||--o{ payments : paid_by
+  delivery_orders ||--o{ payment_transactions : recorded
+
+  ride_requests ||--o{ trips : becomes
+  trips ||--o{ trip_status_history : logs
+  trips ||--o{ ride_messages : has
+
+  coupons ||--o{ coupon_usages : redeemed
+  hn_stock_merchants ||--o{ hn_stock_products : sells
+  hn_stock_products ||--o{ hn_stock_warehouse_inventory : stocked
+  hn_stock_warehouses ||--o{ hn_stock_warehouse_inventory : holds
+  hn_stock_merchants ||--o{ hn_stock_orders : receives
+  hn_stock_orders ||--o{ hn_stock_shipments : ships
+  hn_stock_merchants ||--o{ hn_stock_payouts : paid
+
+  call_sessions ||--o{ call_signals : signals
+  call_sessions ||--o{ call_notes : notes
+  internal_chats ||--o{ internal_messages : contains
+  internal_chats ||--o{ internal_chat_members : members
