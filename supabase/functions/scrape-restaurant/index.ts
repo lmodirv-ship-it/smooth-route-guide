@@ -18,13 +18,6 @@ Deno.serve(async (req) => {
     const safeUrl = normalizeUrl(url);
     const safeCity = sanitizePlainText(city || "Tanger", 80);
 
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!lovableApiKey) {
-      return new Response(
-        JSON.stringify({ success: false, error: "AI API key not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
 
     let pageContent = "";
     try {
