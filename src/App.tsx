@@ -43,6 +43,7 @@ const AppInner = () => {
   useTheme(); // Load and apply active theme from DB
   return (
     <BrowserRouter>
+      <RouteProgress />
       <CallProvider>
         <Routes>
           {mainRouteElements}
