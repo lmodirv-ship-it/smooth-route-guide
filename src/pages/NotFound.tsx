@@ -21,6 +21,14 @@ const NotFound = () => {
 
   useEffect(() => {
     console.warn("[404 Recovery] Path:", location.pathname, "| Best match:", suggestion?.path, "| Confidence:", suggestion?.confidence?.toFixed(2));
+    // log to backend (best-effort, non-blocking)
+    import("@/integrations/supabase/client").then(({ supabase }) => {
+      supabase.rpc("log_client_error", {
+        _context: "404",
+        _message: location.pathname,
+        _meta: { suggestion: suggestion?.path ?? null, confidence: suggestion?.confidence ?? null, referrer: document.referrer },
+      }).then(() => {}, () => {});
+    }).catch(() => {});
   }, [location.pathname, suggestion]);
 
   // Auto-redirect for high confidence matches
