@@ -563,6 +563,9 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
       }
       case "db_update": {
         if (!args.filters?.length) return JSON.stringify({ error: "Filters required for update" });
+        if (isSensitiveAppSettingsAccess(args.table, args.filters, args.updates)) {
+          return JSON.stringify({ error: "Update on sensitive app_settings keys is restricted. Use manage_app_settings tool.", restricted_keys: APP_SETTINGS_SENSITIVE_KEYS });
+        }
         let q = supabase.from(args.table).update(args.updates);
         q = applyFilters(q, args.filters);
         const { data, error } = await q.select();
