@@ -6156,6 +6156,13 @@ export type Database = {
       }
       get_public_tables: { Args: never; Returns: string[] }
       get_store_commission: { Args: { p_store_id: string }; Returns: number }
+      get_store_contact: {
+        Args: { _store_id: string }
+        Returns: {
+          email: string
+          phone: string
+        }[]
+      }
       get_table_columns: {
         Args: { p_table: string }
         Returns: {
