@@ -94,12 +94,11 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Send email with new password if requested
+    // Send email with a secure password-reset link (never send plaintext password)
     if (send_email) {
       try {
         const adminClient = createClient(supabaseUrl, serviceRoleKey);
-        
-        // Get user email from profiles
+
         const { data: profile } = await adminClient
           .from("profiles")
           .select("email, name")
@@ -107,13 +106,26 @@ Deno.serve(async (req) => {
           .single();
 
         if (profile?.email) {
-          // Try to send via transactional email, fallback to enqueue
+          // Generate a one-time recovery link via GoTrue Admin API
+          let recoveryLink = "https://www.hn-driver.com/reset-password";
+          try {
+            const { data: linkData } = await (adminClient as any).auth.admin.generateLink({
+              type: "recovery",
+              email: profile.email,
+              options: { redirectTo: "https://www.hn-driver.com/reset-password" },
+            });
+            const actionLink = linkData?.properties?.action_link || linkData?.action_link;
+            if (actionLink) recoveryLink = actionLink;
+          } catch (linkErr) {
+            console.error("generateLink failed:", linkErr);
+          }
+
           try {
             await adminClient.rpc("enqueue_email", {
               queue_name: "transactional_emails",
               payload: {
                 to: profile.email,
-                subject: "تم تغيير كلمة المرور الخاصة بك - HN Driver",
+                subject: "إعادة تعيين كلمة المرور - HN Driver",
                 html: `
                   <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #ffffff;">
                     <div style="text-align: center; margin-bottom: 30px;">
@@ -122,13 +134,13 @@ Deno.serve(async (req) => {
                     <div style="background: #f8f9fa; border-radius: 12px; padding: 30px; margin-bottom: 20px;">
                       <h2 style="color: #1a1a2e; font-size: 20px; margin: 0 0 15px;">مرحباً ${profile.name || ""}،</h2>
                       <p style="color: #555; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
-                        تم تغيير كلمة المرور الخاصة بحسابك من قبل الإدارة. يمكنك الآن تسجيل الدخول باستخدام كلمة المرور الجديدة:
+                        قامت الإدارة بإعادة تعيين كلمة المرور الخاصة بحسابك. اضغط على الزر أدناه لتعيين كلمة مرور جديدة (الرابط صالح لمدة محدودة):
                       </p>
-                      <div style="background: #1a1a2e; color: #ffffff; font-size: 28px; font-weight: bold; text-align: center; padding: 20px; border-radius: 8px; letter-spacing: 4px; font-family: monospace;">
-                        ${new_password}
+                      <div style="text-align: center; margin: 24px 0;">
+                        <a href="${recoveryLink}" style="display: inline-block; background: #1a1a2e; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold;">تعيين كلمة مرور جديدة</a>
                       </div>
                       <p style="color: #888; font-size: 13px; margin-top: 20px; text-align: center;">
-                        ننصح بتغيير كلمة المرور بعد تسجيل الدخول لأسباب أمنية.
+                        إذا لم تطلب هذا التغيير، تجاهل هذه الرسالة أو تواصل مع الدعم.
                       </p>
                     </div>
                     <div style="text-align: center; color: #999; font-size: 12px; margin-top: 30px;">
@@ -144,13 +156,11 @@ Deno.serve(async (req) => {
               },
             });
           } catch {
-            // If queue not available, log but don't fail the password change
             console.log("Email queue not available, skipping email notification");
           }
         }
       } catch (emailErr) {
-        console.error("Failed to send password email:", emailErr);
-        // Don't fail the whole operation if email fails
+        console.error("Failed to send password reset email:", emailErr);
       }
     }
 
