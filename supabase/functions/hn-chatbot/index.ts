@@ -71,7 +71,6 @@ serve(async (req) => {
       }
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     try {
       const streamResp = await callAIStream({
         model: "google/gemini-2.5-flash",
