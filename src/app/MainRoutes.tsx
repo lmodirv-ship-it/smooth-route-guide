@@ -26,6 +26,8 @@ const CompleteProfile = lazy(() => import("@/pages/CompleteProfile"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
+const ForbiddenPage = lazy(() => import("@/pages/ForbiddenPage"));
+const ServerErrorPage = lazy(() => import("@/pages/ServerErrorPage"));
 
 // ─── Heavy pages — lazy loaded ───
 const CustomerTracking = lazy(() => import("@/pages/CustomerTracking"));
@@ -230,6 +232,8 @@ export const mainRouteElements = (
     {/* Catch-all driver-panel/* → driver/* */}
     <Route path="/driver-panel/*" element={<Navigate to="/driver" replace />} />
 
+    <Route path="/403" element={<LazyPage component={ForbiddenPage} />} />
+    <Route path="/500" element={<LazyPage component={ServerErrorPage} />} />
     <Route path="*" element={<LazyPage component={NotFound} />} />
   </>
 );
