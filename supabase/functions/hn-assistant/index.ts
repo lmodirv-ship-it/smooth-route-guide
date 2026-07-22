@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, enforceRateLimit, handleError, parseJson, z } from "../_shared/security.ts";
+import { callAIStream } from "../_shared/aiProvider.ts";
 
 const SYSTEM_PROMPT = `Tu es un assistant intelligent pour l'application de transport HN Driver.
 
