@@ -197,3 +197,128 @@ export async function callAIOpenAICompatible(opts: CallAIOptions) {
     _model: r.model,
   };
 }
+
+// ─── Streaming (OpenAI-compatible SSE output) ───
+
+function sseChunk(delta: string): string {
+  const payload = {
+    choices: [{ delta: { content: delta }, index: 0, finish_reason: null }],
+  };
+  return `data: ${JSON.stringify(payload)}\n\n`;
+}
+
+async function streamGemini(key: string, opts: CallAIOptions): Promise<Response> {
+  const model = mapGeminiModel(opts.model);
+  const systemMsgs = opts.messages.filter((m) => m.role === "system").map((m) => m.content).join("\n\n");
+  const contents = opts.messages
+    .filter((m) => m.role !== "system")
+    .map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }],
+    }));
+
+  const body: Record<string, unknown> = {
+    contents,
+    generationConfig: {
+      temperature: opts.temperature ?? 0.7,
+      maxOutputTokens: opts.maxTokens ?? 2048,
+    },
+  };
+  if (systemMsgs) body.systemInstruction = { parts: [{ text: systemMsgs }] };
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${key}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+  );
+  if (!res.ok || !res.body) {
+    const t = await res.text().catch(() => "");
+    throw new Error(`GeminiStream ${res.status}: ${t}`);
+  }
+
+  // Convert Gemini SSE → OpenAI-compatible SSE
+  const stream = new ReadableStream({
+    async start(controller) {
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      const encoder = new TextEncoder();
+      let buf = "";
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const parts = buf.split("\n\n");
+          buf = parts.pop() || "";
+          for (const p of parts) {
+            const line = p.trim();
+            if (!line.startsWith("data:")) continue;
+            const json = line.slice(5).trim();
+            if (!json || json === "[DONE]") continue;
+            try {
+              const obj = JSON.parse(json);
+              const text = obj?.candidates?.[0]?.content?.parts
+                ?.map((x: any) => x.text)
+                .filter(Boolean)
+                .join("") ?? "";
+              if (text) controller.enqueue(encoder.encode(sseChunk(text)));
+            } catch { /* skip */ }
+          }
+        }
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
+      } catch (e) {
+        controller.error(e);
+      }
+    },
+  });
+
+  return new Response(stream, { headers: { "Content-Type": "text/event-stream" } });
+}
+
+async function streamLovable(key: string, opts: CallAIOptions): Promise<Response> {
+  const model = opts.model || "google/gemini-2.5-flash";
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model,
+      messages: opts.messages,
+      temperature: opts.temperature ?? 0.7,
+      stream: true,
+    }),
+  });
+  if (!res.ok || !res.body) {
+    const t = await res.text().catch(() => "");
+    const err: any = new Error(`LovableStream ${res.status}: ${t}`);
+    err.status = res.status;
+    throw err;
+  }
+  return new Response(res.body, { headers: { "Content-Type": "text/event-stream" } });
+}
+
+/**
+ * Streaming AI call — returns a Response whose body is OpenAI-compatible SSE.
+ * Order: Gemini direct → Lovable Gateway.
+ * (Anthropic streaming omitted for simplicity; add on demand.)
+ */
+export async function callAIStream(opts: CallAIOptions): Promise<Response> {
+  const errors: string[] = [];
+  const geminiKey = pickKey("GEMINI1", "GEMINI2", "GEMINI_API_KEY", "GOOGLE_AI_API_KEY");
+  if (geminiKey) {
+    try {
+      return await streamGemini(geminiKey, opts);
+    } catch (e) {
+      errors.push(`gemini: ${(e as Error).message}`);
+    }
+  }
+  const lovableKey = pickKey("LOVABLE_API_KEY");
+  if (lovableKey) {
+    return await streamLovable(lovableKey, opts);
+  }
+  throw new Error(`No streaming AI provider available. ${errors.join(" | ")}`);
+}
+
