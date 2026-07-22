@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { corsHeaders, enforceRateLimit, handleError, normalizeUrl, parseJson, sanitizePlainText, z } from "../_shared/security.ts";
+import { callAI } from "../_shared/aiProvider.ts";
 
 const requestSchema = z.object({
   url: z.string().trim().min(3).max(2048),
