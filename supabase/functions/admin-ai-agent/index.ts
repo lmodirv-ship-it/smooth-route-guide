@@ -632,14 +632,21 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         if (args.action === "list") {
           const { data, error } = await supabase.from("app_settings").select("*").order("key");
           if (error) return JSON.stringify({ error: error.message });
-          return JSON.stringify({ settings: data });
+          const filtered = filterSensitiveAppSettingsRows(data);
+          return JSON.stringify({ settings: filtered, restricted_keys_hidden: APP_SETTINGS_SENSITIVE_KEYS });
         }
         if (args.action === "get") {
+          if (APP_SETTINGS_SENSITIVE_KEYS.includes(args.key)) {
+            return JSON.stringify({ error: "This setting key is restricted. Use manage_app_settings tool.", restricted_keys: APP_SETTINGS_SENSITIVE_KEYS });
+          }
           const { data, error } = await supabase.from("app_settings").select("*").eq("key", args.key).maybeSingle();
           if (error) return JSON.stringify({ error: error.message });
           return JSON.stringify(data || { key: args.key, value: null, message: "Setting not found" });
         }
         if (args.action === "set") {
+          if (APP_SETTINGS_SENSITIVE_KEYS.includes(args.key)) {
+            return JSON.stringify({ error: "Writing to sensitive app_settings keys is restricted. Use manage_app_settings tool.", restricted_keys: APP_SETTINGS_SENSITIVE_KEYS });
+          }
           const { data: existing } = await supabase.from("app_settings").select("id").eq("key", args.key).maybeSingle();
           if (existing) {
             const { error } = await supabase.from("app_settings").update({ value: args.value, updated_at: new Date().toISOString() }).eq("key", args.key);
