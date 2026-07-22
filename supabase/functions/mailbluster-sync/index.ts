@@ -11,6 +11,38 @@ serve(async (req) => {
   }
 
   try {
+    // Require admin/agent JWT to prevent abuse (arbitrary emails + PII export)
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const authClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const callerId = claimsData.claims.sub as string;
+    const { data: rolesRows } = await authClient
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", callerId);
+    const callerRoles = (rolesRows || []).map((r: any) => r.role);
+    const isPrivileged = callerRoles.some((r: string) => ["admin", "agent", "moderator"].includes(r));
+    if (!isPrivileged) {
+      return new Response(JSON.stringify({ error: "Forbidden: admin/agent only" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const apiKey = await getMailBlusterKey();
     if (!apiKey) {
       return new Response(JSON.stringify({ error: "MAILBLUSTER_API_KEY not configured" }), {
