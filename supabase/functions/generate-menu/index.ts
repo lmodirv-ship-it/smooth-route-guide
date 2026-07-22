@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, enforceRateLimit, handleError, parseJson, sanitizePlainText, z } from "../_shared/security.ts";
+import { callAI } from "../_shared/aiProvider.ts";
 
 const requestSchema = z.object({
   restaurantName: z.string().trim().min(1).max(120),
