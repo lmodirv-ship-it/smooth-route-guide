@@ -99,31 +99,23 @@ IMPORTANT:
 Here is the webpage content:
 ${pageContent}`;
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${lovableApiKey}`,
-      },
-      body: JSON.stringify({
+    let content = "{}";
+    try {
+      const result = await callAI({
         model: "google/gemini-2.5-flash",
         messages: [{ role: "user", content: extractionPrompt }],
         temperature: 0.1,
-        response_format: { type: "json_object" },
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      const errText = await aiResponse.text();
-      console.error("scrape-restaurant AI error:", errText);
+        jsonMode: true,
+        maxTokens: 4096,
+      });
+      content = result.content || "{}";
+    } catch (err) {
+      console.error("scrape-restaurant AI error:", err);
       return new Response(
-        JSON.stringify({ success: false, error: `AI extraction failed: ${aiResponse.status}` }),
+        JSON.stringify({ success: false, error: `AI extraction failed` }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
-
-    const aiData = await aiResponse.json();
-    const content = aiData.choices?.[0]?.message?.content || "{}";
 
     let extracted;
     try {
