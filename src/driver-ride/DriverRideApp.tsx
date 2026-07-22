@@ -30,13 +30,15 @@ import DriverSupport from "@/pages/driver/DriverSupport";
 import DriverStatus from "@/pages/driver/DriverStatus";
 import DriverEarnings from "@/pages/driver/DriverEarnings";
 import DriverSubscription from "@/pages/driver/DriverSubscription";
+import DriverMyRoutes from "@/pages/driver/DriverMyRoutes";
 import CommunityChat from "@/pages/CommunityChat";
 
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import RequireRole from "@/components/RequireRole";
-import { Users } from "lucide-react";
+import { Users, Route as RouteIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import ThemeLoader from "@/components/ThemeLoader";
 import TopNavLinks from "@/components/TopNavLinks";
@@ -60,6 +62,13 @@ const RideDriverLayout = () => {
         </div>
         <div className="flex items-center gap-2">
           <TopNavLinks />
+          <Link
+            to="/driver/my-routes"
+            className="p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground transition-all"
+            title="رحلاتي المنتظمة"
+          >
+            <RouteIcon className="w-3.5 h-3.5" />
+          </Link>
           <div className="w-px h-5 bg-border/40" />
           <FloatingChatButton />
           <button
@@ -111,6 +120,7 @@ const DriverRideApp = () => (
             <Route path="/driver/status" element={<RequireRole allowed={["driver"]}><><RideDriverLayout /><DriverStatus /></></RequireRole>} />
             <Route path="/driver/earnings" element={<RequireRole allowed={["driver"]}><><RideDriverLayout /><DriverEarnings /></></RequireRole>} />
             <Route path="/driver/subscription" element={<RequireRole allowed={["driver"]}><><RideDriverLayout /><DriverSubscription /></></RequireRole>} />
+            <Route path="/driver/my-routes" element={<RequireRole allowed={["driver"]}><><RideDriverLayout /><DriverMyRoutes /></></RequireRole>} />
             <Route path="/community" element={<RequireRole allowed={["driver"]}><><RideDriverLayout /><CommunityChat /></></RequireRole>} />
 
             {/* Redirects */}
