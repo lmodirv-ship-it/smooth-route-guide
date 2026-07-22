@@ -14,7 +14,7 @@ serve(async (req) => {
   try {
     await enforceRateLimit(req, "generate-menu", 10, 60);
     const { restaurantName, restaurantCategory, restaurantAddress } = await parseJson(req, requestSchema);
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    
     const prompt = `Tu es un expert en restauration marocaine, spécialisé dans les restaurants de Tanger.
 
 Génère un menu RÉALISTE pour le restaurant "${sanitizePlainText(restaurantName, 120)}" (catégorie: ${sanitizePlainText(restaurantCategory || "restaurant", 80)}, adresse: ${sanitizePlainText(restaurantAddress || "Tanger, Maroc", 200)}).
