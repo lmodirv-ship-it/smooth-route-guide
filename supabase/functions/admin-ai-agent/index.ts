@@ -574,6 +574,11 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
       }
       case "db_delete": {
         if (!args.filters?.length) return JSON.stringify({ error: "Filters required for delete" });
+        if (args.table === "app_settings") {
+          if (isSensitiveAppSettingsAccess(args.table, args.filters)) {
+            return JSON.stringify({ error: "Delete on sensitive app_settings keys is restricted. Use manage_app_settings tool.", restricted_keys: APP_SETTINGS_SENSITIVE_KEYS });
+          }
+        }
         // Safety: count before deleting to prevent mass deletion
         let countQ = supabase.from(args.table).select("id", { count: "exact", head: true });
         countQ = applyFilters(countQ, args.filters);
