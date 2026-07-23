@@ -108,6 +108,7 @@ export const mainRouteElements = (
     <Route path="/welcome" element={<LazyPage component={Welcome} />} />
     <Route path="/login" element={<LazyPage component={AuthPage} />} />
     <Route path="/.lovable/oauth/consent" element={<LazyPage component={OAuthConsent} />} />
+    <Route path="/connect" element={<LazyPage component={ConnectMCP} />} />
     <Route path="/auth/:role" element={<LazyPage component={AuthPage} />} />
     <Route path="/complete-profile" element={<RequireRole><LazyPage component={CompleteProfile} /></RequireRole>} />
     <Route path="/forgot-password" element={<LazyPage component={ForgotPassword} />} />
