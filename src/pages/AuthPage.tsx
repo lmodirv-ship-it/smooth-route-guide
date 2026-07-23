@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Eye, EyeOff, Mail, Lock, ArrowRight, User as UserIcon,
@@ -79,6 +79,12 @@ const AuthPage = () => {
     }
 
     const syncSession = async () => {
+      // If a `next` param is present (e.g. OAuth consent redirect), honor it
+      // before routing to a role dashboard.
+      if (safeNext) {
+        navigate(safeNext, { replace: true });
+        return;
+      }
       try {
         const roles = await getUserRolesWithTimeout(session.user.id);
         if (!mounted) return;
@@ -107,7 +113,7 @@ const AuthPage = () => {
     return () => {
       mounted = false;
     };
-  }, [navigate, ready, role, session]);
+  }, [navigate, ready, role, session, safeNext]);
 
   // Do not auto-open face auth on blur; keep login non-blocking.
   const handleEmailBlur = () => {
