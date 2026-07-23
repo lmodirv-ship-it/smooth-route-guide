@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowRight, PhoneCall, MessageCircle, Bot, HelpCircle, ChevronDown, ChevronUp, Send } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { ArrowRight, PhoneCall, MessageCircle, Bot, HelpCircle, ChevronDown, ChevronUp, Send, Plug } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
