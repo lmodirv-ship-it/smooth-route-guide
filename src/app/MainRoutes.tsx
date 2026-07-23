@@ -96,6 +96,7 @@ const Register = lazy(() => import("@/pages/Register"));
 const TopNavPage = lazy(() => import("@/pages/TopNavPage"));
 const WhyHNPage = lazy(() => import("@/pages/WhyHNPage"));
 const OAuthConsent = lazy(() => import("@/pages/OAuthConsent"));
+const ConnectMCP = lazy(() => import("@/pages/ConnectMCP"));
 
 export const mainRouteElements = (
   <>
