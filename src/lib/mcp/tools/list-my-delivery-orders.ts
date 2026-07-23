@@ -2,13 +2,24 @@ import { createClient } from "@supabase/supabase-js";
 import { defineTool, type ToolContext } from "@lovable.dev/mcp-js";
 import { z } from "zod";
 
+const STATUSES = [
+  "pending",
+  "accepted",
+  "ready_for_driver",
+  "assigned",
+  "picked_up",
+  "delivered",
+  "cancelled",
+] as const;
+
 export default defineTool({
   name: "list_my_delivery_orders",
   title: "List my delivery orders",
-  description: "List the signed-in customer's delivery orders (most recent first). RLS scopes results to the current user.",
+  description:
+    "List the signed-in customer's delivery orders (most recent first). RLS scopes results to the current user.",
   inputSchema: {
     limit: z.number().int().min(1).max(50).default(10).describe("Max rows (1-50)."),
-    status: z.string().optional().describe("Optional exact status filter, e.g. 'pending', 'delivered'."),
+    status: z.enum(STATUSES).optional().describe("Optional status filter."),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ limit, status }, ctx: ToolContext) => {
@@ -21,9 +32,9 @@ export default defineTool({
     });
     let q = sb
       .from("delivery_orders")
-      .select("id, status, category, total, pickup_address, delivery_address, created_at")
+      .select("id, status, category, total_price, pickup_address, delivery_address, created_at")
       .order("created_at", { ascending: false })
-      .limit(limit ?? 10);
+      .limit(Math.min(Math.max(limit ?? 10, 1), 50));
     if (status) q = q.eq("status", status);
     const { data, error } = await q;
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
