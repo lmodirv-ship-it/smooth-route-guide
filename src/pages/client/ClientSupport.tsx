@@ -112,6 +112,19 @@ const ClientSupport = () => {
           ))}
         </div>
 
+        <Link to="/connect" className="glass-card rounded-xl p-4 mt-4 flex items-center justify-between hover:border-primary/30 transition">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Plug className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-foreground">ربط مساعد ذكي (ChatGPT / Claude)</div>
+              <div className="text-xs text-muted-foreground">اتصل بحسابك عبر MCP</div>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-muted-foreground rotate-180" />
+        </Link>
+
         <div className="glass-card rounded-xl p-4 mt-6 space-y-3">
           <h3 className="text-foreground font-bold text-sm">{t.customer.sendComplaintTitle}</h3>
           <Input placeholder={t.customer.subjectPlaceholder} value={subject} onChange={e => setSubject(e.target.value)} className="bg-secondary border-border rounded-xl" />
