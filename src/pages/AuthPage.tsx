@@ -45,6 +45,9 @@ const roleDashboard: Record<StoredRole, string> = {
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const nextParam = searchParams.get("next");
+  const safeNext = nextParam && /^\/[A-Za-z0-9_\-./?=&%:]*$/.test(nextParam) ? nextParam : null;
   const { role: roleParam } = useParams();
   const role = (roleParam as RoleId) || "client";
   const config = roleConfig[role] || roleConfig.client;
