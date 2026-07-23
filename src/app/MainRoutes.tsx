@@ -95,6 +95,7 @@ const BlogArticle = lazy(() => import("@/pages/BlogArticle"));
 const Register = lazy(() => import("@/pages/Register"));
 const TopNavPage = lazy(() => import("@/pages/TopNavPage"));
 const WhyHNPage = lazy(() => import("@/pages/WhyHNPage"));
+const OAuthConsent = lazy(() => import("@/pages/OAuthConsent"));
 
 export const mainRouteElements = (
   <>
@@ -105,6 +106,7 @@ export const mainRouteElements = (
     <Route path="/splash" element={<LazyPage component={Splash} />} />
     <Route path="/welcome" element={<LazyPage component={Welcome} />} />
     <Route path="/login" element={<LazyPage component={AuthPage} />} />
+    <Route path="/.lovable/oauth/consent" element={<LazyPage component={OAuthConsent} />} />
     <Route path="/auth/:role" element={<LazyPage component={AuthPage} />} />
     <Route path="/complete-profile" element={<RequireRole><LazyPage component={CompleteProfile} /></RequireRole>} />
     <Route path="/forgot-password" element={<LazyPage component={ForgotPassword} />} />
