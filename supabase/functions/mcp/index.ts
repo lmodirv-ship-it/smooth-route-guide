@@ -5,10 +5,47 @@
 // src/lib/mcp/index.ts
 import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.24.0";
 
+// src/lib/mcp/tools/health.ts
+import { defineTool } from "npm:@lovable.dev/mcp-js@0.24.0";
+var ENABLED_TOOLS = [
+  "health",
+  "whoami",
+  "list_my_delivery_orders",
+  "list_my_trips",
+  "list_my_reservations",
+  "create_delivery_order",
+  "cancel_delivery_order",
+  "create_reservation",
+  "cancel_reservation"
+];
+var health_default = defineTool({
+  name: "health",
+  title: "Server health & status",
+  description: "Return MCP server status: API version, authentication state of the caller, and the list of currently enabled tools.",
+  inputSchema: {},
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async (_input, ctx) => {
+    const payload = {
+      status: "ok",
+      server: "hn-driver-mcp",
+      api_version: "0.1.0",
+      time: (/* @__PURE__ */ new Date()).toISOString(),
+      authenticated: ctx.isAuthenticated(),
+      user_id: ctx.isAuthenticated() ? ctx.getUserId() : null,
+      email: ctx.isAuthenticated() ? ctx.getUserEmail() : null,
+      enabled_tools: ENABLED_TOOLS
+    };
+    return {
+      content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+      structuredContent: payload
+    };
+  }
+});
+
 // src/lib/mcp/tools/whoami.ts
 import { createClient } from "npm:@supabase/supabase-js@^2.108.2";
-import { defineTool } from "npm:@lovable.dev/mcp-js@0.24.0";
-var whoami_default = defineTool({
+import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.24.0";
+var whoami_default = defineTool2({
   name: "whoami",
   title: "Who am I",
   description: "Return the signed-in user's profile (id, name, email, phone, user_code) and roles.",
@@ -42,15 +79,24 @@ var whoami_default = defineTool({
 
 // src/lib/mcp/tools/list-my-delivery-orders.ts
 import { createClient as createClient2 } from "npm:@supabase/supabase-js@^2.108.2";
-import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.24.0";
 import { z } from "npm:zod@^3.25.76";
-var list_my_delivery_orders_default = defineTool2({
+var STATUSES = [
+  "pending",
+  "accepted",
+  "ready_for_driver",
+  "assigned",
+  "picked_up",
+  "delivered",
+  "cancelled"
+];
+var list_my_delivery_orders_default = defineTool3({
   name: "list_my_delivery_orders",
   title: "List my delivery orders",
   description: "List the signed-in customer's delivery orders (most recent first). RLS scopes results to the current user.",
   inputSchema: {
     limit: z.number().int().min(1).max(50).default(10).describe("Max rows (1-50)."),
-    status: z.string().optional().describe("Optional exact status filter, e.g. 'pending', 'delivered'.")
+    status: z.enum(STATUSES).optional().describe("Optional status filter.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ limit, status }, ctx) => {
@@ -61,7 +107,7 @@ var list_my_delivery_orders_default = defineTool2({
       global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
       auth: { persistSession: false, autoRefreshToken: false }
     });
-    let q = sb.from("delivery_orders").select("id, status, category, total, pickup_address, delivery_address, created_at").order("created_at", { ascending: false }).limit(limit ?? 10);
+    let q = sb.from("delivery_orders").select("id, status, category, total_price, pickup_address, delivery_address, created_at").order("created_at", { ascending: false }).limit(Math.min(Math.max(limit ?? 10, 1), 50));
     if (status) q = q.eq("status", status);
     const { data, error } = await q;
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
@@ -74,9 +120,9 @@ var list_my_delivery_orders_default = defineTool2({
 
 // src/lib/mcp/tools/list-my-trips.ts
 import { createClient as createClient3 } from "npm:@supabase/supabase-js@^2.108.2";
-import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.24.0";
 import { z as z2 } from "npm:zod@^3.25.76";
-var list_my_trips_default = defineTool3({
+var list_my_trips_default = defineTool4({
   name: "list_my_trips",
   title: "List my rides",
   description: "List the signed-in user's ride trips (most recent first). RLS restricts results to the current user.",
@@ -106,17 +152,18 @@ var list_my_trips_default = defineTool3({
 
 // src/lib/mcp/tools/list-my-reservations.ts
 import { createClient as createClient4 } from "npm:@supabase/supabase-js@^2.108.2";
-import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.24.0";
 import { z as z3 } from "npm:zod@^3.25.76";
-var list_my_reservations_default = defineTool4({
+var list_my_reservations_default = defineTool5({
   name: "list_my_reservations",
   title: "List my reservations",
   description: "List the signed-in user's seat reservations on scheduled routes.",
   inputSchema: {
-    limit: z3.number().int().min(1).max(50).default(10)
+    limit: z3.number().int().min(1).max(50).default(10),
+    status: z3.enum(["pending", "confirmed", "cancelled", "completed"]).optional().describe("Optional status filter.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ limit }, ctx) => {
+  handler: async ({ limit, status }, ctx) => {
     if (!ctx.isAuthenticated()) {
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
@@ -124,11 +171,215 @@ var list_my_reservations_default = defineTool4({
       global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
       auth: { persistSession: false, autoRefreshToken: false }
     });
-    const { data, error } = await sb.from("reservations").select("*").order("created_at", { ascending: false }).limit(limit ?? 10);
+    let q = sb.from("reservations").select("id, reservation_code, route_id, seats_reserved, status, created_at").order("created_at", { ascending: false }).limit(Math.min(Math.max(limit ?? 10, 1), 50));
+    if (status) q = q.eq("status", status);
+    const { data, error } = await q;
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     return {
       content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
       structuredContent: { reservations: data ?? [] }
+    };
+  }
+});
+
+// src/lib/mcp/tools/create-delivery-order.ts
+import { createClient as createClient5 } from "npm:@supabase/supabase-js@^2.108.2";
+import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z4 } from "npm:zod@^3.25.76";
+var create_delivery_order_default = defineTool6({
+  name: "create_delivery_order",
+  title: "Create a delivery order",
+  description: "Create a new delivery order for the signed-in customer. user_id is taken from the auth token; RLS enforces ownership.",
+  inputSchema: {
+    pickup_address: z4.string().trim().min(3).max(300).describe("Where to pick up (address)."),
+    delivery_address: z4.string().trim().min(3).max(300).describe("Where to deliver (address)."),
+    category: z4.enum(["general", "food", "grocery", "pharmacy", "documents", "package"]).default("general"),
+    notes: z4.string().trim().max(500).optional(),
+    estimated_price: z4.number().min(0).max(1e5).optional(),
+    payment_method: z4.enum(["cash", "card", "wallet"]).default("cash"),
+    customer_phone: z4.string().trim().max(20).optional()
+  },
+  annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+  handler: async (input, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const userId = ctx.getUserId();
+    if (!userId) {
+      return { content: [{ type: "text", text: "Missing user id in token" }], isError: true };
+    }
+    const sb = createClient5(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+    const insert = {
+      user_id: userId,
+      pickup_address: input.pickup_address,
+      delivery_address: input.delivery_address,
+      category: input.category ?? "general",
+      notes: input.notes ?? "",
+      estimated_price: input.estimated_price ?? 0,
+      payment_method: input.payment_method ?? "cash",
+      customer_phone: input.customer_phone ?? null,
+      status: "pending"
+    };
+    const { data, error } = await sb.from("delivery_orders").insert(insert).select("id, status, category, pickup_address, delivery_address, estimated_price, created_at").single();
+    if (error) {
+      return {
+        content: [{ type: "text", text: `Failed to create order: ${error.message}` }],
+        isError: true
+      };
+    }
+    return {
+      content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+      structuredContent: { order: data }
+    };
+  }
+});
+
+// src/lib/mcp/tools/cancel-delivery-order.ts
+import { createClient as createClient6 } from "npm:@supabase/supabase-js@^2.108.2";
+import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z5 } from "npm:zod@^3.25.76";
+var CANCELLABLE = /* @__PURE__ */ new Set(["pending", "accepted", "ready_for_driver", "assigned"]);
+var cancel_delivery_order_default = defineTool7({
+  name: "cancel_delivery_order",
+  title: "Cancel a delivery order",
+  description: "Cancel a delivery order owned by the signed-in user. Only orders that have not been picked up or delivered can be cancelled.",
+  inputSchema: {
+    order_id: z5.string().uuid().describe("The delivery_orders.id (UUID)."),
+    reason: z5.string().trim().min(1).max(300).default("cancelled by user")
+  },
+  annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
+  handler: async ({ order_id, reason }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const userId = ctx.getUserId();
+    const sb = createClient6(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+    const { data: existing, error: readErr } = await sb.from("delivery_orders").select("id, user_id, status").eq("id", order_id).maybeSingle();
+    if (readErr) {
+      return { content: [{ type: "text", text: readErr.message }], isError: true };
+    }
+    if (!existing) {
+      return { content: [{ type: "text", text: "Order not found or not accessible." }], isError: true };
+    }
+    if (existing.user_id !== userId) {
+      return { content: [{ type: "text", text: "You are not the owner of this order." }], isError: true };
+    }
+    if (!CANCELLABLE.has(existing.status)) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Order is in status '${existing.status}' and can no longer be cancelled.`
+          }
+        ],
+        isError: true
+      };
+    }
+    const { data, error } = await sb.from("delivery_orders").update({ status: "cancelled", cancel_reason: reason }).eq("id", order_id).eq("user_id", userId).select("id, status, cancel_reason, updated_at").single();
+    if (error) {
+      return { content: [{ type: "text", text: `Cancel failed: ${error.message}` }], isError: true };
+    }
+    return {
+      content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+      structuredContent: { order: data }
+    };
+  }
+});
+
+// src/lib/mcp/tools/create-reservation.ts
+import { createClient as createClient7 } from "npm:@supabase/supabase-js@^2.108.2";
+import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z6 } from "npm:zod@^3.25.76";
+var create_reservation_default = defineTool8({
+  name: "create_reservation",
+  title: "Reserve seats on a route",
+  description: "Create a seat reservation on a scheduled route for the signed-in user. Seat count is decremented by the DB trigger.",
+  inputSchema: {
+    route_id: z6.string().uuid().describe("routes.id (UUID) of the scheduled route."),
+    seats: z6.number().int().min(1).max(10).default(1).describe("Number of seats to reserve (1-10)."),
+    notes: z6.string().trim().max(300).optional()
+  },
+  annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+  handler: async ({ route_id, seats, notes }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const userId = ctx.getUserId();
+    const sb = createClient7(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+    const { data, error } = await sb.from("reservations").insert({
+      route_id,
+      user_id: userId,
+      seats_reserved: seats ?? 1,
+      notes: notes ?? null,
+      status: "pending"
+    }).select("id, reservation_code, route_id, seats_reserved, status, created_at").single();
+    if (error) {
+      return { content: [{ type: "text", text: `Reservation failed: ${error.message}` }], isError: true };
+    }
+    return {
+      content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+      structuredContent: { reservation: data }
+    };
+  }
+});
+
+// src/lib/mcp/tools/cancel-reservation.ts
+import { createClient as createClient8 } from "npm:@supabase/supabase-js@^2.108.2";
+import { defineTool as defineTool9 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { z as z7 } from "npm:zod@^3.25.76";
+var CANCELLABLE2 = /* @__PURE__ */ new Set(["pending", "confirmed"]);
+var cancel_reservation_default = defineTool9({
+  name: "cancel_reservation",
+  title: "Cancel a reservation",
+  description: "Cancel a seat reservation owned by the signed-in user. Only pending/confirmed reservations can be cancelled.",
+  inputSchema: {
+    reservation_id: z7.string().uuid().describe("reservations.id (UUID)."),
+    reason: z7.string().trim().max(300).optional()
+  },
+  annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
+  handler: async ({ reservation_id, reason }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const userId = ctx.getUserId();
+    const sb = createClient8(process.env.SUPABASE_URL, process.env.SUPABASE_PUBLISHABLE_KEY, {
+      global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+    const { data: existing, error: readErr } = await sb.from("reservations").select("id, user_id, status").eq("id", reservation_id).maybeSingle();
+    if (readErr) return { content: [{ type: "text", text: readErr.message }], isError: true };
+    if (!existing) {
+      return { content: [{ type: "text", text: "Reservation not found or not accessible." }], isError: true };
+    }
+    if (existing.user_id !== userId) {
+      return { content: [{ type: "text", text: "You are not the owner of this reservation." }], isError: true };
+    }
+    if (!CANCELLABLE2.has(existing.status)) {
+      return {
+        content: [
+          { type: "text", text: `Reservation is in status '${existing.status}' and can no longer be cancelled.` }
+        ],
+        isError: true
+      };
+    }
+    const patch = { status: "cancelled" };
+    if (reason) patch.notes = reason;
+    const { data, error } = await sb.from("reservations").update(patch).eq("id", reservation_id).eq("user_id", userId).select("id, status, updated_at").single();
+    if (error) {
+      return { content: [{ type: "text", text: `Cancel failed: ${error.message}` }], isError: true };
+    }
+    return {
+      content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+      structuredContent: { reservation: data }
     };
   }
 });
@@ -138,13 +389,23 @@ var projectRef = "typamugwwatqmdkxkfof";
 var mcp_default = defineMcp({
   name: "hn-driver-mcp",
   title: "HN Driver",
-  version: "0.1.0",
-  instructions: "Tools for the HN Driver platform. Use `whoami` to confirm identity, `list_my_delivery_orders` and `list_my_trips` to read the signed-in user's activity, and `list_my_reservations` for scheduled-route bookings. All reads are scoped by RLS to the connected user.",
+  version: "0.2.0",
+  instructions: "Tools for the HN Driver platform. Use `health` to check server status, `whoami` to confirm identity, `list_my_*` to read the signed-in user's data, `create_delivery_order`/`cancel_delivery_order` to manage deliveries, and `create_reservation`/`cancel_reservation` for scheduled-route bookings. All reads and writes are scoped by RLS to the connected user.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated"
   }),
-  tools: [whoami_default, list_my_delivery_orders_default, list_my_trips_default, list_my_reservations_default]
+  tools: [
+    health_default,
+    whoami_default,
+    list_my_delivery_orders_default,
+    list_my_trips_default,
+    list_my_reservations_default,
+    create_delivery_order_default,
+    cancel_delivery_order_default,
+    create_reservation_default,
+    cancel_reservation_default
+  ]
 });
 
 // lovable-mcp-supabase-entry.ts

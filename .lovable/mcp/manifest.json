@@ -12,10 +12,26 @@
   "mcp": {
     "server": {
       "name": "hn-driver-mcp",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "title": "HN Driver"
     },
     "tools": [
+      {
+        "name": "health",
+        "title": "Server health & status",
+        "description": "Return MCP server status: API version, authentication state of the caller, and the list of currently enabled tools.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
       {
         "name": "whoami",
         "title": "Who am I",
@@ -53,7 +69,16 @@
             },
             "status": {
               "type": "string",
-              "description": "Optional exact status filter, e.g. 'pending', 'delivered'."
+              "enum": [
+                "pending",
+                "accepted",
+                "ready_for_driver",
+                "assigned",
+                "picked_up",
+                "delivered",
+                "cancelled"
+              ],
+              "description": "Optional status filter."
             }
           },
           "additionalProperties": false,
@@ -107,8 +132,185 @@
               "minimum": 1,
               "maximum": 50,
               "default": 10
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "confirmed",
+                "cancelled",
+                "completed"
+              ],
+              "description": "Optional status filter."
             }
           },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_delivery_order",
+        "title": "Create a delivery order",
+        "description": "Create a new delivery order for the signed-in customer. user_id is taken from the auth token; RLS enforces ownership.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "pickup_address": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 300,
+              "description": "Where to pick up (address)."
+            },
+            "delivery_address": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 300,
+              "description": "Where to deliver (address)."
+            },
+            "category": {
+              "type": "string",
+              "enum": [
+                "general",
+                "food",
+                "grocery",
+                "pharmacy",
+                "documents",
+                "package"
+              ],
+              "default": "general"
+            },
+            "notes": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "estimated_price": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "payment_method": {
+              "type": "string",
+              "enum": [
+                "cash",
+                "card",
+                "wallet"
+              ],
+              "default": "cash"
+            },
+            "customer_phone": {
+              "type": "string",
+              "maxLength": 20
+            }
+          },
+          "required": [
+            "pickup_address",
+            "delivery_address"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "cancel_delivery_order",
+        "title": "Cancel a delivery order",
+        "description": "Cancel a delivery order owned by the signed-in user. Only orders that have not been picked up or delivered can be cancelled.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "order_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The delivery_orders.id (UUID)."
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300,
+              "default": "cancelled by user"
+            }
+          },
+          "required": [
+            "order_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_reservation",
+        "title": "Reserve seats on a route",
+        "description": "Create a seat reservation on a scheduled route for the signed-in user. Seat count is decremented by the DB trigger.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "route_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "routes.id (UUID) of the scheduled route."
+            },
+            "seats": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 1,
+              "description": "Number of seats to reserve (1-10)."
+            },
+            "notes": {
+              "type": "string",
+              "maxLength": 300
+            }
+          },
+          "required": [
+            "route_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "cancel_reservation",
+        "title": "Cancel a reservation",
+        "description": "Cancel a seat reservation owned by the signed-in user. Only pending/confirmed reservations can be cancelled.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "reservation_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "reservations.id (UUID)."
+            },
+            "reason": {
+              "type": "string",
+              "maxLength": 300
+            }
+          },
+          "required": [
+            "reservation_id"
+          ],
           "additionalProperties": false,
           "$schema": "http://json-schema.org/draft-07/schema#"
         },
