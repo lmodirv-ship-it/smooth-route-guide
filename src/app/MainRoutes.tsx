@@ -70,6 +70,7 @@ const ClientWallet = lazy(() => import("@/pages/client/ClientWallet"));
 const ClientHistory = lazy(() => import("@/pages/client/ClientHistory"));
 const ClientProfile = lazy(() => import("@/pages/client/ClientProfile"));
 const ClientSupport = lazy(() => import("@/pages/client/ClientSupport"));
+const ClientDocuments = lazy(() => import("@/pages/client/ClientDocuments"));
 
 const DeliveryHome = lazy(() => import("@/pages/delivery/DeliveryHome"));
 const DeliveryCategory = lazy(() => import("@/pages/delivery/DeliveryCategory"));
@@ -145,6 +146,8 @@ export const mainRouteElements = (
       <Route path="/customer/history" element={<RequireRole allowed={["client"]}><LazyPage component={ClientHistory} /></RequireRole>} />
       <Route path="/customer/profile" element={<RequireRole allowed={["client"]}><LazyPage component={ClientProfile} /></RequireRole>} />
       <Route path="/customer/support" element={<RequireRole allowed={["client"]}><LazyPage component={ClientSupport} /></RequireRole>} />
+      <Route path="/customer/documents" element={<RequireRole allowed={["client"]}><LazyPage component={ClientDocuments} /></RequireRole>} />
+      <Route path="/client/documents" element={<Navigate to="/customer/documents" replace />} />
 
       {/* ─── Driver /driver/* ─── */}
       <Route path="/driver" element={<RequireRole allowed={["driver"]}><LazyPage component={DriverPage} /></RequireRole>} />
