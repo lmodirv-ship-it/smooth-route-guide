@@ -155,7 +155,8 @@ export const mainRouteElements = (
       <Route path="/driver/history" element={<RequireRole allowed={["driver"]}><LazyPage component={DriverHistory} /></RequireRole>} />
       <Route path="/driver/notifications" element={<RequireRole allowed={["driver"]}><LazyPage component={DriverNotifications} /></RequireRole>} />
       <Route path="/driver/settings" element={<RequireRole allowed={["driver"]}><LazyPage component={DriverSettings} /></RequireRole>} />
-      <Route path="/driver/documents" element={<RequireRole allowed={["driver"]}><LazyPage component={DocumentUpload} /></RequireRole>} />
+      <Route path="/driver/documents" element={<RequireRole allowed={["driver", "delivery"]}><LazyPage component={DocumentUpload} /></RequireRole>} />
+      <Route path="/delivery/documents" element={<RequireRole allowed={["driver", "delivery"]}><LazyPage component={DocumentUpload} /></RequireRole>} />
       <Route path="/driver/trip" element={<RequireRole allowed={["driver"]}><LazyPage component={ActiveTrip} /></RequireRole>} />
       <Route path="/driver/profile" element={<RequireRole allowed={["driver"]}><LazyPage component={DriverProfile} /></RequireRole>} />
       <Route path="/driver/wallet" element={<RequireRole allowed={["driver"]}><LazyPage component={DriverWallet} /></RequireRole>} />

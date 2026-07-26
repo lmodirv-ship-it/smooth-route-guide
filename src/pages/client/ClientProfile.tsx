@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { User, ArrowRight, Phone, Mail, Car, Wallet, Clock, Star, Heart, Settings, LogOut, ChevronLeft, HelpCircle, Bot, Loader2, FileText } from "lucide-react";
+import { User, ArrowRight, Phone, Mail, Car, Wallet, Clock, Star, Heart, Settings, LogOut, ChevronLeft, HelpCircle, Bot, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useLogout } from "@/hooks/useLogout";
@@ -42,7 +42,7 @@ const ClientProfile = () => {
     { icon: Clock, label: t.customer.tripHistory, path: "/customer/history", color: "text-primary" },
     { icon: Wallet, label: t.customer.wallet, path: "/customer/wallet", color: "text-info" },
     { icon: Car, label: t.customer.paymentMethods, path: "/customer/payment", color: "text-success" },
-    { icon: FileText, label: dir === "rtl" ? "مستنداتي" : "Mes documents", path: "/customer/documents", color: "text-warning" },
+    
     { icon: Bot, label: t.customer.aiAssistant, path: "/assistant", color: "text-primary" },
     { icon: HelpCircle, label: t.customer.helpSupport, path: "/customer/support", color: "text-info" },
   ];
