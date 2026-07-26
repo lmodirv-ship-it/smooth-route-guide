@@ -42,6 +42,7 @@ const ClientProfile = () => {
     { icon: Clock, label: t.customer.tripHistory, path: "/customer/history", color: "text-primary" },
     { icon: Wallet, label: t.customer.wallet, path: "/customer/wallet", color: "text-info" },
     { icon: Car, label: t.customer.paymentMethods, path: "/customer/payment", color: "text-success" },
+    { icon: FileText, label: dir === "rtl" ? "مستنداتي" : "Mes documents", path: "/customer/documents", color: "text-warning" },
     { icon: Bot, label: t.customer.aiAssistant, path: "/assistant", color: "text-primary" },
     { icon: HelpCircle, label: t.customer.helpSupport, path: "/customer/support", color: "text-info" },
   ];
