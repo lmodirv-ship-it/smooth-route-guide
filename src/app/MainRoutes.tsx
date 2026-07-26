@@ -146,6 +146,8 @@ export const mainRouteElements = (
       <Route path="/customer/history" element={<RequireRole allowed={["client"]}><LazyPage component={ClientHistory} /></RequireRole>} />
       <Route path="/customer/profile" element={<RequireRole allowed={["client"]}><LazyPage component={ClientProfile} /></RequireRole>} />
       <Route path="/customer/support" element={<RequireRole allowed={["client"]}><LazyPage component={ClientSupport} /></RequireRole>} />
+      <Route path="/customer/documents" element={<RequireRole allowed={["client"]}><LazyPage component={ClientDocuments} /></RequireRole>} />
+      <Route path="/client/documents" element={<Navigate to="/customer/documents" replace />} />
 
       {/* ─── Driver /driver/* ─── */}
       <Route path="/driver" element={<RequireRole allowed={["driver"]}><LazyPage component={DriverPage} /></RequireRole>} />
