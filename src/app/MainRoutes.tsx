@@ -70,6 +70,7 @@ const ClientWallet = lazy(() => import("@/pages/client/ClientWallet"));
 const ClientHistory = lazy(() => import("@/pages/client/ClientHistory"));
 const ClientProfile = lazy(() => import("@/pages/client/ClientProfile"));
 const ClientSupport = lazy(() => import("@/pages/client/ClientSupport"));
+const ClientDocuments = lazy(() => import("@/pages/client/ClientDocuments"));
 
 const DeliveryHome = lazy(() => import("@/pages/delivery/DeliveryHome"));
 const DeliveryCategory = lazy(() => import("@/pages/delivery/DeliveryCategory"));
