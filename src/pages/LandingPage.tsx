@@ -88,6 +88,15 @@ const content: Record<string, LandingContent> = {
       delivery: ["Inscription livreur", "Démarrez la livraison et gagnez un revenu supplémentaire"],
       store: ["Inscription restaurant/magasin", "Développez votre business et recevez des milliers de commandes"],
     },
+    paths: {
+      clientTitle: "Commander un service / Réserver un trajet",
+      clientDesc: "Trajets et livraisons en quelques minutes, suivi en direct et paiement sécurisé.",
+      clientCta: "Commander maintenant",
+      partnerTitle: "Rejoindre comme chauffeur ou partenaire",
+      partnerDesc: "Chauffeurs, livreurs et commerçants : gagnez avec HN Driver.",
+      partnerCta: "Devenir partenaire",
+    },
+
     registerNow: "S'inscrire",
     downloadApk: "Télécharger APK",
     adminApksLabel: "Applications administratives :",
