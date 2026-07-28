@@ -1347,8 +1347,10 @@
   .hn-stats-list {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(0.5rem, 1vw, 1rem);
     direction: ltr;
   }
+
 
   .hn-stat {
     direction: rtl;
