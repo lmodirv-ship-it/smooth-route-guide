@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Bike,
@@ -19,10 +20,7 @@ import { useI18n } from "@/i18n/context";
 import heroBg from "@/assets/landing-hero-bg.jpg";
 import phoneMockup from "@/assets/hn-driver-logo-v2.jpeg";
 import hnLogo from "@/assets/hn-driver-logo.png";
-import cardCar from "@/assets/card-car.png";
-import cardCustomer from "@/assets/card-customer.png";
-import cardDelivery from "@/assets/card-delivery.png";
-import cardStore from "@/assets/card-store.png";
+
 
 type LandingContent = {
   meta: { title: string; description: string; keywords: string };
