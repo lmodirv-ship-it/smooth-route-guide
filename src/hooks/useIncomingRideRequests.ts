@@ -75,8 +75,8 @@ export function useIncomingRideRequests(isOnline: boolean) {
       )
       .subscribe();
 
-    // شبكة أمان: refetch كل 15 ثانية في حال فاتنا حدث realtime
-    const poll = setInterval(() => { fetchRequests(); }, 15000);
+    // شبكة أمان: refetch كل 5 دقائق في حال فاتنا حدث realtime
+    const poll = setInterval(() => { fetchRequests(); }, 5 * 60 * 1000);
 
     return () => {
       supabase.removeChannel(channel);

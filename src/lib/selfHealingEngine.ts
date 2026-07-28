@@ -17,14 +17,14 @@ class SelfHealingEngine {
   private isRunning = false;
   private listeners: Array<(logs: HealingLog[]) => void> = [];
 
-  /** Start the background healing loop (every 60s) */
+  /** Start the background healing loop (every 10 min) */
   start() {
     if (this.isRunning) return;
     this.isRunning = true;
     this.log("بدء محرك الإصلاح الذاتي", "success");
 
     this.runHealingCycle();
-    this.intervalId = setInterval(() => this.runHealingCycle(), 60_000);
+    this.intervalId = setInterval(() => this.runHealingCycle(), 10 * 60_000);
 
     window.addEventListener("online", () => this.handleReconnect());
     window.addEventListener("offline", () => this.log("انقطاع الاتصال — في انتظار العودة", "fail"));
@@ -201,7 +201,7 @@ class SelfHealingEngine {
           supabase.removeAllChannels();
         }
       }
-    }, 30_000);
+    }, 5 * 60_000);
   }
 
   private handleReconnect() {
