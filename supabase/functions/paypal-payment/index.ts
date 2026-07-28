@@ -43,11 +43,12 @@ serve(async (req) => {
     const body = await req.json();
     const { action } = body;
 
-    // Allow test-connection with auth
+    let userId: string | null = null;
     if (authHeader) {
       const token = authHeader.replace("Bearer ", "");
-      const { error: authError } = await supabase.auth.getUser(token);
-      if (authError) throw new Error("Unauthorized");
+      const { data: authData, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !authData?.user) throw new Error("Unauthorized");
+      userId = authData.user.id;
     } else if (action !== "test-connection") {
       throw new Error("No auth");
     }
