@@ -247,6 +247,21 @@ export interface TranslationSet {
     faq2q: string; faq2a: string;
     faq3q: string; faq3a: string;
     faq4q: string; faq4a: string;
+    // Price breakdown & coupons
+    priceBreakdown: string;
+    baseFareLabel: string;
+    perKmLabel: string;
+    subtotalLabel: string;
+    discountLabel: string;
+    totalLabel: string;
+    couponTitle: string;
+    couponPlaceholder: string;
+    couponApply: string;
+    couponApplied: string;
+    couponInvalid: string;
+    couponMinAmount: string;
+    walletBalanceLabel: string;
+    insufficientBalance: string;
   };
   // Driver pages
   driver: {
