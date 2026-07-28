@@ -1,5 +1,5 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { corsHeaders, enforceRateLimit, handleError, normalizeUrl, parseJson, sanitizePlainText, z } from "../_shared/security.ts";
+import { corsHeaders, enforceRateLimit, handleError, normalizeUrl, parseJson, requireRole, sanitizePlainText, z } from "../_shared/security.ts";
 import { callAI } from "../_shared/aiProvider.ts";
 
 const requestSchema = z.object({
@@ -13,6 +13,7 @@ Deno.serve(async (req) => {
   }
 
   try {
+    await requireRole(req, ["admin", "agent", "moderator"]);
     await enforceRateLimit(req, "scrape-restaurant", 8, 60);
     const { url, city } = await parseJson(req, requestSchema);
     const safeUrl = normalizeUrl(url);
