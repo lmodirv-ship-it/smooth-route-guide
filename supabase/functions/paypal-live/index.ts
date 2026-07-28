@@ -235,6 +235,27 @@ serve(async (req) => {
       if (!orderId || typeof orderId !== "string") {
         return jsonResponse({ error: "Invalid orderId" }, 400);
       }
+      if (!transactionId || typeof transactionId !== "string") {
+        return jsonResponse({ error: "Invalid transactionId" }, 400);
+      }
+
+      // ── Ownership + order binding check (prevents capture IDOR) ──
+      const { data: pending } = await supabaseAdmin
+        .from("payment_transactions")
+        .select("id, user_id, amount, reference_type, status, paypal_order_id")
+        .eq("id", transactionId)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (!pending) {
+        return jsonResponse({ error: "Transaction not found" }, 404);
+      }
+      if (pending.paypal_order_id !== orderId) {
+        return jsonResponse({ error: "Order does not match transaction" }, 403);
+      }
+      if (pending.status === "completed") {
+        return jsonResponse({ error: "Transaction already completed" }, 409);
+      }
 
       const accessToken = await getAccessToken();
 
@@ -253,50 +274,42 @@ serve(async (req) => {
       const status = capture.status === "COMPLETED" ? "completed" : "failed";
       const captureId = capture.purchase_units?.[0]?.payments?.captures?.[0]?.id || null;
 
-      // Update transaction record
-      if (transactionId && typeof transactionId === "string") {
-        await supabaseAdmin
-          .from("payment_transactions")
-          .update({
-            status,
-            paypal_order_id: orderId,
-            paypal_payer_id: capture.payer?.payer_id || null,
-            paypal_capture_id: captureId,
-            completed_at: status === "completed" ? new Date().toISOString() : null,
-            failure_reason: status === "failed" ? (capture.message || "Capture failed") : null,
-            metadata: { paypal_capture: capture },
-          })
-          .eq("id", transactionId);
+      // Update transaction record (scoped to owner + matching order)
+      await supabaseAdmin
+        .from("payment_transactions")
+        .update({
+          status,
+          paypal_order_id: orderId,
+          paypal_payer_id: capture.payer?.payer_id || null,
+          paypal_capture_id: captureId,
+          completed_at: status === "completed" ? new Date().toISOString() : null,
+          failure_reason: status === "failed" ? (capture.message || "Capture failed") : null,
+          metadata: { paypal_capture: capture },
+        })
+        .eq("id", transactionId)
+        .eq("user_id", userId)
+        .eq("paypal_order_id", orderId);
 
-        // Handle wallet top-up if applicable
-        if (status === "completed") {
-          const { data: txn } = await supabaseAdmin
-            .from("payment_transactions")
-            .select("amount, reference_type, user_id")
-            .eq("id", transactionId)
-            .single();
+      // Handle wallet top-up if applicable
+      if (status === "completed" && pending.reference_type === "wallet_topup") {
+        const { data: wallet } = await supabaseAdmin
+          .from("wallet")
+          .select("id, balance")
+          .eq("user_id", pending.user_id)
+          .maybeSingle();
 
-          if (txn?.reference_type === "wallet_topup") {
-            const { data: wallet } = await supabaseAdmin
-              .from("wallet")
-              .select("id, balance")
-              .eq("user_id", txn.user_id)
-              .single();
-
-            if (wallet) {
-              const newBalance = Number(wallet.balance) + Number(txn.amount);
-              await supabaseAdmin.from("wallet").update({ balance: newBalance }).eq("id", wallet.id);
-              await supabaseAdmin.from("wallet_transactions").insert({
-                wallet_id: wallet.id,
-                user_id: txn.user_id,
-                amount: txn.amount,
-                balance_after: newBalance,
-                transaction_type: "topup",
-                description: "شحن عبر PayPal",
-                payment_transaction_id: transactionId,
-              });
-            }
-          }
+        if (wallet) {
+          const newBalance = Number(wallet.balance) + Number(pending.amount);
+          await supabaseAdmin.from("wallet").update({ balance: newBalance }).eq("id", wallet.id);
+          await supabaseAdmin.from("wallet_transactions").insert({
+            wallet_id: wallet.id,
+            user_id: pending.user_id,
+            amount: pending.amount,
+            balance_after: newBalance,
+            transaction_type: "topup",
+            description: "شحن عبر PayPal",
+            payment_transaction_id: transactionId,
+          });
         }
       }
 
