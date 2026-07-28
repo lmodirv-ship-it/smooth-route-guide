@@ -183,6 +183,9 @@ const LandingPage = () => {
   const { locale, setLocale, locales, dir } = useI18n();
   const currentLocale = locales.find((item) => item.code === locale) ?? locales[0];
   const c = content[locale] ?? content.ar;
+  const [showPartners, setShowPartners] = useState(false);
+
+
 
   const partnerRoles = [
     { to: "/auth/driver", label: c.cards.driver[0], Icon: Car, apk: "/downloads/apps/hn-driver.apk" },
