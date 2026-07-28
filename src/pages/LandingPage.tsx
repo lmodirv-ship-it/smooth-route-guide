@@ -292,24 +292,56 @@ const LandingPage = () => {
             <p>{c.hero.subtitle}</p>
           </div>
 
-          <div className="hn-register-grid">
-            {cards.map(({ to, title, text, image, variant, apk }) => (
-              <div key={to} className="flex flex-col">
-                <Link to={to} className={`hn-register-card hn-card-${variant}`}>
-                  <img src={image} alt={title} className="hn-card-image" loading="lazy" width={512} height={512} />
-                  <h2>{title}</h2>
-                  <p>{text}</p>
-                  <span>
-                    <ChevronLeft className="h-3 w-3" />
-                    {c.registerNow}
-                  </span>
-                </Link>
-                <a href={apk} download className="hn-apk-btn" aria-label={`${c.downloadApk} — ${title}`}>
-                  ⬇ {c.downloadApk}
+          <div className="hn-paths">
+            <div className="hn-path hn-path-primary">
+              <h2>{c.paths.clientTitle}</h2>
+              <p>{c.paths.clientDesc}</p>
+              <Link to="/auth/client" className="hn-path-cta">
+                <ChevronLeft className="h-4 w-4" />
+                {c.paths.clientCta}
+              </Link>
+              <div className="hn-path-apks">
+                <a href="/downloads/apps/hn-client.apk" download className="hn-apk-btn">
+                  ⬇ {c.downloadApk} — {c.cards.client[0]}
                 </a>
               </div>
-            ))}
+            </div>
+
+            <div className="hn-path">
+              <h2>{c.paths.partnerTitle}</h2>
+              <p>{c.paths.partnerDesc}</p>
+              <button
+                type="button"
+                className="hn-path-cta-secondary"
+                onClick={() => setShowPartners((value) => !value)}
+                aria-expanded={showPartners}
+              >
+                {c.paths.partnerCta}
+                <ChevronDown className={`h-4 w-4 transition-transform ${showPartners ? "rotate-180" : ""}`} />
+              </button>
+
+              {showPartners && (
+                <>
+                  <div className="hn-path-roles">
+                    {partnerRoles.map(({ to, label, Icon }) => (
+                      <Link key={to} to={to} className="hn-path-role">
+                        <Icon />
+                        {label}
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="hn-path-apks">
+                    {partnerRoles.map(({ apk, label }) => (
+                      <a key={apk} href={apk} download className="hn-apk-btn" aria-label={`${c.downloadApk} — ${label}`}>
+                        ⬇ {label}
+                      </a>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
+
 
           <div className="hn-admin-apks" role="group" aria-label={c.adminApksLabel}>
             <strong>{c.adminApksLabel}</strong>
