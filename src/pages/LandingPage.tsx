@@ -65,6 +65,15 @@ const content: Record<string, LandingContent> = {
       delivery: ["تسجيل عامل توصيل", "ابدأ التوصيل وحقق دخلاً إضافياً بوقت يناسبك"],
       store: ["تسجيل مطعم أو متجر", "وسّع عملك واستقبل الطلبات من آلاف العملاء"],
     },
+    paths: {
+      clientTitle: "اطلب خدمة / احجز رحلة الآن",
+      clientDesc: "رحلات وتوصيل خلال دقائق، مع تتبّع مباشر ودفع آمن.",
+      clientCta: "اطلب الآن",
+      partnerTitle: "انضم كسائق أو شريك تجاري",
+      partnerDesc: "سائقون وعمال توصيل ومتاجر: ابدأ الربح مع HN Driver.",
+      partnerCta: "أصبح شريكًا",
+    },
+
     registerNow: "سجّل الآن",
     downloadApk: "تحميل APK",
     adminApksLabel: "تطبيقات إدارية:",
