@@ -251,7 +251,7 @@ const DriverPage = () => {
     
     // Get driver record ID (drivers.id != auth user id)
     const { data: driverRecord } = await supabase.from("drivers").select("id").eq("user_id", user.id).single();
-    if (!driverRecord) { toast({ title: "لم يتم العثور على حساب السائق", variant: "destructive" }); return; }
+    if (!driverRecord) { toast({ title: t.driver.driverAccountNotFound, variant: "destructive" }); return; }
     
     setAccepting(orderId);
     try {
