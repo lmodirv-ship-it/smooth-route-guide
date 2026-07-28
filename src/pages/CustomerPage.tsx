@@ -32,6 +32,7 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
 
 const CustomerPage = () => {
   const navigate = useNavigate();
+  const { t, dir } = useI18n();
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [destCoords, setDestCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [submitting, setSubmitting] = useState(false);
