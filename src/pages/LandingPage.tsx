@@ -184,12 +184,12 @@ const LandingPage = () => {
   const currentLocale = locales.find((item) => item.code === locale) ?? locales[0];
   const c = content[locale] ?? content.ar;
 
-  const cards = [
-    { to: "/auth/driver", title: c.cards.driver[0], text: c.cards.driver[1], image: cardCar, variant: "blue", apk: "/downloads/apps/hn-driver.apk" },
-    { to: "/auth/client", title: c.cards.client[0], text: c.cards.client[1], image: cardCustomer, variant: "green", apk: "/downloads/apps/hn-client.apk" },
-    { to: "/auth/delivery", title: c.cards.delivery[0], text: c.cards.delivery[1], image: cardDelivery, variant: "purple", apk: "/downloads/apps/hn-delivery.apk" },
-    { to: "/auth/store_owner", title: c.cards.store[0], text: c.cards.store[1], image: cardStore, variant: "gold", apk: "/downloads/apps/hn-store.apk" },
+  const partnerRoles = [
+    { to: "/auth/driver", label: c.cards.driver[0], Icon: Car, apk: "/downloads/apps/hn-driver.apk" },
+    { to: "/auth/delivery", label: c.cards.delivery[0], Icon: Bike, apk: "/downloads/apps/hn-delivery.apk" },
+    { to: "/auth/store_owner", label: c.cards.store[0], Icon: Store, apk: "/downloads/apps/hn-store.apk" },
   ];
+
 
   const adminApks = [
     { href: "/downloads/apps/hn-general.apk", label: c.adminApks.general },
