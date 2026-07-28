@@ -1326,17 +1326,15 @@
   .hn-card-gold .hn-card-icon, .hn-card-gold h2 { color: hsl(43 96% 56%); filter: drop-shadow(0 0 10px hsl(43 96% 56% / 0.7)); }
 
   .hn-stats-dock {
-    position: absolute;
+    position: relative;
     z-index: 14;
-    left: clamp(2rem, 3.4vw, 4rem);
-    right: clamp(2rem, 3.4vw, 4rem);
-    bottom: clamp(2.85rem, 4.5vh, 4.35rem);
-    min-height: clamp(5rem, 10.2vh, 7.25rem);
+    width: min(94vw, 78rem);
+    margin: clamp(2rem, 5vh, 3.5rem) auto clamp(2.5rem, 6vh, 4rem);
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(15rem, 26rem);
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 24rem);
     align-items: center;
-    gap: clamp(0.8rem, 1.5vw, 1.4rem);
-    padding: clamp(0.75rem, 1.25vw, 1.15rem) clamp(1rem, 1.8vw, 1.7rem);
+    gap: clamp(1rem, 2vw, 2rem);
+    padding: clamp(1rem, 1.5vw, 1.5rem) clamp(1.1rem, 2vw, 1.9rem);
     border: 1px solid hsl(205 42% 44% / 0.22);
     border-radius: 1.35rem;
     background: linear-gradient(180deg, hsl(220 38% 5% / 0.72), hsl(220 34% 4% / 0.54));
@@ -1344,6 +1342,7 @@
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
   }
+
 
   .hn-stats-list {
     display: grid;
