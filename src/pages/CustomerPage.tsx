@@ -436,7 +436,7 @@ const CustomerPage = () => {
                   onClick={() => { setDestCoords(null); setSelectedDestName(null); }}
                   className="flex-1 h-11 rounded-xl glass border-border text-muted-foreground hover:text-foreground"
                 >
-                  إعادة تحديد
+                  {t.customer.resetSelection}
                 </Button>
                 <Button
                   onClick={handleCreateRequest}
