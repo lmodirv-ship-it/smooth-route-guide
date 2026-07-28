@@ -86,39 +86,56 @@ const DriverPage = () => {
   const { mapTheme, mapExpanded } = useDriverMapControls();
   const heatPoints = useDemandHeatmap();
 
-  // Fetch stats & check active ride
-  useEffect(() => {
-    const fetchStats = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: profile } = await supabase.from("profiles").select("name, avatar_url, avg_rating").eq("id", user.id).single();
-      if (profile?.avatar_url) setDriverAvatar(profile.avatar_url);
-      setDriverRating(Number(profile?.avg_rating) || 0);
+  // Fetch stats & check active ride (re-runnable + realtime)
+  const [driverRecordId, setDriverRecordId] = useState<string | null>(null);
 
-      // Resolve driver record id (drivers.id ≠ auth.uid)
-      const { data: driverData } = await supabase.from("drivers").select("id, rating, driver_type").eq("user_id", user.id).maybeSingle();
-      if (driverData?.driver_type) setDriverType(driverData.driver_type);
-      const driverRecordId = driverData?.id;
+  const fetchStats = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data: profile } = await supabase.from("profiles").select("name, avatar_url, avg_rating").eq("id", user.id).single();
+    if (profile?.avatar_url) setDriverAvatar(profile.avatar_url);
+    setDriverRating(Number(profile?.avg_rating) || 0);
 
-      if (driverRecordId) {
-        const { data: activeRides } = await supabase.from("ride_requests").select("id, status")
-          .eq("driver_id", driverRecordId).in("status", ["accepted", "in_progress", "arriving"]).limit(1);
-        setActiveRideId(activeRides?.[0]?.id || null);
+    // Resolve driver record id (drivers.id ≠ auth.uid)
+    const { data: driverData } = await supabase.from("drivers").select("id, rating, driver_type").eq("user_id", user.id).maybeSingle();
+    if (driverData?.driver_type) setDriverType(driverData.driver_type);
+    const recordId = driverData?.id ?? null;
+    setDriverRecordId(recordId);
 
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        const { data: completedRides } = await supabase.from("ride_requests").select("id, price")
-          .eq("driver_id", driverRecordId).eq("status", "completed").gte("created_at", todayStart.toISOString());
+    if (recordId) {
+      const { data: activeRides } = await supabase.from("ride_requests").select("id, status")
+        .eq("driver_id", recordId).in("status", ["accepted", "in_progress", "arriving"]).limit(1);
+      setActiveRideId(activeRides?.[0]?.id || null);
 
-        const trips = completedRides?.length || 0;
-        const grossEarnings = completedRides?.reduce((sum, r) => sum + (Number(r.price) || 0), 0) || 0;
-        setTodayStats({ trips, earnings: driverNetEarnings(grossEarnings), rating: Number(driverData?.rating) || 0 });
-      } else {
-        setTodayStats({ trips: 0, earnings: 0, rating: Number(driverData?.rating) || 0 });
-      }
-    };
-    fetchStats();
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const { data: completedRides } = await supabase.from("ride_requests").select("id, price")
+        .eq("driver_id", recordId).eq("status", "completed").gte("created_at", todayStart.toISOString());
+
+      const trips = completedRides?.length || 0;
+      const grossEarnings = completedRides?.reduce((sum, r) => sum + (Number(r.price) || 0), 0) || 0;
+      setTodayStats({ trips, earnings: driverNetEarnings(grossEarnings), rating: Number(driverData?.rating) || 0 });
+    } else {
+      setTodayStats({ trips: 0, earnings: 0, rating: Number(driverData?.rating) || 0 });
+    }
   }, []);
+
+  useEffect(() => { fetchStats(); }, [fetchStats]);
+
+  // Live stats: refresh whenever one of this driver's rides changes
+  useEffect(() => {
+    if (!driverRecordId) return;
+    const channel = supabase
+      .channel(`driver-stats-${driverRecordId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "ride_requests", filter: `driver_id=eq.${driverRecordId}` },
+        () => { fetchStats(); }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [driverRecordId, fetchStats]);
+
 
   // GPS
   useEffect(() => {
