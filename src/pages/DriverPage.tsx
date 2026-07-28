@@ -33,14 +33,18 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
   return 6371 * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
 
-function detectCity(loc: { lat: number; lng: number }): string {
-  if (loc.lat > 35.6 && loc.lat < 35.85 && loc.lng > -5.95 && loc.lng < -5.7) return "طنجة";
-  if (loc.lat > 35.5 && loc.lat < 35.65 && loc.lng > -5.45 && loc.lng < -5.2) return "تطوان";
-  if (loc.lat > 33.95 && loc.lat < 34.1 && loc.lng > -6.9 && loc.lng < -6.7) return "الرباط";
-  if (loc.lat > 33.5 && loc.lat < 33.7 && loc.lng > -7.7 && loc.lng < -7.4) return "الدار البيضاء";
-  if (loc.lat > 31.55 && loc.lat < 31.7 && loc.lng > -8.1 && loc.lng < -7.9) return "مراكش";
-  if (loc.lat > 33.95 && loc.lat < 34.15 && loc.lng > -5.05 && loc.lng < -4.9) return "فاس";
-  return "منطقتك";
+type CityKey =
+  | "cityTangier" | "cityTetouan" | "cityRabat"
+  | "cityCasablanca" | "cityMarrakech" | "cityFes" | "cityYourArea";
+
+function detectCityKey(loc: { lat: number; lng: number }): CityKey {
+  if (loc.lat > 35.6 && loc.lat < 35.85 && loc.lng > -5.95 && loc.lng < -5.7) return "cityTangier";
+  if (loc.lat > 35.5 && loc.lat < 35.65 && loc.lng > -5.45 && loc.lng < -5.2) return "cityTetouan";
+  if (loc.lat > 33.95 && loc.lat < 34.1 && loc.lng > -6.9 && loc.lng < -6.7) return "cityRabat";
+  if (loc.lat > 33.5 && loc.lat < 33.7 && loc.lng > -7.7 && loc.lng < -7.4) return "cityCasablanca";
+  if (loc.lat > 31.55 && loc.lat < 31.7 && loc.lng > -8.1 && loc.lng < -7.9) return "cityMarrakech";
+  if (loc.lat > 33.95 && loc.lat < 34.15 && loc.lng > -5.05 && loc.lng < -4.9) return "cityFes";
+  return "cityYourArea";
 }
 
 interface RideRow {
@@ -82,39 +86,56 @@ const DriverPage = () => {
   const { mapTheme, mapExpanded } = useDriverMapControls();
   const heatPoints = useDemandHeatmap();
 
-  // Fetch stats & check active ride
-  useEffect(() => {
-    const fetchStats = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: profile } = await supabase.from("profiles").select("name, avatar_url, avg_rating").eq("id", user.id).single();
-      if (profile?.avatar_url) setDriverAvatar(profile.avatar_url);
-      setDriverRating(Number(profile?.avg_rating) || 0);
+  // Fetch stats & check active ride (re-runnable + realtime)
+  const [driverRecordId, setDriverRecordId] = useState<string | null>(null);
 
-      // Resolve driver record id (drivers.id ≠ auth.uid)
-      const { data: driverData } = await supabase.from("drivers").select("id, rating, driver_type").eq("user_id", user.id).maybeSingle();
-      if (driverData?.driver_type) setDriverType(driverData.driver_type);
-      const driverRecordId = driverData?.id;
+  const fetchStats = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data: profile } = await supabase.from("profiles").select("name, avatar_url, avg_rating").eq("id", user.id).single();
+    if (profile?.avatar_url) setDriverAvatar(profile.avatar_url);
+    setDriverRating(Number(profile?.avg_rating) || 0);
 
-      if (driverRecordId) {
-        const { data: activeRides } = await supabase.from("ride_requests").select("id, status")
-          .eq("driver_id", driverRecordId).in("status", ["accepted", "in_progress", "arriving"]).limit(1);
-        setActiveRideId(activeRides?.[0]?.id || null);
+    // Resolve driver record id (drivers.id ≠ auth.uid)
+    const { data: driverData } = await supabase.from("drivers").select("id, rating, driver_type").eq("user_id", user.id).maybeSingle();
+    if (driverData?.driver_type) setDriverType(driverData.driver_type);
+    const recordId = driverData?.id ?? null;
+    setDriverRecordId(recordId);
 
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        const { data: completedRides } = await supabase.from("ride_requests").select("id, price")
-          .eq("driver_id", driverRecordId).eq("status", "completed").gte("created_at", todayStart.toISOString());
+    if (recordId) {
+      const { data: activeRides } = await supabase.from("ride_requests").select("id, status")
+        .eq("driver_id", recordId).in("status", ["accepted", "in_progress", "arriving"]).limit(1);
+      setActiveRideId(activeRides?.[0]?.id || null);
 
-        const trips = completedRides?.length || 0;
-        const grossEarnings = completedRides?.reduce((sum, r) => sum + (Number(r.price) || 0), 0) || 0;
-        setTodayStats({ trips, earnings: driverNetEarnings(grossEarnings), rating: Number(driverData?.rating) || 0 });
-      } else {
-        setTodayStats({ trips: 0, earnings: 0, rating: Number(driverData?.rating) || 0 });
-      }
-    };
-    fetchStats();
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const { data: completedRides } = await supabase.from("ride_requests").select("id, price")
+        .eq("driver_id", recordId).eq("status", "completed").gte("created_at", todayStart.toISOString());
+
+      const trips = completedRides?.length || 0;
+      const grossEarnings = completedRides?.reduce((sum, r) => sum + (Number(r.price) || 0), 0) || 0;
+      setTodayStats({ trips, earnings: driverNetEarnings(grossEarnings), rating: Number(driverData?.rating) || 0 });
+    } else {
+      setTodayStats({ trips: 0, earnings: 0, rating: Number(driverData?.rating) || 0 });
+    }
   }, []);
+
+  useEffect(() => { fetchStats(); }, [fetchStats]);
+
+  // Live stats: refresh whenever one of this driver's rides changes
+  useEffect(() => {
+    if (!driverRecordId) return;
+    const channel = supabase
+      .channel(`driver-stats-${driverRecordId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "ride_requests", filter: `driver_id=eq.${driverRecordId}` },
+        () => { fetchStats(); }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [driverRecordId, fetchStats]);
+
 
   // GPS
   useEffect(() => {
@@ -230,7 +251,7 @@ const DriverPage = () => {
     
     // Get driver record ID (drivers.id != auth user id)
     const { data: driverRecord } = await supabase.from("drivers").select("id").eq("user_id", user.id).single();
-    if (!driverRecord) { toast({ title: "لم يتم العثور على حساب السائق", variant: "destructive" }); return; }
+    if (!driverRecord) { toast({ title: t.driver.driverAccountNotFound, variant: "destructive" }); return; }
     
     setAccepting(orderId);
     try {
@@ -250,7 +271,7 @@ const DriverPage = () => {
     } finally { setAccepting(null); }
   };
 
-  const cityName = driverLocation ? detectCity(driverLocation) : "جارٍ التحديد...";
+  const cityName = driverLocation ? t.driver[detectCityKey(driverLocation)] : t.driver.locatingCity;
 
   // Trip progress: 0 = waiting, 0.5 = en route, 1 = arrived
   const tripProgress = useMemo(() => {

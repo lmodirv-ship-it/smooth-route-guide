@@ -247,6 +247,21 @@ export interface TranslationSet {
     faq2q: string; faq2a: string;
     faq3q: string; faq3a: string;
     faq4q: string; faq4a: string;
+    // Price breakdown & coupons
+    priceBreakdown: string;
+    baseFareLabel: string;
+    perKmLabel: string;
+    subtotalLabel: string;
+    discountLabel: string;
+    totalLabel: string;
+    couponTitle: string;
+    couponPlaceholder: string;
+    couponApply: string;
+    couponApplied: string;
+    couponInvalid: string;
+    couponMinAmount: string;
+    walletBalanceLabel: string;
+    insufficientBalance: string;
   };
   // Driver pages
   driver: {
@@ -358,6 +373,16 @@ export interface TranslationSet {
     faq3q: string; faq3a: string;
     faq4q: string; faq4a: string;
     faq5q: string; faq5a: string;
+    // City detection
+    cityTangier: string;
+    cityTetouan: string;
+    cityRabat: string;
+    cityCasablanca: string;
+    cityMarrakech: string;
+    cityFes: string;
+    cityYourArea: string;
+    locatingCity: string;
+    driverAccountNotFound: string;
   };
   // Delivery pages
   delivery: {
