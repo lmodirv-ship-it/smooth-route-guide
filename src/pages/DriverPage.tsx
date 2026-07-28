@@ -271,7 +271,7 @@ const DriverPage = () => {
     } finally { setAccepting(null); }
   };
 
-  const cityName = driverLocation ? detectCity(driverLocation) : "جارٍ التحديد...";
+  const cityName = driverLocation ? t.driver[detectCityKey(driverLocation)] : t.driver.locatingCity;
 
   // Trip progress: 0 = waiting, 0.5 = en route, 1 = arrived
   const tripProgress = useMemo(() => {
