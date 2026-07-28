@@ -14,6 +14,7 @@ import { tangierLocations, locationCategories, TangierLocation } from "@/data/ta
 import { usePricingSettings } from "@/hooks/usePricingSettings";
 import SubscriptionIndicator from "@/components/SubscriptionIndicator";
 import { useUserReference } from "@/hooks/useUserReference";
+import { useI18n } from "@/i18n/context";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 
