@@ -217,7 +217,7 @@ const LandingPage = () => {
     <div className="min-h-screen gradient-dark" dir={dir}>
       <PageMeta title={c.meta.title} description={c.meta.description} keywords={c.meta.keywords} />
 
-      <section className="hn-reference-hero relative h-[100svh] overflow-hidden">
+      <section className="hn-reference-hero relative min-h-[100svh] overflow-hidden pb-8">
         <div className="hn-reference-bg" style={{ backgroundImage: `url(${heroBg})` }} aria-hidden />
         <div className="hn-reference-overlay" aria-hidden />
 
