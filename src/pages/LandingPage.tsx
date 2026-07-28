@@ -31,6 +31,14 @@ type LandingContent = {
   trust: { safeTitle: string; safeSub: string; supportSub: string };
   hero: { title1: string; title2: string; subtitle: string };
   cards: { driver: [string, string]; client: [string, string]; delivery: [string, string]; store: [string, string] };
+  paths: {
+    clientTitle: string;
+    clientDesc: string;
+    clientCta: string;
+    partnerTitle: string;
+    partnerDesc: string;
+    partnerCta: string;
+  };
   registerNow: string;
   downloadApk: string;
   adminApksLabel: string;
@@ -38,6 +46,7 @@ type LandingContent = {
   stats: { active: string; drivers: string; delivery: string; stores: string };
   download: { title: string; sub: string };
 };
+
 
 const content: Record<string, LandingContent> = {
   ar: {
