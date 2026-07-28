@@ -373,6 +373,16 @@ export interface TranslationSet {
     faq3q: string; faq3a: string;
     faq4q: string; faq4a: string;
     faq5q: string; faq5a: string;
+    // City detection
+    cityTangier: string;
+    cityTetouan: string;
+    cityRabat: string;
+    cityCasablanca: string;
+    cityMarrakech: string;
+    cityFes: string;
+    cityYourArea: string;
+    locatingCity: string;
+    driverAccountNotFound: string;
   };
   // Delivery pages
   delivery: {
