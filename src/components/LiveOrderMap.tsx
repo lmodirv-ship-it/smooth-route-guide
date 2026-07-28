@@ -66,7 +66,7 @@ const LiveOrderMap = ({
     };
 
     fetchRoute();
-    const interval = setInterval(fetchRoute, 15000);
+    const interval = setInterval(fetchRoute, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [smoothedDriver?.lat, smoothedDriver?.lng, targetPosition?.lat, targetPosition?.lng]);
 

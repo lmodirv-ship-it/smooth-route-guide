@@ -39,8 +39,8 @@ export function useNearbyDrivers() {
   useEffect(() => {
     fetchDrivers();
 
-    // Refresh every 15 seconds
-    const interval = setInterval(fetchDrivers, 15000);
+    // Refresh every 5 minutes (realtime handles live updates)
+    const interval = setInterval(fetchDrivers, 5 * 60 * 1000);
 
     // Realtime updates
     const channel = supabase
