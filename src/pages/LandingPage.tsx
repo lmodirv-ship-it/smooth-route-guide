@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Bike,
@@ -19,10 +20,7 @@ import { useI18n } from "@/i18n/context";
 import heroBg from "@/assets/landing-hero-bg.jpg";
 import phoneMockup from "@/assets/hn-driver-logo-v2.jpeg";
 import hnLogo from "@/assets/hn-driver-logo.png";
-import cardCar from "@/assets/card-car.png";
-import cardCustomer from "@/assets/card-customer.png";
-import cardDelivery from "@/assets/card-delivery.png";
-import cardStore from "@/assets/card-store.png";
+
 
 type LandingContent = {
   meta: { title: string; description: string; keywords: string };
@@ -31,6 +29,14 @@ type LandingContent = {
   trust: { safeTitle: string; safeSub: string; supportSub: string };
   hero: { title1: string; title2: string; subtitle: string };
   cards: { driver: [string, string]; client: [string, string]; delivery: [string, string]; store: [string, string] };
+  paths: {
+    clientTitle: string;
+    clientDesc: string;
+    clientCta: string;
+    partnerTitle: string;
+    partnerDesc: string;
+    partnerCta: string;
+  };
   registerNow: string;
   downloadApk: string;
   adminApksLabel: string;
@@ -38,6 +44,7 @@ type LandingContent = {
   stats: { active: string; drivers: string; delivery: string; stores: string };
   download: { title: string; sub: string };
 };
+
 
 const content: Record<string, LandingContent> = {
   ar: {
@@ -56,6 +63,15 @@ const content: Record<string, LandingContent> = {
       delivery: ["تسجيل عامل توصيل", "ابدأ التوصيل وحقق دخلاً إضافياً بوقت يناسبك"],
       store: ["تسجيل مطعم أو متجر", "وسّع عملك واستقبل الطلبات من آلاف العملاء"],
     },
+    paths: {
+      clientTitle: "اطلب خدمة / احجز رحلة الآن",
+      clientDesc: "رحلات وتوصيل خلال دقائق، مع تتبّع مباشر ودفع آمن.",
+      clientCta: "اطلب الآن",
+      partnerTitle: "انضم كسائق أو شريك تجاري",
+      partnerDesc: "سائقون وعمال توصيل ومتاجر: ابدأ الربح مع HN Driver.",
+      partnerCta: "أصبح شريكًا",
+    },
+
     registerNow: "سجّل الآن",
     downloadApk: "تحميل APK",
     adminApksLabel: "تطبيقات إدارية:",
@@ -79,6 +95,15 @@ const content: Record<string, LandingContent> = {
       delivery: ["Inscription livreur", "Démarrez la livraison et gagnez un revenu supplémentaire"],
       store: ["Inscription restaurant/magasin", "Développez votre business et recevez des milliers de commandes"],
     },
+    paths: {
+      clientTitle: "Commander un service / Réserver un trajet",
+      clientDesc: "Trajets et livraisons en quelques minutes, suivi en direct et paiement sécurisé.",
+      clientCta: "Commander maintenant",
+      partnerTitle: "Rejoindre comme chauffeur ou partenaire",
+      partnerDesc: "Chauffeurs, livreurs et commerçants : gagnez avec HN Driver.",
+      partnerCta: "Devenir partenaire",
+    },
+
     registerNow: "S'inscrire",
     downloadApk: "Télécharger APK",
     adminApksLabel: "Applications administratives :",
@@ -102,6 +127,15 @@ const content: Record<string, LandingContent> = {
       delivery: ["Delivery sign up", "Start delivering and earn extra income on your schedule"],
       store: ["Restaurant/store sign up", "Grow your business and receive thousands of orders"],
     },
+    paths: {
+      clientTitle: "Order a service / Book a ride now",
+      clientDesc: "Rides and deliveries in minutes, with live tracking and secure payment.",
+      clientCta: "Order now",
+      partnerTitle: "Join as a driver or business partner",
+      partnerDesc: "Drivers, couriers and stores: start earning with HN Driver.",
+      partnerCta: "Become a partner",
+    },
+
     registerNow: "Sign up now",
     downloadApk: "Download APK",
     adminApksLabel: "Admin apps:",
@@ -125,6 +159,15 @@ const content: Record<string, LandingContent> = {
       delivery: ["Registro de repartidor", "Empieza a repartir y gana ingresos extra a tu ritmo"],
       store: ["Registro de restaurante/tienda", "Haz crecer tu negocio y recibe miles de pedidos"],
     },
+    paths: {
+      clientTitle: "Pedir un servicio / Reservar un viaje",
+      clientDesc: "Viajes y entregas al instante, con seguimiento en vivo y pago seguro.",
+      clientCta: "Pedir ahora",
+      partnerTitle: "Únete como conductor o socio comercial",
+      partnerDesc: "Conductores, repartidores y comercios: gana con HN Driver.",
+      partnerCta: "Convertirme en socio",
+    },
+
     registerNow: "Regístrate",
     downloadApk: "Descargar APK",
     adminApksLabel: "Aplicaciones administrativas:",
@@ -138,13 +181,16 @@ const LandingPage = () => {
   const { locale, setLocale, locales, dir } = useI18n();
   const currentLocale = locales.find((item) => item.code === locale) ?? locales[0];
   const c = content[locale] ?? content.ar;
+  const [showPartners, setShowPartners] = useState(false);
 
-  const cards = [
-    { to: "/auth/driver", title: c.cards.driver[0], text: c.cards.driver[1], image: cardCar, variant: "blue", apk: "/downloads/apps/hn-driver.apk" },
-    { to: "/auth/client", title: c.cards.client[0], text: c.cards.client[1], image: cardCustomer, variant: "green", apk: "/downloads/apps/hn-client.apk" },
-    { to: "/auth/delivery", title: c.cards.delivery[0], text: c.cards.delivery[1], image: cardDelivery, variant: "purple", apk: "/downloads/apps/hn-delivery.apk" },
-    { to: "/auth/store_owner", title: c.cards.store[0], text: c.cards.store[1], image: cardStore, variant: "gold", apk: "/downloads/apps/hn-store.apk" },
+
+
+  const partnerRoles = [
+    { to: "/auth/driver", label: c.cards.driver[0], Icon: Car, apk: "/downloads/apps/hn-driver.apk" },
+    { to: "/auth/delivery", label: c.cards.delivery[0], Icon: Bike, apk: "/downloads/apps/hn-delivery.apk" },
+    { to: "/auth/store_owner", label: c.cards.store[0], Icon: Store, apk: "/downloads/apps/hn-store.apk" },
   ];
+
 
   const adminApks = [
     { href: "/downloads/apps/hn-general.apk", label: c.adminApks.general },
@@ -171,7 +217,7 @@ const LandingPage = () => {
     <div className="min-h-screen gradient-dark" dir={dir}>
       <PageMeta title={c.meta.title} description={c.meta.description} keywords={c.meta.keywords} />
 
-      <section className="hn-reference-hero relative h-[100svh] overflow-hidden">
+      <section className="hn-reference-hero relative min-h-[100svh] overflow-hidden pb-8">
         <div className="hn-reference-bg" style={{ backgroundImage: `url(${heroBg})` }} aria-hidden />
         <div className="hn-reference-overlay" aria-hidden />
 
@@ -247,24 +293,56 @@ const LandingPage = () => {
             <p>{c.hero.subtitle}</p>
           </div>
 
-          <div className="hn-register-grid">
-            {cards.map(({ to, title, text, image, variant, apk }) => (
-              <div key={to} className="flex flex-col">
-                <Link to={to} className={`hn-register-card hn-card-${variant}`}>
-                  <img src={image} alt={title} className="hn-card-image" loading="lazy" width={512} height={512} />
-                  <h2>{title}</h2>
-                  <p>{text}</p>
-                  <span>
-                    <ChevronLeft className="h-3 w-3" />
-                    {c.registerNow}
-                  </span>
-                </Link>
-                <a href={apk} download className="hn-apk-btn" aria-label={`${c.downloadApk} — ${title}`}>
-                  ⬇ {c.downloadApk}
+          <div className="hn-paths">
+            <div className="hn-path hn-path-primary">
+              <h2>{c.paths.clientTitle}</h2>
+              <p>{c.paths.clientDesc}</p>
+              <Link to="/auth/client" className="hn-path-cta">
+                <ChevronLeft className="h-4 w-4" />
+                {c.paths.clientCta}
+              </Link>
+              <div className="hn-path-apks">
+                <a href="/downloads/apps/hn-client.apk" download className="hn-apk-btn">
+                  ⬇ {c.downloadApk} — {c.cards.client[0]}
                 </a>
               </div>
-            ))}
+            </div>
+
+            <div className="hn-path">
+              <h2>{c.paths.partnerTitle}</h2>
+              <p>{c.paths.partnerDesc}</p>
+              <button
+                type="button"
+                className="hn-path-cta-secondary"
+                onClick={() => setShowPartners((value) => !value)}
+                aria-expanded={showPartners}
+              >
+                {c.paths.partnerCta}
+                <ChevronDown className={`h-4 w-4 transition-transform ${showPartners ? "rotate-180" : ""}`} />
+              </button>
+
+              {showPartners && (
+                <>
+                  <div className="hn-path-roles">
+                    {partnerRoles.map(({ to, label, Icon }) => (
+                      <Link key={to} to={to} className="hn-path-role">
+                        <Icon />
+                        {label}
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="hn-path-apks">
+                    {partnerRoles.map(({ apk, label }) => (
+                      <a key={apk} href={apk} download className="hn-apk-btn" aria-label={`${c.downloadApk} — ${label}`}>
+                        ⬇ {label}
+                      </a>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
+
 
           <div className="hn-admin-apks" role="group" aria-label={c.adminApksLabel}>
             <strong>{c.adminApksLabel}</strong>
