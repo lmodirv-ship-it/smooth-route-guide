@@ -111,6 +111,15 @@ const content: Record<string, LandingContent> = {
       delivery: ["Delivery sign up", "Start delivering and earn extra income on your schedule"],
       store: ["Restaurant/store sign up", "Grow your business and receive thousands of orders"],
     },
+    paths: {
+      clientTitle: "Order a service / Book a ride now",
+      clientDesc: "Rides and deliveries in minutes, with live tracking and secure payment.",
+      clientCta: "Order now",
+      partnerTitle: "Join as a driver or business partner",
+      partnerDesc: "Drivers, couriers and stores: start earning with HN Driver.",
+      partnerCta: "Become a partner",
+    },
+
     registerNow: "Sign up now",
     downloadApk: "Download APK",
     adminApksLabel: "Admin apps:",
