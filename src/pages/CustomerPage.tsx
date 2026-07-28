@@ -106,11 +106,11 @@ const CustomerPage = () => {
   const handleCreateRequest = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast({ title: "يجب تسجيل الدخول أولاً", variant: "destructive" });
+      toast({ title: t.customer.loginRequired, variant: "destructive" });
       return;
     }
     if (!userLocation || !destCoords) {
-      toast({ title: "حدد نقطة الانطلاق والوجهة", variant: "destructive" });
+      toast({ title: t.customer.selectPickupAndDest, variant: "destructive" });
       return;
     }
 
@@ -133,10 +133,10 @@ const CustomerPage = () => {
       }).select("id").single();
 
       if (error) throw error;
-      toast({ title: "تم إنشاء الطلب ✅", description: `السعر: ${price} درهم` });
+      toast({ title: t.customer.orderCreated, description: `${t.customer.priceLabel}: ${price} ${t.customer.currency}` });
       navigate(`/customer/tracking?id=${data.id}`);
     } catch (err: any) {
-      toast({ title: "خطأ", description: err.message, variant: "destructive" });
+      toast({ title: t.common.error, description: err.message, variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -151,7 +151,7 @@ const CustomerPage = () => {
       exit={{ opacity: 0, y: "100%" }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
       className="fixed inset-0 z-[9999] gradient-dark flex flex-col"
-      dir="rtl"
+      dir={dir}
     >
       {/* Header */}
       <div className="px-5 py-4 flex items-center justify-between">
@@ -161,7 +161,7 @@ const CustomerPage = () => {
           </div>
           <div>
             <h2 className="font-bold text-foreground text-lg">
-              {type === "pickup" ? "نقطة الانطلاق" : "اختر الوجهة"}
+              {type === "pickup" ? t.customer.pickupPoint : t.customer.chooseDestination}
             </h2>
             <p className="text-xs text-muted-foreground">طنجة، المغرب</p>
           </div>
@@ -178,7 +178,7 @@ const CustomerPage = () => {
           <Input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="ابحث عن حي، شارع أو مكان..."
+            placeholder={t.customer.chooseFromListOrMap}
             className="pr-10 h-12 glass border-border rounded-2xl text-sm focus:border-primary/50 focus:ring-primary/20"
             autoFocus
           />
@@ -225,7 +225,7 @@ const CustomerPage = () => {
               </div>
               {dist !== null && type === "dest" && (
                 <div className="text-left shrink-0 space-y-0.5">
-                  <p className="text-[11px] text-muted-foreground">{dist.toFixed(1)} كم</p>
+                  <p className="text-[11px] text-muted-foreground">{dist.toFixed(1)} {t.customer.km}</p>
                   <p className="text-sm font-bold text-primary">{locPrice} DH</p>
                 </div>
               )}
@@ -235,7 +235,7 @@ const CustomerPage = () => {
         {filteredLocations.length === 0 && (
           <div className="text-center py-12">
             <Search className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-muted-foreground text-sm">لا توجد نتائج</p>
+            <p className="text-muted-foreground text-sm">{t.customer.noResults}</p>
           </div>
         )}
       </div>
@@ -243,7 +243,7 @@ const CustomerPage = () => {
   );
 
   return (
-    <div className="h-[calc(100dvh-2.75rem)] flex flex-col gradient-dark relative overflow-hidden" dir="rtl">
+    <div className="h-[calc(100dvh-2.75rem)] flex flex-col gradient-dark relative overflow-hidden" dir={dir}>
       {/* Header */}
       <div className="shrink-0 z-50 px-4 py-2.5 flex items-center justify-between glass-strong border-b border-border">
         <div className="flex items-center gap-1.5">
@@ -253,13 +253,13 @@ const CustomerPage = () => {
             </span>
           )}
           <span className="text-[11px] text-muted-foreground px-2 py-0.5 rounded-full glass border border-border">
-            {nearbyDrivers.length > 0 ? `${nearbyDrivers.length} سائق متاح` : "جارٍ البحث..."}
+            {nearbyDrivers.length > 0 ? `${nearbyDrivers.length} ${t.customer.driversAvailable}` : t.customer.searching}
           </span>
           <SubscriptionIndicator />
         </div>
         <div className="flex items-center gap-2.5">
           <Sparkles className="w-5 h-5 text-primary" />
-          <span className="font-bold text-lg text-gradient-primary font-display">طلب رحلة</span>
+          <span className="font-bold text-lg text-gradient-primary font-display">{t.customer.requestRide}</span>
         </div>
       </div>
 
@@ -277,9 +277,9 @@ const CustomerPage = () => {
               </div>
             </div>
             <div className="flex-1 text-right min-w-0">
-              <p className="text-[11px] text-muted-foreground uppercase tracking-wider">نقطة الانطلاق</p>
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{t.customer.pickupPoint}</p>
               <p className="text-sm font-medium text-foreground truncate mt-0.5">
-                {selectedPickupName || (pickupLoading ? "جارٍ تحديد الموقع..." : pickupName || "موقعك الحالي")}
+                {selectedPickupName || (pickupLoading ? t.customer.locating : pickupName || t.customer.yourLocation)}
               </p>
             </div>
             <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-primary transition-colors" />
@@ -302,9 +302,9 @@ const CustomerPage = () => {
               <div className="w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary)/0.5)]" />
             </div>
             <div className="flex-1 text-right min-w-0">
-              <p className="text-[11px] text-muted-foreground uppercase tracking-wider">الوجهة</p>
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{t.customer.destinationLabel}</p>
               <p className="text-sm font-medium text-foreground truncate mt-0.5">
-                {selectedDestName || (destCoords ? (destLoading ? "جارٍ تحديد..." : destName || "وجهة محددة") : "إلى أين تريد الذهاب؟")}
+                {selectedDestName || (destCoords ? (destLoading ? t.customer.locating : destName || t.customer.selectedDest) : t.customer.whereToGo)}
               </p>
             </div>
             <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-primary transition-colors" />
@@ -331,12 +331,12 @@ const CustomerPage = () => {
           <>
             <div className="absolute top-3 right-3 z-[1000] glass-strong px-3 py-2 rounded-xl text-xs flex items-center gap-2 border border-border shadow-lg">
               <Crosshair className="w-3.5 h-3.5 text-primary" />
-              <span className="text-foreground">اضغط لتحديد الوجهة</span>
+              <span className="text-foreground">{t.customer.clickToSelectDest}</span>
             </div>
             {userLocation && (
               <div className="absolute bottom-3 right-3 z-[1000] glass-strong px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 border border-border">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_6px_rgba(34,197,94,0.6)]" />
-                <span className="text-foreground">موقعك</span>
+                <span className="text-foreground">{t.customer.yourLocation}</span>
               </div>
             )}
           </>
@@ -369,12 +369,12 @@ const CustomerPage = () => {
                     </div>
                     <div className="flex-1 space-y-3">
                       <div>
-                        <p className="text-[11px] text-muted-foreground">الانطلاق</p>
-                        <p className="text-sm font-medium text-foreground truncate">{selectedPickupName || pickupName || "موقعك الحالي"}</p>
+                        <p className="text-[11px] text-muted-foreground">{t.customer.pickupPoint}</p>
+                        <p className="text-sm font-medium text-foreground truncate">{selectedPickupName || pickupName || t.customer.yourLocation}</p>
                       </div>
                       <div>
-                        <p className="text-[11px] text-muted-foreground">الوجهة</p>
-                        <p className="text-sm font-medium text-foreground truncate">{selectedDestName || destName || "الوجهة"}</p>
+                        <p className="text-[11px] text-muted-foreground">{t.customer.destinationLabel}</p>
+                        <p className="text-sm font-medium text-foreground truncate">{selectedDestName || destName || t.customer.destinationLabel}</p>
                       </div>
                     </div>
                   </div>
@@ -387,21 +387,21 @@ const CustomerPage = () => {
                       <Navigation className="w-3.5 h-3.5 text-info" />
                     </div>
                     <p className="text-lg font-bold text-foreground">{rideDistance.toFixed(1)}</p>
-                    <p className="text-[11px] text-muted-foreground">كم</p>
+                    <p className="text-[11px] text-muted-foreground">{t.customer.km}</p>
                   </div>
                   <div className="p-4 text-center border-l border-border">
                     <div className="flex items-center justify-center gap-1 mb-1">
                       <Clock className="w-3.5 h-3.5 text-warning" />
                     </div>
                     <p className="text-lg font-bold text-foreground">{Math.max(2, Math.round(rideDistance * 2.5))}</p>
-                    <p className="text-[11px] text-muted-foreground">دقيقة</p>
+                    <p className="text-[11px] text-muted-foreground">{t.customer.minutes}</p>
                   </div>
                   <div className="p-4 text-center">
                     <div className="flex items-center justify-center gap-1 mb-1">
                       <DollarSign className="w-3.5 h-3.5 text-primary" />
                     </div>
                     <p className="text-lg font-bold text-primary">{price}</p>
-                    <p className="text-[11px] text-muted-foreground">درهم</p>
+                    <p className="text-[11px] text-muted-foreground">{t.customer.currency}</p>
                   </div>
                 </div>
 
@@ -433,7 +433,7 @@ const CustomerPage = () => {
                   ) : (
                     <span className="flex items-center gap-2">
                       <Car className="w-5 h-5" />
-                      تأكيد — {price} DH
+                      {t.customer.confirmRide} — {price} {t.customer.currency}
                     </span>
                   )}
                 </Button>
