@@ -119,6 +119,41 @@ function getClientIdentifier(req: Request) {
   return `ip:${ip}`;
 }
 
+/**
+ * Requires a valid JWT and one of the given roles (default: admin/agent staff roles).
+ * Returns the authenticated user id.
+ */
+export async function requireRole(req: Request, roles: string[] = ["admin", "agent"]) {
+  const authHeader = req.headers.get("authorization") ?? req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    throw new HttpError(401, "unauthorized");
+  }
+
+  const admin = getAdminClient();
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+
+  const { data: userData, error: userError } = await admin.auth.getUser(token);
+  const userId = userData?.user?.id;
+  if (userError || !userId) {
+    throw new HttpError(401, "unauthorized");
+  }
+
+  const { data: userRoles, error: rolesError } = await admin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId);
+
+  if (rolesError) {
+    throw new HttpError(500, "role_lookup_failed");
+  }
+
+  if (!(userRoles || []).some((r: any) => roles.includes(r.role))) {
+    throw new HttpError(403, "forbidden");
+  }
+
+  return userId;
+}
+
 export async function enforceRateLimit(req: Request, routeName: string, maxRequests: number, windowSeconds: number) {
   const supabase = getAdminClient();
   const identifier = getClientIdentifier(req);

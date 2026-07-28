@@ -43,11 +43,12 @@ serve(async (req) => {
     const body = await req.json();
     const { action } = body;
 
-    // Allow test-connection with auth
+    let userId: string | null = null;
     if (authHeader) {
       const token = authHeader.replace("Bearer ", "");
-      const { error: authError } = await supabase.auth.getUser(token);
-      if (authError) throw new Error("Unauthorized");
+      const { data: authData, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !authData?.user) throw new Error("Unauthorized");
+      userId = authData.user.id;
     } else if (action !== "test-connection") {
       throw new Error("No auth");
     }
@@ -106,7 +107,7 @@ serve(async (req) => {
         await supabase.from("payment_transactions").update({
           paypal_order_id: order.id,
           metadata: { paypal_order_id: order.id, description },
-        }).eq("id", transactionId);
+        }).eq("id", transactionId).eq("user_id", userId);
       }
 
       return new Response(JSON.stringify({
@@ -119,8 +120,23 @@ serve(async (req) => {
 
     if (action === "capture-order") {
       const { orderId, transactionId } = body;
+      if (!userId) throw new Error("Unauthorized");
+      if (!orderId || typeof orderId !== "string") throw new Error("Invalid orderId");
+      if (!transactionId || typeof transactionId !== "string") throw new Error("Invalid transactionId");
 
-      const captureRes = await fetch(`${baseUrl}/v2/checkout/orders/${orderId}/capture`, {
+      // Ownership + order binding check (prevents capture IDOR)
+      const { data: pending } = await supabase
+        .from("payment_transactions")
+        .select("id, user_id, amount, reference_type, status, paypal_order_id")
+        .eq("id", transactionId)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (!pending) throw new Error("Transaction not found");
+      if (pending.paypal_order_id !== orderId) throw new Error("Order does not match transaction");
+      if (pending.status === "completed") throw new Error("Transaction already completed");
+
+      const captureRes = await fetch(`${baseUrl}/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${accessToken}`,
@@ -131,37 +147,30 @@ serve(async (req) => {
       const capture = await captureRes.json();
       const status = capture.status === "COMPLETED" ? "completed" : "failed";
 
-      if (transactionId) {
-        await supabase.from("payment_transactions").update({
-          status,
-          paypal_order_id: orderId,
-          paypal_payer_id: capture.payer?.payer_id || null,
-          completed_at: status === "completed" ? new Date().toISOString() : null,
-          metadata: { paypal_capture: capture },
-        }).eq("id", transactionId);
+      await supabase.from("payment_transactions").update({
+        status,
+        paypal_order_id: orderId,
+        paypal_payer_id: capture.payer?.payer_id || null,
+        completed_at: status === "completed" ? new Date().toISOString() : null,
+        metadata: { paypal_capture: capture },
+      }).eq("id", transactionId).eq("user_id", userId).eq("paypal_order_id", orderId);
 
-        if (status === "completed") {
-          const { data: txn } = await supabase.from("payment_transactions")
-            .select("amount, reference_type, user_id").eq("id", transactionId).single();
+      if (status === "completed" && pending.reference_type === "wallet_topup") {
+        const { data: wallet } = await supabase.from("wallet")
+          .select("id, balance").eq("user_id", pending.user_id).maybeSingle();
 
-          if (txn?.reference_type === "wallet_topup") {
-            const { data: wallet } = await supabase.from("wallet")
-              .select("id, balance").eq("user_id", txn.user_id).single();
-
-            if (wallet) {
-              const newBalance = Number(wallet.balance) + Number(txn.amount);
-              await supabase.from("wallet").update({ balance: newBalance }).eq("id", wallet.id);
-              await supabase.from("wallet_transactions").insert({
-                wallet_id: wallet.id,
-                user_id: txn.user_id,
-                amount: txn.amount,
-                balance_after: newBalance,
-                transaction_type: "topup",
-                description: "شحن عبر PayPal",
-                payment_transaction_id: transactionId,
-              });
-            }
-          }
+        if (wallet) {
+          const newBalance = Number(wallet.balance) + Number(pending.amount);
+          await supabase.from("wallet").update({ balance: newBalance }).eq("id", wallet.id);
+          await supabase.from("wallet_transactions").insert({
+            wallet_id: wallet.id,
+            user_id: pending.user_id,
+            amount: pending.amount,
+            balance_after: newBalance,
+            transaction_type: "topup",
+            description: "شحن عبر PayPal",
+            payment_transaction_id: transactionId,
+          });
         }
       }
 

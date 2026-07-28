@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, enforceRateLimit, handleError, parseJson, sanitizePlainText, z } from "../_shared/security.ts";
+import { corsHeaders, enforceRateLimit, handleError, parseJson, requireRole, sanitizePlainText, z } from "../_shared/security.ts";
 import { callAI } from "../_shared/aiProvider.ts";
 
 const requestSchema = z.object({
@@ -12,6 +12,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    await requireRole(req, ["admin", "agent", "moderator"]);
     await enforceRateLimit(req, "generate-menu", 10, 60);
     const { restaurantName, restaurantCategory, restaurantAddress } = await parseJson(req, requestSchema);
     
