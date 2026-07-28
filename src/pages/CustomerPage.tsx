@@ -405,13 +405,28 @@ const CustomerPage = () => {
                   </div>
                 </div>
 
-                {/* Pricing formula */}
-                <div className="px-5 py-3 bg-primary/5 border-t border-primary/10">
-                  <p className="text-xs text-muted-foreground text-center">
-                    💡 {rideDistance.toFixed(1)} كم × 3 = <span className="font-bold text-primary">{price} DH</span>
-                    {price === 3 && " (الحد الأدنى)"}
-                  </p>
+                {/* Price breakdown */}
+                <div className="px-5 py-3 bg-primary/5 border-t border-primary/10 space-y-1.5">
+                  <p className="text-[11px] font-bold text-foreground">{t.customer.priceBreakdown}</p>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{t.customer.baseFareLabel}</span>
+                    <span className="text-foreground">{pricing.baseFare} {t.customer.currency}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{t.customer.perKmLabel}</span>
+                    <span className="text-foreground">
+                      {rideDistance.toFixed(1)} {t.customer.km} × {pricing.perKmRate} = {Math.round(rideDistance * pricing.perKmRate)} {t.customer.currency}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs pt-1.5 border-t border-primary/10">
+                    <span className="font-bold text-foreground">{t.customer.totalLabel}</span>
+                    <span className="font-bold text-primary">{price} {t.customer.currency}</span>
+                  </div>
+                  {price === pricing.minFare && (
+                    <p className="text-[11px] text-muted-foreground text-center">{t.customer.minimumFare}</p>
+                  )}
                 </div>
+
               </div>
 
               {/* Action buttons */}
