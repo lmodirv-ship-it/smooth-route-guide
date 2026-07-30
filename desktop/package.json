@@ -1,0 +1,42 @@
+{
+  "name": "hn-driver-desktop",
+  "version": "1.0.0",
+  "description": "HN Driver — نسخة الحاسوب (تعمل مباشرة على الموقع الحيّ + إدارة ملفات محلية)",
+  "main": "main.cjs",
+  "author": "el hassani moulay ismail — groupe hn",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "start:admin": "cross-env HN_ROLE=admin electron .",
+    "start:callcenter": "cross-env HN_ROLE=callcenter electron .",
+    "build:win": "electron-builder --win --publish never",
+    "build:mac": "electron-builder --mac --publish never",
+    "build:linux": "electron-builder --linux --publish never"
+  },
+  "build": {
+    "appId": "company.hndriver.desktop",
+    "productName": "HN Driver",
+    "directories": { "output": "release", "buildResources": "build" },
+    "files": ["main.cjs", "preload.cjs", "config.json", "offline.html", "package.json", "build/**"],
+    "win": { "target": ["nsis"], "icon": "build/icon.ico" },
+    "mac": { "target": ["dmg", "zip"], "icon": "build/icon.icns" },
+    "linux": { "target": ["AppImage"], "icon": "build/icon.png", "category": "Utility" },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "HN Driver"
+    },
+    "publish": { "provider": "generic", "url": "https://www.hn-driver.com/downloads/desktop/admin/" }
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9",
+    "electron-log": "^5.2.0"
+  },
+  "devDependencies": {
+    "electron": "^31.7.0",
+    "electron-builder": "^24.13.3",
+    "cross-env": "^7.0.3"
+  }
+}
