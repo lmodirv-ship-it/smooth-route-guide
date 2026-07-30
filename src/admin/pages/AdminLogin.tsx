@@ -23,6 +23,9 @@ const AdminLogin = () => {
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [code, setCode] = useState("");
+  const [verifying, setVerifying] = useState(false);
+
   const { ready, session } = useAuthReady();
 
   useEffect(() => {
