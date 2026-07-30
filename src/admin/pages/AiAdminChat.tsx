@@ -37,27 +37,70 @@ export default function AiAdminChat() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const { prefs, update, reset } = useChatPrefs();
-  const skinId = prefs.skinId;
-  const setSkinId = (id: string) => update({ skinId: id });
+  const { prefs, commit, synced } = useChatPrefs();
+  /** مسودّة للمعاينة الفورية قبل الحفظ */
+  const [draft, setDraft] = useState<ChatPrefs>(prefs);
+  const [dirty, setDirty] = useState(false);
+  useEffect(() => { if (!dirty) setDraft(prefs); }, [prefs, synced]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const patchDraft = (patch: Partial<ChatPrefs>) => { setDirty(true); setDraft((d) => ({ ...d, ...patch })); };
+  const patchBubble = (role: "user" | "assistant", patch: Partial<BubbleCustom>) => {
+    setDirty(true);
+    setDraft((d) => ({ ...d, custom: { ...d.custom, [role]: { ...(d.custom[role] ?? {}), ...patch } } }));
+  };
+  const patchCustom = (patch: Partial<ChatCustom>) => {
+    setDirty(true);
+    setDraft((d) => ({ ...d, custom: { ...d.custom, ...patch } }));
+  };
+  const saveTheme = () => { commit(draft); setDirty(false); toast({ title: "تم حفظ الثيم" }); };
+  const cancelTheme = () => { setDraft(prefs); setDirty(false); };
+  const resetColors = () => { setDirty(true); setDraft((d) => ({ ...d, custom: {} })); };
+
+  const [presetName, setPresetName] = useState("");
+  const savePreset = () => {
+    const name = presetName.trim();
+    if (!name) return;
+    const preset: ChatPreset = {
+      id: crypto.randomUUID(),
+      name,
+      skinId: draft.skinId,
+      colorMode: draft.colorMode,
+      custom: draft.custom,
+    };
+    const next = { ...draft, presets: [...(draft.presets ?? []), preset], activePresetId: preset.id };
+    setDraft(next); setDirty(false); commit(next);
+    setPresetName("");
+    toast({ title: `تم حفظ الثيم «${name}»` });
+  };
+  const applyPreset = (id: string) => {
+    const p = (draft.presets ?? []).find((x) => x.id === id);
+    if (!p) return;
+    const next: ChatPrefs = { ...draft, skinId: p.skinId, colorMode: p.colorMode, custom: p.custom, activePresetId: p.id };
+    setDraft(next); setDirty(false); commit(next);
+  };
+  const deletePreset = (id: string) => {
+    const next: ChatPrefs = {
+      ...draft,
+      presets: (draft.presets ?? []).filter((x) => x.id !== id),
+      activePresetId: draft.activePresetId === id ? null : draft.activePresetId,
+    };
+    setDraft(next); setDirty(false); commit(next);
+  };
+
+  const skinId = draft.skinId;
+  const setSkinId = (id: string) => patchDraft({ skinId: id });
   const skin = getSkin(skinId);
-  const c = prefs.custom;
-  const isLight = prefs.colorMode === "light";
+  const c = draft.custom;
+  const isLight = draft.colorMode === "light";
 
   const surfaceStyle: React.CSSProperties = {
     background: c.bg || undefined,
     fontFamily: c.fontFamily || undefined,
     fontSize: c.fontSize ? `${c.fontSize}px` : undefined,
   };
-  const bubbleStyle = (role: "user" | "assistant"): React.CSSProperties => ({
-    background: (role === "user" ? c.userBg : c.assistantBg) || undefined,
-    color: (role === "user" ? c.userText : c.assistantText) || undefined,
-    borderColor: c.border || undefined,
-    borderWidth: c.borderWidth != null ? `${c.borderWidth}px` : undefined,
-    borderStyle: c.borderWidth ? "solid" : undefined,
-    borderRadius: c.radius != null ? `${c.radius}px` : undefined,
-  });
+  const bubbleStyle = (role: "user" | "assistant") => bubbleCss(c, role);
   const scrollRef = useRef<HTMLDivElement>(null);
+
 
   const loadCatalog = async () => {
     const [{ data: m }, { data: a }] = await Promise.all([
