@@ -65,8 +65,9 @@ Deno.serve(async (req) => {
     }
 
     // ── permitted tools ──
-    const { data: perms } = await admin.from("ai_tool_permissions").select("tool_name, is_enabled, kind");
+    const { data: perms } = await admin.from("ai_tool_permissions").select("tool_name, is_enabled, kind, auto_execute");
     const permMap = new Map<string, any>((perms ?? []).map((p: any) => [p.tool_name, p]));
+
     let allowedTools = TOOL_SPECS
       .filter((t) => permMap.get(t.name)?.is_enabled ?? true)
       .map((t) => t.name);
