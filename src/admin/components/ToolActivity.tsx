@@ -8,7 +8,39 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { Check, X, ChevronDown, ChevronUp, Loader2, Database, ShieldAlert, AlertTriangle } from "lucide-react";
+import { Check, X, ChevronDown, ChevronUp, Loader2, Database, ShieldAlert, AlertTriangle, Download } from "lucide-react";
+
+/** تحويل نتيجة أداة إلى CSV (يدعم Excel عبر BOM) وتنزيلها. */
+function downloadCsv(name: string, result: any) {
+  const rows: any[] = Array.isArray(result)
+    ? result
+    : (Object.values(result ?? {}).find((v) => Array.isArray(v) && v.length && typeof v[0] === "object") as any[]) ??
+      [flatten(result)];
+  const headers = Array.from(new Set(rows.flatMap((r) => Object.keys(flatten(r)))));
+  const esc = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const csv = [headers.map(esc).join(","), ...rows.map((r) => {
+    const f = flatten(r);
+    return headers.map((h) => esc(f[h])).join(",");
+  })].join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `${name}-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function flatten(o: any, prefix = ""): Record<string, any> {
+  if (o === null || typeof o !== "object") return { [prefix || "value"]: o };
+  const out: Record<string, any> = {};
+  for (const [k, v] of Object.entries(o)) {
+    const key = prefix ? `${prefix}.${k}` : k;
+    if (v && typeof v === "object" && !Array.isArray(v)) Object.assign(out, flatten(v, key));
+    else out[key] = Array.isArray(v) ? `${v.length} عنصر` : v;
+  }
+  return out;
+}
+
 
 export type ToolEvent =
   | { type: "tool"; name: string; label: string; kind: "read" | "write"; status: "done" | "error"; args: any; result: any }
