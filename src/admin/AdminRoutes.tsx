@@ -184,7 +184,9 @@ export const adminRouteElements = (
       <Route path="ai-local-models" element={L(AiLocalModels)} />
       <Route path="ai-agents" element={L(AiAgents)} />
       <Route path="ai-chat" element={L(AiAdminChat)} />
+      <Route path="ai-tools" element={L(AiToolPermissions)} />
       <Route path="ai-chats" element={L(AiChats)} />
+
       <Route path="ai-billing" element={L(AiBilling)} />
       <Route path="usage-metrics" element={L(UsageMetrics)} />
       <Route path="licenses" element={L(LicensesPage)} />
