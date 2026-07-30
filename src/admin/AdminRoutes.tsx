@@ -74,6 +74,7 @@ const AiModels = lazy(() => import("@/admin/pages/AiModels"));
 const AiLocalModels = lazy(() => import("@/admin/pages/AiLocalModels"));
 const AiAgents = lazy(() => import("@/admin/pages/AiAgents"));
 const AiAdminChat = lazy(() => import("@/admin/pages/AiAdminChat"));
+const AiToolPermissions = lazy(() => import("@/admin/pages/AiToolPermissions"));
 const AiChats = lazy(() => import("@/admin/pages/AiChats"));
 const AiBilling = lazy(() => import("@/admin/pages/AiBilling"));
 const UsageMetrics = lazy(() => import("@/admin/pages/UsageMetrics"));
