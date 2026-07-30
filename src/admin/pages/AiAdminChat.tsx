@@ -1,15 +1,23 @@
 /**
- * AI with Admin — دردشة المسؤول مع النماذج والوكلاء المفعّلين، مع حفظ المحادثات.
+ * AI with Admin — دردشة المسؤول مع النماذج والوكلاء المفعّلين فقط، مع حفظ المحادثات.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Send, Plus } from "lucide-react";
+import { Loader2, Send, Plus, RefreshCw } from "lucide-react";
+import { providerLogo } from "@/admin/data/aiProviders";
+
+const CATEGORY_LABEL: Record<string, string> = {
+  llm: "نماذج نصية", image: "نماذج صور", video: "نماذج فيديو",
+  tts: "تحويل نص إلى صوت", stt: "تفريغ صوتي", embedding: "تضمين",
+};
+
 
 type Msg = { role: "user" | "assistant"; content: string };
 
