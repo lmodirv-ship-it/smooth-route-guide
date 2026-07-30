@@ -112,17 +112,45 @@ export default function AiAdminChat() {
 
 
   const loadCatalog = async () => {
-    const [{ data: m }, { data: a }] = await Promise.all([
+    const [{ data: m }, { data: a }, { data: q }] = await Promise.all([
       db.from("ai_models")
         .select("id, display_name, provider, model_id, category, is_free")
         .eq("is_enabled", true).order("category").order("priority"),
       db.from("ai_agents").select("id, name, role").eq("is_enabled", true).order("priority"),
+      db.from("ai_quick_commands").select("id, label, prompt").eq("is_enabled", true).order("sort_order"),
     ]);
     setModels(m ?? []);
     setAgents(a ?? []);
+    setQuickCommands(q ?? []);
   };
 
-  useEffect(() => { loadCatalog(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  /** شريط المؤشرات الحيّة أعلى الدردشة. */
+  const loadPulse = async () => {
+    const today = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
+    const fiveMin = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const [orders, stuck, complaints, alerts] = await Promise.all([
+      db.from("delivery_orders").select("id", { count: "exact", head: true }).gte("created_at", today),
+      db.from("delivery_orders").select("id", { count: "exact", head: true })
+        .is("driver_id", null).lt("created_at", fiveMin)
+        .in("status", ["pending", "pending_call_center", "ready_for_driver"]),
+      db.from("complaints").select("id", { count: "exact", head: true }).neq("status", "resolved"),
+      db.from("alerts").select("id", { count: "exact", head: true }).neq("status", "resolved"),
+    ]);
+    setPulse({
+      orders: orders.count ?? 0,
+      stuck: stuck.count ?? 0,
+      complaints: complaints.count ?? 0,
+      alerts: alerts.count ?? 0,
+    });
+  };
+
+  useEffect(() => {
+    loadCatalog();
+    loadPulse();
+    const t = setInterval(loadPulse, 5 * 60 * 1000);
+    return () => clearInterval(t);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
 
   const grouped = useMemo(() => {
     const map = new Map<string, Record<string, any>[]>();
