@@ -117,17 +117,36 @@ export default function AiAdminChat() {
 
 
   const loadCatalog = async () => {
-    const [{ data: m }, { data: a }, { data: q }] = await Promise.all([
+    const [{ data: m }, { data: a }, { data: q }, { data: lm }] = await Promise.all([
       db.from("ai_models")
         .select("id, display_name, provider, model_id, category, is_free")
         .eq("is_enabled", true).order("category").order("priority"),
       db.from("ai_agents").select("id, name, role").eq("is_enabled", true).order("priority"),
       db.from("ai_quick_commands").select("id, label, prompt").eq("is_enabled", true).order("sort_order"),
+      db.from("ai_local_models")
+        .select("id, display_name, model_id, engine, endpoint_url, category, status")
+        .eq("is_enabled", true).order("priority"),
     ]);
     setModels(m ?? []);
     setAgents(a ?? []);
     setQuickCommands(q ?? []);
+    setLocalModels(lm ?? []);
+    void checkLocal(lm ?? []);
   };
+
+  /** فحص اتصال النماذج المحلية وتحديث حالتها في قاعدة البيانات. */
+  const checkLocal = async (list: Record<string, any>[]) => {
+    const results = await Promise.all(
+      list.map(async (m) => ({ id: m.id, ...(await pingLocal(m.endpoint_url || "http://localhost:11434")) })),
+    );
+    setLocalStatus(Object.fromEntries(results.map((r) => [r.id, r.ok])));
+    await Promise.all(results.map((r) =>
+      db.from("ai_local_models")
+        .update({ status: r.ok ? "connected" : "disconnected", last_check_at: new Date().toISOString() })
+        .eq("id", r.id),
+    ));
+  };
+
 
   /** شريط المؤشرات الحيّة أعلى الدردشة. */
   const loadPulse = async () => {
