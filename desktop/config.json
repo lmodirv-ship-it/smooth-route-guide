@@ -1,0 +1,18 @@
+{
+  "defaultRole": "admin",
+  "updateFeed": "https://www.hn-driver.com/downloads/desktop/",
+  "roles": {
+    "admin":       { "label": "لوحة المدير",   "url": "https://www.hn-driver.com/admin" },
+    "supervisor":  { "label": "المشرف",        "url": "https://www.hn-driver.com/supervisor" },
+    "callcenter":  { "label": "مركز الاتصال",  "url": "https://www.hn-driver.com/call-center" },
+    "full":        { "label": "المنصة كاملة",  "url": "https://www.hn-driver.com/" }
+  },
+  "workspaceFolders": ["inbox", "documents", "blog", "exports", "media", "archive"],
+  "organizeMap": {
+    "images": ["png", "jpg", "jpeg", "webp", "gif", "svg"],
+    "docs":   ["pdf", "doc", "docx", "txt", "md", "rtf"],
+    "sheets": ["xls", "xlsx", "csv"],
+    "media":  ["mp4", "mov", "mp3", "wav", "webm"],
+    "code":   ["json", "ts", "tsx", "js", "sql", "yml", "yaml"]
+  }
+}
