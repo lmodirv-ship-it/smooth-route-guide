@@ -145,6 +145,342 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_admin_chat_messages: {
+        Row: {
+          chat_id: string
+          content: string
+          created_at: string
+          id: string
+          role: string
+        }
+        Insert: {
+          chat_id: string
+          content?: string
+          created_at?: string
+          id?: string
+          role: string
+        }
+        Update: {
+          chat_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_admin_chat_messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "ai_admin_chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_admin_chats: {
+        Row: {
+          admin_id: string
+          agent_id: string | null
+          created_at: string
+          id: string
+          model_ref: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          admin_id?: string
+          agent_id?: string | null
+          created_at?: string
+          id?: string
+          model_ref?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string
+          agent_id?: string | null
+          created_at?: string
+          id?: string
+          model_ref?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_admin_chats_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_agents: {
+        Row: {
+          allowed_tools: string[]
+          api_key: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_enabled: boolean
+          model_id: string | null
+          name: string
+          priority: number
+          role: string
+          system_prompt: string | null
+          updated_at: string
+        }
+        Insert: {
+          allowed_tools?: string[]
+          api_key?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_enabled?: boolean
+          model_id?: string | null
+          name: string
+          priority?: number
+          role?: string
+          system_prompt?: string | null
+          updated_at?: string
+        }
+        Update: {
+          allowed_tools?: string[]
+          api_key?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_enabled?: boolean
+          model_id?: string | null
+          name?: string
+          priority?: number
+          role?: string
+          system_prompt?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agents_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "ai_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_local_models: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          display_name: string
+          endpoint_url: string | null
+          engine: string
+          id: string
+          install_url: string | null
+          is_enabled: boolean
+          last_check_at: string | null
+          model_id: string
+          priority: number
+          run_command: string | null
+          size_gb: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          display_name: string
+          endpoint_url?: string | null
+          engine?: string
+          id?: string
+          install_url?: string | null
+          is_enabled?: boolean
+          last_check_at?: string | null
+          model_id: string
+          priority?: number
+          run_command?: string | null
+          size_gb?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          endpoint_url?: string | null
+          engine?: string
+          id?: string
+          install_url?: string | null
+          is_enabled?: boolean
+          last_check_at?: string | null
+          model_id?: string
+          priority?: number
+          run_command?: string | null
+          size_gb?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_local_paths: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_enabled: boolean
+          kind: string
+          label: string
+          path: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_enabled?: boolean
+          kind?: string
+          label: string
+          path?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_enabled?: boolean
+          kind?: string
+          label?: string
+          path?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_models: {
+        Row: {
+          api_key: string | null
+          base_url: string | null
+          category: string
+          created_at: string
+          daily_limit: number | null
+          display_name: string
+          id: string
+          is_enabled: boolean
+          is_free: boolean
+          last_test_at: string | null
+          last_test_message: string | null
+          last_test_ok: boolean | null
+          logo_key: string | null
+          model_id: string
+          monthly_limit: number | null
+          notes: string | null
+          priority: number
+          provider: string
+          requires_key: boolean
+          rpm_limit: number | null
+          secret_name: string | null
+          status: string
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          api_key?: string | null
+          base_url?: string | null
+          category?: string
+          created_at?: string
+          daily_limit?: number | null
+          display_name: string
+          id?: string
+          is_enabled?: boolean
+          is_free?: boolean
+          last_test_at?: string | null
+          last_test_message?: string | null
+          last_test_ok?: boolean | null
+          logo_key?: string | null
+          model_id: string
+          monthly_limit?: number | null
+          notes?: string | null
+          priority?: number
+          provider: string
+          requires_key?: boolean
+          rpm_limit?: number | null
+          secret_name?: string | null
+          status?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          api_key?: string | null
+          base_url?: string | null
+          category?: string
+          created_at?: string
+          daily_limit?: number | null
+          display_name?: string
+          id?: string
+          is_enabled?: boolean
+          is_free?: boolean
+          last_test_at?: string | null
+          last_test_message?: string | null
+          last_test_ok?: boolean | null
+          logo_key?: string | null
+          model_id?: string
+          monthly_limit?: number | null
+          notes?: string | null
+          priority?: number
+          provider?: string
+          requires_key?: boolean
+          rpm_limit?: number | null
+          secret_name?: string | null
+          status?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      ai_usage_log: {
+        Row: {
+          cost: number
+          created_at: string
+          currency: string
+          id: string
+          input_tokens: number
+          model_ref: string
+          output_tokens: number
+          provider: string | null
+          requests: number
+          usage_date: string
+        }
+        Insert: {
+          cost?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          input_tokens?: number
+          model_ref: string
+          output_tokens?: number
+          provider?: string | null
+          requests?: number
+          usage_date?: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          input_tokens?: number
+          model_ref?: string
+          output_tokens?: number
+          provider?: string | null
+          requests?: number
+          usage_date?: string
+        }
+        Relationships: []
+      }
       alerts: {
         Row: {
           created_at: string
@@ -1574,6 +1910,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      download_items: {
+        Row: {
+          created_at: string
+          download_count: number
+          file_url: string
+          id: string
+          is_active: boolean
+          platform: string
+          size_mb: number | null
+          sort_order: number
+          title: string
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          created_at?: string
+          download_count?: number
+          file_url?: string
+          id?: string
+          is_active?: boolean
+          platform?: string
+          size_mb?: number | null
+          sort_order?: number
+          title: string
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          created_at?: string
+          download_count?: number
+          file_url?: string
+          id?: string
+          is_active?: boolean
+          platform?: string
+          size_mb?: number | null
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: []
       }
       driver_candidates: {
         Row: {
@@ -3193,6 +3571,105 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          customer_email: string | null
+          customer_name: string | null
+          due_at: string | null
+          id: string
+          invoice_number: string
+          issued_at: string
+          notes: string | null
+          paid_at: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          due_at?: string | null
+          id?: string
+          invoice_number: string
+          issued_at?: string
+          notes?: string | null
+          paid_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          due_at?: string | null
+          id?: string
+          invoice_number?: string
+          issued_at?: string
+          notes?: string | null
+          paid_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      licenses: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          holder_email: string | null
+          holder_name: string | null
+          id: string
+          issued_at: string
+          license_key: string
+          notes: string | null
+          plan: string | null
+          product: string
+          seats: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          holder_email?: string | null
+          holder_name?: string | null
+          id?: string
+          issued_at?: string
+          license_key: string
+          notes?: string | null
+          plan?: string | null
+          product?: string
+          seats?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          holder_email?: string | null
+          holder_name?: string | null
+          id?: string
+          issued_at?: string
+          license_key?: string
+          notes?: string | null
+          plan?: string | null
+          product?: string
+          seats?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mailbluster_templates: {
         Row: {
           body_html: string
@@ -3329,6 +3806,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      monitoring_checks: {
+        Row: {
+          created_at: string
+          id: string
+          is_enabled: boolean
+          kind: string
+          last_check_at: string | null
+          latency_ms: number | null
+          name: string
+          status: string
+          target: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          kind?: string
+          last_check_at?: string | null
+          latency_ms?: number | null
+          name: string
+          status?: string
+          target?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          kind?: string
+          last_check_at?: string | null
+          latency_ms?: number | null
+          name?: string
+          status?: string
+          target?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
@@ -3752,6 +4268,48 @@ export type Database = {
           is_rtl?: boolean
           label?: string
           sort_order?: number
+        }
+        Relationships: []
+      }
+      platform_packages: {
+        Row: {
+          audience: string
+          created_at: string
+          currency: string
+          duration_days: number
+          features: string[]
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          audience?: string
+          created_at?: string
+          currency?: string
+          duration_days?: number
+          features?: string[]
+          id?: string
+          is_active?: boolean
+          name: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          audience?: string
+          created_at?: string
+          currency?: string
+          duration_days?: number
+          features?: string[]
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -4896,6 +5454,51 @@ export type Database = {
           status?: string
           sync_status?: string | null
           tables_count?: number | null
+        }
+        Relationships: []
+      }
+      signup_requests: {
+        Row: {
+          city: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          requested_role: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          requested_role?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          requested_role?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }

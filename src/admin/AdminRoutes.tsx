@@ -69,6 +69,22 @@ const AdminBlog = lazy(() => import("@/admin/pages/AdminBlog"));
 const UtmBuilder = lazy(() => import("@/admin/pages/UtmBuilder"));
 const CampaignsDashboard = lazy(() => import("@/admin/pages/CampaignsDashboard"));
 
+// ─── AI & Platform management (new) ───
+const AiModels = lazy(() => import("@/admin/pages/AiModels"));
+const AiLocalModels = lazy(() => import("@/admin/pages/AiLocalModels"));
+const AiAgents = lazy(() => import("@/admin/pages/AiAgents"));
+const AiAdminChat = lazy(() => import("@/admin/pages/AiAdminChat"));
+const AiChats = lazy(() => import("@/admin/pages/AiChats"));
+const AiBilling = lazy(() => import("@/admin/pages/AiBilling"));
+const UsageMetrics = lazy(() => import("@/admin/pages/UsageMetrics"));
+const LicensesPage = lazy(() => import("@/admin/pages/Licenses"));
+const PlatformPackages = lazy(() => import("@/admin/pages/PlatformPackages"));
+const InvoicesPage = lazy(() => import("@/admin/pages/Invoices"));
+const DownloadsPage = lazy(() => import("@/admin/pages/Downloads"));
+const SignupRequestsPage = lazy(() => import("@/admin/pages/SignupRequests"));
+const MonitoringPage = lazy(() => import("@/admin/pages/Monitoring"));
+const AuditLogPage = lazy(() => import("@/admin/pages/AuditLog"));
+
 // Supervisor
 const SupervisorLayout = lazy(() => import("@/admin/layouts/SupervisorLayout"));
 const SupervisorDashboard = lazy(() => import("@/admin/pages/supervisor/SupervisorDashboard"));
@@ -161,6 +177,22 @@ export const adminRouteElements = (
       <Route path="partner-sites" element={L(PartnerSitesManagement)} />
       <Route path="sitemap" element={L(AdminSiteMap)} />
       <Route path="blog" element={L(AdminBlog)} />
+
+      {/* ─── AI & Platform management ─── */}
+      <Route path="ai-models" element={L(AiModels)} />
+      <Route path="ai-local-models" element={L(AiLocalModels)} />
+      <Route path="ai-agents" element={L(AiAgents)} />
+      <Route path="ai-chat" element={L(AiAdminChat)} />
+      <Route path="ai-chats" element={L(AiChats)} />
+      <Route path="ai-billing" element={L(AiBilling)} />
+      <Route path="usage-metrics" element={L(UsageMetrics)} />
+      <Route path="licenses" element={L(LicensesPage)} />
+      <Route path="packages" element={L(PlatformPackages)} />
+      <Route path="invoices" element={L(InvoicesPage)} />
+      <Route path="downloads" element={L(DownloadsPage)} />
+      <Route path="signup-requests" element={L(SignupRequestsPage)} />
+      <Route path="monitoring" element={L(MonitoringPage)} />
+      <Route path="audit-log" element={L(AuditLogPage)} />
     </Route>
 
     <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}>{L(CallCenterLayout)}</RequireRole>}>
