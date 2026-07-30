@@ -219,6 +219,43 @@ export default function AiAdminChat() {
     const id = await ensureChat(lastUser);
     if (id && persistUser) await db.from("ai_admin_chat_messages").insert({ chat_id: id, role: "user", content: lastUser });
 
+    /* ===== المسار المحلي: اتصال مباشر بجهازك بدون أي وسيط ولا مفتاح API ===== */
+    if (activeLocal) {
+      let assistant = "";
+      setMessages((m) => [...m, { role: "assistant", content: "" }]);
+      try {
+        assistant = await streamLocalChat({
+          endpoint: activeLocal.endpoint_url || "http://localhost:11434",
+          model: activeLocal.model_id,
+          messages: next,
+          onDelta: (d) => {
+            assistant += "";
+            setMessages((m) => {
+              const copy = [...m];
+              const prev = copy[copy.length - 1]?.content ?? "";
+              copy[copy.length - 1] = { role: "assistant", content: prev + d };
+              return copy;
+            });
+          },
+        });
+        setLocalStatus((s) => ({ ...s, [activeLocal.id]: true }));
+        if (id && assistant) {
+          await db.from("ai_admin_chat_messages").insert({ chat_id: id, role: "assistant", content: assistant });
+        }
+      } catch (e: any) {
+        setLocalStatus((s) => ({ ...s, [activeLocal.id]: false }));
+        toast({
+          title: "تعذّر تشغيل النموذج المحلي",
+          description: localErrorHint(e?.message ?? "", activeLocal.endpoint_url || ""),
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-admin-chat`, {
