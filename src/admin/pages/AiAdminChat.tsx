@@ -321,11 +321,11 @@ export default function AiAdminChat() {
 
               <div className="space-y-2">
                 <Label className="text-[11px] text-muted-foreground">نوع الخط</Label>
-                <Select value={c.fontFamily ?? ""} onValueChange={(v) => update({ custom: { fontFamily: v || undefined } })}>
+                <Select value={c.fontFamily ?? "default"} onValueChange={(v) => update({ custom: { fontFamily: v === "default" ? undefined : v } })}>
                   <SelectTrigger className="h-9"><SelectValue placeholder="خط المنصة" /></SelectTrigger>
                   <SelectContent className="z-50">
                     {CHAT_FONTS.map((f) => (
-                      <SelectItem key={f.label} value={f.value || "default"} onSelect={undefined}>
+                      <SelectItem key={f.label} value={f.value || "default"}>
                         <span style={{ fontFamily: f.value || undefined }}>{f.label}</span>
                       </SelectItem>
                     ))}
