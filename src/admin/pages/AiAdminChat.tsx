@@ -10,8 +10,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Send, Plus, RefreshCw } from "lucide-react";
+import { Loader2, Send, Plus, RefreshCw, Sparkles } from "lucide-react";
 import { providerLogo } from "@/admin/data/aiProviders";
+import { CHAT_SKINS, getSkin } from "@/admin/data/chatSkins";
 
 const CATEGORY_LABEL: Record<string, string> = {
   llm: "نماذج نصية", image: "نماذج صور", video: "نماذج فيديو",
