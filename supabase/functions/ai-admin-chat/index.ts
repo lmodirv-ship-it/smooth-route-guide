@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
           let useTools = Boolean(tools);
           let finalText = "";
 
-          for (let round = 0; round < 5; round++) {
+          for (let round = 0; round < 8; round++) {
             let data: any;
             try {
               data = await callModel(useTools);
