@@ -22,6 +22,8 @@ import type { ChatPrefs, ChatCustom, ChatPreset, BubbleCustom } from "@/hooks/us
 import { providerLogo } from "@/admin/data/aiProviders";
 import { CHAT_SKINS, getSkin } from "@/admin/data/chatSkins";
 import ToolActivity, { type ToolEvent } from "@/admin/components/ToolActivity";
+import { streamLocalChat, pingLocal, localErrorHint } from "@/admin/lib/localChat";
+
 
 const CATEGORY_LABEL: Record<string, string> = {
   llm: "نماذج نصية", image: "نماذج صور", video: "نماذج فيديو",
@@ -35,7 +37,10 @@ export default function AiAdminChat() {
   const db = supabase as any;
   const [models, setModels] = useState<Record<string, any>[]>([]);
   const [agents, setAgents] = useState<Record<string, any>[]>([]);
+  const [localModels, setLocalModels] = useState<Record<string, any>[]>([]);
+  const [localStatus, setLocalStatus] = useState<Record<string, boolean>>({});
   const [modelId, setModelId] = useState<string>("gateway");
+
   const [agentId, setAgentId] = useState<string>("none");
   const [chatId, setChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -112,17 +117,36 @@ export default function AiAdminChat() {
 
 
   const loadCatalog = async () => {
-    const [{ data: m }, { data: a }, { data: q }] = await Promise.all([
+    const [{ data: m }, { data: a }, { data: q }, { data: lm }] = await Promise.all([
       db.from("ai_models")
         .select("id, display_name, provider, model_id, category, is_free")
         .eq("is_enabled", true).order("category").order("priority"),
       db.from("ai_agents").select("id, name, role").eq("is_enabled", true).order("priority"),
       db.from("ai_quick_commands").select("id, label, prompt").eq("is_enabled", true).order("sort_order"),
+      db.from("ai_local_models")
+        .select("id, display_name, model_id, engine, endpoint_url, category, status")
+        .eq("is_enabled", true).order("priority"),
     ]);
     setModels(m ?? []);
     setAgents(a ?? []);
     setQuickCommands(q ?? []);
+    setLocalModels(lm ?? []);
+    void checkLocal(lm ?? []);
   };
+
+  /** فحص اتصال النماذج المحلية وتحديث حالتها في قاعدة البيانات. */
+  const checkLocal = async (list: Record<string, any>[]) => {
+    const results = await Promise.all(
+      list.map(async (m) => ({ id: m.id, ...(await pingLocal(m.endpoint_url || "http://localhost:11434")) })),
+    );
+    setLocalStatus(Object.fromEntries(results.map((r) => [r.id, r.ok])));
+    await Promise.all(results.map((r) =>
+      db.from("ai_local_models")
+        .update({ status: r.ok ? "connected" : "disconnected", last_check_at: new Date().toISOString() })
+        .eq("id", r.id),
+    ));
+  };
+
 
   /** شريط المؤشرات الحيّة أعلى الدردشة. */
   const loadPulse = async () => {
@@ -155,12 +179,21 @@ export default function AiAdminChat() {
   const grouped = useMemo(() => {
     const map = new Map<string, Record<string, any>[]>();
     for (const m of models) {
+      if (m.is_free) continue; // تظهر ضمن مجموعة «نماذج مجانية»
       const k = m.category ?? "llm";
       if (!map.has(k)) map.set(k, []);
       map.get(k)!.push(m);
     }
     return Array.from(map.entries());
   }, [models]);
+
+  const freeModels = useMemo(() => models.filter((m) => m.is_free), [models]);
+  /** النموذج المحلي المختار حالياً (إن وُجد). */
+  const activeLocal = useMemo(
+    () => (modelId.startsWith("local:") ? localModels.find((m) => m.id === modelId.slice(6)) ?? null : null),
+    [modelId, localModels],
+  );
+
 
 
   useEffect(() => {
@@ -186,6 +219,42 @@ export default function AiAdminChat() {
 
     const id = await ensureChat(lastUser);
     if (id && persistUser) await db.from("ai_admin_chat_messages").insert({ chat_id: id, role: "user", content: lastUser });
+
+    /* ===== المسار المحلي: اتصال مباشر بجهازك بدون أي وسيط ولا مفتاح API ===== */
+    if (activeLocal) {
+      let assistant = "";
+      setMessages((m) => [...m, { role: "assistant", content: "" }]);
+      try {
+        assistant = await streamLocalChat({
+          endpoint: activeLocal.endpoint_url || "http://localhost:11434",
+          model: activeLocal.model_id,
+          messages: next,
+          onDelta: (d) => {
+            setMessages((m) => {
+              const copy = [...m];
+              const prev = copy[copy.length - 1]?.content ?? "";
+              copy[copy.length - 1] = { role: "assistant", content: prev + d };
+              return copy;
+            });
+          },
+        });
+        setLocalStatus((s) => ({ ...s, [activeLocal.id]: true }));
+        if (id && assistant) {
+          await db.from("ai_admin_chat_messages").insert({ chat_id: id, role: "assistant", content: assistant });
+        }
+      } catch (e: any) {
+        setLocalStatus((s) => ({ ...s, [activeLocal.id]: false }));
+        toast({
+          title: "تعذّر تشغيل النموذج المحلي",
+          description: localErrorHint(e?.message ?? "", activeLocal.endpoint_url || ""),
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -304,11 +373,52 @@ export default function AiAdminChat() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline">{models.length} نموذج مُفعّل</Badge>
+          <Badge variant="outline">{localModels.length} نموذج محلي</Badge>
           <Badge variant="outline">{agents.length} وكيل</Badge>
-          <Select value={modelId} onValueChange={setModelId}>
+          {activeLocal && (
+            <Badge variant={localStatus[activeLocal.id] ? "default" : "destructive"}>
+              {localStatus[activeLocal.id] ? "محلي · متصل" : "محلي · غير متصل"}
+            </Badge>
+          )}
+          <Select value={modelId} onValueChange={setModelId} onOpenChange={(o) => { if (o) void checkLocal(localModels); }}>
             <SelectTrigger className="h-9 w-[250px]"><SelectValue placeholder="النموذج" /></SelectTrigger>
             <SelectContent className="max-h-80">
               <SelectItem value="gateway">بوابة Lovable AI (افتراضي)</SelectItem>
+
+              {localModels.length > 0 && (
+                <SelectGroup>
+                  <SelectLabel className="text-[11px] text-muted-foreground">
+                    نماذج محلية (بدون إنترنت) ({localModels.length})
+                  </SelectLabel>
+                  {localModels.map((m) => (
+                    <SelectItem key={m.id} value={`local:${m.id}`}>
+                      <span className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${localStatus[m.id] ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                        <span>{m.display_name}</span>
+                        <span className="text-[10px] text-muted-foreground">{m.engine}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              )}
+
+              {freeModels.length > 0 && (
+                <SelectGroup>
+                  <SelectLabel className="text-[11px] text-muted-foreground">
+                    نماذج مجانية ({freeModels.length})
+                  </SelectLabel>
+                  {freeModels.map((m) => (
+                    <SelectItem key={`free-${m.id}`} value={m.id}>
+                      <span className="flex items-center gap-2">
+                        <img src={providerLogo(m.provider)} alt="" width={16} height={16} loading="lazy" className="rounded" />
+                        <span>{m.display_name}</span>
+                        <span className="text-[10px] text-primary">مجاني</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              )}
+
               {grouped.map(([cat, list]) => (
                 <SelectGroup key={cat}>
                   <SelectLabel className="text-[11px] text-muted-foreground">
@@ -327,6 +437,7 @@ export default function AiAdminChat() {
               ))}
             </SelectContent>
           </Select>
+
           <Select value={agentId} onValueChange={setAgentId}>
             <SelectTrigger className="h-9 w-[190px]"><SelectValue placeholder="الوكيل" /></SelectTrigger>
             <SelectContent className="max-h-72">
