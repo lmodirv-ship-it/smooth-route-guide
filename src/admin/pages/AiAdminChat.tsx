@@ -32,6 +32,9 @@ export default function AiAdminChat() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [skinId, setSkinId] = useState<string>(() => localStorage.getItem("hn_admin_chat_skin") ?? "classic");
+  const skin = getSkin(skinId);
+  useEffect(() => { localStorage.setItem("hn_admin_chat_skin", skinId); }, [skinId]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const loadCatalog = async () => {
