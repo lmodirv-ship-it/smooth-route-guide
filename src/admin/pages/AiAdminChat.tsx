@@ -37,7 +37,10 @@ export default function AiAdminChat() {
   const db = supabase as any;
   const [models, setModels] = useState<Record<string, any>[]>([]);
   const [agents, setAgents] = useState<Record<string, any>[]>([]);
+  const [localModels, setLocalModels] = useState<Record<string, any>[]>([]);
+  const [localStatus, setLocalStatus] = useState<Record<string, boolean>>({});
   const [modelId, setModelId] = useState<string>("gateway");
+
   const [agentId, setAgentId] = useState<string>("none");
   const [chatId, setChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
