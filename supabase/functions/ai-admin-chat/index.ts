@@ -74,49 +74,109 @@ Deno.serve(async (req) => {
     if (agentTools) allowedTools = allowedTools.filter((n) => agentTools!.includes(n));
     const tools = toolsEnabled && allowedTools.length ? toOpenAITools(allowedTools) : null;
 
-    // ── provider ──
+    // ── providers (سلسلة احتياطية: المختار ← مفاتيح خاصة ← نماذج محلية) ──
+    type Target = { url: string; headers: Record<string, string>; modelName: string; providerName: string };
+
+    const externalTarget = (row: Record<string, any>): Target => {
+      const base = (row.base_url || OPENAI_COMPATIBLE_BASE[row.provider] || "https://api.openai.com/v1").replace(/\/$/, "");
+      return {
+        url: `${base}/chat/completions`,
+        headers: { Authorization: `Bearer ${row.api_key}`, "Content-Type": "application/json" },
+        modelName: row.model_id,
+        providerName: row.provider,
+      };
+    };
+    const lovableTarget = (): Target | null => {
+      const key = Deno.env.get("LOVABLE_API_KEY");
+      if (!key) return null;
+      return {
+        url: "https://ai.gateway.lovable.dev/v1/chat/completions",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        modelName: "openai/gpt-5.6-sol",
+        providerName: "lovable",
+      };
+    };
+    const localTarget = (row: Record<string, any>): Target => ({
+      url: `${String(row.endpoint_url).replace(/\/$/, "")}/chat/completions`,
+      headers: { "Content-Type": "application/json" },
+      modelName: row.model_id,
+      providerName: `local:${row.engine}`,
+    });
+
     let modelRow: Record<string, any> | null = null;
     if (modelRowId) {
       const { data } = await admin.from("ai_models").select("*").eq("id", modelRowId).maybeSingle();
       modelRow = data ?? null;
     }
-    let url: string, headers: Record<string, string>, modelName: string, providerName: string;
-    if (modelRow?.api_key && modelRow.provider !== "lovable") {
-      const base = (modelRow.base_url || OPENAI_COMPATIBLE_BASE[modelRow.provider] || "https://api.openai.com/v1").replace(/\/$/, "");
-      url = `${base}/chat/completions`;
-      headers = { Authorization: `Bearer ${modelRow.api_key}`, "Content-Type": "application/json" };
-      modelName = modelRow.model_id;
-      providerName = modelRow.provider;
-    } else {
-      const key = Deno.env.get("LOVABLE_API_KEY");
-      if (!key) return json({ error: "لا يوجد مفتاح مُفعّل لهذا النموذج" }, 400);
-      url = "https://ai.gateway.lovable.dev/v1/chat/completions";
-      headers = { Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
-      modelName = "openai/gpt-5.6-sol";
-      providerName = "lovable";
-    }
-    const isGpt56 = modelName.startsWith("openai/gpt-5.6");
 
+    const targets: Target[] = [];
+    if (modelRow?.api_key && modelRow.provider !== "lovable") targets.push(externalTarget(modelRow));
+    const lt = lovableTarget();
+    if (lt) targets.push(lt);
+
+    // احتياطي 1: أي نموذج مُفعّل له مفتاح خاص (لا يعتمد على رصيد Lovable)
+    const { data: keyed } = await admin.from("ai_models")
+      .select("provider, model_id, base_url, api_key")
+      .eq("is_enabled", true).neq("provider", "lovable").not("api_key", "is", null)
+      .order("priority");
+    for (const row of keyed ?? []) {
+      if (!row.api_key) continue;
+      if (targets.some((t) => t.modelName === row.model_id && t.providerName === row.provider)) continue;
+      targets.push(externalTarget(row));
+    }
+
+    // احتياطي 2: النماذج المحلية المُفعّلة ذات نقطة نهاية متوافقة مع OpenAI
+    const { data: locals } = await admin.from("ai_local_models")
+      .select("model_id, engine, endpoint_url")
+      .eq("is_enabled", true).not("endpoint_url", "is", null)
+      .order("priority");
+    for (const row of locals ?? []) targets.push(localTarget(row));
+
+    if (!targets.length) return json({ error: "لا يوجد أي نموذج مُفعّل (لا مفتاح Lovable ولا مفاتيح خاصة ولا نماذج محلية)" }, 400);
+
+    let active = targets[0];
     const convo: any[] = [{ role: "system", content: systemPrompt }, ...incoming];
     const usage = { requests: 0, input: 0, output: 0 };
+    const fallbackNotes: string[] = [];
 
-    const callModel = async (withTools: boolean) => {
-      const payload: Record<string, unknown> = { model: modelName, messages: convo, stream: false };
-      if (isGpt56) payload.reasoning_effort = "none";
+    const callOne = async (t: Target, withTools: boolean) => {
+      const payload: Record<string, unknown> = { model: t.modelName, messages: convo, stream: false };
+      if (t.modelName.startsWith("openai/gpt-5.6")) payload.reasoning_effort = "none";
       if (withTools && tools) { payload.tools = tools; payload.tool_choice = "auto"; }
-      const resp = await fetch(url, { method: "POST", headers, body: JSON.stringify(payload) });
+      const resp = await fetch(t.url, { method: "POST", headers: t.headers, body: JSON.stringify(payload) });
       const text = await resp.text();
       if (!resp.ok) {
         const err = new Error(text.slice(0, 400)) as any;
         err.status = resp.status;
         throw err;
       }
-      const data = JSON.parse(text);
-      usage.requests += 1;
-      usage.input += Number(data?.usage?.prompt_tokens ?? 0);
-      usage.output += Number(data?.usage?.completion_tokens ?? 0);
-      return data;
+      return JSON.parse(text);
     };
+
+    /** يجرّب المزوّد الحالي ثم ينتقل تلقائياً للاحتياطي عند نفاد الرصيد أو الضغط أو العطل. */
+    const callModel = async (withTools: boolean) => {
+      const start = Math.max(0, targets.indexOf(active));
+      let lastErr: any = null;
+      for (let i = start; i < targets.length; i++) {
+        const t = targets[i];
+        try {
+          const data = await callOne(t, withTools);
+          if (t !== active) fallbackNotes.push(`تحوّل تلقائي إلى ${t.providerName} / ${t.modelName}`);
+          active = t;
+          usage.requests += 1;
+          usage.input += Number(data?.usage?.prompt_tokens ?? 0);
+          usage.output += Number(data?.usage?.completion_tokens ?? 0);
+          return data;
+        } catch (e: any) {
+          lastErr = e;
+          const st = Number(e?.status ?? 0);
+          const recoverable = st === 402 || st === 429 || st === 401 || st === 403 || st >= 500 || st === 0;
+          if (!recoverable) throw e;
+        }
+      }
+      throw lastErr ?? new Error("تعذّر الوصول إلى أي مزوّد");
+    };
+
 
     const stream = new ReadableStream({
       async start(controller) {
