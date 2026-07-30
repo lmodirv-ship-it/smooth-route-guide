@@ -23,6 +23,9 @@ const AdminLogin = () => {
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [code, setCode] = useState("");
+  const [verifying, setVerifying] = useState(false);
+
   const { ready, session } = useAuthReady();
 
   useEffect(() => {
@@ -86,6 +89,29 @@ const AdminLogin = () => {
     }
   };
 
+  /** الدخول برمز التحقق (يعمل داخل تطبيق الحاسوب دون فتح المتصفح). */
+  const verifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = code.trim();
+    if (token.length !== 6) return;
+    setVerifying(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: email.trim().toLowerCase(),
+        token,
+        type: "email",
+      });
+      if (error) throw error;
+      toast({ title: "تم تسجيل الدخول ✅" });
+      navigate("/admin", { replace: true });
+    } catch (err: any) {
+      toast({ title: "رمز غير صالح", description: err?.message ?? "تحقق من الرمز أو اطلب رمزاً جديداً", variant: "destructive" });
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+
   if (checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -133,27 +159,45 @@ const AdminLogin = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="text-center space-y-4 py-6"
+              className="text-center space-y-4 py-4"
             >
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-9 h-9 text-primary" />
               </div>
               <h2 className="text-xl font-bold text-foreground">تحقّق من بريدك</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                أرسلنا رابط الدخول إلى<br />
+                أرسلنا رسالة إلى<br />
                 <span className="font-semibold text-foreground">{email}</span><br />
-                اضغط على الرابط في الرسالة للدخول مباشرة.
+                اضغط على الرابط، أو أدخل رمز التحقق المكوّن من 6 أرقام هنا — وهو الأنسب داخل تطبيق الحاسوب.
               </p>
+
+              <form onSubmit={verifyCode} className="space-y-3">
+                <Input
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="••••••"
+                  inputMode="numeric"
+                  autoFocus
+                  dir="ltr"
+                  className="bg-secondary/50 border-border/50 h-13 rounded-xl text-center text-2xl tracking-[0.5em] font-bold"
+                />
+                <Button type="submit" disabled={verifying || code.length !== 6}
+                  className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold">
+                  {verifying ? <Loader2 className="w-5 h-5 animate-spin" /> : "دخول بالرمز"}
+                </Button>
+              </form>
+
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => { setSent(false); setEmail(""); }}
+                onClick={() => { setSent(false); setEmail(""); setCode(""); }}
                 className="text-sm text-muted-foreground hover:text-foreground"
               >
                 استخدام بريد آخر
               </Button>
             </motion.div>
           ) : (
+
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground block">البريد الإلكتروني للمسؤول</label>

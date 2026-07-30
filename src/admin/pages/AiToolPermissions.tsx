@@ -14,8 +14,10 @@ import { Loader2, RefreshCw, Database, ShieldAlert } from "lucide-react";
 
 type Perm = {
   id: string; tool_name: string; label: string; description: string | null;
-  kind: "read" | "write"; risk: string; is_enabled: boolean; daily_limit: number | null; sort_order: number | null;
+  kind: "read" | "write"; risk: string; is_enabled: boolean; auto_execute: boolean;
+  daily_limit: number | null; sort_order: number | null;
 };
+
 type Cmd = {
   id: string; tool_name: string | null; command_text: string | null;
   status: string; created_at: string; executed_at: string | null;
@@ -90,7 +92,14 @@ export default function AiToolPermissions() {
                 />
               </div>
             )}
+            {kind === "write" && (
+              <div className="flex items-center gap-2" title="عند التفعيل تُنفَّذ هذه الأداة مباشرة دون طلب موافقتك">
+                <span className={`text-xs ${p.auto_execute ? "text-destructive" : "text-muted-foreground"}`}>تنفيذ تلقائي</span>
+                <Switch checked={!!p.auto_execute} onCheckedChange={(v) => patch(p, { auto_execute: v })} />
+              </div>
+            )}
             <Switch checked={p.is_enabled} onCheckedChange={(v) => patch(p, { is_enabled: v })} />
+
           </div>
         ))}
       </div>

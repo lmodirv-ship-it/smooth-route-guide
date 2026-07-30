@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Send, Plus, RefreshCw, Sparkles, Palette, Sun, Moon, RotateCcw, Save, Trash2 } from "lucide-react";
+import { Loader2, Send, Plus, RefreshCw, Sparkles, Palette, Sun, Moon, RotateCcw, Save, Trash2, Paperclip, Download, AlertTriangle, Package, PhoneCall, MessageSquareWarning } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -42,6 +42,10 @@ export default function AiAdminChat() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [activity, setActivity] = useState<ToolEvent[]>([]);
+  const [quickCommands, setQuickCommands] = useState<{ id: string; label: string; prompt: string }[]>([]);
+  const [pulse, setPulse] = useState<{ orders: number; stuck: number; complaints: number; alerts: number } | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
   const { prefs, commit, synced } = useChatPrefs();
   /** مسودّة للمعاينة الفورية قبل الحفظ */
   const [draft, setDraft] = useState<ChatPrefs>(prefs);
@@ -108,17 +112,45 @@ export default function AiAdminChat() {
 
 
   const loadCatalog = async () => {
-    const [{ data: m }, { data: a }] = await Promise.all([
+    const [{ data: m }, { data: a }, { data: q }] = await Promise.all([
       db.from("ai_models")
         .select("id, display_name, provider, model_id, category, is_free")
         .eq("is_enabled", true).order("category").order("priority"),
       db.from("ai_agents").select("id, name, role").eq("is_enabled", true).order("priority"),
+      db.from("ai_quick_commands").select("id, label, prompt").eq("is_enabled", true).order("sort_order"),
     ]);
     setModels(m ?? []);
     setAgents(a ?? []);
+    setQuickCommands(q ?? []);
   };
 
-  useEffect(() => { loadCatalog(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  /** شريط المؤشرات الحيّة أعلى الدردشة. */
+  const loadPulse = async () => {
+    const today = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
+    const fiveMin = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const [orders, stuck, complaints, alerts] = await Promise.all([
+      db.from("delivery_orders").select("id", { count: "exact", head: true }).gte("created_at", today),
+      db.from("delivery_orders").select("id", { count: "exact", head: true })
+        .is("driver_id", null).lt("created_at", fiveMin)
+        .in("status", ["pending", "pending_call_center", "ready_for_driver"]),
+      db.from("complaints").select("id", { count: "exact", head: true }).neq("status", "resolved"),
+      db.from("alerts").select("id", { count: "exact", head: true }).neq("status", "resolved"),
+    ]);
+    setPulse({
+      orders: orders.count ?? 0,
+      stuck: stuck.count ?? 0,
+      complaints: complaints.count ?? 0,
+      alerts: alerts.count ?? 0,
+    });
+  };
+
+  useEffect(() => {
+    loadCatalog();
+    loadPulse();
+    const t = setInterval(loadPulse, 5 * 60 * 1000);
+    return () => clearInterval(t);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
 
   const grouped = useMemo(() => {
     const map = new Map<string, Record<string, any>[]>();
@@ -145,17 +177,15 @@ export default function AiAdminChat() {
     return data.id as string;
   };
 
-  const send = async () => {
-    const text = input.trim();
-    if (!text || loading) return;
-    setInput("");
-    const next = [...messages, { role: "user" as const, content: text }];
+  /** تشغيل دورة رد على قائمة رسائل معطاة. */
+  const run = async (next: Msg[], persistUser = true) => {
+    const lastUser = [...next].reverse().find((m) => m.role === "user")?.content ?? "";
     setMessages(next);
     setActivity([]);
     setLoading(true);
 
-    const id = await ensureChat(text);
-    if (id) await db.from("ai_admin_chat_messages").insert({ chat_id: id, role: "user", content: text });
+    const id = await ensureChat(lastUser);
+    if (id && persistUser) await db.from("ai_admin_chat_messages").insert({ chat_id: id, role: "user", content: lastUser });
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -221,6 +251,47 @@ export default function AiAdminChat() {
       setLoading(false);
     }
   };
+
+  const send = async (override?: string) => {
+    const text = (override ?? input).trim();
+    if (!text || loading) return;
+    setInput("");
+    await run([...messages, { role: "user" as const, content: text }]);
+  };
+
+  /** إعادة توليد آخر رد (يحذف رد المساعد الأخير ويعيد الطلب). */
+  const regenerate = async () => {
+    if (loading || !messages.length) return;
+    let cut = [...messages];
+    while (cut.length && cut[cut.length - 1].role === "assistant") cut.pop();
+    if (!cut.length) return;
+    await run(cut, false);
+  };
+
+  /** تصدير المحادثة الحالية كملف Markdown. */
+  const exportChat = () => {
+    if (!messages.length) return;
+    const md = messages.map((m) => `## ${m.role === "user" ? "المسؤول" : "المساعد"}\n\n${m.content}`).join("\n\n---\n\n");
+    const blob = new Blob(["\uFEFF" + md], { type: "text/markdown;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `hn-chat-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-")}.md`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  /** رفع ملف نصي/CSV/JSON لتحليله داخل المحادثة. */
+  const onPickFile = async (file: File | undefined) => {
+    if (!file) return;
+    if (file.size > 512 * 1024) {
+      toast({ title: "الملف كبير", description: "الحد الأقصى 512 كيلوبايت للملفات النصية.", variant: "destructive" });
+      return;
+    }
+    const text = await file.text();
+    setInput((v) => `${v ? v + "\n\n" : ""}حلّل محتوى الملف «${file.name}»:\n\n\`\`\`\n${text.slice(0, 20000)}\n\`\`\``);
+    toast({ title: "تم إرفاق الملف", description: file.name });
+  };
+
 
   return (
     <div className="space-y-4">
@@ -450,7 +521,27 @@ export default function AiAdminChat() {
 
       </div>
 
+      {pulse && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {[
+            { icon: Package, label: "طلبات اليوم", value: pulse.orders, alert: false },
+            { icon: PhoneCall, label: "طلبات عالقة", value: pulse.stuck, alert: pulse.stuck > 0 },
+            { icon: MessageSquareWarning, label: "شكاوى مفتوحة", value: pulse.complaints, alert: pulse.complaints > 0 },
+            { icon: AlertTriangle, label: "تنبيهات النظام", value: pulse.alerts, alert: pulse.alerts > 0 },
+          ].map((k) => (
+            <Card key={k.label} className={`p-3 flex items-center gap-3 ${k.alert ? "border-destructive/50" : ""}`}>
+              <k.icon className={`w-4 h-4 ${k.alert ? "text-destructive" : "text-primary"}`} />
+              <div className="min-w-0">
+                <p className="text-[11px] text-muted-foreground truncate">{k.label}</p>
+                <p className="text-lg font-bold leading-none">{k.value}</p>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
       <Card className={`p-0 overflow-hidden rounded-2xl transition-colors ${isLight ? "chat-light" : "dark"} ${skin.shell}`}>
+
         <div ref={scrollRef} style={surfaceStyle} className={`h-[55vh] overflow-y-auto p-4 space-y-3 ${skin.surface}`}>
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
@@ -490,7 +581,24 @@ export default function AiAdminChat() {
             </div>
           )}
         </div>
-        <div className={`p-3 flex gap-2 ${skin.composer}`}>
+        {quickCommands.length > 0 && (
+          <div className={`px-3 pt-3 flex flex-wrap gap-1.5 ${skin.composer}`}>
+            {quickCommands.map((q) => (
+              <Button key={q.id} size="sm" variant="outline" disabled={loading}
+                className="h-7 rounded-full text-[11px] px-3"
+                onClick={() => send(q.prompt)}>
+                {q.label}
+              </Button>
+            ))}
+          </div>
+        )}
+        <div className={`p-3 flex gap-2 items-center ${skin.composer}`}>
+          <input ref={fileRef} type="file" accept=".txt,.csv,.json,.md,.log" className="hidden"
+            onChange={(e) => { onPickFile(e.target.files?.[0]); e.currentTarget.value = ""; }} />
+          <Button size="icon" variant="ghost" className="rounded-xl shrink-0" title="إرفاق ملف للتحليل"
+            disabled={loading} onClick={() => fileRef.current?.click()}>
+            <Paperclip className="w-4 h-4" />
+          </Button>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -499,10 +607,19 @@ export default function AiAdminChat() {
             className="rounded-xl"
             disabled={loading}
           />
-          <Button onClick={send} disabled={loading || !input.trim()} className="rounded-xl px-4">
+          <Button size="icon" variant="ghost" className="rounded-xl shrink-0" title="إعادة توليد آخر رد"
+            disabled={loading || !messages.length} onClick={() => regenerate()}>
+            <RotateCcw className="w-4 h-4" />
+          </Button>
+          <Button size="icon" variant="ghost" className="rounded-xl shrink-0" title="تصدير المحادثة"
+            disabled={!messages.length} onClick={exportChat}>
+            <Download className="w-4 h-4" />
+          </Button>
+          <Button onClick={() => send()} disabled={loading || !input.trim()} className="rounded-xl px-4">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </Button>
         </div>
+
       </Card>
     </div>
   );

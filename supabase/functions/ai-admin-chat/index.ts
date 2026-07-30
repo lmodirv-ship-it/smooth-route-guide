@@ -5,7 +5,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { TOOL_SPECS, toOpenAITools, runReadTool, getSpec, describeWrite } from "../_shared/adminTools.ts";
+import { TOOL_SPECS, toOpenAITools, runReadTool, getSpec, describeWrite, executeWriteTool } from "../_shared/adminTools.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -65,8 +65,9 @@ Deno.serve(async (req) => {
     }
 
     // ── permitted tools ──
-    const { data: perms } = await admin.from("ai_tool_permissions").select("tool_name, is_enabled, kind");
+    const { data: perms } = await admin.from("ai_tool_permissions").select("tool_name, is_enabled, kind, auto_execute");
     const permMap = new Map<string, any>((perms ?? []).map((p: any) => [p.tool_name, p]));
+
     let allowedTools = TOOL_SPECS
       .filter((t) => permMap.get(t.name)?.is_enabled ?? true)
       .map((t) => t.name);
@@ -128,7 +129,7 @@ Deno.serve(async (req) => {
           let useTools = Boolean(tools);
           let finalText = "";
 
-          for (let round = 0; round < 5; round++) {
+          for (let round = 0; round < 8; round++) {
             let data: any;
             try {
               data = await callModel(useTools);
@@ -163,6 +164,23 @@ Deno.serve(async (req) => {
                   result = { error: err?.message ?? "فشل التنفيذ" };
                   event({ type: "tool", name, label: spec.label, kind: "read", status: "error", args, result });
                 }
+              } else if (permMap.get(name)?.auto_execute === true) {
+                // تنفيذ تلقائي مسموح صراحةً لهذه الأداة من صفحة الصلاحيات
+                try {
+                  const res = await executeWriteTool(admin, name, args);
+                  result = { status: "executed", summary: res.summary, after: res.after };
+                  await admin.from("smart_assistant_commands").insert({
+                    admin_id: user.id, chat_id: chatId,
+                    command_text: describeWrite(name, args), command_type: "tool_call",
+                    tool_name: name, tool_args: args, status: "executed",
+                    tool_result: { summary: res.summary, after: res.after },
+                    executed_at: new Date().toISOString(),
+                  });
+                  event({ type: "tool", name, label: spec.label, kind: "write", status: "done", args, result, auto: true });
+                } catch (err: any) {
+                  result = { error: err?.message ?? "فشل التنفيذ" };
+                  event({ type: "tool", name, label: spec.label, kind: "write", status: "error", args, result, auto: true });
+                }
               } else {
                 // عملية كتابة → أمر معلّق ينتظر موافقة يدوية
                 const { data: cmd, error } = await admin.from("smart_assistant_commands").insert({
@@ -185,6 +203,7 @@ Deno.serve(async (req) => {
                   });
                 }
               }
+
 
               convo.push({ role: "tool", tool_call_id: call.id, name, content: JSON.stringify(result).slice(0, 6000) });
             }

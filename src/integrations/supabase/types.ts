@@ -520,6 +520,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_quick_commands: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          is_enabled: boolean
+          label: string
+          prompt: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string
+          id?: string
+          is_enabled?: boolean
+          label: string
+          prompt: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          is_enabled?: boolean
+          label?: string
+          prompt?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_tool_permissions: {
         Row: {
           auto_execute: boolean

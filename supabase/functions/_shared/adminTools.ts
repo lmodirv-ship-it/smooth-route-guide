@@ -195,7 +195,146 @@ export const TOOL_SPECS: ToolSpec[] = [
     description: "إرسال إشعار داخل التطبيق لمستخدم عبر رمزه.",
     parameters: obj({ user_code: str("رمز المستخدم"), message: str("نص الإشعار"), type: str("نوع الإشعار") }, ["user_code", "message"]),
   },
+
+  // ───────────── تقارير (قراءة) ─────────────
+  {
+    name: "revenue_report",
+    kind: "read",
+    label: "تقرير المداخيل",
+    risk: "low",
+    description: "تقرير مداخيل التوصيل والرحلات والعمولات خلال عدد من الأيام، مقسّم حسب اليوم.",
+    parameters: obj({ days: num("عدد الأيام (افتراضي 7، أقصى 90)") }),
+  },
+  {
+    name: "orders_report",
+    kind: "read",
+    label: "تقرير الطلبات",
+    risk: "low",
+    description: "توزيع الطلبات حسب الحالة والمدينة ومتوسط قيمة الطلب خلال مدة محددة.",
+    parameters: obj({ days: num("عدد الأيام"), city: str("المدينة (اختياري)") }),
+  },
+  {
+    name: "driver_performance",
+    kind: "read",
+    label: "أداء السائقين",
+    risk: "low",
+    description: "ترتيب السائقين حسب عدد الرحلات والطلبات المنجزة والتقييم خلال مدة.",
+    parameters: obj({ days: num("عدد الأيام"), limit: num("عدد السائقين") }),
+  },
+  {
+    name: "growth_report",
+    kind: "read",
+    label: "تقرير النمو",
+    risk: "low",
+    description: "نمو المستخدمين والسائقين والمحلات والطلبات مقارنة بالمدة السابقة.",
+    parameters: obj({ days: num("عدد الأيام") }),
+  },
+
+  // ───────────── مراقبة (قراءة) ─────────────
+  {
+    name: "system_alerts",
+    kind: "read",
+    label: "تنبيهات النظام",
+    risk: "low",
+    description: "آخر تنبيهات النظام وسجلات فحص الصحة غير السليمة.",
+    parameters: obj({ limit: num("عدد النتائج") }),
+  },
+  {
+    name: "client_errors",
+    kind: "read",
+    label: "أخطاء العملاء",
+    risk: "low",
+    description: "أخطاء واجهة المستخدم المسجّلة خلال مدة، مجمّعة حسب النوع.",
+    parameters: obj({ hours: num("عدد الساعات (افتراضي 24)"), limit: num("عدد النتائج") }),
+  },
+  {
+    name: "pending_actions",
+    kind: "read",
+    label: "الأفعال المعلّقة",
+    risk: "low",
+    description: "كل ما ينتظر تدخّل الإدارة: طلبات شحن المحفظة، الشكاوى، ترشيحات السائقين، المحلات غير المؤكدة.",
+    parameters: obj({}),
+  },
+
+  // ───────────── محتوى (كتابة) ─────────────
+  {
+    name: "create_blog_post",
+    kind: "write",
+    label: "إنشاء مقال مدونة",
+    risk: "medium",
+    description: "إنشاء مقال جديد في المدونة (يبقى مسودة غير منشورة إلا إذا طُلب نشره).",
+    parameters: obj({
+      title: str("عنوان المقال"),
+      slug: str("الرابط اللطيف (اختياري، يُولَّد تلقائياً)"),
+      content: str("محتوى المقال (Markdown أو HTML)"),
+      excerpt: str("مقتطف مختصر"),
+      category: str("التصنيف"),
+      language: str("اللغة: ar | fr | en | es"),
+      meta_description: str("وصف SEO"),
+      publish: { type: "boolean", description: "نشر مباشرة" },
+    }, ["title", "content"]),
+  },
+  {
+    name: "update_blog_post",
+    kind: "write",
+    label: "تعديل مقال مدونة",
+    risk: "medium",
+    description: "تعديل عنوان أو محتوى أو بيانات SEO لمقال موجود عبر الرابط اللطيف.",
+    parameters: obj({
+      slug: str("الرابط اللطيف للمقال"),
+      title: str("العنوان الجديد"),
+      content: str("المحتوى الجديد"),
+      excerpt: str("المقتطف"),
+      category: str("التصنيف"),
+      meta_description: str("وصف SEO"),
+    }, ["slug"]),
+  },
+  {
+    name: "set_blog_post_published",
+    kind: "write",
+    label: "نشر/إخفاء مقال",
+    risk: "medium",
+    description: "نشر مقال مدونة أو إعادته إلى مسودة.",
+    parameters: obj({ slug: str("الرابط اللطيف"), published: { type: "boolean", description: "منشور أم لا" } }, ["slug", "published"]),
+  },
+  {
+    name: "create_page",
+    kind: "write",
+    label: "إنشاء صفحة ديناميكية",
+    risk: "medium",
+    description: "إنشاء صفحة جديدة في الموقع (تبقى غير منشورة إلا إذا طُلب نشرها).",
+    parameters: obj({
+      title: str("عنوان الصفحة"),
+      slug: str("الرابط اللطيف"),
+      body: str("نص الصفحة"),
+      page_type: str("نوع الصفحة مثل static"),
+      meta_description: str("وصف SEO"),
+      publish: { type: "boolean", description: "نشر مباشرة" },
+    }, ["title", "slug", "body"]),
+  },
+  {
+    name: "update_page",
+    kind: "write",
+    label: "تعديل صفحة ديناميكية",
+    risk: "medium",
+    description: "تعديل عنوان أو نص أو وصف صفحة موجودة.",
+    parameters: obj({
+      slug: str("الرابط اللطيف"),
+      title: str("العنوان الجديد"),
+      body: str("النص الجديد"),
+      meta_description: str("وصف SEO"),
+    }, ["slug"]),
+  },
+  {
+    name: "set_page_published",
+    kind: "write",
+    label: "نشر/إخفاء صفحة",
+    risk: "medium",
+    description: "نشر صفحة ديناميكية أو إخفاؤها.",
+    parameters: obj({ slug: str("الرابط اللطيف"), published: { type: "boolean", description: "منشورة أم لا" } }, ["slug", "published"]),
+  },
 ];
+
 
 export const getSpec = (name: string) => TOOL_SPECS.find((t) => t.name === name) ?? null;
 
@@ -349,6 +488,141 @@ export async function runReadTool(db: any, name: string, args: any): Promise<any
       };
     }
 
+    // ───────────── تقارير ─────────────
+    case "revenue_report": {
+      const days = clamp(args?.days, 7, 90);
+      const since = new Date(Date.now() - days * 86400000).toISOString();
+      const [orders, trips, revenue] = await Promise.all([
+        db.from("delivery_orders").select("total_price, delivery_fee, status, created_at").gte("created_at", since),
+        db.from("trips").select("fare, status, created_at").gte("created_at", since),
+        db.from("platform_revenue").select("amount, source, created_at").gte("created_at", since),
+      ]);
+      const o = orders.data ?? [], t = trips.data ?? [], rev = revenue.data ?? [];
+      const byDay: Record<string, any> = {};
+      const bucket = (d: string) => (byDay[d] ??= { اليوم: d, توصيل: 0, رحلات: 0, عمولات: 0, عدد_الطلبات: 0 });
+      for (const x of o) { const b = bucket(String(x.created_at).slice(0, 10)); b.توصيل += Number(x.total_price ?? 0); b.عدد_الطلبات += 1; }
+      for (const x of t) { const b = bucket(String(x.created_at).slice(0, 10)); b.رحلات += Number(x.fare ?? 0); }
+      for (const x of rev) { const b = bucket(String(x.created_at).slice(0, 10)); b.عمولات += Number(x.amount ?? 0); }
+      const rows = Object.values(byDay).sort((a: any, b: any) => a.اليوم.localeCompare(b.اليوم));
+      const sum = (k: string) => rows.reduce((a: number, x: any) => a + Number(x[k] ?? 0), 0);
+      return {
+        المدة_بالأيام: days,
+        إجمالي_التوصيل: sum("توصيل"),
+        إجمالي_الرحلات: sum("رحلات"),
+        إجمالي_العمولات: sum("عمولات"),
+        عدد_الطلبات: o.length,
+        التفصيل_اليومي: rows,
+      };
+    }
+
+    case "orders_report": {
+      const days = clamp(args?.days, 7, 90);
+      const since = new Date(Date.now() - days * 86400000).toISOString();
+      let q = db.from("delivery_orders").select("status, city, total_price, created_at").gte("created_at", since);
+      if (args?.city) q = q.ilike("city", `%${args.city}%`);
+      const { data, error } = await q;
+      if (error) throw new Error(error.message);
+      const rows = data ?? [];
+      const byStatus: Record<string, number> = {}, byCity: Record<string, number> = {};
+      let total = 0;
+      for (const x of rows) {
+        byStatus[x.status ?? "—"] = (byStatus[x.status ?? "—"] ?? 0) + 1;
+        byCity[x.city ?? "—"] = (byCity[x.city ?? "—"] ?? 0) + 1;
+        total += Number(x.total_price ?? 0);
+      }
+      return {
+        المدة_بالأيام: days,
+        عدد_الطلبات: rows.length,
+        متوسط_قيمة_الطلب: rows.length ? Math.round((total / rows.length) * 100) / 100 : 0,
+        حسب_الحالة: byStatus,
+        حسب_المدينة: byCity,
+      };
+    }
+
+    case "driver_performance": {
+      const days = clamp(args?.days, 30, 180);
+      const since = new Date(Date.now() - days * 86400000).toISOString();
+      const [{ data: drivers }, { data: trips }, { data: orders }] = await Promise.all([
+        db.from("drivers").select("id, driver_code, status, driver_type, rating, user_id").limit(500),
+        db.from("trips").select("driver_id, status, fare, created_at").gte("created_at", since),
+        db.from("delivery_orders").select("driver_id, status, total_price, created_at").gte("created_at", since),
+      ]);
+      const stats = (drivers ?? []).map((d: any) => {
+        const dt = (trips ?? []).filter((x: any) => x.driver_id === d.id);
+        const dOrders = (orders ?? []).filter((x: any) => x.driver_id === d.id);
+        return {
+          رمز_السائق: d.driver_code,
+          الحالة: d.status,
+          النوع: d.driver_type,
+          التقييم: d.rating,
+          رحلات_منجزة: dt.filter((x: any) => x.status === "completed").length,
+          طلبات_منجزة: dOrders.filter((x: any) => x.status === "delivered").length,
+          مداخيل: dt.reduce((a: number, x: any) => a + Number(x.fare ?? 0), 0) + dOrders.reduce((a: number, x: any) => a + Number(x.total_price ?? 0), 0),
+        };
+      }).sort((a: any, b: any) => (b.رحلات_منجزة + b.طلبات_منجزة) - (a.رحلات_منجزة + a.طلبات_منجزة));
+      return { المدة_بالأيام: days, السائقون: stats.slice(0, clamp(args?.limit, 15, 50)) };
+    }
+
+    case "growth_report": {
+      const days = clamp(args?.days, 30, 180);
+      const now = Date.now();
+      const start = new Date(now - days * 86400000).toISOString();
+      const prevStart = new Date(now - 2 * days * 86400000).toISOString();
+      const countIn = async (table: string, from: string, to?: string) => {
+        let q = db.from(table).select("id", { count: "exact", head: true }).gte("created_at", from);
+        if (to) q = q.lt("created_at", to);
+        const { count } = await q;
+        return count ?? 0;
+      };
+      const tables = ["profiles", "drivers", "stores", "delivery_orders", "ride_requests"];
+      const out: Record<string, any> = {};
+      for (const tb of tables) {
+        const cur = await countIn(tb, start);
+        const prev = await countIn(tb, prevStart, start);
+        out[tb] = { الحالية: cur, السابقة: prev, النمو: prev ? `${Math.round(((cur - prev) / prev) * 100)}%` : (cur ? "جديد" : "0%") };
+      }
+      return { المدة_بالأيام: days, المقارنة: out };
+    }
+
+    // ───────────── مراقبة ─────────────
+    case "system_alerts": {
+      const [alerts, health] = await Promise.all([
+        db.from("alerts").select("type, message, status, created_at").order("created_at", { ascending: false }).limit(limit),
+        db.from("system_health_logs").select("check_name, category, status, message, created_at")
+          .neq("status", "ok").order("created_at", { ascending: false }).limit(limit),
+      ]);
+      return { تنبيهات: alerts.data ?? [], فحوص_غير_سليمة: health.data ?? [] };
+    }
+
+    case "client_errors": {
+      const hours = clamp(args?.hours, 24, 720);
+      const since = new Date(Date.now() - hours * 3600000).toISOString();
+      const { data, error } = await db.from("analytics_events")
+        .select("event_name, page_path, properties, created_at")
+        .eq("event_type", "error").gte("created_at", since)
+        .order("created_at", { ascending: false }).limit(clamp(args?.limit, 20, 100));
+      if (error) throw new Error(error.message);
+      const grouped: Record<string, number> = {};
+      for (const x of data ?? []) grouped[x.event_name ?? "—"] = (grouped[x.event_name ?? "—"] ?? 0) + 1;
+      return { المدة_بالساعات: hours, حسب_النوع: grouped, أخطاء: data ?? [] };
+    }
+
+    case "pending_actions": {
+      const [recharges, complaints, candidates, stores] = await Promise.all([
+        db.from("wallet_recharge_requests").select("id, amount, status, created_at").eq("status", "pending").limit(20),
+        db.from("complaints").select("complaint_code, category, priority, created_at").neq("status", "resolved").limit(20),
+        db.from("driver_candidates").select("id, status, created_at").eq("status", "pending").limit(20),
+        db.from("stores").select("store_code, name, city").eq("is_confirmed", false).limit(20),
+      ]);
+      return {
+        شحن_محفظة_معلّق: recharges.data ?? [],
+        شكاوى_مفتوحة: complaints.data ?? [],
+        ترشيحات_سائقين: candidates.data ?? [],
+        محلات_غير_مؤكدة: stores.data ?? [],
+      };
+    }
+
+
     default:
       throw new Error(`أداة قراءة غير معروفة: ${name}`);
   }
@@ -491,6 +765,88 @@ export async function executeWriteTool(db: any, name: string, args: any): Promis
       if (error) throw new Error(error.message);
       return { before: null, after: data, summary: `إشعار إلى ${prof.name} (${prof.user_code})` };
     }
+
+    // ───────────── محتوى ─────────────
+    case "create_blog_post": {
+      const title = String(need("title"));
+      const slug = String(args?.slug || title).trim().toLowerCase()
+        .replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "").slice(0, 80) || `post-${Date.now()}`;
+      const publish = args?.publish === true;
+      const payload: any = {
+        slug,
+        title,
+        content: String(need("content")),
+        excerpt: args?.excerpt ? String(args.excerpt) : null,
+        category: args?.category ? String(args.category) : "general",
+        language: args?.language ? String(args.language) : "ar",
+        meta_title: title.slice(0, 60),
+        meta_description: args?.meta_description ? String(args.meta_description).slice(0, 160) : null,
+        published: publish,
+        published_at: publish ? new Date().toISOString() : null,
+      };
+      const { data, error } = await db.from("blog_posts").insert(payload).select("slug, title, published").single();
+      if (error) throw new Error(error.message);
+      return { before: null, after: data, summary: `مقال «${data.title}» (${data.slug}) — ${data.published ? "منشور" : "مسودة"}` };
+    }
+
+    case "update_blog_post": {
+      const before = await one("blog_posts", "slug", need("slug"), "id, slug, title, published");
+      const patch: any = {};
+      for (const k of ["title", "content", "excerpt", "category", "meta_description"]) {
+        if (args?.[k] !== undefined && args[k] !== null && args[k] !== "") patch[k] = String(args[k]);
+      }
+      if (!Object.keys(patch).length) throw new Error("لا يوجد أي حقل للتعديل");
+      const { data, error } = await db.from("blog_posts").update(patch).eq("id", before.id).select("slug, title, published").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `تعديل المقال ${before.slug} (${Object.keys(patch).join("، ")})` };
+    }
+
+    case "set_blog_post_published": {
+      const published = args?.published === true || args?.published === "true";
+      const before = await one("blog_posts", "slug", need("slug"), "id, slug, title, published");
+      const { data, error } = await db.from("blog_posts")
+        .update({ published, published_at: published ? new Date().toISOString() : null })
+        .eq("id", before.id).select("slug, title, published").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `المقال ${before.slug}: ${published ? "نُشر" : "أُعيد إلى مسودة"}` };
+    }
+
+    case "create_page": {
+      const slug = String(need("slug")).trim().toLowerCase().replace(/^\/+/, "");
+      const publish = args?.publish === true;
+      const { data, error } = await db.from("dynamic_pages").insert({
+        slug,
+        title: String(need("title")),
+        page_type: args?.page_type ? String(args.page_type) : "static",
+        content: { body: String(need("body")) },
+        meta_description: args?.meta_description ? String(args.meta_description).slice(0, 160) : null,
+        is_published: publish,
+      }).select("slug, title, is_published").single();
+      if (error) throw new Error(error.message);
+      return { before: null, after: data, summary: `صفحة «${data.title}» (/${data.slug}) — ${data.is_published ? "منشورة" : "غير منشورة"}` };
+    }
+
+    case "update_page": {
+      const before = await one("dynamic_pages", "slug", need("slug"), "id, slug, title, content, is_published");
+      const patch: any = {};
+      if (args?.title) patch.title = String(args.title);
+      if (args?.meta_description) patch.meta_description = String(args.meta_description).slice(0, 160);
+      if (args?.body) patch.content = { ...(before.content ?? {}), body: String(args.body) };
+      if (!Object.keys(patch).length) throw new Error("لا يوجد أي حقل للتعديل");
+      const { data, error } = await db.from("dynamic_pages").update(patch).eq("id", before.id).select("slug, title, is_published").single();
+      if (error) throw new Error(error.message);
+      return { before: { slug: before.slug, title: before.title }, after: data, summary: `تعديل الصفحة /${before.slug}` };
+    }
+
+    case "set_page_published": {
+      const published = args?.published === true || args?.published === "true";
+      const before = await one("dynamic_pages", "slug", need("slug"), "id, slug, title, is_published");
+      const { data, error } = await db.from("dynamic_pages").update({ is_published: published })
+        .eq("id", before.id).select("slug, title, is_published").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `الصفحة /${before.slug}: ${published ? "نُشرت" : "أُخفيت"}` };
+    }
+
 
     default:
       throw new Error(`أداة كتابة غير معروفة: ${name}`);
