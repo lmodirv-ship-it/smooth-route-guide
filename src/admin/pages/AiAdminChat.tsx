@@ -195,36 +195,79 @@ export default function AiAdminChat() {
           <Button size="sm" variant="outline" onClick={() => { setChatId(null); setMessages([]); }}>
             <Plus className="w-4 h-4 me-1" /> محادثة جديدة
           </Button>
+
+          {/* نماذج تصميم واجهة الدردشة */}
+          <div className="flex items-center gap-1 rounded-full border border-border bg-card/60 p-1">
+            {CHAT_SKINS.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setSkinId(s.id)}
+                title={s.label}
+                aria-label={s.label}
+                aria-pressed={skinId === s.id}
+                className={`relative h-7 w-7 rounded-full overflow-hidden border transition-all ${
+                  skinId === s.id
+                    ? "border-primary ring-2 ring-primary/30 scale-105"
+                    : "border-border/70 opacity-70 hover:opacity-100"
+                }`}
+              >
+                <span className="absolute inset-0" style={{ background: s.preview[1] }} />
+                <span className="absolute inset-x-1 top-1 h-2 rounded-full" style={{ background: s.preview[0] }} />
+                <span className="absolute inset-x-1 bottom-1 h-2 rounded-full bg-foreground/20" />
+              </button>
+            ))}
+          </div>
         </div>
 
       </div>
 
-      <Card className="p-0 overflow-hidden">
-        <div ref={scrollRef} className="h-[55vh] overflow-y-auto p-4 space-y-3">
+      <Card className={`p-0 overflow-hidden rounded-2xl transition-colors ${skin.shell}`}>
+        <div ref={scrollRef} className={`h-[55vh] overflow-y-auto p-4 space-y-3 ${skin.surface}`}>
           {messages.length === 0 && (
-            <p className="text-center text-sm text-muted-foreground py-10">ابدأ الحوار بكتابة رسالتك في الأسفل.</p>
+            <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-primary" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">ابدأ الحوار</p>
+              <p className="text-xs text-muted-foreground max-w-xs">
+                اكتب رسالتك في الأسفل — يمكنك تغيير شكل واجهة الدردشة من الأيقونات الملوّنة بالأعلى.
+              </p>
+            </div>
           )}
           {messages.map((m, i) => (
-            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${
-                m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+            <div key={i} className={`flex animate-fade-in ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[80%] px-3.5 py-2.5 text-sm leading-relaxed transition-colors ${
+                m.role === "user" ? skin.user : skin.assistant
               }`}>
-                <div className="prose prose-sm dark:prose-invert max-w-none">
+                <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-1">
                   <ReactMarkdown>{m.content || "…"}</ReactMarkdown>
                 </div>
               </div>
             </div>
           ))}
+          {loading && messages[messages.length - 1]?.role === "user" && (
+            <div className="flex justify-start">
+              <div className={`px-3.5 py-3 ${skin.assistant}`}>
+                <span className="flex gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60 animate-bounce [animation-delay:0ms]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60 animate-bounce [animation-delay:150ms]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60 animate-bounce [animation-delay:300ms]" />
+                </span>
+              </div>
+            </div>
+          )}
         </div>
-        <div className="border-t border-border p-3 flex gap-2">
+        <div className={`p-3 flex gap-2 ${skin.composer}`}>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
             placeholder="اكتب رسالتك…"
+            className="rounded-xl"
             disabled={loading}
           />
-          <Button onClick={send} disabled={loading || !input.trim()}>
+          <Button onClick={send} disabled={loading || !input.trim()} className="rounded-xl px-4">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </Button>
         </div>
