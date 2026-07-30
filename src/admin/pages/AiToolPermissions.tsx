@@ -14,8 +14,10 @@ import { Loader2, RefreshCw, Database, ShieldAlert } from "lucide-react";
 
 type Perm = {
   id: string; tool_name: string; label: string; description: string | null;
-  kind: "read" | "write"; risk: string; is_enabled: boolean; daily_limit: number | null; sort_order: number | null;
+  kind: "read" | "write"; risk: string; is_enabled: boolean; auto_execute: boolean;
+  daily_limit: number | null; sort_order: number | null;
 };
+
 type Cmd = {
   id: string; tool_name: string | null; command_text: string | null;
   status: string; created_at: string; executed_at: string | null;
