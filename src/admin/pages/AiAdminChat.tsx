@@ -265,19 +265,53 @@ export default function AiAdminChat() {
             <Plus className="w-4 h-4 me-1" /> محادثة جديدة
           </Button>
 
-          {/* شكل الدردشة + التخصيص */}
+          {/* شكل الدردشة + التخصيص + الثيمات */}
           <Popover>
             <PopoverTrigger asChild>
               <Button size="sm" variant="outline" className="h-9 gap-2" aria-label="ثيم الدردشة">
                 <span className="relative h-5 w-5 rounded-full overflow-hidden border border-border">
                   <span className="absolute inset-0" style={{ background: c.bg || skin.preview[1] }} />
-                  <span className="absolute inset-x-0.5 top-0.5 h-1.5 rounded-full" style={{ background: c.userBg || skin.preview[0] }} />
+                  <span className="absolute inset-x-0.5 top-0.5 h-1.5 rounded-full" style={{ background: c.user?.bg || skin.preview[0] }} />
                 </span>
                 <Palette className="w-4 h-4" />
                 <span className="text-sm">{skin.label}</span>
+                {dirty && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-[320px] max-h-[70vh] overflow-y-auto space-y-4 z-50">
+            <PopoverContent align="end" className="w-[340px] max-h-[75vh] overflow-y-auto space-y-4 z-50">
+              {/* ثيمات محفوظة */}
+              <div className="space-y-2">
+                <Label className="text-xs">ثيماتي</Label>
+                {(draft.presets ?? []).length === 0 ? (
+                  <p className="text-[11px] text-muted-foreground">لا توجد ثيمات محفوظة بعد — خصّص ثم احفظ باسم.</p>
+                ) : (
+                  <div className="space-y-1">
+                    {(draft.presets ?? []).map((p) => (
+                      <div key={p.id} className={`flex items-center gap-2 rounded-md px-2 py-1.5 border ${draft.activePresetId === p.id ? "border-primary bg-primary/5" : "border-border"}`}>
+                        <button type="button" onClick={() => applyPreset(p.id)} className="flex items-center gap-2 flex-1 min-w-0 text-start">
+                          <span className="relative h-4 w-4 rounded-full overflow-hidden border border-border flex-shrink-0">
+                            <span className="absolute inset-0" style={{ background: p.custom.bg || getSkin(p.skinId).preview[1] }} />
+                            <span className="absolute inset-x-0.5 top-0.5 h-1 rounded-full" style={{ background: p.custom.user?.bg || getSkin(p.skinId).preview[0] }} />
+                          </span>
+                          <span className="text-xs truncate">{p.name}</span>
+                        </button>
+                        <button type="button" onClick={() => deletePreset(p.id)} className="text-muted-foreground hover:text-destructive" title="حذف">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Input value={presetName} onChange={(e) => setPresetName(e.target.value)} placeholder="اسم الثيم الجديد" className="h-8 text-xs" />
+                  <Button size="sm" className="h-8 gap-1" disabled={!presetName.trim()} onClick={savePreset}>
+                    <Save className="w-3.5 h-3.5" /> حفظ
+                  </Button>
+                </div>
+              </div>
+
+              <Separator />
+
               <div className="space-y-2">
                 <Label className="text-xs">شكل الواجهة</Label>
                 <Select value={skinId} onValueChange={setSkinId}>
@@ -301,10 +335,10 @@ export default function AiAdminChat() {
               <div className="space-y-2">
                 <Label className="text-xs">الوضع</Label>
                 <div className="grid grid-cols-2 gap-2">
-                  <Button size="sm" variant={isLight ? "outline" : "default"} onClick={() => update({ colorMode: "dark" })} className="gap-1">
+                  <Button size="sm" variant={isLight ? "outline" : "default"} onClick={() => patchDraft({ colorMode: "dark" })} className="gap-1">
                     <Moon className="w-3.5 h-3.5" /> ليلي
                   </Button>
-                  <Button size="sm" variant={isLight ? "default" : "outline"} onClick={() => update({ colorMode: "light" })} className="gap-1">
+                  <Button size="sm" variant={isLight ? "default" : "outline"} onClick={() => patchDraft({ colorMode: "light" })} className="gap-1">
                     <Sun className="w-3.5 h-3.5" /> نهاري
                   </Button>
                 </div>
@@ -312,77 +346,98 @@ export default function AiAdminChat() {
 
               <Separator />
 
-              <div className="grid grid-cols-2 gap-3">
-                {([
-                  ["bg", "خلفية المحادثة"],
-                  ["border", "لون الحدود"],
-                  ["userBg", "خلفية فقاعتك"],
-                  ["userText", "نص فقاعتك"],
-                  ["assistantBg", "خلفية المساعد"],
-                  ["assistantText", "نص المساعد"],
-                ] as const).map(([key, label]) => (
-                  <div key={key} className="space-y-1">
-                    <Label className="text-[11px] text-muted-foreground">{label}</Label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="color"
-                        value={(c as any)[key] || "#1a1a1a"}
-                        onChange={(e) => update({ custom: { [key]: e.target.value } })}
-                        className="h-8 w-full rounded-md border border-border bg-transparent cursor-pointer"
-                        aria-label={label}
-                      />
-                      {(c as any)[key] && (
-                        <button
-                          type="button"
-                          onClick={() => update({ custom: { [key]: undefined } })}
-                          className="text-[10px] text-muted-foreground hover:text-foreground"
-                          title="إلغاء"
-                        >✕</button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+              <div className="space-y-1">
+                <Label className="text-[11px] text-muted-foreground">خلفية المحادثة</Label>
+                <div className="flex items-center gap-1">
+                  <input type="color" value={c.bg || "#111111"} onChange={(e) => patchCustom({ bg: e.target.value })}
+                    className="h-8 w-full rounded-md border border-border bg-transparent cursor-pointer" aria-label="خلفية المحادثة" />
+                  {c.bg && <button type="button" onClick={() => patchCustom({ bg: undefined })} className="text-[10px] text-muted-foreground hover:text-foreground" title="إلغاء">✕</button>}
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-[11px] text-muted-foreground">سماكة الحدود ({c.borderWidth ?? 0}px)</Label>
-                <Slider value={[c.borderWidth ?? 0]} min={0} max={4} step={1}
-                  onValueChange={([v]) => update({ custom: { borderWidth: v } })} />
-              </div>
+              {/* تخصيص منفصل لكل نوع فقاعة */}
+              <Tabs defaultValue="user">
+                <TabsList className="grid grid-cols-2 w-full h-8">
+                  <TabsTrigger value="user" className="text-xs">الرسائل الصادرة</TabsTrigger>
+                  <TabsTrigger value="assistant" className="text-xs">الرسائل الواردة</TabsTrigger>
+                </TabsList>
+                {(["user", "assistant"] as const).map((role) => {
+                  const b = c[role] ?? {};
+                  return (
+                    <TabsContent key={role} value={role} className="space-y-3 pt-3">
+                      <div className="grid grid-cols-3 gap-2">
+                        {([["bg", "الخلفية", "#1a1a1a"], ["text", "النص", "#ffffff"], ["border", "الحدود", "#666666"]] as const).map(([key, label, fallback]) => (
+                          <div key={key} className="space-y-1">
+                            <Label className="text-[11px] text-muted-foreground">{label}</Label>
+                            <div className="flex items-center gap-1">
+                              <input type="color" value={(b as any)[key] || fallback}
+                                onChange={(e) => patchBubble(role, { [key]: e.target.value } as any)}
+                                className="h-8 w-full rounded-md border border-border bg-transparent cursor-pointer" aria-label={label} />
+                              {(b as any)[key] && (
+                                <button type="button" onClick={() => patchBubble(role, { [key]: undefined } as any)}
+                                  className="text-[10px] text-muted-foreground hover:text-foreground" title="إلغاء">✕</button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
 
-              <div className="space-y-2">
-                <Label className="text-[11px] text-muted-foreground">استدارة الفقاعات ({c.radius ?? 16}px)</Label>
-                <Slider value={[c.radius ?? 16]} min={0} max={32} step={2}
-                  onValueChange={([v]) => update({ custom: { radius: v } })} />
-              </div>
+                      <div className="space-y-2">
+                        <Label className="text-[11px] text-muted-foreground">سماكة الحدود ({b.borderWidth ?? 0}px)</Label>
+                        <Slider value={[b.borderWidth ?? 0]} min={0} max={4} step={1}
+                          onValueChange={([v]) => patchBubble(role, { borderWidth: v })} />
+                      </div>
 
-              <div className="space-y-2">
-                <Label className="text-[11px] text-muted-foreground">حجم الخط ({c.fontSize ?? 14}px)</Label>
-                <Slider value={[c.fontSize ?? 14]} min={12} max={20} step={1}
-                  onValueChange={([v]) => update({ custom: { fontSize: v } })} />
-              </div>
+                      <div className="space-y-2">
+                        <Label className="text-[11px] text-muted-foreground">الاستدارة ({b.radius ?? 16}px)</Label>
+                        <Slider value={[b.radius ?? 16]} min={0} max={32} step={2}
+                          onValueChange={([v]) => patchBubble(role, { radius: v })} />
+                      </div>
 
-              <div className="space-y-2">
-                <Label className="text-[11px] text-muted-foreground">نوع الخط</Label>
-                <Select value={c.fontFamily ?? "default"} onValueChange={(v) => update({ custom: { fontFamily: v === "default" ? undefined : v } })}>
-                  <SelectTrigger className="h-9"><SelectValue placeholder="خط المنصة" /></SelectTrigger>
-                  <SelectContent className="z-50">
-                    {CHAT_FONTS.map((f) => (
-                      <SelectItem key={f.label} value={f.value || "default"}>
-                        <span style={{ fontFamily: f.value || undefined }}>{f.label}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                      <div className="space-y-2">
+                        <Label className="text-[11px] text-muted-foreground">حجم الخط ({b.fontSize ?? c.fontSize ?? 14}px)</Label>
+                        <Slider value={[b.fontSize ?? c.fontSize ?? 14]} min={12} max={20} step={1}
+                          onValueChange={([v]) => patchBubble(role, { fontSize: v })} />
+                      </div>
 
-              <Button size="sm" variant="ghost" className="w-full gap-2" onClick={reset}>
+                      <div className="space-y-2">
+                        <Label className="text-[11px] text-muted-foreground">نوع الخط</Label>
+                        <Select value={b.fontFamily ?? "default"} onValueChange={(v) => patchBubble(role, { fontFamily: v === "default" ? undefined : v })}>
+                          <SelectTrigger className="h-9"><SelectValue placeholder="خط المنصة" /></SelectTrigger>
+                          <SelectContent className="z-50">
+                            {CHAT_FONTS.map((f) => (
+                              <SelectItem key={f.label} value={f.value || "default"}>
+                                <span style={{ fontFamily: f.value || undefined }}>{f.label}</span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </TabsContent>
+                  );
+                })}
+              </Tabs>
+
+              <Separator />
+
+              <div className="grid grid-cols-2 gap-2">
+                <Button size="sm" onClick={saveTheme} disabled={!dirty} className="gap-1">
+                  <Save className="w-3.5 h-3.5" /> حفظ الثيم
+                </Button>
+                <Button size="sm" variant="outline" onClick={cancelTheme} disabled={!dirty} className="gap-1">
+                  <RotateCcw className="w-3.5 h-3.5" /> تراجع
+                </Button>
+              </div>
+              <Button size="sm" variant="ghost" className="w-full gap-2" onClick={resetColors}>
                 <RotateCcw className="w-3.5 h-3.5" /> إعادة الألوان الافتراضية
               </Button>
-              <p className="text-[10px] text-muted-foreground text-center">يُحفظ اختيارك في حسابك ويظهر على كل أجهزتك.</p>
+              <p className="text-[10px] text-muted-foreground text-center">
+                {dirty ? "معاينة فورية — اضغط «حفظ الثيم» لتثبيته على كل أجهزتك." : "محفوظ في حسابك ويظهر على كل أجهزتك."}
+              </p>
             </PopoverContent>
           </Popover>
         </div>
+
 
       </div>
 
