@@ -69,6 +69,22 @@ const AdminBlog = lazy(() => import("@/admin/pages/AdminBlog"));
 const UtmBuilder = lazy(() => import("@/admin/pages/UtmBuilder"));
 const CampaignsDashboard = lazy(() => import("@/admin/pages/CampaignsDashboard"));
 
+// ─── AI & Platform management (new) ───
+const AiModels = lazy(() => import("@/admin/pages/AiModels"));
+const AiLocalModels = lazy(() => import("@/admin/pages/AiLocalModels"));
+const AiAgents = lazy(() => import("@/admin/pages/AiAgents"));
+const AiAdminChat = lazy(() => import("@/admin/pages/AiAdminChat"));
+const AiChats = lazy(() => import("@/admin/pages/AiChats"));
+const AiBilling = lazy(() => import("@/admin/pages/AiBilling"));
+const UsageMetrics = lazy(() => import("@/admin/pages/UsageMetrics"));
+const LicensesPage = lazy(() => import("@/admin/pages/Licenses"));
+const PlatformPackages = lazy(() => import("@/admin/pages/PlatformPackages"));
+const InvoicesPage = lazy(() => import("@/admin/pages/Invoices"));
+const DownloadsPage = lazy(() => import("@/admin/pages/Downloads"));
+const SignupRequestsPage = lazy(() => import("@/admin/pages/SignupRequests"));
+const MonitoringPage = lazy(() => import("@/admin/pages/Monitoring"));
+const AuditLogPage = lazy(() => import("@/admin/pages/AuditLog"));
+
 // Supervisor
 const SupervisorLayout = lazy(() => import("@/admin/layouts/SupervisorLayout"));
 const SupervisorDashboard = lazy(() => import("@/admin/pages/supervisor/SupervisorDashboard"));
