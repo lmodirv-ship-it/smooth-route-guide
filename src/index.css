@@ -1644,3 +1644,25 @@
 @media (max-width: 860px) {
   .hn-paths { grid-template-columns: 1fr; }
 }
+
+/* نطاق الوضع النهاري لواجهة الدردشة فقط */
+.chat-light {
+  --background: 40 30% 99%;
+  --foreground: 220 20% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 20% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 20% 12%;
+  --primary: 32 95% 48%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 40 25% 94%;
+  --secondary-foreground: 220 20% 18%;
+  --muted: 40 20% 94%;
+  --muted-foreground: 220 10% 40%;
+  --accent: 32 90% 50%;
+  --accent-foreground: 0 0% 100%;
+  --border: 220 12% 86%;
+  --input: 220 12% 86%;
+  --ring: 32 95% 48%;
+  color: hsl(var(--foreground));
+}

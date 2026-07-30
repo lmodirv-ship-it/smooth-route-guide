@@ -268,6 +268,33 @@ export type Database = {
           },
         ]
       }
+      ai_chat_preferences: {
+        Row: {
+          color_mode: string
+          created_at: string
+          custom: Json
+          skin_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color_mode?: string
+          created_at?: string
+          custom?: Json
+          skin_id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color_mode?: string
+          created_at?: string
+          custom?: Json
+          skin_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_endpoints: {
         Row: {
           created_at: string
