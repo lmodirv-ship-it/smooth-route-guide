@@ -186,6 +186,14 @@ export default function AiAdminChat() {
     return Array.from(map.entries());
   }, [models]);
 
+  const freeModels = useMemo(() => models.filter((m) => m.is_free), [models]);
+  /** النموذج المحلي المختار حالياً (إن وُجد). */
+  const activeLocal = useMemo(
+    () => (modelId.startsWith("local:") ? localModels.find((m) => m.id === modelId.slice(6)) ?? null : null),
+    [modelId, localModels],
+  );
+
+
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
