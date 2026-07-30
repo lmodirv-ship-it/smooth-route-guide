@@ -75,16 +75,33 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(() => {
-  ensureWorkspace();
-  createWindow();
-  setTimeout(() => autoUpdater.checkForUpdatesAndNotify().catch(() => {}), 3000);
-  setInterval(() => autoUpdater.checkForUpdates().catch(() => {}), 30 * 60 * 1000);
-});
+// قفل المثيل الواحد: يمنع فتح نافذة ثانية فوق الأولى
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (win) {
+      if (win.isMinimized()) win.restore();
+      win.show();
+      win.focus();
+    } else {
+      createWindow();
+    }
+  });
 
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
-});
+  app.whenReady().then(() => {
+    ensureWorkspace();
+    if (!win) createWindow();
+    setTimeout(() => autoUpdater.checkForUpdatesAndNotify().catch(() => {}), 3000);
+    setInterval(() => autoUpdater.checkForUpdates().catch(() => {}), 30 * 60 * 1000);
+  });
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+}
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
