@@ -195,7 +195,146 @@ export const TOOL_SPECS: ToolSpec[] = [
     description: "إرسال إشعار داخل التطبيق لمستخدم عبر رمزه.",
     parameters: obj({ user_code: str("رمز المستخدم"), message: str("نص الإشعار"), type: str("نوع الإشعار") }, ["user_code", "message"]),
   },
+
+  // ───────────── تقارير (قراءة) ─────────────
+  {
+    name: "revenue_report",
+    kind: "read",
+    label: "تقرير المداخيل",
+    risk: "low",
+    description: "تقرير مداخيل التوصيل والرحلات والعمولات خلال عدد من الأيام، مقسّم حسب اليوم.",
+    parameters: obj({ days: num("عدد الأيام (افتراضي 7، أقصى 90)") }),
+  },
+  {
+    name: "orders_report",
+    kind: "read",
+    label: "تقرير الطلبات",
+    risk: "low",
+    description: "توزيع الطلبات حسب الحالة والمدينة ومتوسط قيمة الطلب خلال مدة محددة.",
+    parameters: obj({ days: num("عدد الأيام"), city: str("المدينة (اختياري)") }),
+  },
+  {
+    name: "driver_performance",
+    kind: "read",
+    label: "أداء السائقين",
+    risk: "low",
+    description: "ترتيب السائقين حسب عدد الرحلات والطلبات المنجزة والتقييم خلال مدة.",
+    parameters: obj({ days: num("عدد الأيام"), limit: num("عدد السائقين") }),
+  },
+  {
+    name: "growth_report",
+    kind: "read",
+    label: "تقرير النمو",
+    risk: "low",
+    description: "نمو المستخدمين والسائقين والمحلات والطلبات مقارنة بالمدة السابقة.",
+    parameters: obj({ days: num("عدد الأيام") }),
+  },
+
+  // ───────────── مراقبة (قراءة) ─────────────
+  {
+    name: "system_alerts",
+    kind: "read",
+    label: "تنبيهات النظام",
+    risk: "low",
+    description: "آخر تنبيهات النظام وسجلات فحص الصحة غير السليمة.",
+    parameters: obj({ limit: num("عدد النتائج") }),
+  },
+  {
+    name: "client_errors",
+    kind: "read",
+    label: "أخطاء العملاء",
+    risk: "low",
+    description: "أخطاء واجهة المستخدم المسجّلة خلال مدة، مجمّعة حسب النوع.",
+    parameters: obj({ hours: num("عدد الساعات (افتراضي 24)"), limit: num("عدد النتائج") }),
+  },
+  {
+    name: "pending_actions",
+    kind: "read",
+    label: "الأفعال المعلّقة",
+    risk: "low",
+    description: "كل ما ينتظر تدخّل الإدارة: طلبات شحن المحفظة، الشكاوى، ترشيحات السائقين، المحلات غير المؤكدة.",
+    parameters: obj({}),
+  },
+
+  // ───────────── محتوى (كتابة) ─────────────
+  {
+    name: "create_blog_post",
+    kind: "write",
+    label: "إنشاء مقال مدونة",
+    risk: "medium",
+    description: "إنشاء مقال جديد في المدونة (يبقى مسودة غير منشورة إلا إذا طُلب نشره).",
+    parameters: obj({
+      title: str("عنوان المقال"),
+      slug: str("الرابط اللطيف (اختياري، يُولَّد تلقائياً)"),
+      content: str("محتوى المقال (Markdown أو HTML)"),
+      excerpt: str("مقتطف مختصر"),
+      category: str("التصنيف"),
+      language: str("اللغة: ar | fr | en | es"),
+      meta_description: str("وصف SEO"),
+      publish: { type: "boolean", description: "نشر مباشرة" },
+    }, ["title", "content"]),
+  },
+  {
+    name: "update_blog_post",
+    kind: "write",
+    label: "تعديل مقال مدونة",
+    risk: "medium",
+    description: "تعديل عنوان أو محتوى أو بيانات SEO لمقال موجود عبر الرابط اللطيف.",
+    parameters: obj({
+      slug: str("الرابط اللطيف للمقال"),
+      title: str("العنوان الجديد"),
+      content: str("المحتوى الجديد"),
+      excerpt: str("المقتطف"),
+      category: str("التصنيف"),
+      meta_description: str("وصف SEO"),
+    }, ["slug"]),
+  },
+  {
+    name: "set_blog_post_published",
+    kind: "write",
+    label: "نشر/إخفاء مقال",
+    risk: "medium",
+    description: "نشر مقال مدونة أو إعادته إلى مسودة.",
+    parameters: obj({ slug: str("الرابط اللطيف"), published: { type: "boolean", description: "منشور أم لا" } }, ["slug", "published"]),
+  },
+  {
+    name: "create_page",
+    kind: "write",
+    label: "إنشاء صفحة ديناميكية",
+    risk: "medium",
+    description: "إنشاء صفحة جديدة في الموقع (تبقى غير منشورة إلا إذا طُلب نشرها).",
+    parameters: obj({
+      title: str("عنوان الصفحة"),
+      slug: str("الرابط اللطيف"),
+      body: str("نص الصفحة"),
+      page_type: str("نوع الصفحة مثل static"),
+      meta_description: str("وصف SEO"),
+      publish: { type: "boolean", description: "نشر مباشرة" },
+    }, ["title", "slug", "body"]),
+  },
+  {
+    name: "update_page",
+    kind: "write",
+    label: "تعديل صفحة ديناميكية",
+    risk: "medium",
+    description: "تعديل عنوان أو نص أو وصف صفحة موجودة.",
+    parameters: obj({
+      slug: str("الرابط اللطيف"),
+      title: str("العنوان الجديد"),
+      body: str("النص الجديد"),
+      meta_description: str("وصف SEO"),
+    }, ["slug"]),
+  },
+  {
+    name: "set_page_published",
+    kind: "write",
+    label: "نشر/إخفاء صفحة",
+    risk: "medium",
+    description: "نشر صفحة ديناميكية أو إخفاؤها.",
+    parameters: obj({ slug: str("الرابط اللطيف"), published: { type: "boolean", description: "منشورة أم لا" } }, ["slug", "published"]),
+  },
 ];
+
 
 export const getSpec = (name: string) => TOOL_SPECS.find((t) => t.name === name) ?? null;
 
