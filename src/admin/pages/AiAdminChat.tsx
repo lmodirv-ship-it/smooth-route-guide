@@ -10,7 +10,12 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Send, Plus, RefreshCw, Sparkles } from "lucide-react";
+import { Loader2, Send, Plus, RefreshCw, Sparkles, Palette, Sun, Moon, RotateCcw } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Separator } from "@/components/ui/separator";
+import { useChatPrefs, CHAT_FONTS } from "@/hooks/useChatPrefs";
 import { providerLogo } from "@/admin/data/aiProviders";
 import { CHAT_SKINS, getSkin } from "@/admin/data/chatSkins";
 
@@ -32,9 +37,26 @@ export default function AiAdminChat() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [skinId, setSkinId] = useState<string>(() => localStorage.getItem("hn_admin_chat_skin") ?? "classic");
+  const { prefs, update, reset } = useChatPrefs();
+  const skinId = prefs.skinId;
+  const setSkinId = (id: string) => update({ skinId: id });
   const skin = getSkin(skinId);
-  useEffect(() => { localStorage.setItem("hn_admin_chat_skin", skinId); }, [skinId]);
+  const c = prefs.custom;
+  const isLight = prefs.colorMode === "light";
+
+  const surfaceStyle: React.CSSProperties = {
+    background: c.bg || undefined,
+    fontFamily: c.fontFamily || undefined,
+    fontSize: c.fontSize ? `${c.fontSize}px` : undefined,
+  };
+  const bubbleStyle = (role: "user" | "assistant"): React.CSSProperties => ({
+    background: (role === "user" ? c.userBg : c.assistantBg) || undefined,
+    color: (role === "user" ? c.userText : c.assistantText) || undefined,
+    borderColor: c.border || undefined,
+    borderWidth: c.borderWidth != null ? `${c.borderWidth}px` : undefined,
+    borderStyle: c.borderWidth ? "solid" : undefined,
+    borderRadius: c.radius != null ? `${c.radius}px` : undefined,
+  });
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const loadCatalog = async () => {
@@ -200,38 +222,129 @@ export default function AiAdminChat() {
             <Plus className="w-4 h-4 me-1" /> محادثة جديدة
           </Button>
 
-          {/* اختيار شكل واجهة الدردشة */}
-          <Select value={skinId} onValueChange={setSkinId}>
-            <SelectTrigger className="h-9 w-[180px]" aria-label="شكل الدردشة">
-              <span className="flex items-center gap-2">
+          {/* شكل الدردشة + التخصيص */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button size="sm" variant="outline" className="h-9 gap-2" aria-label="ثيم الدردشة">
                 <span className="relative h-5 w-5 rounded-full overflow-hidden border border-border">
-                  <span className="absolute inset-0" style={{ background: skin.preview[1] }} />
-                  <span className="absolute inset-x-0.5 top-0.5 h-1.5 rounded-full" style={{ background: skin.preview[0] }} />
+                  <span className="absolute inset-0" style={{ background: c.bg || skin.preview[1] }} />
+                  <span className="absolute inset-x-0.5 top-0.5 h-1.5 rounded-full" style={{ background: c.userBg || skin.preview[0] }} />
                 </span>
+                <Palette className="w-4 h-4" />
                 <span className="text-sm">{skin.label}</span>
-              </span>
-            </SelectTrigger>
-            <SelectContent className="max-h-72">
-              <SelectLabel className="text-[11px] text-muted-foreground">أشكال واجهة الدردشة</SelectLabel>
-              {CHAT_SKINS.map((s) => (
-                <SelectItem key={s.id} value={s.id}>
-                  <span className="flex items-center gap-2">
-                    <span className="relative h-5 w-5 rounded-full overflow-hidden border border-border flex-shrink-0">
-                      <span className="absolute inset-0" style={{ background: s.preview[1] }} />
-                      <span className="absolute inset-x-0.5 top-0.5 h-1.5 rounded-full" style={{ background: s.preview[0] }} />
-                    </span>
-                    <span>{s.label}</span>
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-[320px] max-h-[70vh] overflow-y-auto space-y-4 z-50">
+              <div className="space-y-2">
+                <Label className="text-xs">شكل الواجهة</Label>
+                <Select value={skinId} onValueChange={setSkinId}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent className="max-h-64 z-50">
+                    {CHAT_SKINS.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        <span className="flex items-center gap-2">
+                          <span className="relative h-4 w-4 rounded-full overflow-hidden border border-border flex-shrink-0">
+                            <span className="absolute inset-0" style={{ background: s.preview[1] }} />
+                            <span className="absolute inset-x-0.5 top-0.5 h-1 rounded-full" style={{ background: s.preview[0] }} />
+                          </span>
+                          <span>{s.label}</span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs">الوضع</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button size="sm" variant={isLight ? "outline" : "default"} onClick={() => update({ colorMode: "dark" })} className="gap-1">
+                    <Moon className="w-3.5 h-3.5" /> ليلي
+                  </Button>
+                  <Button size="sm" variant={isLight ? "default" : "outline"} onClick={() => update({ colorMode: "light" })} className="gap-1">
+                    <Sun className="w-3.5 h-3.5" /> نهاري
+                  </Button>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="grid grid-cols-2 gap-3">
+                {([
+                  ["bg", "خلفية المحادثة"],
+                  ["border", "لون الحدود"],
+                  ["userBg", "خلفية فقاعتك"],
+                  ["userText", "نص فقاعتك"],
+                  ["assistantBg", "خلفية المساعد"],
+                  ["assistantText", "نص المساعد"],
+                ] as const).map(([key, label]) => (
+                  <div key={key} className="space-y-1">
+                    <Label className="text-[11px] text-muted-foreground">{label}</Label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="color"
+                        value={(c as any)[key] || "#1a1a1a"}
+                        onChange={(e) => update({ custom: { [key]: e.target.value } })}
+                        className="h-8 w-full rounded-md border border-border bg-transparent cursor-pointer"
+                        aria-label={label}
+                      />
+                      {(c as any)[key] && (
+                        <button
+                          type="button"
+                          onClick={() => update({ custom: { [key]: undefined } })}
+                          className="text-[10px] text-muted-foreground hover:text-foreground"
+                          title="إلغاء"
+                        >✕</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[11px] text-muted-foreground">سماكة الحدود ({c.borderWidth ?? 0}px)</Label>
+                <Slider value={[c.borderWidth ?? 0]} min={0} max={4} step={1}
+                  onValueChange={([v]) => update({ custom: { borderWidth: v } })} />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[11px] text-muted-foreground">استدارة الفقاعات ({c.radius ?? 16}px)</Label>
+                <Slider value={[c.radius ?? 16]} min={0} max={32} step={2}
+                  onValueChange={([v]) => update({ custom: { radius: v } })} />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[11px] text-muted-foreground">حجم الخط ({c.fontSize ?? 14}px)</Label>
+                <Slider value={[c.fontSize ?? 14]} min={12} max={20} step={1}
+                  onValueChange={([v]) => update({ custom: { fontSize: v } })} />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[11px] text-muted-foreground">نوع الخط</Label>
+                <Select value={c.fontFamily ?? ""} onValueChange={(v) => update({ custom: { fontFamily: v || undefined } })}>
+                  <SelectTrigger className="h-9"><SelectValue placeholder="خط المنصة" /></SelectTrigger>
+                  <SelectContent className="z-50">
+                    {CHAT_FONTS.map((f) => (
+                      <SelectItem key={f.label} value={f.value || "default"} onSelect={undefined}>
+                        <span style={{ fontFamily: f.value || undefined }}>{f.label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button size="sm" variant="ghost" className="w-full gap-2" onClick={reset}>
+                <RotateCcw className="w-3.5 h-3.5" /> إعادة الألوان الافتراضية
+              </Button>
+              <p className="text-[10px] text-muted-foreground text-center">يُحفظ اختيارك في حسابك ويظهر على كل أجهزتك.</p>
+            </PopoverContent>
+          </Popover>
         </div>
 
       </div>
 
-      <Card className={`p-0 overflow-hidden rounded-2xl transition-colors ${skin.shell}`}>
-        <div ref={scrollRef} className={`h-[55vh] overflow-y-auto p-4 space-y-3 ${skin.surface}`}>
+      <Card className={`p-0 overflow-hidden rounded-2xl transition-colors ${isLight ? "chat-light" : "dark"} ${skin.shell}`}>
+        <div ref={scrollRef} style={surfaceStyle} className={`h-[55vh] overflow-y-auto p-4 space-y-3 ${skin.surface}`}>
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
@@ -245,9 +358,12 @@ export default function AiAdminChat() {
           )}
           {messages.map((m, i) => (
             <div key={i} className={`flex animate-fade-in ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[80%] px-3.5 py-2.5 text-sm leading-relaxed transition-colors ${
-                m.role === "user" ? skin.user : skin.assistant
-              }`}>
+              <div
+                style={bubbleStyle(m.role)}
+                className={`max-w-[80%] px-3.5 py-2.5 text-sm leading-relaxed transition-colors ${
+                  m.role === "user" ? skin.user : skin.assistant
+                }`}
+              >
                 <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-1">
                   <ReactMarkdown>{m.content || "…"}</ReactMarkdown>
                 </div>
@@ -256,7 +372,7 @@ export default function AiAdminChat() {
           ))}
           {loading && messages[messages.length - 1]?.role === "user" && (
             <div className="flex justify-start">
-              <div className={`px-3.5 py-3 ${skin.assistant}`}>
+              <div style={bubbleStyle("assistant")} className={`px-3.5 py-3 ${skin.assistant}`}>
                 <span className="flex gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60 animate-bounce [animation-delay:0ms]" />
                   <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60 animate-bounce [animation-delay:150ms]" />
