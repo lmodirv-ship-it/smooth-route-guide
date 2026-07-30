@@ -202,7 +202,7 @@ Deno.serve(async (req) => {
           });
           event({ type: "usage", ...usage, cost: Number(estCost) });
 
-          send("[DONE]");
+          controller.enqueue(enc.encode("data: [DONE]\n\n"));
         } catch (e: any) {
           event({ type: "error", message: e?.message ?? "خطأ غير متوقع" });
           text(`\n\n⚠️ تعذّر إكمال الطلب: ${e?.message ?? ""}`);
