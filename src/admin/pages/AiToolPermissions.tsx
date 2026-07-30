@@ -92,7 +92,14 @@ export default function AiToolPermissions() {
                 />
               </div>
             )}
+            {kind === "write" && (
+              <div className="flex items-center gap-2" title="عند التفعيل تُنفَّذ هذه الأداة مباشرة دون طلب موافقتك">
+                <span className={`text-xs ${p.auto_execute ? "text-destructive" : "text-muted-foreground"}`}>تنفيذ تلقائي</span>
+                <Switch checked={!!p.auto_execute} onCheckedChange={(v) => patch(p, { auto_execute: v })} />
+              </div>
+            )}
             <Switch checked={p.is_enabled} onCheckedChange={(v) => patch(p, { is_enabled: v })} />
+
           </div>
         ))}
       </div>
