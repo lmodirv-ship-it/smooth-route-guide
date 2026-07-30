@@ -17,11 +17,13 @@ import {
 interface MagicLinkEmailProps {
   siteName: string
   confirmationUrl: string
+  token?: string
 }
 
 export const MagicLinkEmail = ({
   siteName,
   confirmationUrl,
+  token,
 }: MagicLinkEmailProps) => (
   <Html lang="ar" dir="rtl">
     <Head />
@@ -38,6 +40,14 @@ export const MagicLinkEmail = ({
         <Button style={button} href={confirmationUrl}>
           تسجيل الدخول
         </Button>
+        {token ? (
+          <>
+            <Text style={text}>
+              أو أدخل رمز التحقق التالي داخل تطبيق سطح المكتب:
+            </Text>
+            <Text style={code}>{token}</Text>
+          </>
+        ) : null}
         <Text style={footer}>
           إذا لم تطلب هذا الرابط، يمكنك تجاهل هذا البريد بأمان.
         </Text>
@@ -81,6 +91,17 @@ const button = {
   textDecoration: 'none',
   display: 'block' as const,
   textAlign: 'center' as const,
+}
+const code = {
+  fontSize: '30px',
+  fontWeight: 'bold' as const,
+  letterSpacing: '8px',
+  color: '#1a1a2e',
+  textAlign: 'center' as const,
+  backgroundColor: '#f5f5f5',
+  borderRadius: '12px',
+  padding: '14px 0',
+  margin: '10px 0 0',
 }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
 const contact = { fontSize: '12px', color: '#d4841a', textAlign: 'center' as const, margin: '10px 0 0' }
