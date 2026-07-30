@@ -21,6 +21,7 @@ import type { ChatPrefs, ChatCustom, ChatPreset, BubbleCustom } from "@/hooks/us
 
 import { providerLogo } from "@/admin/data/aiProviders";
 import { CHAT_SKINS, getSkin } from "@/admin/data/chatSkins";
+import ToolActivity, { type ToolEvent } from "@/admin/components/ToolActivity";
 
 const CATEGORY_LABEL: Record<string, string> = {
   llm: "نماذج نصية", image: "نماذج صور", video: "نماذج فيديو",
@@ -40,6 +41,7 @@ export default function AiAdminChat() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activity, setActivity] = useState<ToolEvent[]>([]);
   const { prefs, commit, synced } = useChatPrefs();
   /** مسودّة للمعاينة الفورية قبل الحفظ */
   const [draft, setDraft] = useState<ChatPrefs>(prefs);
