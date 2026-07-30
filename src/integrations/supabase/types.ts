@@ -6953,6 +6953,14 @@ export type Database = {
         Returns: number
       }
       generate_entity_code: { Args: { prefix: string }; Returns: string }
+      get_blog_rating_summary: {
+        Args: { _post_id: string }
+        Returns: {
+          avg_score: number
+          post_id: string
+          ratings_count: number
+        }[]
+      }
       get_merchant_credentials: {
         Args: { p_merchant_id: string }
         Returns: {
@@ -7094,6 +7102,10 @@ export type Database = {
             }
             Returns: Json
           }
+      validate_coupon: {
+        Args: { _code: string; _order_amount?: number }
+        Returns: Json
+      }
     }
     Enums: {
       app_role:
