@@ -167,6 +167,8 @@ export default function AiAdminChat() {
         },
         body: JSON.stringify({
           messages: next,
+          chat_id: id,
+          tools_enabled: true,
           model_row_id: modelId === "gateway" ? null : modelId,
           agent_id: agentId === "none" ? null : agentId,
         }),
