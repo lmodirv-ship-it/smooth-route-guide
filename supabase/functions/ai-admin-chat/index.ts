@@ -173,7 +173,8 @@ Deno.serve(async (req) => {
                     admin_id: user.id, chat_id: chatId,
                     command_text: describeWrite(name, args), command_type: "tool_call",
                     tool_name: name, tool_args: args, status: "executed",
-                    result_summary: res.summary,
+                    tool_result: { summary: res.summary, after: res.after },
+                    executed_at: new Date().toISOString(),
                   });
                   event({ type: "tool", name, label: spec.label, kind: "write", status: "done", args, result, auto: true });
                 } catch (err: any) {
