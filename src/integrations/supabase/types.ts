@@ -268,6 +268,57 @@ export type Database = {
           },
         ]
       }
+      ai_endpoints: {
+        Row: {
+          created_at: string
+          health_path: string | null
+          id: string
+          is_enabled: boolean
+          is_primary: boolean
+          label: string
+          last_checked_at: string | null
+          latency_ms: number | null
+          notes: string | null
+          service: string
+          sort_order: number
+          status: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          health_path?: string | null
+          id?: string
+          is_enabled?: boolean
+          is_primary?: boolean
+          label: string
+          last_checked_at?: string | null
+          latency_ms?: number | null
+          notes?: string | null
+          service: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          health_path?: string | null
+          id?: string
+          is_enabled?: boolean
+          is_primary?: boolean
+          label?: string
+          last_checked_at?: string | null
+          latency_ms?: number | null
+          notes?: string | null
+          service?: string
+          sort_order?: number
+          status?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       ai_local_models: {
         Row: {
           category: string
