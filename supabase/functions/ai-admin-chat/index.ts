@@ -5,7 +5,7 @@
 // deno-lint-ignore-file no-explicit-any
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { TOOL_SPECS, toOpenAITools, runReadTool, getSpec, describeWrite } from "../_shared/adminTools.ts";
+import { TOOL_SPECS, toOpenAITools, runReadTool, getSpec, describeWrite, executeWriteTool } from "../_shared/adminTools.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
