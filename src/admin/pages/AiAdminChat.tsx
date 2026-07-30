@@ -33,16 +33,29 @@ export default function AiAdminChat() {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    (async () => {
-      const [{ data: m }, { data: a }] = await Promise.all([
-        db.from("ai_models").select("id, display_name, provider, model_id").eq("is_enabled", true).order("priority"),
-        db.from("ai_agents").select("id, name").eq("is_enabled", true).order("priority"),
-      ]);
-      setModels(m ?? []);
-      setAgents(a ?? []);
-    })();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const loadCatalog = async () => {
+    const [{ data: m }, { data: a }] = await Promise.all([
+      db.from("ai_models")
+        .select("id, display_name, provider, model_id, category, is_free")
+        .eq("is_enabled", true).order("category").order("priority"),
+      db.from("ai_agents").select("id, name, role").eq("is_enabled", true).order("priority"),
+    ]);
+    setModels(m ?? []);
+    setAgents(a ?? []);
+  };
+
+  useEffect(() => { loadCatalog(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, Record<string, any>[]>();
+    for (const m of models) {
+      const k = m.category ?? "llm";
+      if (!map.has(k)) map.set(k, []);
+      map.get(k)!.push(m);
+    }
+    return Array.from(map.entries());
+  }, [models]);
+
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
