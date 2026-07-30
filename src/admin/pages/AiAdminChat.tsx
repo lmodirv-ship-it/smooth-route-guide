@@ -373,11 +373,52 @@ export default function AiAdminChat() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline">{models.length} نموذج مُفعّل</Badge>
+          <Badge variant="outline">{localModels.length} نموذج محلي</Badge>
           <Badge variant="outline">{agents.length} وكيل</Badge>
-          <Select value={modelId} onValueChange={setModelId}>
+          {activeLocal && (
+            <Badge variant={localStatus[activeLocal.id] ? "default" : "destructive"}>
+              {localStatus[activeLocal.id] ? "محلي · متصل" : "محلي · غير متصل"}
+            </Badge>
+          )}
+          <Select value={modelId} onValueChange={setModelId} onOpenChange={(o) => { if (o) void checkLocal(localModels); }}>
             <SelectTrigger className="h-9 w-[250px]"><SelectValue placeholder="النموذج" /></SelectTrigger>
             <SelectContent className="max-h-80">
               <SelectItem value="gateway">بوابة Lovable AI (افتراضي)</SelectItem>
+
+              {localModels.length > 0 && (
+                <SelectGroup>
+                  <SelectLabel className="text-[11px] text-muted-foreground">
+                    نماذج محلية (بدون إنترنت) ({localModels.length})
+                  </SelectLabel>
+                  {localModels.map((m) => (
+                    <SelectItem key={m.id} value={`local:${m.id}`}>
+                      <span className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${localStatus[m.id] ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                        <span>{m.display_name}</span>
+                        <span className="text-[10px] text-muted-foreground">{m.engine}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              )}
+
+              {freeModels.length > 0 && (
+                <SelectGroup>
+                  <SelectLabel className="text-[11px] text-muted-foreground">
+                    نماذج مجانية ({freeModels.length})
+                  </SelectLabel>
+                  {freeModels.map((m) => (
+                    <SelectItem key={`free-${m.id}`} value={m.id}>
+                      <span className="flex items-center gap-2">
+                        <img src={providerLogo(m.provider)} alt="" width={16} height={16} loading="lazy" className="rounded" />
+                        <span>{m.display_name}</span>
+                        <span className="text-[10px] text-primary">مجاني</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              )}
+
               {grouped.map(([cat, list]) => (
                 <SelectGroup key={cat}>
                   <SelectLabel className="text-[11px] text-muted-foreground">
@@ -396,6 +437,7 @@ export default function AiAdminChat() {
               ))}
             </SelectContent>
           </Select>
+
           <Select value={agentId} onValueChange={setAgentId}>
             <SelectTrigger className="h-9 w-[190px]"><SelectValue placeholder="الوكيل" /></SelectTrigger>
             <SelectContent className="max-h-72">
