@@ -766,6 +766,88 @@ export async function executeWriteTool(db: any, name: string, args: any): Promis
       return { before: null, after: data, summary: `إشعار إلى ${prof.name} (${prof.user_code})` };
     }
 
+    // ───────────── محتوى ─────────────
+    case "create_blog_post": {
+      const title = String(need("title"));
+      const slug = String(args?.slug || title).trim().toLowerCase()
+        .replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "").slice(0, 80) || `post-${Date.now()}`;
+      const publish = args?.publish === true;
+      const payload: any = {
+        slug,
+        title,
+        content: String(need("content")),
+        excerpt: args?.excerpt ? String(args.excerpt) : null,
+        category: args?.category ? String(args.category) : "general",
+        language: args?.language ? String(args.language) : "ar",
+        meta_title: title.slice(0, 60),
+        meta_description: args?.meta_description ? String(args.meta_description).slice(0, 160) : null,
+        published: publish,
+        published_at: publish ? new Date().toISOString() : null,
+      };
+      const { data, error } = await db.from("blog_posts").insert(payload).select("slug, title, published").single();
+      if (error) throw new Error(error.message);
+      return { before: null, after: data, summary: `مقال «${data.title}» (${data.slug}) — ${data.published ? "منشور" : "مسودة"}` };
+    }
+
+    case "update_blog_post": {
+      const before = await one("blog_posts", "slug", need("slug"), "id, slug, title, published");
+      const patch: any = {};
+      for (const k of ["title", "content", "excerpt", "category", "meta_description"]) {
+        if (args?.[k] !== undefined && args[k] !== null && args[k] !== "") patch[k] = String(args[k]);
+      }
+      if (!Object.keys(patch).length) throw new Error("لا يوجد أي حقل للتعديل");
+      const { data, error } = await db.from("blog_posts").update(patch).eq("id", before.id).select("slug, title, published").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `تعديل المقال ${before.slug} (${Object.keys(patch).join("، ")})` };
+    }
+
+    case "set_blog_post_published": {
+      const published = args?.published === true || args?.published === "true";
+      const before = await one("blog_posts", "slug", need("slug"), "id, slug, title, published");
+      const { data, error } = await db.from("blog_posts")
+        .update({ published, published_at: published ? new Date().toISOString() : null })
+        .eq("id", before.id).select("slug, title, published").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `المقال ${before.slug}: ${published ? "نُشر" : "أُعيد إلى مسودة"}` };
+    }
+
+    case "create_page": {
+      const slug = String(need("slug")).trim().toLowerCase().replace(/^\/+/, "");
+      const publish = args?.publish === true;
+      const { data, error } = await db.from("dynamic_pages").insert({
+        slug,
+        title: String(need("title")),
+        page_type: args?.page_type ? String(args.page_type) : "static",
+        content: { body: String(need("body")) },
+        meta_description: args?.meta_description ? String(args.meta_description).slice(0, 160) : null,
+        is_published: publish,
+      }).select("slug, title, is_published").single();
+      if (error) throw new Error(error.message);
+      return { before: null, after: data, summary: `صفحة «${data.title}» (/${data.slug}) — ${data.is_published ? "منشورة" : "غير منشورة"}` };
+    }
+
+    case "update_page": {
+      const before = await one("dynamic_pages", "slug", need("slug"), "id, slug, title, content, is_published");
+      const patch: any = {};
+      if (args?.title) patch.title = String(args.title);
+      if (args?.meta_description) patch.meta_description = String(args.meta_description).slice(0, 160);
+      if (args?.body) patch.content = { ...(before.content ?? {}), body: String(args.body) };
+      if (!Object.keys(patch).length) throw new Error("لا يوجد أي حقل للتعديل");
+      const { data, error } = await db.from("dynamic_pages").update(patch).eq("id", before.id).select("slug, title, is_published").single();
+      if (error) throw new Error(error.message);
+      return { before: { slug: before.slug, title: before.title }, after: data, summary: `تعديل الصفحة /${before.slug}` };
+    }
+
+    case "set_page_published": {
+      const published = args?.published === true || args?.published === "true";
+      const before = await one("dynamic_pages", "slug", need("slug"), "id, slug, title, is_published");
+      const { data, error } = await db.from("dynamic_pages").update({ is_published: published })
+        .eq("id", before.id).select("slug, title, is_published").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `الصفحة /${before.slug}: ${published ? "نُشرت" : "أُخفيت"}` };
+    }
+
+
     default:
       throw new Error(`أداة كتابة غير معروفة: ${name}`);
   }
