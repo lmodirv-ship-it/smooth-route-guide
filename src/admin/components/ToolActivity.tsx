@@ -69,14 +69,23 @@ function ReadCard({ ev }: { ev: Extract<ToolEvent, { type: "tool" }> }) {
   const failed = ev.status === "error";
   return (
     <Card className="p-3 border-border/60">
-      <button type="button" onClick={() => setOpen((o) => !o)} className="w-full flex items-center gap-2 text-right">
-        <Database className={`h-4 w-4 shrink-0 ${failed ? "text-destructive" : "text-primary"}`} />
-        <span className="text-sm font-medium flex-1">{ev.label}</span>
-        <Badge variant={failed ? "destructive" : "outline"} className="text-[10px]">
-          {failed ? "فشل" : "تم"}
-        </Badge>
-        {open ? <ChevronUp className="h-4 w-4 opacity-60" /> : <ChevronDown className="h-4 w-4 opacity-60" />}
-      </button>
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={() => setOpen((o) => !o)} className="flex-1 flex items-center gap-2 text-right">
+          <Database className={`h-4 w-4 shrink-0 ${failed ? "text-destructive" : "text-primary"}`} />
+          <span className="text-sm font-medium flex-1">{ev.label}</span>
+          <Badge variant={failed ? "destructive" : "outline"} className="text-[10px]">
+            {failed ? "فشل" : "تم"}
+          </Badge>
+          {open ? <ChevronUp className="h-4 w-4 opacity-60" /> : <ChevronDown className="h-4 w-4 opacity-60" />}
+        </button>
+        {!failed && (
+          <Button size="sm" variant="ghost" className="h-7 px-2 gap-1 text-[11px]"
+            onClick={() => downloadCsv(ev.name, ev.result)} title="تصدير Excel/CSV">
+            <Download className="h-3.5 w-3.5" /> تصدير
+          </Button>
+        )}
+      </div>
+
       <ArgsList args={ev.args} />
       {open && (
         <pre dir="ltr" className="mt-2 max-h-64 overflow-auto rounded-md bg-muted/50 p-2 text-[11px] leading-relaxed">
