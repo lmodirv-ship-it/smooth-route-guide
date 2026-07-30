@@ -179,6 +179,7 @@ export default function AiAdminChat() {
   const grouped = useMemo(() => {
     const map = new Map<string, Record<string, any>[]>();
     for (const m of models) {
+      if (m.is_free) continue; // تظهر ضمن مجموعة «نماذج مجانية»
       const k = m.category ?? "llm";
       if (!map.has(k)) map.set(k, []);
       map.get(k)!.push(m);
@@ -229,7 +230,6 @@ export default function AiAdminChat() {
           model: activeLocal.model_id,
           messages: next,
           onDelta: (d) => {
-            assistant += "";
             setMessages((m) => {
               const copy = [...m];
               const prev = copy[copy.length - 1]?.content ?? "";
