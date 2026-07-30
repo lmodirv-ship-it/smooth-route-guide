@@ -177,6 +177,22 @@ export const adminRouteElements = (
       <Route path="partner-sites" element={L(PartnerSitesManagement)} />
       <Route path="sitemap" element={L(AdminSiteMap)} />
       <Route path="blog" element={L(AdminBlog)} />
+
+      {/* ─── AI & Platform management ─── */}
+      <Route path="ai-models" element={L(AiModels)} />
+      <Route path="ai-local-models" element={L(AiLocalModels)} />
+      <Route path="ai-agents" element={L(AiAgents)} />
+      <Route path="ai-chat" element={L(AiAdminChat)} />
+      <Route path="ai-chats" element={L(AiChats)} />
+      <Route path="ai-billing" element={L(AiBilling)} />
+      <Route path="usage-metrics" element={L(UsageMetrics)} />
+      <Route path="licenses" element={L(LicensesPage)} />
+      <Route path="packages" element={L(PlatformPackages)} />
+      <Route path="invoices" element={L(InvoicesPage)} />
+      <Route path="downloads" element={L(DownloadsPage)} />
+      <Route path="signup-requests" element={L(SignupRequestsPage)} />
+      <Route path="monitoring" element={L(MonitoringPage)} />
+      <Route path="audit-log" element={L(AuditLogPage)} />
     </Route>
 
     <Route path="/call-center" element={<RequireRole allowed={["admin", "agent", "smart_admin_assistant"]}>{L(CallCenterLayout)}</RequireRole>}>
