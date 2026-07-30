@@ -22,6 +22,8 @@ import type { ChatPrefs, ChatCustom, ChatPreset, BubbleCustom } from "@/hooks/us
 import { providerLogo } from "@/admin/data/aiProviders";
 import { CHAT_SKINS, getSkin } from "@/admin/data/chatSkins";
 import ToolActivity, { type ToolEvent } from "@/admin/components/ToolActivity";
+import { streamLocalChat, pingLocal, localErrorHint } from "@/admin/lib/localChat";
+
 
 const CATEGORY_LABEL: Record<string, string> = {
   llm: "نماذج نصية", image: "نماذج صور", video: "نماذج فيديو",
