@@ -488,6 +488,141 @@ export async function runReadTool(db: any, name: string, args: any): Promise<any
       };
     }
 
+    // ───────────── تقارير ─────────────
+    case "revenue_report": {
+      const days = clamp(args?.days, 7, 90);
+      const since = new Date(Date.now() - days * 86400000).toISOString();
+      const [orders, trips, revenue] = await Promise.all([
+        db.from("delivery_orders").select("total_price, delivery_fee, status, created_at").gte("created_at", since),
+        db.from("trips").select("fare, status, created_at").gte("created_at", since),
+        db.from("platform_revenue").select("amount, source, created_at").gte("created_at", since),
+      ]);
+      const o = orders.data ?? [], t = trips.data ?? [], rev = revenue.data ?? [];
+      const byDay: Record<string, any> = {};
+      const bucket = (d: string) => (byDay[d] ??= { اليوم: d, توصيل: 0, رحلات: 0, عمولات: 0, عدد_الطلبات: 0 });
+      for (const x of o) { const b = bucket(String(x.created_at).slice(0, 10)); b.توصيل += Number(x.total_price ?? 0); b.عدد_الطلبات += 1; }
+      for (const x of t) { const b = bucket(String(x.created_at).slice(0, 10)); b.رحلات += Number(x.fare ?? 0); }
+      for (const x of rev) { const b = bucket(String(x.created_at).slice(0, 10)); b.عمولات += Number(x.amount ?? 0); }
+      const rows = Object.values(byDay).sort((a: any, b: any) => a.اليوم.localeCompare(b.اليوم));
+      const sum = (k: string) => rows.reduce((a: number, x: any) => a + Number(x[k] ?? 0), 0);
+      return {
+        المدة_بالأيام: days,
+        إجمالي_التوصيل: sum("توصيل"),
+        إجمالي_الرحلات: sum("رحلات"),
+        إجمالي_العمولات: sum("عمولات"),
+        عدد_الطلبات: o.length,
+        التفصيل_اليومي: rows,
+      };
+    }
+
+    case "orders_report": {
+      const days = clamp(args?.days, 7, 90);
+      const since = new Date(Date.now() - days * 86400000).toISOString();
+      let q = db.from("delivery_orders").select("status, city, total_price, created_at").gte("created_at", since);
+      if (args?.city) q = q.ilike("city", `%${args.city}%`);
+      const { data, error } = await q;
+      if (error) throw new Error(error.message);
+      const rows = data ?? [];
+      const byStatus: Record<string, number> = {}, byCity: Record<string, number> = {};
+      let total = 0;
+      for (const x of rows) {
+        byStatus[x.status ?? "—"] = (byStatus[x.status ?? "—"] ?? 0) + 1;
+        byCity[x.city ?? "—"] = (byCity[x.city ?? "—"] ?? 0) + 1;
+        total += Number(x.total_price ?? 0);
+      }
+      return {
+        المدة_بالأيام: days,
+        عدد_الطلبات: rows.length,
+        متوسط_قيمة_الطلب: rows.length ? Math.round((total / rows.length) * 100) / 100 : 0,
+        حسب_الحالة: byStatus,
+        حسب_المدينة: byCity,
+      };
+    }
+
+    case "driver_performance": {
+      const days = clamp(args?.days, 30, 180);
+      const since = new Date(Date.now() - days * 86400000).toISOString();
+      const [{ data: drivers }, { data: trips }, { data: orders }] = await Promise.all([
+        db.from("drivers").select("id, driver_code, status, driver_type, rating, user_id").limit(500),
+        db.from("trips").select("driver_id, status, fare, created_at").gte("created_at", since),
+        db.from("delivery_orders").select("driver_id, status, total_price, created_at").gte("created_at", since),
+      ]);
+      const stats = (drivers ?? []).map((d: any) => {
+        const dt = (trips ?? []).filter((x: any) => x.driver_id === d.id);
+        const dOrders = (orders ?? []).filter((x: any) => x.driver_id === d.id);
+        return {
+          رمز_السائق: d.driver_code,
+          الحالة: d.status,
+          النوع: d.driver_type,
+          التقييم: d.rating,
+          رحلات_منجزة: dt.filter((x: any) => x.status === "completed").length,
+          طلبات_منجزة: dOrders.filter((x: any) => x.status === "delivered").length,
+          مداخيل: dt.reduce((a: number, x: any) => a + Number(x.fare ?? 0), 0) + dOrders.reduce((a: number, x: any) => a + Number(x.total_price ?? 0), 0),
+        };
+      }).sort((a: any, b: any) => (b.رحلات_منجزة + b.طلبات_منجزة) - (a.رحلات_منجزة + a.طلبات_منجزة));
+      return { المدة_بالأيام: days, السائقون: stats.slice(0, clamp(args?.limit, 15, 50)) };
+    }
+
+    case "growth_report": {
+      const days = clamp(args?.days, 30, 180);
+      const now = Date.now();
+      const start = new Date(now - days * 86400000).toISOString();
+      const prevStart = new Date(now - 2 * days * 86400000).toISOString();
+      const countIn = async (table: string, from: string, to?: string) => {
+        let q = db.from(table).select("id", { count: "exact", head: true }).gte("created_at", from);
+        if (to) q = q.lt("created_at", to);
+        const { count } = await q;
+        return count ?? 0;
+      };
+      const tables = ["profiles", "drivers", "stores", "delivery_orders", "ride_requests"];
+      const out: Record<string, any> = {};
+      for (const tb of tables) {
+        const cur = await countIn(tb, start);
+        const prev = await countIn(tb, prevStart, start);
+        out[tb] = { الحالية: cur, السابقة: prev, النمو: prev ? `${Math.round(((cur - prev) / prev) * 100)}%` : (cur ? "جديد" : "0%") };
+      }
+      return { المدة_بالأيام: days, المقارنة: out };
+    }
+
+    // ───────────── مراقبة ─────────────
+    case "system_alerts": {
+      const [alerts, health] = await Promise.all([
+        db.from("alerts").select("type, message, status, created_at").order("created_at", { ascending: false }).limit(limit),
+        db.from("system_health_logs").select("check_name, category, status, message, created_at")
+          .neq("status", "ok").order("created_at", { ascending: false }).limit(limit),
+      ]);
+      return { تنبيهات: alerts.data ?? [], فحوص_غير_سليمة: health.data ?? [] };
+    }
+
+    case "client_errors": {
+      const hours = clamp(args?.hours, 24, 720);
+      const since = new Date(Date.now() - hours * 3600000).toISOString();
+      const { data, error } = await db.from("analytics_events")
+        .select("event_name, page_path, properties, created_at")
+        .eq("event_type", "error").gte("created_at", since)
+        .order("created_at", { ascending: false }).limit(clamp(args?.limit, 20, 100));
+      if (error) throw new Error(error.message);
+      const grouped: Record<string, number> = {};
+      for (const x of data ?? []) grouped[x.event_name ?? "—"] = (grouped[x.event_name ?? "—"] ?? 0) + 1;
+      return { المدة_بالساعات: hours, حسب_النوع: grouped, أخطاء: data ?? [] };
+    }
+
+    case "pending_actions": {
+      const [recharges, complaints, candidates, stores] = await Promise.all([
+        db.from("wallet_recharge_requests").select("id, amount, status, created_at").eq("status", "pending").limit(20),
+        db.from("complaints").select("complaint_code, category, priority, created_at").neq("status", "resolved").limit(20),
+        db.from("driver_candidates").select("id, status, created_at").eq("status", "pending").limit(20),
+        db.from("stores").select("store_code, name, city").eq("is_confirmed", false).limit(20),
+      ]);
+      return {
+        شحن_محفظة_معلّق: recharges.data ?? [],
+        شكاوى_مفتوحة: complaints.data ?? [],
+        ترشيحات_سائقين: candidates.data ?? [],
+        محلات_غير_مؤكدة: stores.data ?? [],
+      };
+    }
+
+
     default:
       throw new Error(`أداة قراءة غير معروفة: ${name}`);
   }
