@@ -198,6 +198,7 @@ export default function AiAdminChat() {
           if (!json || json === "[DONE]") continue;
           try {
             const obj = JSON.parse(json);
+            if (obj?.lovable) { setActivity((a) => [...a, obj.lovable as ToolEvent]); continue; }
             const delta = obj?.choices?.[0]?.delta?.content ?? "";
             if (delta) {
               assistant += delta;
