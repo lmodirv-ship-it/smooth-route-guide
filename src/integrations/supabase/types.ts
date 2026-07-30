@@ -520,6 +520,51 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_tool_permissions: {
+        Row: {
+          auto_execute: boolean
+          created_at: string
+          daily_limit: number
+          description: string | null
+          id: string
+          is_enabled: boolean
+          kind: string
+          label: string
+          risk: string
+          sort_order: number
+          tool_name: string
+          updated_at: string
+        }
+        Insert: {
+          auto_execute?: boolean
+          created_at?: string
+          daily_limit?: number
+          description?: string | null
+          id?: string
+          is_enabled?: boolean
+          kind?: string
+          label: string
+          risk?: string
+          sort_order?: number
+          tool_name: string
+          updated_at?: string
+        }
+        Update: {
+          auto_execute?: boolean
+          created_at?: string
+          daily_limit?: number
+          description?: string | null
+          id?: string
+          is_enabled?: boolean
+          kind?: string
+          label?: string
+          risk?: string
+          sort_order?: number
+          tool_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_usage_log: {
         Row: {
           cost: number
@@ -5752,14 +5797,19 @@ export type Database = {
           ai_response: string | null
           attached_file_type: string | null
           attached_file_url: string | null
+          chat_id: string | null
           command_text: string
           command_type: string
           created_at: string
+          executed_at: string | null
           generated_files: Json | null
           id: string
           rejected_at: string | null
           status: string
           target_page: string | null
+          tool_args: Json
+          tool_name: string | null
+          tool_result: Json | null
           updated_at: string
         }
         Insert: {
@@ -5768,14 +5818,19 @@ export type Database = {
           ai_response?: string | null
           attached_file_type?: string | null
           attached_file_url?: string | null
+          chat_id?: string | null
           command_text?: string
           command_type?: string
           created_at?: string
+          executed_at?: string | null
           generated_files?: Json | null
           id?: string
           rejected_at?: string | null
           status?: string
           target_page?: string | null
+          tool_args?: Json
+          tool_name?: string | null
+          tool_result?: Json | null
           updated_at?: string
         }
         Update: {
@@ -5784,14 +5839,19 @@ export type Database = {
           ai_response?: string | null
           attached_file_type?: string | null
           attached_file_url?: string | null
+          chat_id?: string | null
           command_text?: string
           command_type?: string
           created_at?: string
+          executed_at?: string | null
           generated_files?: Json | null
           id?: string
           rejected_at?: string | null
           status?: string
           target_page?: string | null
+          tool_args?: Json
+          tool_name?: string | null
+          tool_result?: Json | null
           updated_at?: string
         }
         Relationships: []
