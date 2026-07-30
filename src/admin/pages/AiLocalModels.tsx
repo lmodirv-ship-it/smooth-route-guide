@@ -330,6 +330,21 @@ export default function AiLocalModels() {
         </div>
       </div>
 
+      {/* تنبيه CORS للاتصال المباشر من الدردشة */}
+      <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-4 text-xs leading-6">
+        <p className="font-semibold text-amber-600 dark:text-amber-400 mb-1">تشغيل النماذج المحلية داخل صفحة الدردشة</p>
+        <p>
+          أي نموذج محلي <span className="text-primary">مُفعّل</span> هنا يظهر تلقائياً في قائمة «النموذج» بصفحة الدردشة ضمن مجموعة
+          «نماذج محلية (بدون إنترنت)»، ويعمل باتصال مباشر من جهازك — بدون أي وسيط ولا مفتاح API.
+        </p>
+        <p className="mt-1">
+          للسماح بالاتصال من المتصفح اضبط: <code className="px-1 rounded bg-muted">OLLAMA_ORIGINS=*</code> (أو فعّل CORS في LM Studio).
+          في نسخة الحاسوب (Desktop) يعمل الاتصال مباشرة دون هذا الإعداد.
+        </p>
+      </div>
+
+
+
       {/* run mode */}
       <section className="rounded-xl border border-border bg-card/40 p-4 space-y-3">
         <h2 className="text-sm font-semibold">نمط التشغيل — المحلي افتراضي</h2>
