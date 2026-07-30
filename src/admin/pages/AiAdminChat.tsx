@@ -42,6 +42,10 @@ export default function AiAdminChat() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [activity, setActivity] = useState<ToolEvent[]>([]);
+  const [quickCommands, setQuickCommands] = useState<{ id: string; label: string; prompt: string }[]>([]);
+  const [pulse, setPulse] = useState<{ orders: number; stuck: number; complaints: number; alerts: number } | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
   const { prefs, commit, synced } = useChatPrefs();
   /** مسودّة للمعاينة الفورية قبل الحفظ */
   const [draft, setDraft] = useState<ChatPrefs>(prefs);
