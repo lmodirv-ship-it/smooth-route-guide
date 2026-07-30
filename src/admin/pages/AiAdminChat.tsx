@@ -477,6 +477,7 @@ export default function AiAdminChat() {
               </div>
             </div>
           ))}
+          {activity.length > 0 && <ToolActivity items={activity} />}
           {loading && messages[messages.length - 1]?.role === "user" && (
             <div className="flex justify-start">
               <div style={bubbleStyle("assistant")} className={`px-3.5 py-3 ${skin.assistant}`}>
