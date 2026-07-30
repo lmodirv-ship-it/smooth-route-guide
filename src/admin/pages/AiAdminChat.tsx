@@ -1,15 +1,23 @@
 /**
- * AI with Admin — دردشة المسؤول مع النماذج والوكلاء المفعّلين، مع حفظ المحادثات.
+ * AI with Admin — دردشة المسؤول مع النماذج والوكلاء المفعّلين فقط، مع حفظ المحادثات.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Send, Plus } from "lucide-react";
+import { Loader2, Send, Plus, RefreshCw } from "lucide-react";
+import { providerLogo } from "@/admin/data/aiProviders";
+
+const CATEGORY_LABEL: Record<string, string> = {
+  llm: "نماذج نصية", image: "نماذج صور", video: "نماذج فيديو",
+  tts: "تحويل نص إلى صوت", stt: "تفريغ صوتي", embedding: "تضمين",
+};
+
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -25,16 +33,29 @@ export default function AiAdminChat() {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    (async () => {
-      const [{ data: m }, { data: a }] = await Promise.all([
-        db.from("ai_models").select("id, display_name, provider, model_id").eq("is_enabled", true).order("priority"),
-        db.from("ai_agents").select("id, name").eq("is_enabled", true).order("priority"),
-      ]);
-      setModels(m ?? []);
-      setAgents(a ?? []);
-    })();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const loadCatalog = async () => {
+    const [{ data: m }, { data: a }] = await Promise.all([
+      db.from("ai_models")
+        .select("id, display_name, provider, model_id, category, is_free")
+        .eq("is_enabled", true).order("category").order("priority"),
+      db.from("ai_agents").select("id, name, role").eq("is_enabled", true).order("priority"),
+    ]);
+    setModels(m ?? []);
+    setAgents(a ?? []);
+  };
+
+  useEffect(() => { loadCatalog(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, Record<string, any>[]>();
+    for (const m of models) {
+      const k = m.category ?? "llm";
+      if (!map.has(k)) map.set(k, []);
+      map.get(k)!.push(m);
+    }
+    return Array.from(map.entries());
+  }, [models]);
+
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -129,28 +150,53 @@ export default function AiAdminChat() {
         <div>
           <h1 className="text-xl font-bold">AI with Admin</h1>
           <p className="text-xs text-muted-foreground mt-1">
-            حوار مباشر مع النماذج والوكلاء المفعّلين للمساعدة في تسيير المنصة وتطويرها.
+            تظهر هنا النماذج والوكلاء <span className="text-primary">المفعّلون فقط</span> — فعّل أي نموذج من صفحة «نماذج الذكاء الاصطناعي» ليظهر في القائمة.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline">{models.length} نموذج مُفعّل</Badge>
+          <Badge variant="outline">{agents.length} وكيل</Badge>
           <Select value={modelId} onValueChange={setModelId}>
-            <SelectTrigger className="h-9 w-[220px]"><SelectValue placeholder="النموذج" /></SelectTrigger>
-            <SelectContent className="max-h-72">
+            <SelectTrigger className="h-9 w-[250px]"><SelectValue placeholder="النموذج" /></SelectTrigger>
+            <SelectContent className="max-h-80">
               <SelectItem value="gateway">بوابة Lovable AI (افتراضي)</SelectItem>
-              {models.map((m) => <SelectItem key={m.id} value={m.id}>{m.display_name}</SelectItem>)}
+              {grouped.map(([cat, list]) => (
+                <SelectGroup key={cat}>
+                  <SelectLabel className="text-[11px] text-muted-foreground">
+                    {CATEGORY_LABEL[cat] ?? cat} ({list.length})
+                  </SelectLabel>
+                  {list.map((m) => (
+                    <SelectItem key={m.id} value={m.id}>
+                      <span className="flex items-center gap-2">
+                        <img src={providerLogo(m.provider)} alt="" width={16} height={16} loading="lazy" className="rounded" />
+                        <span>{m.display_name}</span>
+                        {m.is_free && <span className="text-[10px] text-primary">مجاني</span>}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              ))}
             </SelectContent>
           </Select>
           <Select value={agentId} onValueChange={setAgentId}>
-            <SelectTrigger className="h-9 w-[180px]"><SelectValue placeholder="الوكيل" /></SelectTrigger>
-            <SelectContent>
+            <SelectTrigger className="h-9 w-[190px]"><SelectValue placeholder="الوكيل" /></SelectTrigger>
+            <SelectContent className="max-h-72">
               <SelectItem value="none">بدون وكيل</SelectItem>
-              {agents.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
+              {agents.map((a) => (
+                <SelectItem key={a.id} value={a.id}>
+                  {a.name}{a.role ? ` · ${a.role}` : ""}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
+          <Button size="sm" variant="ghost" onClick={loadCatalog} title="تحديث القوائم">
+            <RefreshCw className="w-4 h-4" />
+          </Button>
           <Button size="sm" variant="outline" onClick={() => { setChatId(null); setMessages([]); }}>
             <Plus className="w-4 h-4 me-1" /> محادثة جديدة
           </Button>
         </div>
+
       </div>
 
       <Card className="p-0 overflow-hidden">
