@@ -521,7 +521,27 @@ export default function AiAdminChat() {
 
       </div>
 
+      {pulse && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {[
+            { icon: Package, label: "طلبات اليوم", value: pulse.orders, alert: false },
+            { icon: PhoneCall, label: "طلبات عالقة", value: pulse.stuck, alert: pulse.stuck > 0 },
+            { icon: MessageSquareWarning, label: "شكاوى مفتوحة", value: pulse.complaints, alert: pulse.complaints > 0 },
+            { icon: AlertTriangle, label: "تنبيهات النظام", value: pulse.alerts, alert: pulse.alerts > 0 },
+          ].map((k) => (
+            <Card key={k.label} className={`p-3 flex items-center gap-3 ${k.alert ? "border-destructive/50" : ""}`}>
+              <k.icon className={`w-4 h-4 ${k.alert ? "text-destructive" : "text-primary"}`} />
+              <div className="min-w-0">
+                <p className="text-[11px] text-muted-foreground truncate">{k.label}</p>
+                <p className="text-lg font-bold leading-none">{k.value}</p>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
       <Card className={`p-0 overflow-hidden rounded-2xl transition-colors ${isLight ? "chat-light" : "dark"} ${skin.shell}`}>
+
         <div ref={scrollRef} style={surfaceStyle} className={`h-[55vh] overflow-y-auto p-4 space-y-3 ${skin.surface}`}>
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
