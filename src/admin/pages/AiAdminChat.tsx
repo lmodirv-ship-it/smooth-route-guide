@@ -200,28 +200,32 @@ export default function AiAdminChat() {
             <Plus className="w-4 h-4 me-1" /> محادثة جديدة
           </Button>
 
-          {/* نماذج تصميم واجهة الدردشة */}
-          <div className="flex items-center gap-1 rounded-full border border-border bg-card/60 p-1">
-            {CHAT_SKINS.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => setSkinId(s.id)}
-                title={s.label}
-                aria-label={s.label}
-                aria-pressed={skinId === s.id}
-                className={`relative h-7 w-7 rounded-full overflow-hidden border transition-all ${
-                  skinId === s.id
-                    ? "border-primary ring-2 ring-primary/30 scale-105"
-                    : "border-border/70 opacity-70 hover:opacity-100"
-                }`}
-              >
-                <span className="absolute inset-0" style={{ background: s.preview[1] }} />
-                <span className="absolute inset-x-1 top-1 h-2 rounded-full" style={{ background: s.preview[0] }} />
-                <span className="absolute inset-x-1 bottom-1 h-2 rounded-full bg-foreground/20" />
-              </button>
-            ))}
-          </div>
+          {/* اختيار شكل واجهة الدردشة */}
+          <Select value={skinId} onValueChange={setSkinId}>
+            <SelectTrigger className="h-9 w-[180px]" aria-label="شكل الدردشة">
+              <span className="flex items-center gap-2">
+                <span className="relative h-5 w-5 rounded-full overflow-hidden border border-border">
+                  <span className="absolute inset-0" style={{ background: skin.preview[1] }} />
+                  <span className="absolute inset-x-0.5 top-0.5 h-1.5 rounded-full" style={{ background: skin.preview[0] }} />
+                </span>
+                <span className="text-sm">{skin.label}</span>
+              </span>
+            </SelectTrigger>
+            <SelectContent className="max-h-72">
+              <SelectLabel className="text-[11px] text-muted-foreground">أشكال واجهة الدردشة</SelectLabel>
+              {CHAT_SKINS.map((s) => (
+                <SelectItem key={s.id} value={s.id}>
+                  <span className="flex items-center gap-2">
+                    <span className="relative h-5 w-5 rounded-full overflow-hidden border border-border flex-shrink-0">
+                      <span className="absolute inset-0" style={{ background: s.preview[1] }} />
+                      <span className="absolute inset-x-0.5 top-0.5 h-1.5 rounded-full" style={{ background: s.preview[0] }} />
+                    </span>
+                    <span>{s.label}</span>
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
       </div>
