@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Send, Plus, RefreshCw, Sparkles, Palette, Sun, Moon, RotateCcw, Save, Trash2 } from "lucide-react";
+import { Loader2, Send, Plus, RefreshCw, Sparkles, Palette, Sun, Moon, RotateCcw, Save, Trash2, Paperclip, Download, AlertTriangle, Package, PhoneCall, MessageSquareWarning } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
