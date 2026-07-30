@@ -271,15 +271,17 @@ Deno.serve(async (req) => {
 
           if (finalText) text(finalText);
           else if (!finalText) text("تم تنفيذ الخطوات المطلوبة.");
+          if (fallbackNotes.length) text(`\n\n_ℹ️ ${fallbackNotes[fallbackNotes.length - 1]}_`);
 
           // تسجيل الاستهلاك
           const estCost = ((usage.input / 1000) * 0.002 + (usage.output / 1000) * 0.006).toFixed(4);
           await admin.from("ai_usage_log").insert({
-            model_ref: modelName, provider: providerName,
+            model_ref: active.modelName, provider: active.providerName,
             requests: usage.requests, input_tokens: usage.input, output_tokens: usage.output,
             cost: Number(estCost), currency: "USD", usage_date: new Date().toISOString().slice(0, 10),
           });
-          event({ type: "usage", ...usage, cost: Number(estCost) });
+          event({ type: "usage", ...usage, cost: Number(estCost), provider: active.providerName, model: active.modelName });
+
 
           controller.enqueue(enc.encode("data: [DONE]\n\n"));
         } catch (e: any) {
