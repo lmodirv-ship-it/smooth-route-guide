@@ -1,40 +1,26 @@
-## الهدف
+## ملف `.env` — القيم الحقيقية
 
-تفعيل **النماذج المحلية** و**النماذج المجانية** داخل صفحة الدردشة `/admin/ai-chat`، مع تشغيل النماذج المحلية مباشرة من جهازك بدون أي وسيط ولا مفتاح API.
+ضع هذا الملف في **جذر المشروع** (`E:\Desktop\hndriver\hn 300726\.env`) باسم `.env` بالضبط (بدون `.txt`):
 
-## الوضع الحالي (تم التحقق منه)
+```
+VITE_SUPABASE_URL=https://typamugwwatqmdkxkfof.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5cGFtdWd3d2F0cW1ka3hrZm9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MTIxNjAsImV4cCI6MjA4OTI4ODE2MH0.vk2rFo3p6FDv0-4yoIBhhQ6jr_aXHjDYBmmI6hoZXtE
+VITE_SUPABASE_PROJECT_ID=typamugwwatqmdkxkfof
+```
 
-- `src/admin/pages/AiAdminChat.tsx`: `loadCatalog` يجلب من `ai_models` فقط، والإرسال دائماً إلى `/functions/v1/ai-admin-chat` بحقل `model_row_id`. لا وجود للنماذج المحلية في الواجهة.
-- `supabase/functions/ai-admin-chat/index.ts`: النماذج المحلية (`ai_local_models`) مستعملة كاحتياطي أخير فقط، وخادم الحافة لا يستطيع الوصول إلى عناوين مثل `http://localhost:11434`.
+## ملاحظات مهمة
 
-## ما سيُبنى
+- هذه القيم **عمومية** ومصمَّمة للظهور في حزمة المتصفح؛ الحماية تتم عبر RLS. لا تضع أي مفتاح سرّي هنا.
+- النسخة المرفقة في `hndriver-300726.zip` تحوي هذا الملف أصلاً — إن كان موجوداً فلا حاجة لإنشائه.
+- بعد إنشاء/تعديل `.env` يجب **إعادة تشغيل** خادم التطوير أو إعادة البناء، لأن Vite يستبدل هذه القيم وقت البناء فقط.
+- إذا بُني الموقع بدون هذا الملف تظهر **شاشة سوداء** لأن العميل يُنشأ بقيم `undefined` — وهذا نفس سبب المشكلة التي واجهتها سابقاً على الاستضافة.
 
-### 1. مسار محلي مباشر بدون وسيط
-ملف جديد `src/admin/lib/localChat.ts`:
-- `fetch` مباشر من المتصفح / نسخة الحاسوب إلى `endpoint_url` (مثال Ollama: `http://localhost:11434/v1/chat/completions`).
-- بث `stream: true` وقراءة SSE بصيغة OpenAI ليظهر النص حياً كما هو الآن.
-- بدون ترويسة تفويض، بدون مفتاح، بدون Lovable، بدون دالة حافة.
+## الخطوات بعد ذلك
 
-### 2. قائمة اختيار النموذج
-في `AiAdminChat.tsx`:
-- تحميل `ai_local_models` المفعّلة بجانب `ai_models` داخل مجموعة «نماذج محلية (بدون إنترنت)» بقيمة `local:<id>`.
-- مجموعة «نماذج مجانية» تجمع صفوف `ai_models` حيث `is_free = true`.
-- اختيار محلي ⇒ تجاوز دالة الحافة نهائياً واستدعاء `localChat.ts`.
-- اختيار مجاني سحابي ⇒ المسار الحالي عبر دالة الحافة مع `model_row_id`.
-- حفظ الرسائل في `ai_admin_chat_messages` يبقى كما هو في الحالتين.
+1. `corepack enable` ثم `corepack prepare pnpm@latest --activate` (أو `npm install -g pnpm`) لحل مشكلة `pnpm not recognized`.
+2. `pnpm install`
+3. `pnpm dev` للتأكد محلياً، ثم `pnpm build` للنسخة النهائية.
 
-### 3. الأدوات (Tools) في الوضع المحلي
-- المحادثة النصية أولاً؛ وإن دعم النموذج `tools` تُنفَّذ أدوات القراءة عبر عميل Supabase من المتصفح بصلاحيات المسؤول نفسها، وأدوات الكتابة تبقى بموافقة يدوية كما هي.
-- إن رفض النموذج المحلي حقل `tools` يُعاد الطلب تلقائياً بدونها.
+## ماذا سأفعل عند التنفيذ
 
-### 4. مؤشر الاتصال
-- فحص سريع (`/models` أو `/api/tags`) عند فتح القائمة، وشارة «متصل / غير متصل» مع تحديث `status` و`last_check_at` في `ai_local_models`.
-- رسالة عربية واضحة عند الفشل: «تأكد أن Ollama / LM Studio يعمل على جهازك».
-
-### 5. CORS ونسخة الحاسوب
-- تنبيه داخل صفحة النماذج المحلية بضبط `OLLAMA_ORIGINS=*` للسماح بالاستدعاء من المتصفح.
-- في نسخة الحاسوب (Electron) يعمل الاستدعاء المباشر دون قيود CORS.
-
-## لا حذف ولا تغييرات في قاعدة البيانات
-
-`ai-admin-chat` تبقى كما هي للنماذج السحابية؛ المسار المحلي يُضاف بجانبها فقط.
+لا يوجد تعديل مطلوب على الكود — الملف `.env` في المشروع مضبوط بالفعل بهذه القيم. إن أردت، أستطيع تجهيز أرشيف مصغّر يحوي `.env` جاهزاً لنسخه فوق مجلدك المحلي.
