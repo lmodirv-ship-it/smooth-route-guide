@@ -164,6 +164,22 @@ Deno.serve(async (req) => {
                   result = { error: err?.message ?? "فشل التنفيذ" };
                   event({ type: "tool", name, label: spec.label, kind: "read", status: "error", args, result });
                 }
+              } else if (permMap.get(name)?.auto_execute === true) {
+                // تنفيذ تلقائي مسموح صراحةً لهذه الأداة من صفحة الصلاحيات
+                try {
+                  const res = await executeWriteTool(admin, name, args);
+                  result = { status: "executed", summary: res.summary, after: res.after };
+                  await admin.from("smart_assistant_commands").insert({
+                    admin_id: user.id, chat_id: chatId,
+                    command_text: describeWrite(name, args), command_type: "tool_call",
+                    tool_name: name, tool_args: args, status: "executed",
+                    result_summary: res.summary,
+                  });
+                  event({ type: "tool", name, label: spec.label, kind: "write", status: "done", args, result, auto: true });
+                } catch (err: any) {
+                  result = { error: err?.message ?? "فشل التنفيذ" };
+                  event({ type: "tool", name, label: spec.label, kind: "write", status: "error", args, result, auto: true });
+                }
               } else {
                 // عملية كتابة → أمر معلّق ينتظر موافقة يدوية
                 const { data: cmd, error } = await admin.from("smart_assistant_commands").insert({
@@ -186,6 +202,7 @@ Deno.serve(async (req) => {
                   });
                 }
               }
+
 
               convo.push({ role: "tool", tool_call_id: call.id, name, content: JSON.stringify(result).slice(0, 6000) });
             }
