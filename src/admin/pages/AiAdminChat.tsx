@@ -529,7 +529,24 @@ export default function AiAdminChat() {
             </div>
           )}
         </div>
-        <div className={`p-3 flex gap-2 ${skin.composer}`}>
+        {quickCommands.length > 0 && (
+          <div className={`px-3 pt-3 flex flex-wrap gap-1.5 ${skin.composer}`}>
+            {quickCommands.map((q) => (
+              <Button key={q.id} size="sm" variant="outline" disabled={loading}
+                className="h-7 rounded-full text-[11px] px-3"
+                onClick={() => send(q.prompt)}>
+                {q.label}
+              </Button>
+            ))}
+          </div>
+        )}
+        <div className={`p-3 flex gap-2 items-center ${skin.composer}`}>
+          <input ref={fileRef} type="file" accept=".txt,.csv,.json,.md,.log" className="hidden"
+            onChange={(e) => { onPickFile(e.target.files?.[0]); e.currentTarget.value = ""; }} />
+          <Button size="icon" variant="ghost" className="rounded-xl shrink-0" title="إرفاق ملف للتحليل"
+            disabled={loading} onClick={() => fileRef.current?.click()}>
+            <Paperclip className="w-4 h-4" />
+          </Button>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -538,10 +555,19 @@ export default function AiAdminChat() {
             className="rounded-xl"
             disabled={loading}
           />
-          <Button onClick={send} disabled={loading || !input.trim()} className="rounded-xl px-4">
+          <Button size="icon" variant="ghost" className="rounded-xl shrink-0" title="إعادة توليد آخر رد"
+            disabled={loading || !messages.length} onClick={() => regenerate()}>
+            <RotateCcw className="w-4 h-4" />
+          </Button>
+          <Button size="icon" variant="ghost" className="rounded-xl shrink-0" title="تصدير المحادثة"
+            disabled={!messages.length} onClick={exportChat}>
+            <Download className="w-4 h-4" />
+          </Button>
+          <Button onClick={() => send()} disabled={loading || !input.trim()} className="rounded-xl px-4">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </Button>
         </div>
+
       </Card>
     </div>
   );
