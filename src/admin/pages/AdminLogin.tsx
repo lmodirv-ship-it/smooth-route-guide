@@ -89,6 +89,29 @@ const AdminLogin = () => {
     }
   };
 
+  /** الدخول برمز التحقق (يعمل داخل تطبيق الحاسوب دون فتح المتصفح). */
+  const verifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = code.trim();
+    if (token.length !== 6) return;
+    setVerifying(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: email.trim().toLowerCase(),
+        token,
+        type: "email",
+      });
+      if (error) throw error;
+      toast({ title: "تم تسجيل الدخول ✅" });
+      navigate("/admin", { replace: true });
+    } catch (err: any) {
+      toast({ title: "رمز غير صالح", description: err?.message ?? "تحقق من الرمز أو اطلب رمزاً جديداً", variant: "destructive" });
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+
   if (checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
