@@ -145,17 +145,15 @@ export default function AiAdminChat() {
     return data.id as string;
   };
 
-  const send = async () => {
-    const text = input.trim();
-    if (!text || loading) return;
-    setInput("");
-    const next = [...messages, { role: "user" as const, content: text }];
+  /** تشغيل دورة رد على قائمة رسائل معطاة. */
+  const run = async (next: Msg[], persistUser = true) => {
+    const lastUser = [...next].reverse().find((m) => m.role === "user")?.content ?? "";
     setMessages(next);
     setActivity([]);
     setLoading(true);
 
-    const id = await ensureChat(text);
-    if (id) await db.from("ai_admin_chat_messages").insert({ chat_id: id, role: "user", content: text });
+    const id = await ensureChat(lastUser);
+    if (id && persistUser) await db.from("ai_admin_chat_messages").insert({ chat_id: id, role: "user", content: lastUser });
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -221,6 +219,47 @@ export default function AiAdminChat() {
       setLoading(false);
     }
   };
+
+  const send = async (override?: string) => {
+    const text = (override ?? input).trim();
+    if (!text || loading) return;
+    setInput("");
+    await run([...messages, { role: "user" as const, content: text }]);
+  };
+
+  /** إعادة توليد آخر رد (يحذف رد المساعد الأخير ويعيد الطلب). */
+  const regenerate = async () => {
+    if (loading || !messages.length) return;
+    let cut = [...messages];
+    while (cut.length && cut[cut.length - 1].role === "assistant") cut.pop();
+    if (!cut.length) return;
+    await run(cut, false);
+  };
+
+  /** تصدير المحادثة الحالية كملف Markdown. */
+  const exportChat = () => {
+    if (!messages.length) return;
+    const md = messages.map((m) => `## ${m.role === "user" ? "المسؤول" : "المساعد"}\n\n${m.content}`).join("\n\n---\n\n");
+    const blob = new Blob(["\uFEFF" + md], { type: "text/markdown;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `hn-chat-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-")}.md`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  /** رفع ملف نصي/CSV/JSON لتحليله داخل المحادثة. */
+  const onPickFile = async (file: File | undefined) => {
+    if (!file) return;
+    if (file.size > 512 * 1024) {
+      toast({ title: "الملف كبير", description: "الحد الأقصى 512 كيلوبايت للملفات النصية.", variant: "destructive" });
+      return;
+    }
+    const text = await file.text();
+    setInput((v) => `${v ? v + "\n\n" : ""}حلّل محتوى الملف «${file.name}»:\n\n\`\`\`\n${text.slice(0, 20000)}\n\`\`\``);
+    toast({ title: "تم إرفاق الملف", description: file.name });
+  };
+
 
   return (
     <div className="space-y-4">
