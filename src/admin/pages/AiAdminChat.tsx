@@ -151,6 +151,7 @@ export default function AiAdminChat() {
     setInput("");
     const next = [...messages, { role: "user" as const, content: text }];
     setMessages(next);
+    setActivity([]);
     setLoading(true);
 
     const id = await ensureChat(text);
