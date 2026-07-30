@@ -91,12 +91,14 @@ export function useChatPrefs() {
     return () => { alive = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const update = useCallback((patch: Partial<ChatPrefs>) => {
+  const update = useCallback((patch: Partial<ChatPrefs>, replaceCustom = false) => {
     setPrefs((prev) => {
       const next: ChatPrefs = {
         ...prev,
         ...patch,
-        custom: patch.custom ? { ...prev.custom, ...patch.custom } : prev.custom,
+        custom: patch.custom
+          ? (replaceCustom ? patch.custom : { ...prev.custom, ...patch.custom })
+          : prev.custom,
       };
       localStorage.setItem(LS_KEY, JSON.stringify(next));
       if (timer.current) clearTimeout(timer.current);
@@ -117,7 +119,7 @@ export function useChatPrefs() {
     });
   }, [db]);
 
-  const reset = useCallback(() => update({ custom: {} as ChatCustom }), [update]);
+  const reset = useCallback(() => update({ custom: {} as ChatCustom }, true), [update]);
 
   return { prefs, update, reset, synced };
 }
