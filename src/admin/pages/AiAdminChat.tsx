@@ -21,6 +21,7 @@ import type { ChatPrefs, ChatCustom, ChatPreset, BubbleCustom } from "@/hooks/us
 
 import { providerLogo } from "@/admin/data/aiProviders";
 import { CHAT_SKINS, getSkin } from "@/admin/data/chatSkins";
+import ToolActivity, { type ToolEvent } from "@/admin/components/ToolActivity";
 
 const CATEGORY_LABEL: Record<string, string> = {
   llm: "نماذج نصية", image: "نماذج صور", video: "نماذج فيديو",
@@ -40,6 +41,7 @@ export default function AiAdminChat() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activity, setActivity] = useState<ToolEvent[]>([]);
   const { prefs, commit, synced } = useChatPrefs();
   /** مسودّة للمعاينة الفورية قبل الحفظ */
   const [draft, setDraft] = useState<ChatPrefs>(prefs);
@@ -149,6 +151,7 @@ export default function AiAdminChat() {
     setInput("");
     const next = [...messages, { role: "user" as const, content: text }];
     setMessages(next);
+    setActivity([]);
     setLoading(true);
 
     const id = await ensureChat(text);
@@ -164,6 +167,8 @@ export default function AiAdminChat() {
         },
         body: JSON.stringify({
           messages: next,
+          chat_id: id,
+          tools_enabled: true,
           model_row_id: modelId === "gateway" ? null : modelId,
           agent_id: agentId === "none" ? null : agentId,
         }),
@@ -193,6 +198,7 @@ export default function AiAdminChat() {
           if (!json || json === "[DONE]") continue;
           try {
             const obj = JSON.parse(json);
+            if (obj?.lovable) { setActivity((a) => [...a, obj.lovable as ToolEvent]); continue; }
             const delta = obj?.choices?.[0]?.delta?.content ?? "";
             if (delta) {
               assistant += delta;
@@ -471,6 +477,7 @@ export default function AiAdminChat() {
               </div>
             </div>
           ))}
+          {activity.length > 0 && <ToolActivity items={activity} />}
           {loading && messages[messages.length - 1]?.role === "user" && (
             <div className="flex justify-start">
               <div style={bubbleStyle("assistant")} className={`px-3.5 py-3 ${skin.assistant}`}>

@@ -74,6 +74,7 @@ const AiModels = lazy(() => import("@/admin/pages/AiModels"));
 const AiLocalModels = lazy(() => import("@/admin/pages/AiLocalModels"));
 const AiAgents = lazy(() => import("@/admin/pages/AiAgents"));
 const AiAdminChat = lazy(() => import("@/admin/pages/AiAdminChat"));
+const AiToolPermissions = lazy(() => import("@/admin/pages/AiToolPermissions"));
 const AiChats = lazy(() => import("@/admin/pages/AiChats"));
 const AiBilling = lazy(() => import("@/admin/pages/AiBilling"));
 const UsageMetrics = lazy(() => import("@/admin/pages/UsageMetrics"));
@@ -183,7 +184,9 @@ export const adminRouteElements = (
       <Route path="ai-local-models" element={L(AiLocalModels)} />
       <Route path="ai-agents" element={L(AiAgents)} />
       <Route path="ai-chat" element={L(AiAdminChat)} />
+      <Route path="ai-tools" element={L(AiToolPermissions)} />
       <Route path="ai-chats" element={L(AiChats)} />
+
       <Route path="ai-billing" element={L(AiBilling)} />
       <Route path="usage-metrics" element={L(UsageMetrics)} />
       <Route path="licenses" element={L(LicensesPage)} />

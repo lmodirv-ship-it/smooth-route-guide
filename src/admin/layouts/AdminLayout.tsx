@@ -103,6 +103,7 @@ const AdminLayout = () => {
     { path: "/admin/ai-local-models", icon: Database, label: "💾 النماذج المحلية" },
     { path: "/admin/ai-agents", icon: Bot, label: "🕹️ الوكلاء (Agents)" },
     { path: "/admin/ai-chat", icon: MessagesSquare, label: "💬 AI with Admin" },
+    { path: "/admin/ai-tools", icon: BrainCircuit, label: "🛡️ صلاحيات أدوات المساعد" },
     { path: "/admin/ai-chats", icon: MessageSquare, label: "🗂️ المحادثات" },
     { path: "/admin/ai-billing", icon: CreditCard, label: "🧾 فوترة الذكاء الاصطناعي" },
     { path: "/admin/usage-metrics", icon: TrendingUp, label: "📊 محددات الاستهلاك" },
