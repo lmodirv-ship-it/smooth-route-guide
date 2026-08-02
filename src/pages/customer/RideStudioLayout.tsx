@@ -485,28 +485,28 @@ const RideStudioLayout = () => {
 
         {/* Extra options + fare */}
         {(o.showOptionsBar || o.showFareCard) && (
-          <div className="glass-card p-3 border border-border/70" style={{ borderRadius: radius }}>
-            <div className="flex items-start gap-2.5">
+          <div className="glass-card p-2.5 border border-border/70" style={{ borderRadius: radius }}>
+            <div className="flex items-start gap-2">
               {/* Fare box (start side) */}
               {o.showFareCard && (
-                <div className="rounded-2xl border border-info/25 bg-info/5 p-3 w-[142px] sm:w-[190px] shrink-0 order-first">
-                  <div className="flex items-center gap-1.5">
-                    <Info className="w-3.5 h-3.5 text-info" />
-                    <span className="text-[10px] text-muted-foreground">{s.estimatedCost}</span>
+                <div className="rounded-xl border border-info/25 bg-info/5 p-2 w-[124px] sm:w-[160px] shrink-0 order-first">
+                  <div className="flex items-center gap-1">
+                    <Info className="w-3 h-3 text-info" />
+                    <span className="text-[9px] text-muted-foreground truncate">{s.estimatedCost}</span>
                   </div>
-                  <p className="text-[22px] sm:text-[26px] font-extrabold text-success leading-tight mt-1">
+                  <p className="text-[18px] sm:text-[21px] font-extrabold text-success leading-tight mt-0.5">
                     {priceLow !== null ? `${priceLow} - ${priceHigh}` : "—"}
-                    {priceLow !== null && <span className="text-[15px] font-bold ms-1">{s.currency}</span>}
+                    {priceLow !== null && <span className="text-[12px] font-bold ms-1">{s.currency}</span>}
                   </p>
-                  <div className="flex items-center gap-1.5 mt-1.5">
-                    <Clock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                    <span className="text-[10px] text-muted-foreground">
+                  <div className="flex items-center gap-1 mt-1">
+                    <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
+                    <span className="text-[9px] text-muted-foreground">
                       {etaLow !== null ? `${etaLow} - ${etaHigh} ${s.min}` : "—"}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <Share2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                    <span className="text-[10px] text-muted-foreground">
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <Share2 className="w-3 h-3 text-muted-foreground shrink-0" />
+                    <span className="text-[9px] text-muted-foreground">
                       {rideDistance !== null ? `${rideDistance.toFixed(1)} ${s.km}` : "—"}
                     </span>
                   </div>
@@ -516,8 +516,9 @@ const RideStudioLayout = () => {
               {/* Option fields */}
               {o.showOptionsBar && (
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-semibold text-foreground mb-2">{s.extraOptions}</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <p className="text-[11px] font-semibold text-foreground mb-1.5">{s.extraOptions}</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+
                     <div className="relative">
                       <Field icon={Car} label={s.rideType} value={activeVehicle ? vehicleLabel(activeVehicle) : "—"} onClick={() => setOpenField(f => f === "vehicle" ? null : "vehicle")} />
                       {openField === "vehicle" && (
