@@ -258,11 +258,11 @@ const RideStudioLayout = () => {
   const mapRoute = userLocation && destCoords ? { pickup: userLocation, destination: destCoords } : null;
 
   const Stat = ({ icon: Icon, value, label, tone }: { icon: typeof Eye; value: string; label: string; tone: string }) => (
-    <div className="flex items-center gap-1.5 px-2.5 shrink-0">
-      <Icon className={`w-4 h-4 ${tone}`} />
-      <div className="leading-tight">
-        <p className="text-[12px] font-bold text-foreground">{value}</p>
-        <p className="text-[9px] text-muted-foreground">{label}</p>
+    <div className="flex items-center gap-1 px-2 shrink-0">
+      <Icon className={`w-3.5 h-3.5 ${tone}`} />
+      <div className="leading-tight min-w-0">
+        <p className="text-[11px] font-bold text-foreground truncate">{value}</p>
+        <p className="text-[8px] text-muted-foreground truncate">{label}</p>
       </div>
     </div>
   );
@@ -270,10 +270,10 @@ const RideStudioLayout = () => {
   const Field = ({ icon: Icon, label, value, onClick }: { icon: typeof Eye; label: string; value: string; onClick?: () => void }) => (
     <button
       onClick={onClick}
-      className="glass-card border border-border/70 px-2.5 py-2 text-start w-full hover:border-primary/40 transition-colors"
+      className="glass-card border border-border/70 px-2 py-1.5 text-start w-full h-[52px] flex flex-col justify-center hover:border-primary/40 transition-colors"
       style={{ borderRadius: radius }}
     >
-      <p className="text-[9px] text-muted-foreground mb-1.5 truncate">{label}</p>
+      <p className="text-[9px] text-muted-foreground mb-1 truncate">{label}</p>
       <div className="flex items-center gap-1.5">
         <Icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
         <span className="text-[11px] font-semibold text-foreground truncate flex-1">{value}</span>
@@ -281,6 +281,7 @@ const RideStudioLayout = () => {
       </div>
     </button>
   );
+
 
   return (
     <div className="min-h-[calc(100dvh-2.75rem)] gradient-dark pb-28" dir={dir}>
