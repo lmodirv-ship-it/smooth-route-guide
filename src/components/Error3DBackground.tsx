@@ -114,100 +114,34 @@ export default function Error3DBackground() {
   );
 }
 
-/* A layered nature scene: sky, sun, clouds, mountains, flying birds and a flowing river. */
+/* Real nature photography with a slow cinematic Ken Burns motion and soft light haze. */
 function NatureScene() {
   return (
-    <div className="absolute inset-0 animate-fade-in">
-      {/* sky */}
+    <div className="absolute inset-0 animate-fade-in overflow-hidden">
+      <img
+        src={natureScene}
+        alt=""
+        width={1920}
+        height={1088}
+        loading="lazy"
+        className="absolute inset-0 h-full w-full object-cover animate-[ken-burns_28s_ease-in-out_infinite_alternate]"
+      />
+      {/* warm light haze */}
       <div
         className="absolute inset-0"
-        style={{ background: "linear-gradient(to bottom, hsl(200 85% 62%) 0%, hsl(195 70% 72%) 40%, hsl(45 80% 78%) 70%, hsl(150 45% 45%) 100%)" }}
+        style={{ background: "radial-gradient(ellipse at 78% 42%, hsl(38 100% 70% / 0.28), transparent 55%)" }}
       />
-      {/* sun */}
+      {/* depth vignette for text contrast */}
       <div
-        className="absolute right-[18%] top-[14%] h-24 w-24 rounded-full"
-        style={{ background: "radial-gradient(circle, hsl(48 100% 72%), hsl(40 100% 60% / 0.15) 70%, transparent)", boxShadow: "0 0 90px hsl(45 100% 65% / 0.8)" }}
+        className="absolute inset-0"
+        style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 35%, hsl(220 40% 6% / 0.55) 100%)" }}
       />
-      {/* clouds */}
-      {[
-        { top: "12%", size: 120, dur: 42, delay: 0, o: 0.85 },
-        { top: "24%", size: 80, dur: 55, delay: 8, o: 0.7 },
-        { top: "34%", size: 160, dur: 68, delay: 18, o: 0.6 },
-      ].map((c, idx) => (
-        <div
-          key={idx}
-          className="absolute"
-          style={{
-            top: c.top,
-            width: c.size,
-            height: c.size * 0.35,
-            opacity: c.o,
-            borderRadius: "9999px",
-            background: "hsl(0 0% 100% / 0.9)",
-            filter: "blur(6px)",
-            animation: `cloud-drift ${c.dur}s linear ${c.delay}s infinite`,
-          }}
-        />
-      ))}
-
-      {/* mountains */}
-      <svg className="absolute inset-x-0 bottom-[38%] w-full" viewBox="0 0 1200 240" preserveAspectRatio="none" style={{ height: "26%" }}>
-        <path d="M0,240 L180,80 L320,240 Z" fill="hsl(150 25% 42%)" />
-        <path d="M220,240 L430,40 L640,240 Z" fill="hsl(150 30% 34%)" />
-        <path d="M540,240 L760,110 L980,240 Z" fill="hsl(150 25% 40%)" />
-        <path d="M880,240 L1080,70 L1200,240 Z" fill="hsl(150 30% 30%)" />
-        <path d="M400,60 L430,40 L462,62 L430,74 Z" fill="hsl(0 0% 100% / 0.85)" />
-        <path d="M1054,88 L1080,70 L1108,90 L1080,100 Z" fill="hsl(0 0% 100% / 0.8)" />
-      </svg>
-
-      {/* trees */}
-      {[8, 16, 88, 94].map((left, idx) => (
-        <div key={idx} className="absolute bottom-[36%] origin-bottom" style={{ left: `${left}%`, animation: `sway ${5 + idx}s ease-in-out infinite` }}>
-          <div className="mx-auto h-10 w-1.5 rounded-sm" style={{ background: "hsl(25 45% 28%)" }} />
-          <div className="absolute -top-8 left-1/2 h-12 w-12 -translate-x-1/2 rounded-full" style={{ background: "hsl(140 45% 32%)" }} />
-        </div>
-      ))}
-
-      {/* river */}
-      <div
-        className="absolute inset-x-0 bottom-0 h-[40%]"
-        style={{
-          background: "linear-gradient(to bottom, hsl(200 70% 52%), hsl(210 75% 38%))",
-          clipPath: "polygon(35% 0, 65% 0, 100% 100%, 0 100%)",
-        }}
-      >
-        <div
-          className="absolute inset-0 opacity-50"
-          style={{
-            backgroundImage: "repeating-linear-gradient(90deg, hsl(0 0% 100% / 0.35) 0 2px, transparent 2px 40px)",
-            animation: "river-flow 6s linear infinite",
-          }}
-        />
-        <div
-          className="absolute inset-0 opacity-40"
-          style={{
-            backgroundImage: "repeating-linear-gradient(90deg, hsl(0 0% 100% / 0.25) 0 3px, transparent 3px 70px)",
-            animation: "river-flow 11s linear infinite reverse",
-          }}
-        />
-      </div>
-      {/* river banks */}
-      <div className="absolute inset-x-0 bottom-0 h-[40%]" style={{ background: "hsl(120 40% 34%)", clipPath: "polygon(0 0, 35% 0, 0 100%)" }} />
-      <div className="absolute inset-x-0 bottom-0 h-[40%]" style={{ background: "hsl(120 40% 30%)", clipPath: "polygon(65% 0, 100% 0, 100% 100%)" }} />
-
-      {/* birds */}
-      {[
-        { top: "18%", dur: 22, delay: 0, scale: 1 },
-        { top: "26%", dur: 28, delay: 4, scale: 0.75 },
-        { top: "13%", dur: 34, delay: 9, scale: 0.6 },
-        { top: "31%", dur: 26, delay: 14, scale: 0.5 },
-      ].map((b, idx) => (
-        <div key={idx} className="absolute left-0" style={{ top: b.top, animation: `bird-fly ${b.dur}s linear ${b.delay}s infinite` }}>
-          <svg width={34 * b.scale} height={16 * b.scale} viewBox="0 0 34 16" style={{ animation: `wing-flap ${0.6 + idx * 0.1}s ease-in-out infinite`, transformOrigin: "center" }}>
-            <path d="M1 10 C 7 1, 12 1, 17 8 C 22 1, 27 1, 33 10" fill="none" stroke="hsl(220 25% 20%)" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        </div>
-      ))}
+      <style>{`
+        @keyframes ken-burns {
+          from { transform: scale(1) translate3d(0,0,0); }
+          to { transform: scale(1.12) translate3d(-1.5%, -1%, 0); }
+        }
+      `}</style>
     </div>
   );
 }
