@@ -794,8 +794,32 @@ const RideStudioLayout = () => {
             </div>
             <div className="px-5 pb-3 relative">
               <Search className="absolute end-8 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="h-12 glass border-border rounded-2xl text-sm" autoFocus />
+              <Input
+                value={searchQuery}
+                placeholder={s.searchPlace}
+                onChange={e => { setSearchQuery(e.target.value); runSearch(e.target.value); }}
+                className="h-12 glass border-border rounded-2xl text-sm"
+                autoFocus
+              />
             </div>
+            {(searchLoading || searchResults.length > 0) && (
+              <div className="px-5 pb-3 space-y-2">
+                <p className="text-[11px] text-muted-foreground">{searchLoading ? "..." : s.searchOnline}</p>
+                {searchResults.map((r, i) => (
+                  <button
+                    key={`${r.lat}-${r.lng}-${i}`}
+                    onClick={() => applyPoint(r.name, r.lat, r.lng)}
+                    className="w-full flex items-center gap-3 p-3 rounded-2xl glass border border-border text-start"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <MapPin className="w-4 h-4 text-primary" />
+                    </div>
+                    <p className="text-sm text-foreground truncate flex-1">{r.name}</p>
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="px-5 pb-3 flex gap-2 overflow-x-auto no-scrollbar">
               {locationCategories.map(cat => (
                 <button
