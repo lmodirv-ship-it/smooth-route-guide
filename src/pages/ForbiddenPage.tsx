@@ -10,9 +10,10 @@ export default function ForbiddenPage() {
       <p className="text-muted-foreground mb-6 max-w-md">
         ليست لديك الصلاحيات اللازمة للوصول إلى هذه الصفحة. قم بتسجيل الدخول بحساب مناسب أو ارجع إلى الصفحة الرئيسية.
       </p>
-      <div className="flex gap-3">
-        <Button asChild><Link to="/">الرئيسية</Link></Button>
-        <Button variant="outline" asChild><Link to="/auth">تسجيل الدخول</Link></Button>
+      <div className="flex flex-wrap gap-3 justify-center">
+        <Button asChild><Link to="/auth/client?mode=signup">إنشاء حساب جديد</Link></Button>
+        <Button variant="outline" asChild><Link to="/login">تسجيل الدخول</Link></Button>
+        <Button variant="ghost" asChild><Link to="/">الرئيسية</Link></Button>
       </div>
     </main>
   );
