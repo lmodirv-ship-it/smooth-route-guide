@@ -209,76 +209,165 @@ const RideStudioLayout = () => {
   const gap = DENSITY_GAP[o.density];
   const mapRoute = userLocation && destCoords ? { pickup: userLocation, destination: destCoords } : null;
 
-  const Stat = ({ icon: Icon, value, label }: { icon: typeof Eye; value: string; label: string }) => (
-    <div className="flex items-center gap-1.5 px-2 py-1 rounded-xl glass border border-border/60 shrink-0">
-      <Icon className="w-3.5 h-3.5 text-primary" />
-      <div className="leading-none">
-        <p className="text-[11px] font-bold text-foreground">{value}</p>
+  const Stat = ({ icon: Icon, value, label, tone }: { icon: typeof Eye; value: string; label: string; tone: string }) => (
+    <div className="flex items-center gap-1.5 px-2.5 shrink-0">
+      <Icon className={`w-4 h-4 ${tone}`} />
+      <div className="leading-tight">
+        <p className="text-[12px] font-bold text-foreground">{value}</p>
         <p className="text-[9px] text-muted-foreground">{label}</p>
       </div>
     </div>
   );
 
+  const Field = ({ icon: Icon, label, value, onClick }: { icon: typeof Eye; label: string; value: string; onClick?: () => void }) => (
+    <button
+      onClick={onClick}
+      className="glass-card border border-border/70 px-2.5 py-2 text-start w-full hover:border-primary/40 transition-colors"
+      style={{ borderRadius: radius }}
+    >
+      <p className="text-[9px] text-muted-foreground mb-1.5 truncate">{label}</p>
+      <div className="flex items-center gap-1.5">
+        <Icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+        <span className="text-[11px] font-semibold text-foreground truncate flex-1">{value}</span>
+        <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
+      </div>
+    </button>
+  );
+
   return (
-    <div className="min-h-[calc(100dvh-2.75rem)] gradient-dark pb-24" dir={dir}>
-      {/* Top stats bar */}
+    <div className="min-h-[calc(100dvh-2.75rem)] gradient-dark pb-28" dir={dir}>
+      {/* Top bar — avatar + stats pill + balance + actions */}
       {o.showTopBar && (
-        <div className="sticky top-0 z-40 glass-strong border-b border-border px-3 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
-          <Stat icon={Radio} value={String(nearbyDrivers.length)} label={s.driversAvailable} />
-          <Stat icon={WalletIcon} value={balance !== null ? `${balance} ${s.currency}` : "—"} label={s.balance} />
-          <Stat icon={Star} value={points !== null ? String(points) : "—"} label={s.activityPoints} />
-          <div className="flex-1" />
-          <button onClick={() => navigate("/customer/notifications")} className="w-8 h-8 rounded-xl glass border border-border flex items-center justify-center shrink-0">
-            <Bell className="w-4 h-4 text-muted-foreground" />
-          </button>
-          <div className="w-8 h-8 rounded-xl glass border border-border flex items-center justify-center shrink-0">
-            <Globe className="w-4 h-4 text-muted-foreground" />
+        <div className="sticky top-0 z-40 bg-background/85 backdrop-blur-xl px-2.5 py-2.5">
+          <div className="flex items-center gap-2">
+            <div className="relative shrink-0">
+              <div className="w-10 h-10 rounded-2xl gradient-primary flex items-center justify-center border border-border/60">
+                <Car className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <span className="absolute -bottom-0.5 -end-0.5 w-3 h-3 rounded-full bg-success border-2 border-background" />
+            </div>
+
+            <div className="flex-1 min-w-0 flex items-center glass-card border border-border/70 rounded-2xl py-1.5 overflow-x-auto no-scrollbar divide-x divide-border/60 rtl:divide-x-reverse">
+              <Stat icon={Eye} value="—" label={s.views} tone="text-info" />
+              <Stat icon={Users} value={String(nearbyDrivers.length)} label={s.driversAvailable} tone="text-success" />
+              <Stat icon={ShoppingBag} value={points !== null ? String(points) : "—"} label={s.todayOrders} tone="text-primary" />
+            </div>
+
+            <div className="glass-card border border-border/70 rounded-2xl px-2.5 py-1.5 shrink-0 text-center">
+              <div className="flex items-center gap-1.5">
+                <WalletIcon className="w-3.5 h-3.5 text-info" />
+                <span className="text-[12px] font-bold text-foreground">
+                  {balance !== null ? `${s.currency} ${balance}` : "—"}
+                </span>
+              </div>
+              <p className="text-[9px] text-muted-foreground">{s.balance}</p>
+            </div>
+
+            <button
+              onClick={() => navigate("/customer/notifications")}
+              className="relative w-10 h-10 rounded-2xl glass-card border border-border/70 flex items-center justify-center shrink-0"
+            >
+              <Bell className="w-4 h-4 text-muted-foreground" />
+            </button>
+            <div className="w-10 h-10 rounded-2xl glass-card border border-border/70 flex items-center justify-center shrink-0">
+              <Globe className="w-4 h-4 text-muted-foreground" />
+            </div>
           </div>
         </div>
       )}
 
-      <div className="px-3 pt-3" style={{ display: "flex", flexDirection: "column", gap }}>
-        {/* Compact quick cards */}
+      <div className="px-2.5 pt-2.5" style={{ display: "flex", flexDirection: "column", gap }}>
+        {/* Compact info cards row */}
         {o.showQuickCards && (
-          <div className="grid grid-cols-2" style={{ gap }}>
-            <button
-              onClick={() => setPicker("pickup")}
-              className="glass-card p-2.5 text-start border border-border hover:border-primary/40 transition-colors"
-              style={{ borderRadius: radius }}
-            >
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="w-2 h-2 rounded-full bg-success" />
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{s.pickup}</span>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar" style={{ gap }}>
+            {/* Ride badge */}
+            <div className="glass-card border border-primary/25 p-2.5 shrink-0 w-[112px]" style={{ borderRadius: radius }}>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[13px] font-bold text-foreground leading-tight">{s.requestRide.split(" ")[0]}</p>
+                  <p className="text-[13px] font-bold text-primary leading-tight">{s.requestRide.split(" ").slice(1).join(" ")}</p>
+                </div>
+                <Sparkles className="w-4 h-4 text-primary" />
               </div>
-              <p className="text-xs font-semibold text-foreground truncate">
-                {selectedPickupName || (pickupLoading ? s.locating : pickupName || s.yourLocation)}
-              </p>
-            </button>
-            <button
-              onClick={() => setPicker("dest")}
-              className="glass-card p-2.5 text-start border border-border hover:border-primary/40 transition-colors"
-              style={{ borderRadius: radius }}
-            >
-              <div className="flex items-center gap-1.5 mb-1">
-                <MapPin className="w-3 h-3 text-primary" />
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{s.destination}</span>
+              <div className="flex items-center gap-1 mt-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-success" />
+                <span className="text-[9px] text-muted-foreground truncate">
+                  {nearbyDrivers.length > 0 ? `${nearbyDrivers.length} ${s.driversAvailable}` : s.searching}
+                </span>
               </div>
-              <p className="text-xs font-semibold text-foreground truncate">
-                {selectedDestName || destName || s.destinationPlaceholder}
-              </p>
-            </button>
+            </div>
+
+            {/* Activity points */}
+            <div className="glass-card border border-border/70 p-2.5 shrink-0 w-[132px]" style={{ borderRadius: radius }}>
+              <p className="text-[9px] text-muted-foreground text-end">{s.activityPoints}</p>
+              <p className="text-[15px] font-bold text-foreground text-end leading-tight">{points ?? 0}/999</p>
+              <div className="h-1.5 rounded-full bg-secondary/60 mt-1.5 overflow-hidden">
+                <div className="h-full rounded-full bg-success" style={{ width: `${Math.min(100, ((points ?? 0) / 999) * 100)}%` }} />
+              </div>
+              <div className="flex items-center justify-end gap-1 mt-1.5">
+                <span className="text-[9px] text-muted-foreground">{s.safeTrip}</span>
+                <ShieldCheck className="w-3 h-3 text-success" />
+              </div>
+            </div>
+
+            {/* Plate */}
             {userCode && (
-              <div className="glass-card p-2.5 border border-border" style={{ borderRadius: radius }}>
-                <p className="text-[10px] text-muted-foreground mb-1">{s.plate}</p>
-                <p className="text-xs font-mono font-bold text-primary">{userCode}</p>
+              <div className="glass-card border border-border/70 p-2.5 shrink-0 w-[120px] text-end" style={{ borderRadius: radius }}>
+                <p className="text-[9px] text-muted-foreground">{s.plate}</p>
+                <p className="text-[15px] font-mono font-bold text-foreground leading-tight">{userCode}</p>
+                <div className="flex justify-end mt-1.5">
+                  <span className="w-7 h-7 rounded-full bg-primary/12 border border-primary/25 flex items-center justify-center">
+                    <Car className="w-3.5 h-3.5 text-primary" />
+                  </span>
+                </div>
               </div>
             )}
-            <div className="glass-card p-2.5 border border-border" style={{ borderRadius: radius }}>
-              <p className="text-[10px] text-muted-foreground mb-1">{s.requestRide}</p>
-              <p className="text-xs font-semibold text-foreground">
-                {nearbyDrivers.length > 0 ? `${nearbyDrivers.length} ${s.driversAvailable}` : s.searching}
-              </p>
-            </div>
+
+            {/* Pickup */}
+            <button
+              onClick={() => setPicker("pickup")}
+              className="glass-card border border-border/70 p-2.5 shrink-0 w-[190px] text-start"
+              style={{ borderRadius: radius }}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-success" />
+                    <span className="text-[9px] text-muted-foreground">{s.pickup}</span>
+                  </div>
+                  <p className="text-[12px] font-semibold text-foreground truncate mt-0.5">
+                    {selectedPickupName || (pickupLoading ? s.locating : pickupName || s.yourLocation)}
+                  </p>
+                  <p className="text-[9px] text-muted-foreground truncate">{s.pickOnMap}</p>
+                </div>
+                <span className="w-9 h-9 rounded-full bg-success/12 border border-success/25 flex items-center justify-center shrink-0">
+                  <Crosshair className="w-4 h-4 text-success" />
+                </span>
+              </div>
+            </button>
+
+            {/* Destination */}
+            <button
+              onClick={() => setPicker("dest")}
+              className="glass-card border border-border/70 p-2.5 shrink-0 w-[210px] text-start"
+              style={{ borderRadius: radius }}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-info" />
+                    <span className="text-[9px] text-muted-foreground">{s.destination}</span>
+                  </div>
+                  <p className="text-[12px] font-semibold text-foreground truncate mt-0.5">
+                    {selectedDestName || destName || s.destinationPlaceholder}
+                  </p>
+                  <p className="text-[9px] text-muted-foreground truncate">{s.pickOnMap}</p>
+                </div>
+                <span className="w-9 h-9 rounded-full bg-info/12 border border-info/25 flex items-center justify-center shrink-0">
+                  <MapPin className="w-4 h-4 text-info" />
+                </span>
+              </div>
+            </button>
           </div>
         )}
 
@@ -297,84 +386,126 @@ const RideStudioLayout = () => {
             hideControls
             className="w-full h-full"
           />
-          <div className="absolute bottom-3 end-3 flex flex-col gap-2 z-[500]">
-            <button onClick={recenter} className="w-9 h-9 rounded-xl glass-strong border border-border flex items-center justify-center" aria-label={s.myLocation}>
-              <Crosshair className="w-4 h-4 text-primary" />
+          <button
+            onClick={() => setPicker("dest")}
+            className="absolute top-3 start-3 z-[500] flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-background/70 backdrop-blur-md border border-border/60 text-[11px] text-foreground"
+          >
+            <Crosshair className="w-3.5 h-3.5 text-muted-foreground" />
+            {s.pickOnMap}
+          </button>
+          <div className="absolute top-3 end-3 flex flex-col gap-2 z-[500]">
+            <button onClick={recenter} className="w-10 h-10 rounded-2xl bg-background/70 backdrop-blur-md border border-border/60 flex items-center justify-center" aria-label={s.myLocation}>
+              <Crosshair className="w-4 h-4 text-foreground" />
             </button>
-            <button onClick={() => setPicker("dest")} className="w-9 h-9 rounded-xl glass-strong border border-border flex items-center justify-center" aria-label={s.pickOnMap}>
-              <Navigation className="w-4 h-4 text-primary" />
-            </button>
+            <div className="rounded-2xl bg-background/70 backdrop-blur-md border border-border/60 overflow-hidden flex flex-col">
+              <span className="w-10 h-9 flex items-center justify-center text-foreground"><Plus className="w-4 h-4" /></span>
+              <span className="h-px bg-border/60" />
+              <span className="w-10 h-9 flex items-center justify-center text-foreground"><Minus className="w-4 h-4" /></span>
+            </div>
           </div>
         </div>
 
-        {/* Extra options */}
-        {o.showOptionsBar && (
-          <div className="glass-card p-3 border border-border" style={{ borderRadius: radius }}>
-            <p className="text-[11px] text-muted-foreground mb-2">{s.extraOptions}</p>
+        {/* Extra options + fare */}
+        {(o.showOptionsBar || o.showFareCard) && (
+          <div className="glass-card p-3 border border-border/70" style={{ borderRadius: radius }}>
+            {o.showOptionsBar && <p className="text-[12px] font-semibold text-foreground mb-2.5">{s.extraOptions}</p>}
 
-            <p className="text-[10px] text-muted-foreground mb-1.5">{s.rideType}</p>
-            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-              {vehicleTypes.map(v => {
-                const Icon = ICONS[v.icon] || Car;
-                const active = v.code === vehicleCode;
-                return (
-                  <button
-                    key={v.id}
-                    onClick={() => { setVehicleCode(v.code); setPassengers(p => Math.min(p, v.max_passengers)); }}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-medium whitespace-nowrap border transition-all ${
-                      active ? "gradient-primary text-primary-foreground border-transparent" : "glass border-border text-muted-foreground"
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                    {vehicleLabel(v)}
-                  </button>
-                );
-              })}
+            <div className="flex flex-col gap-2.5 md:flex-row-reverse md:items-stretch">
+              {/* Fare box */}
+              {o.showFareCard && (
+                <div className="rounded-2xl border border-info/25 bg-info/5 p-3 md:w-[210px] shrink-0">
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <span className="text-[11px] text-muted-foreground">{s.estimatedCost}</span>
+                    <Info className="w-3.5 h-3.5 text-info" />
+                  </div>
+                  <p className="text-[26px] font-extrabold text-success text-end leading-tight">
+                    {priceLow !== null ? `${priceLow} - ${priceHigh} ${s.currency}` : "—"}
+                  </p>
+                  <div className="flex items-center gap-1.5 justify-end mt-1">
+                    <span className="text-[11px] text-muted-foreground">
+                      {etaLow !== null ? `${etaLow} - ${etaHigh} ${s.min}` : "—"}
+                    </span>
+                    <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                  </div>
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <span className="text-[11px] text-muted-foreground">
+                      {rideDistance !== null ? `${rideDistance.toFixed(1)} ${s.km}` : "—"}
+                    </span>
+                    <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
+                  </div>
+                </div>
+              )}
+
+              {/* Option fields */}
+              {o.showOptionsBar && (
+                <div className="grid grid-cols-2 gap-2 flex-1">
+                  <div className="relative">
+                    <Field icon={Car} label={s.rideType} value={activeVehicle ? vehicleLabel(activeVehicle) : "—"} onClick={() => setOpenField(f => f === "vehicle" ? null : "vehicle")} />
+                    {openField === "vehicle" && (
+                      <div className="absolute z-30 mt-1 w-full rounded-2xl glass-strong border border-border p-1.5 space-y-1">
+                        {vehicleTypes.map(v => {
+                          const Icon = ICONS[v.icon] || Car;
+                          return (
+                            <button
+                              key={v.id}
+                              onClick={() => { setVehicleCode(v.code); setPassengers(p => Math.min(p, v.max_passengers)); setOpenField(null); }}
+                              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[11px] ${v.code === vehicleCode ? "bg-primary/15 text-primary" : "text-muted-foreground"}`}
+                            >
+                              <Icon className="w-3.5 h-3.5" />
+                              {vehicleLabel(v)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="glass-card border border-border/70 px-2.5 py-2" style={{ borderRadius: radius }}>
+                    <p className="text-[9px] text-muted-foreground mb-1.5">{s.passengers}</p>
+                    <div className="flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                      <button onClick={() => setPassengers(p => Math.max(1, p - 1))} className="w-5 h-5 rounded-md glass border border-border flex items-center justify-center">
+                        <Minus className="w-3 h-3 text-muted-foreground" />
+                      </button>
+                      <span className="text-[11px] font-semibold text-foreground flex-1 text-center">{passengers}</span>
+                      <button
+                        onClick={() => setPassengers(p => Math.min(activeVehicle?.max_passengers ?? 4, p + 1))}
+                        className="w-5 h-5 rounded-md glass border border-border flex items-center justify-center"
+                      >
+                        <Plus className="w-3 h-3 text-muted-foreground" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    <Field
+                      icon={payment === "cash" ? Banknote : payment === "card" ? CreditCard : WalletIcon}
+                      label={s.payment}
+                      value={payment === "cash" ? s.cash : payment === "card" ? s.card : s.wallet}
+                      onClick={() => setOpenField(f => f === "payment" ? null : "payment")}
+                    />
+                    {openField === "payment" && (
+                      <div className="absolute z-30 mt-1 w-full rounded-2xl glass-strong border border-border p-1.5 space-y-1">
+                        {([["cash", Banknote, s.cash], ["card", CreditCard, s.card], ["wallet", WalletIcon, s.wallet]] as const).map(([code, Icon, label]) => (
+                          <button
+                            key={code}
+                            onClick={() => { setPayment(code); setOpenField(null); }}
+                            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[11px] ${payment === code ? "bg-primary/15 text-primary" : "text-muted-foreground"}`}
+                          >
+                            <Icon className="w-3.5 h-3.5" />
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <Field icon={StickyNote} label={s.notes} value={notes ? notes.slice(0, 18) : s.addNote} onClick={() => setShowNotes(v => !v)} />
+                </div>
+              )}
             </div>
 
-            <div className="grid grid-cols-2 gap-2 mt-3">
-              <div className="glass p-2 rounded-xl border border-border">
-                <p className="text-[10px] text-muted-foreground mb-1.5">{s.passengers}</p>
-                <div className="flex items-center justify-between">
-                  <button onClick={() => setPassengers(p => Math.max(1, p - 1))} className="w-6 h-6 rounded-lg glass border border-border flex items-center justify-center">
-                    <Minus className="w-3 h-3 text-muted-foreground" />
-                  </button>
-                  <span className="text-sm font-bold text-foreground">{passengers}</span>
-                  <button
-                    onClick={() => setPassengers(p => Math.min(activeVehicle?.max_passengers ?? 4, p + 1))}
-                    className="w-6 h-6 rounded-lg glass border border-border flex items-center justify-center"
-                  >
-                    <Plus className="w-3 h-3 text-muted-foreground" />
-                  </button>
-                </div>
-              </div>
-              <div className="glass p-2 rounded-xl border border-border">
-                <p className="text-[10px] text-muted-foreground mb-1.5">{s.payment}</p>
-                <div className="flex gap-1">
-                  {([["cash", Banknote, s.cash], ["card", CreditCard, s.card], ["wallet", WalletIcon, s.wallet]] as const).map(([code, Icon, label]) => (
-                    <button
-                      key={code}
-                      onClick={() => setPayment(code)}
-                      className={`flex-1 py-1 rounded-lg text-[9px] flex flex-col items-center gap-0.5 border transition-all ${
-                        payment === code ? "bg-primary/15 border-primary/40 text-primary" : "border-border text-muted-foreground"
-                      }`}
-                    >
-                      <Icon className="w-3 h-3" />
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowNotes(v => !v)}
-              className="mt-2 w-full flex items-center gap-2 px-3 py-2 rounded-xl glass border border-border text-[11px] text-muted-foreground"
-            >
-              <StickyNote className="w-3.5 h-3.5 text-primary" />
-              {notes ? notes.slice(0, 40) : s.addNote}
-            </button>
-            {showNotes && (
+            {o.showOptionsBar && showNotes && (
               <Textarea
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
@@ -386,45 +517,27 @@ const RideStudioLayout = () => {
           </div>
         )}
 
-        {/* Fare card */}
-        {o.showFareCard && (
-          <div className="glass-card p-3 border border-border flex items-center justify-around" style={{ borderRadius: radius }}>
-            <div className="text-center">
-              <p className="text-[10px] text-muted-foreground">{s.estimatedCost}</p>
-              <p className="text-sm font-bold text-primary">
-                {priceLow !== null ? `${priceLow}–${priceHigh} ${s.currency}` : "—"}
-              </p>
-            </div>
-            <div className="w-px h-7 bg-border" />
-            <div className="text-center">
-              <p className="text-[10px] text-muted-foreground">{s.duration}</p>
-              <p className="text-sm font-bold text-foreground">{etaLow !== null ? `${etaLow}–${etaHigh} ${s.min}` : "—"}</p>
-            </div>
-            <div className="w-px h-7 bg-border" />
-            <div className="text-center">
-              <p className="text-[10px] text-muted-foreground">{s.distance}</p>
-              <p className="text-sm font-bold text-foreground">{rideDistance !== null ? `${rideDistance.toFixed(1)} ${s.km}` : "—"}</p>
-            </div>
-          </div>
-        )}
-
         {/* Safety strip */}
         {o.showSafetyStrip && (
-          <div className="grid grid-cols-4 gap-2">
+          <div className="glass-card border border-border/70 p-2.5 flex items-center gap-2" style={{ borderRadius: radius }}>
+            <span className="w-9 h-9 rounded-xl bg-success/12 border border-success/25 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-4 h-4 text-success" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[12px] font-semibold text-foreground leading-tight">{s.safeTrip}</p>
+              <p className="text-[9px] text-muted-foreground truncate">{s.liveTracking}</p>
+            </div>
+            <div className="flex-1" />
             {[
-              { icon: ShieldCheck, label: s.safeTrip, action: () => undefined },
               { icon: Radio, label: s.liveTracking, action: () => navigate("/customer/tracking") },
               { icon: Share2, label: s.shareTrip, action: shareTrip },
               { icon: Headphones, label: s.support, action: () => navigate("/support") },
             ].map((item, i) => (
-              <button
-                key={i}
-                onClick={item.action}
-                className="glass p-2 border border-border flex flex-col items-center gap-1"
-                style={{ borderRadius: radius }}
-              >
-                <item.icon className="w-4 h-4 text-primary" />
-                <span className="text-[9px] text-muted-foreground text-center leading-tight">{item.label}</span>
+              <button key={i} onClick={item.action} className="flex flex-col items-center gap-1 px-1.5 shrink-0">
+                <span className="w-8 h-8 rounded-full bg-success/10 border border-success/20 flex items-center justify-center">
+                  <item.icon className="w-3.5 h-3.5 text-success" />
+                </span>
+                <span className="text-[8px] text-muted-foreground text-center leading-tight">{item.label}</span>
               </button>
             ))}
           </div>
@@ -434,19 +547,20 @@ const RideStudioLayout = () => {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            className="h-12 px-4 rounded-2xl border-border glass text-xs"
+            className="h-14 px-3 rounded-2xl border-border glass text-[11px] gap-1.5"
             onClick={() => setScheduleOpen(true)}
           >
-            <CalendarClock className="w-4 h-4 me-1.5" />
+            <CalendarClock className="w-4 h-4 text-info" />
             {s.scheduleLater}
           </Button>
-          <Button
+          <button
             onClick={() => submit()}
             disabled={submitting || !destCoords}
-            className="flex-1 h-12 rounded-2xl gradient-primary text-primary-foreground font-bold glow-primary"
+            className="flex-1 h-14 rounded-2xl text-primary-foreground font-bold text-[15px] flex items-center justify-center gap-2 disabled:opacity-50"
+            style={{ background: "linear-gradient(90deg, hsl(var(--info)), hsl(var(--success)))", boxShadow: `0 8px 26px -10px hsl(var(--success) / 0.7)` }}
           >
-            {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Car className="w-4 h-4 me-2" />{s.requestNow}</>}
-          </Button>
+            {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Car className="w-5 h-5" />{s.requestNow}</>}
+          </button>
         </div>
       </div>
 
