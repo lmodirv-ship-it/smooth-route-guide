@@ -524,26 +524,29 @@ const RideStudioLayout = () => {
 
         {/* Safety strip */}
         {o.showSafetyStrip && (
-          <div className="glass-card border border-border/70 p-2.5 flex items-center gap-2" style={{ borderRadius: radius }}>
-            <span className="w-9 h-9 rounded-xl bg-success/12 border border-success/25 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-4 h-4 text-success" />
+          <div className="glass-card border border-border/70 p-2.5 flex items-center gap-1" style={{ borderRadius: radius }}>
+            <span className="w-10 h-10 rounded-2xl bg-success/12 border border-success/25 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-5 h-5 text-success" />
             </span>
-            <div className="min-w-0">
+            <div className="min-w-0 ms-1.5">
               <p className="text-[12px] font-semibold text-foreground leading-tight">{s.safeTrip}</p>
               <p className="text-[9px] text-muted-foreground truncate">{s.liveTracking}</p>
             </div>
-            <div className="flex-1" />
+            <div className="flex-1 min-w-2" />
             {[
               { icon: Radio, label: s.liveTracking, action: () => navigate("/customer/tracking") },
               { icon: Share2, label: s.shareTrip, action: shareTrip },
               { icon: Headphones, label: s.support, action: () => navigate("/support") },
             ].map((item, i) => (
-              <button key={i} onClick={item.action} className="flex flex-col items-center gap-1 px-1.5 shrink-0">
-                <span className="w-8 h-8 rounded-full bg-success/10 border border-success/20 flex items-center justify-center">
-                  <item.icon className="w-3.5 h-3.5 text-success" />
-                </span>
-                <span className="text-[8px] text-muted-foreground text-center leading-tight">{item.label}</span>
-              </button>
+              <div key={i} className="flex items-center shrink-0">
+                {i > 0 && <span className="w-4 sm:w-6 border-t border-dashed border-border/70 mb-4" />}
+                <button onClick={item.action} className="flex flex-col items-center gap-1 px-0.5">
+                  <span className="w-9 h-9 rounded-full bg-success/10 border border-success/25 flex items-center justify-center">
+                    <item.icon className="w-4 h-4 text-success" />
+                  </span>
+                  <span className="text-[8px] text-muted-foreground text-center leading-tight">{item.label}</span>
+                </button>
+              </div>
             ))}
           </div>
         )}
@@ -552,21 +555,22 @@ const RideStudioLayout = () => {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            className="h-14 px-3 rounded-2xl border-border glass text-[11px] gap-1.5"
+            className="h-14 px-3 rounded-2xl border-border/70 glass text-[11px] gap-1.5 text-foreground"
             onClick={() => setScheduleOpen(true)}
           >
-            <CalendarClock className="w-4 h-4 text-info" />
+            <Clock className="w-4 h-4 text-info" />
             {s.scheduleLater}
           </Button>
           <button
             onClick={() => submit()}
             disabled={submitting || !destCoords}
-            className="flex-1 h-14 rounded-2xl text-primary-foreground font-bold text-[15px] flex items-center justify-center gap-2 disabled:opacity-50"
-            style={{ background: "linear-gradient(90deg, hsl(var(--info)), hsl(var(--success)))", boxShadow: `0 8px 26px -10px hsl(var(--success) / 0.7)` }}
+            className="flex-1 h-14 rounded-2xl text-primary-foreground font-extrabold text-[16px] flex items-center justify-center gap-2 disabled:opacity-50"
+            style={{ background: "linear-gradient(90deg, hsl(var(--info)), hsl(var(--success)))", boxShadow: `0 10px 30px -12px hsl(var(--info) / 0.8)` }}
           >
-            {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Car className="w-5 h-5" />{s.requestNow}</>}
+            {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><span className="flex-1 text-center">{s.requestNow}</span><Car className="w-6 h-6 absolute-none" /></>}
           </button>
         </div>
+
       </div>
 
       {/* Schedule sheet */}
