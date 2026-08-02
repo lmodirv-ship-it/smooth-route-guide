@@ -410,99 +410,101 @@ const RideStudioLayout = () => {
         {/* Extra options + fare */}
         {(o.showOptionsBar || o.showFareCard) && (
           <div className="glass-card p-3 border border-border/70" style={{ borderRadius: radius }}>
-            {o.showOptionsBar && <p className="text-[12px] font-semibold text-foreground mb-2.5">{s.extraOptions}</p>}
-
-            <div className="flex flex-col gap-2.5 md:flex-row-reverse md:items-stretch">
-              {/* Fare box */}
+            <div className="flex items-start gap-2.5">
+              {/* Fare box (start side) */}
               {o.showFareCard && (
-                <div className="rounded-2xl border border-info/25 bg-info/5 p-3 md:w-[210px] shrink-0">
-                  <div className="flex items-center gap-1.5 justify-end">
-                    <span className="text-[11px] text-muted-foreground">{s.estimatedCost}</span>
+                <div className="rounded-2xl border border-info/25 bg-info/5 p-3 w-[142px] sm:w-[190px] shrink-0 order-first">
+                  <div className="flex items-center gap-1.5">
                     <Info className="w-3.5 h-3.5 text-info" />
+                    <span className="text-[10px] text-muted-foreground">{s.estimatedCost}</span>
                   </div>
-                  <p className="text-[26px] font-extrabold text-success text-end leading-tight">
-                    {priceLow !== null ? `${priceLow} - ${priceHigh} ${s.currency}` : "—"}
+                  <p className="text-[22px] sm:text-[26px] font-extrabold text-success leading-tight mt-1">
+                    {priceLow !== null ? `${priceLow} - ${priceHigh}` : "—"}
+                    {priceLow !== null && <span className="text-[15px] font-bold ms-1">{s.currency}</span>}
                   </p>
-                  <div className="flex items-center gap-1.5 justify-end mt-1">
-                    <span className="text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <Clock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                    <span className="text-[10px] text-muted-foreground">
                       {etaLow !== null ? `${etaLow} - ${etaHigh} ${s.min}` : "—"}
                     </span>
-                    <Clock className="w-3.5 h-3.5 text-muted-foreground" />
                   </div>
-                  <div className="flex items-center gap-1.5 justify-end">
-                    <span className="text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <Share2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                    <span className="text-[10px] text-muted-foreground">
                       {rideDistance !== null ? `${rideDistance.toFixed(1)} ${s.km}` : "—"}
                     </span>
-                    <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
                   </div>
                 </div>
               )}
 
               {/* Option fields */}
               {o.showOptionsBar && (
-                <div className="grid grid-cols-2 gap-2 flex-1">
-                  <div className="relative">
-                    <Field icon={Car} label={s.rideType} value={activeVehicle ? vehicleLabel(activeVehicle) : "—"} onClick={() => setOpenField(f => f === "vehicle" ? null : "vehicle")} />
-                    {openField === "vehicle" && (
-                      <div className="absolute z-30 mt-1 w-full rounded-2xl glass-strong border border-border p-1.5 space-y-1">
-                        {vehicleTypes.map(v => {
-                          const Icon = ICONS[v.icon] || Car;
-                          return (
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-semibold text-foreground mb-2">{s.extraOptions}</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="relative">
+                      <Field icon={Car} label={s.rideType} value={activeVehicle ? vehicleLabel(activeVehicle) : "—"} onClick={() => setOpenField(f => f === "vehicle" ? null : "vehicle")} />
+                      {openField === "vehicle" && (
+                        <div className="absolute z-30 mt-1 w-full rounded-2xl glass-strong border border-border p-1.5 space-y-1">
+                          {vehicleTypes.map(v => {
+                            const Icon = ICONS[v.icon] || Car;
+                            return (
+                              <button
+                                key={v.id}
+                                onClick={() => { setVehicleCode(v.code); setPassengers(p => Math.min(p, v.max_passengers)); setOpenField(null); }}
+                                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[11px] ${v.code === vehicleCode ? "bg-primary/15 text-primary" : "text-muted-foreground"}`}
+                              >
+                                <Icon className="w-3.5 h-3.5" />
+                                {vehicleLabel(v)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="glass-card border border-border/70 px-2.5 py-2" style={{ borderRadius: radius }}>
+                      <p className="text-[9px] text-muted-foreground mb-1.5">{s.passengers}</p>
+                      <div className="flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <button onClick={() => setPassengers(p => Math.max(1, p - 1))} className="w-5 h-5 rounded-md glass border border-border flex items-center justify-center">
+                          <Minus className="w-3 h-3 text-muted-foreground" />
+                        </button>
+                        <span className="text-[11px] font-semibold text-foreground flex-1 text-center">{passengers}</span>
+                        <button
+                          onClick={() => setPassengers(p => Math.min(activeVehicle?.max_passengers ?? 4, p + 1))}
+                          className="w-5 h-5 rounded-md glass border border-border flex items-center justify-center"
+                        >
+                          <Plus className="w-3 h-3 text-muted-foreground" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="relative">
+                      <Field
+                        icon={payment === "cash" ? Banknote : payment === "card" ? CreditCard : WalletIcon}
+                        label={s.payment}
+                        value={payment === "cash" ? s.cash : payment === "card" ? s.card : s.wallet}
+                        onClick={() => setOpenField(f => f === "payment" ? null : "payment")}
+                      />
+                      {openField === "payment" && (
+                        <div className="absolute z-30 mt-1 w-full rounded-2xl glass-strong border border-border p-1.5 space-y-1">
+                          {([["cash", Banknote, s.cash], ["card", CreditCard, s.card], ["wallet", WalletIcon, s.wallet]] as const).map(([code, Icon, label]) => (
                             <button
-                              key={v.id}
-                              onClick={() => { setVehicleCode(v.code); setPassengers(p => Math.min(p, v.max_passengers)); setOpenField(null); }}
-                              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[11px] ${v.code === vehicleCode ? "bg-primary/15 text-primary" : "text-muted-foreground"}`}
+                              key={code}
+                              onClick={() => { setPayment(code); setOpenField(null); }}
+                              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[11px] ${payment === code ? "bg-primary/15 text-primary" : "text-muted-foreground"}`}
                             >
                               <Icon className="w-3.5 h-3.5" />
-                              {vehicleLabel(v)}
+                              {label}
                             </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="glass-card border border-border/70 px-2.5 py-2" style={{ borderRadius: radius }}>
-                    <p className="text-[9px] text-muted-foreground mb-1.5">{s.passengers}</p>
-                    <div className="flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                      <button onClick={() => setPassengers(p => Math.max(1, p - 1))} className="w-5 h-5 rounded-md glass border border-border flex items-center justify-center">
-                        <Minus className="w-3 h-3 text-muted-foreground" />
-                      </button>
-                      <span className="text-[11px] font-semibold text-foreground flex-1 text-center">{passengers}</span>
-                      <button
-                        onClick={() => setPassengers(p => Math.min(activeVehicle?.max_passengers ?? 4, p + 1))}
-                        className="w-5 h-5 rounded-md glass border border-border flex items-center justify-center"
-                      >
-                        <Plus className="w-3 h-3 text-muted-foreground" />
-                      </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
 
-                  <div className="relative">
-                    <Field
-                      icon={payment === "cash" ? Banknote : payment === "card" ? CreditCard : WalletIcon}
-                      label={s.payment}
-                      value={payment === "cash" ? s.cash : payment === "card" ? s.card : s.wallet}
-                      onClick={() => setOpenField(f => f === "payment" ? null : "payment")}
-                    />
-                    {openField === "payment" && (
-                      <div className="absolute z-30 mt-1 w-full rounded-2xl glass-strong border border-border p-1.5 space-y-1">
-                        {([["cash", Banknote, s.cash], ["card", CreditCard, s.card], ["wallet", WalletIcon, s.wallet]] as const).map(([code, Icon, label]) => (
-                          <button
-                            key={code}
-                            onClick={() => { setPayment(code); setOpenField(null); }}
-                            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[11px] ${payment === code ? "bg-primary/15 text-primary" : "text-muted-foreground"}`}
-                          >
-                            <Icon className="w-3.5 h-3.5" />
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                    <Field icon={StickyNote} label={s.notes} value={notes ? notes.slice(0, 18) : s.addNote} onClick={() => setShowNotes(v => !v)} />
                   </div>
-
-                  <Field icon={StickyNote} label={s.notes} value={notes ? notes.slice(0, 18) : s.addNote} onClick={() => setShowNotes(v => !v)} />
                 </div>
               )}
             </div>
@@ -519,28 +521,32 @@ const RideStudioLayout = () => {
           </div>
         )}
 
+
         {/* Safety strip */}
         {o.showSafetyStrip && (
-          <div className="glass-card border border-border/70 p-2.5 flex items-center gap-2" style={{ borderRadius: radius }}>
-            <span className="w-9 h-9 rounded-xl bg-success/12 border border-success/25 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-4 h-4 text-success" />
+          <div className="glass-card border border-border/70 p-2.5 flex items-center gap-1" style={{ borderRadius: radius }}>
+            <span className="w-10 h-10 rounded-2xl bg-success/12 border border-success/25 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-5 h-5 text-success" />
             </span>
-            <div className="min-w-0">
+            <div className="min-w-0 ms-1.5">
               <p className="text-[12px] font-semibold text-foreground leading-tight">{s.safeTrip}</p>
               <p className="text-[9px] text-muted-foreground truncate">{s.liveTracking}</p>
             </div>
-            <div className="flex-1" />
+            <div className="flex-1 min-w-2" />
             {[
               { icon: Radio, label: s.liveTracking, action: () => navigate("/customer/tracking") },
               { icon: Share2, label: s.shareTrip, action: shareTrip },
               { icon: Headphones, label: s.support, action: () => navigate("/support") },
             ].map((item, i) => (
-              <button key={i} onClick={item.action} className="flex flex-col items-center gap-1 px-1.5 shrink-0">
-                <span className="w-8 h-8 rounded-full bg-success/10 border border-success/20 flex items-center justify-center">
-                  <item.icon className="w-3.5 h-3.5 text-success" />
-                </span>
-                <span className="text-[8px] text-muted-foreground text-center leading-tight">{item.label}</span>
-              </button>
+              <div key={i} className="flex items-center shrink-0">
+                {i > 0 && <span className="w-4 sm:w-6 border-t border-dashed border-border/70 mb-4" />}
+                <button onClick={item.action} className="flex flex-col items-center gap-1 px-0.5">
+                  <span className="w-9 h-9 rounded-full bg-success/10 border border-success/25 flex items-center justify-center">
+                    <item.icon className="w-4 h-4 text-success" />
+                  </span>
+                  <span className="text-[8px] text-muted-foreground text-center leading-tight">{item.label}</span>
+                </button>
+              </div>
             ))}
           </div>
         )}
@@ -549,21 +555,22 @@ const RideStudioLayout = () => {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            className="h-14 px-3 rounded-2xl border-border glass text-[11px] gap-1.5"
+            className="h-14 px-3 rounded-2xl border-border/70 glass text-[11px] gap-1.5 text-foreground"
             onClick={() => setScheduleOpen(true)}
           >
-            <CalendarClock className="w-4 h-4 text-info" />
+            <Clock className="w-4 h-4 text-info" />
             {s.scheduleLater}
           </Button>
           <button
             onClick={() => submit()}
             disabled={submitting || !destCoords}
-            className="flex-1 h-14 rounded-2xl text-primary-foreground font-bold text-[15px] flex items-center justify-center gap-2 disabled:opacity-50"
-            style={{ background: "linear-gradient(90deg, hsl(var(--info)), hsl(var(--success)))", boxShadow: `0 8px 26px -10px hsl(var(--success) / 0.7)` }}
+            className="flex-1 h-14 rounded-2xl text-primary-foreground font-extrabold text-[16px] flex items-center justify-center gap-2 disabled:opacity-50"
+            style={{ background: "linear-gradient(90deg, hsl(var(--info)), hsl(var(--success)))", boxShadow: `0 10px 30px -12px hsl(var(--info) / 0.8)` }}
           >
-            {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Car className="w-5 h-5" />{s.requestNow}</>}
+            {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><span className="flex-1 text-center">{s.requestNow}</span><Car className="w-6 h-6" /></>}
           </button>
         </div>
+
       </div>
 
       {/* Schedule sheet */}
