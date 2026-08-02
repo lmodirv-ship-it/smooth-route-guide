@@ -27,10 +27,25 @@ import { useI18n } from "@/i18n/context";
 import { rideStudioT } from "@/i18n/rideStudio";
 import { tangierLocations, locationCategories, TangierLocation } from "@/data/tangierLocations";
 import { useUiStudio, DENSITY_GAP, type UiStudioOptions } from "@/hooks/useUiStudio";
+import RideBottomSheet from "@/components/ride/RideBottomSheet";
+import { usePlaceSearch } from "@/hooks/usePlaceSearch";
+import { useDriverRealtimeTracking } from "@/hooks/useDriverRealtimeTracking";
+import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 
+/** Local persistence for ride option choices. */
+const PREFS = {
+  get(key: string, fallback: string) {
+    try { return localStorage.getItem(`ride_pref_${key}`) ?? fallback; } catch { return fallback; }
+  },
+  set(key: string, value: string) {
+    try { localStorage.setItem(`ride_pref_${key}`, value); } catch { /* ignore */ }
+  },
+};
+
 const ICONS: Record<string, typeof Car> = { car: Car, bus: Bus, crown: Crown, zap: Zap };
+
 
 interface VehicleType {
   id: string;
