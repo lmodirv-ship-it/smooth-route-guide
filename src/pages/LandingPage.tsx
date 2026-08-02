@@ -262,7 +262,7 @@ const LandingPage = () => {
               <LogIn className="h-4 w-4" />
               {c.actions.login}
             </Link>
-            <Link to="/auth/client" className="hn-create-account">
+            <Link to="/auth/client?mode=signup" className="hn-create-account">
               <UserPlus className="h-4 w-4" />
               {c.actions.signup}
             </Link>
