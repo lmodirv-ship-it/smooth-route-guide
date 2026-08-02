@@ -287,46 +287,47 @@ const RideStudioLayout = () => {
     <div className="min-h-[calc(100dvh-2.75rem)] gradient-dark pb-28" dir={dir}>
       {/* Top bar — avatar + stats pill + balance + actions */}
       {o.showTopBar && (
-        <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl px-2.5 py-2">
-          <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2">
+        <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl px-2 py-1.5">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
             <div className="relative shrink-0">
-              <div className="w-11 h-11 rounded-full gradient-primary flex items-center justify-center border-2 border-border/60 overflow-hidden">
-                {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : <Car className="w-5 h-5 text-primary-foreground" />}
+              <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center border border-border/60 overflow-hidden">
+                {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : <Car className="w-4 h-4 text-primary-foreground" />}
               </div>
-              <span className="absolute -bottom-0.5 -end-0.5 w-3 h-3 rounded-full bg-success border-2 border-background" />
+              <span className="absolute -bottom-0.5 -end-0.5 w-2.5 h-2.5 rounded-full bg-success border-2 border-background" />
             </div>
 
-            <div className="min-w-0 grid grid-cols-3 items-center glass-card border border-border/70 rounded-2xl py-1.5 divide-x divide-border/60 rtl:divide-x-reverse">
+            <div className="flex items-center glass-card border border-border/70 rounded-xl py-1 divide-x divide-border/60 rtl:divide-x-reverse shrink-0">
               <Stat icon={Eye} value={viewCount !== null ? String(viewCount) : "—"} label={s.views} tone="text-info" />
               <Stat icon={Users} value={String(nearbyDrivers.length)} label={s.driversAvailable} tone="text-success" />
               <Stat icon={TrendingUp} value={String(todayOrders)} label={s.todayOrders} tone="text-primary" />
             </div>
 
-            <div className="col-span-2 flex items-center gap-2 min-w-0">
-            <div className="glass-card border border-border/70 rounded-2xl px-3 py-1.5 min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[13px] font-bold text-foreground">
+            <div className="glass-card border border-border/70 rounded-xl px-2.5 py-1 shrink-0">
+              <div className="flex items-center gap-1">
+                <span className="text-[12px] font-bold text-foreground whitespace-nowrap">
                   {balance !== null ? `${s.currency} ${balance}` : "—"}
                 </span>
-                <WalletIcon className="w-4 h-4 text-muted-foreground" />
+                <WalletIcon className="w-3.5 h-3.5 text-muted-foreground" />
               </div>
-              <p className="text-[9px] text-muted-foreground">{s.balance}</p>
+              <p className="text-[8px] text-muted-foreground">{s.balance}</p>
             </div>
+
+            <div className="flex-1 min-w-0" />
 
             <button
               onClick={() => navigate("/customer/notifications")}
-              className="relative w-10 h-10 rounded-2xl glass-card border border-border/70 flex items-center justify-center shrink-0"
+              className="relative w-9 h-9 rounded-xl glass-card border border-border/70 flex items-center justify-center shrink-0"
             >
               <Bell className="w-4 h-4 text-primary" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -end-1 min-w-[16px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center border border-background">
+                <span className="absolute -top-1 -end-1 min-w-[14px] h-3.5 px-1 rounded-full bg-primary text-primary-foreground text-[8px] font-bold flex items-center justify-center border border-background">
                   {unreadCount}
                 </span>
               )}
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="w-10 h-10 rounded-2xl glass-card border-border/70 shrink-0" aria-label={locales.find((item) => item.code === locale)?.label}>
+                <Button variant="outline" size="icon" className="w-9 h-9 rounded-xl glass-card border-border/70 shrink-0" aria-label={locales.find((item) => item.code === locale)?.label}>
                   <Globe className="w-4 h-4 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
@@ -340,10 +341,10 @@ const RideStudioLayout = () => {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            </div>
           </div>
         </div>
       )}
+
 
       <div className="px-2.5 pt-2.5" style={{ display: "flex", flexDirection: "column", gap }}>
         {/* Compact info cards row */}
