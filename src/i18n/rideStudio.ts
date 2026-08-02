@@ -204,10 +204,10 @@ export const rideStudioStrings = {
     save: "Guardar",
     linkCopied: "Enlace copiado",
   },
-} as const;
+};
 
 export type RideStudioStrings = (typeof rideStudioStrings)["ar"];
 
 export function rideStudioT(locale: string): RideStudioStrings {
-  return (rideStudioStrings as Record<string, RideStudioStrings>)[locale] || rideStudioStrings.ar;
+  return (rideStudioStrings as unknown as Record<string, RideStudioStrings>)[locale] || rideStudioStrings.ar;
 }
