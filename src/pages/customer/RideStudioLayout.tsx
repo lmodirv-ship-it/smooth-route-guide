@@ -649,23 +649,31 @@ const RideStudioLayout = () => {
         )}
 
         {/* CTA */}
-        <div className="flex gap-1.5">
+        <div className="flex" style={{ gap: SPEC.grid }}>
           <Button
             variant="outline"
-            className="h-11 px-2.5 rounded-xl border-border/70 glass text-[10px] gap-1 text-foreground"
+            className="px-3 border-border/70 glass text-[11px] gap-1 text-foreground shrink-0"
+            style={{ height: SPEC.cta, borderRadius: radius }}
             onClick={() => setScheduleOpen(true)}
           >
-            <Clock className="w-3.5 h-3.5 text-info" />
+            <Clock className="w-4 h-4 text-info" />
             {s.scheduleLater}
           </Button>
           <Button
             onClick={() => submit()}
             disabled={submitting || !destCoords}
-            className="flex-1 h-11 rounded-xl text-primary-foreground font-extrabold text-[14px] flex items-center justify-center gap-2 disabled:opacity-50"
-            style={{ background: "linear-gradient(90deg, hsl(var(--info)), hsl(var(--success)))", boxShadow: `0 8px 24px -12px hsl(var(--info) / 0.8)` }}
+            className="flex-1 text-primary-foreground font-extrabold text-[15px] flex items-center justify-center gap-2 disabled:opacity-50 transition-transform active:scale-[0.98]"
+            style={{
+              height: SPEC.cta,
+              borderRadius: radius,
+              background: "linear-gradient(90deg, hsl(var(--info)), hsl(var(--success)))",
+              boxShadow: `0 14px 32px -14px hsl(var(--info) / 0.9)`,
+            }}
           >
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span className="flex-1 text-center">{s.requestNow}</span><Car className="w-5 h-5" /></>}
           </Button>
+        </div>
+
         </div>
 
 
