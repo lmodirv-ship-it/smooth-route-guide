@@ -72,6 +72,8 @@ const RideStudioLayout = () => {
   const [scheduleAt, setScheduleAt] = useState("");
   const [balance, setBalance] = useState<number | null>(null);
   const [points, setPoints] = useState<number | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+
 
   const { drivers: nearbyDrivers } = useNearbyDrivers();
   const { name: pickupName, loading: pickupLoading } = useReverseGeocode(userLocation);
