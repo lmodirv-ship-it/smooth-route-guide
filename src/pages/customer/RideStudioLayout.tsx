@@ -362,7 +362,7 @@ const RideStudioLayout = () => {
       )}
 
 
-      <div className="px-2 pt-2" style={{ display: "flex", flexDirection: "column", gap }}>
+      <div style={{ display: "flex", flexDirection: "column", gap, paddingInline: SPEC.pad, paddingTop: SPEC.grid * 2 }}>
         {/* Compact info cards row — uniform height */}
         {o.showQuickCards && (
           <div className="flex items-stretch gap-1.5 overflow-x-auto no-scrollbar" style={{ gap }}>
