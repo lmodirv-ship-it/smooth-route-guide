@@ -48,6 +48,7 @@ const DriverPackages = lazy(() => import("@/admin/pages/DriverPackages"));
 const AdminCommunityChat = lazy(() => import("@/admin/pages/AdminCommunityChat"));
 const CityActivation = lazy(() => import("@/admin/pages/CityActivation"));
 const ThemesPage = lazy(() => import("@/admin/pages/Themes"));
+const UiStudioPage = lazy(() => import("@/admin/pages/UiStudio"));
 const AdsManagement = lazy(() => import("@/admin/pages/AdsManagement"));
 const VisitorAnalytics = lazy(() => import("@/admin/pages/VisitorAnalytics"));
 const GrowthAnalytics = lazy(() => import("@/admin/pages/GrowthAnalytics"));
@@ -154,6 +155,7 @@ export const adminRouteElements = (
       <Route path="sub-assistants" element={L(SubAssistantsPage)} />
       <Route path="driver-packages" element={L(DriverPackages)} />
       <Route path="themes" element={L(ThemesPage)} />
+      <Route path="ui-studio" element={L(UiStudioPage)} />
       <Route path="ads" element={L(AdsManagement)} />
       <Route path="analytics" element={L(VisitorAnalytics)} />
       <Route path="growth" element={L(GrowthAnalytics)} />

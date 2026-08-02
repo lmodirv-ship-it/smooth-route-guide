@@ -63,7 +63,7 @@ const DeliveryDriverTracking = lazy(() => import("@/pages/driver/DeliveryDriverT
 const DriverSubscription = lazy(() => import("@/pages/driver/DriverSubscription"));
 
 const CustomerHub = lazy(() => import("@/pages/CustomerHub"));
-const CustomerPage = lazy(() => import("@/pages/CustomerPage"));
+const CustomerPage = lazy(() => import("@/pages/customer/RideEntry"));
 const ClientBooking = lazy(() => import("@/pages/client/ClientBooking"));
 const ClientPayment = lazy(() => import("@/pages/client/ClientPayment"));
 const ClientWallet = lazy(() => import("@/pages/client/ClientWallet"));
