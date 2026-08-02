@@ -674,7 +674,7 @@ const RideStudioLayout = () => {
           </Button>
         </div>
 
-        </div>
+
 
 
       </div>
