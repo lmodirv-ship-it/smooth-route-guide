@@ -94,17 +94,18 @@ const BottomNav = ({ role }: BottomNavProps) => {
               <span
                 className={`flex items-center justify-center transition-all ${
                   isCenter
-                    ? "h-12 w-12 -mt-5 rounded-full border-2 border-warning/80 bg-background"
-                    : "h-8 w-8 rounded-xl"
+                    ? "h-10 w-10 -mt-4 rounded-full border-2 border-warning/80 bg-background"
+                    : "h-7 w-7 rounded-xl"
                 }`}
-                style={isCenter ? { boxShadow: "0 0 22px -2px hsl(var(--warning) / 0.85), inset 0 0 12px -6px hsl(var(--warning) / 0.9)" } : undefined}
+                style={isCenter ? { boxShadow: "0 0 18px -2px hsl(var(--warning) / 0.85), inset 0 0 10px -6px hsl(var(--warning) / 0.9)" } : undefined}
               >
                 <item.icon
-                  className={`transition-colors ${isCenter ? "h-6 w-6 text-warning" : "h-5 w-5"} ${
+                  className={`transition-colors ${isCenter ? "h-5 w-5 text-warning" : "h-4 w-4"} ${
                     !isCenter ? (isActive ? "text-info" : "text-muted-foreground") : ""
                   }`}
                 />
               </span>
+
               <span
                 className={`text-[10px] transition-colors ${
                   isCenter
