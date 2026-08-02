@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  MapPin, Navigation, Loader2, Search, X, Car, Clock, Crosshair, Bell, Globe,
+  MapPin, Navigation, Loader2, Search, X, Car, Clock, Crosshair, Bell, Globe, Check,
   Users, Eye, ShoppingBag, Wallet as WalletIcon, Star, ShieldCheck, Share2, Radio,
   Headphones, CalendarClock, Plus, Minus, StickyNote, CreditCard, Banknote, Zap, Crown, Bus,
   ChevronDown, Sparkles, Info, TrendingUp,
@@ -10,6 +10,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LeafletMap from "@/components/LeafletMap";
@@ -47,7 +53,7 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
 
 const RideStudioLayout = () => {
   const navigate = useNavigate();
-  const { t, dir, locale } = useI18n();
+  const { t, dir, locale, locales, setLocale } = useI18n();
   const s = rideStudioT(locale);
   const ui = useUiStudio("customer");
   const o: UiStudioOptions = ui.options;
@@ -73,6 +79,12 @@ const RideStudioLayout = () => {
   const [balance, setBalance] = useState<number | null>(null);
   const [points, setPoints] = useState<number | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [todayOrders, setTodayOrders] = useState(0);
+  const [viewCount, setViewCount] = useState<number | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [activeRideId, setActiveRideId] = useState<string | null>(null);
+  const [zoomCommand, setZoomCommand] = useState<"in" | "out" | null>(null);
+  const [zoomCommandId, setZoomCommandId] = useState(0);
 
 
   const { drivers: nearbyDrivers } = useNearbyDrivers();
@@ -105,12 +117,22 @@ const RideStudioLayout = () => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const [{ data: w }, { data: st }] = await Promise.all([
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const [{ data: w }, { data: st }, { data: profile }, { count: ordersCount }, { data: visits }, { data: activeRide }] = await Promise.all([
         supabase.from("wallet").select("balance").eq("user_id", user.id).maybeSingle(),
         supabase.from("reward_stars").select("stars").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profiles").select("avatar_url").eq("id", user.id).maybeSingle(),
+        supabase.from("ride_requests").select("id", { count: "exact", head: true }).eq("user_id", user.id).gte("created_at", startOfDay.toISOString()),
+        supabase.from("site_visit_counter").select("today_visits").order("updated_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("ride_requests").select("id").eq("user_id", user.id).in("status", ["pending", "accepted", "in_progress"]).order("created_at", { ascending: false }).limit(1).maybeSingle(),
       ]);
       if (w) setBalance(Number((w as any).balance) || 0);
       if (st) setPoints(Number((st as any).stars) || 0);
+      setAvatarUrl(profile?.avatar_url ?? null);
+      setTodayOrders(ordersCount ?? 0);
+      setViewCount(visits ? Number(visits.today_visits) || 0 : null);
+      setActiveRideId(activeRide?.id ?? null);
       const { count } = await supabase
         .from("notifications")
         .select("id", { count: "exact", head: true })
@@ -212,8 +234,23 @@ const RideStudioLayout = () => {
   };
 
   const shareTrip = async () => {
-    const url = `${window.location.origin}/customer/tracking`;
+    const url = activeRideId
+      ? `${window.location.origin}/customer/tracking?id=${activeRideId}`
+      : `${window.location.origin}/customer/ride`;
     try { await navigator.clipboard.writeText(url); toast({ title: s.linkCopied }); } catch { /* ignore */ }
+  };
+
+  const trackActiveRide = () => {
+    if (!activeRideId) {
+      toast({ title: s.noActiveRide });
+      return;
+    }
+    navigate(`/customer/tracking?id=${activeRideId}`);
+  };
+
+  const commandZoom = (command: "in" | "out") => {
+    setZoomCommand(command);
+    setZoomCommandId((value) => value + 1);
   };
 
   const radius = `${o.radius}px`;
@@ -249,22 +286,23 @@ const RideStudioLayout = () => {
     <div className="min-h-[calc(100dvh-2.75rem)] gradient-dark pb-28" dir={dir}>
       {/* Top bar — avatar + stats pill + balance + actions */}
       {o.showTopBar && (
-        <div className="sticky top-0 z-40 bg-background/85 backdrop-blur-xl px-2.5 py-2.5">
-          <div className="flex items-center gap-2">
+        <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl px-2.5 py-2">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2">
             <div className="relative shrink-0">
               <div className="w-11 h-11 rounded-full gradient-primary flex items-center justify-center border-2 border-border/60 overflow-hidden">
-                <Car className="w-5 h-5 text-primary-foreground" />
+                {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : <Car className="w-5 h-5 text-primary-foreground" />}
               </div>
               <span className="absolute -bottom-0.5 -end-0.5 w-3 h-3 rounded-full bg-success border-2 border-background" />
             </div>
 
-            <div className="flex-1 min-w-0 flex items-center glass-card border border-border/70 rounded-2xl py-1.5 overflow-x-auto no-scrollbar divide-x divide-border/60 rtl:divide-x-reverse">
-              <Stat icon={Eye} value="—" label={s.views} tone="text-info" />
+            <div className="min-w-0 grid grid-cols-3 items-center glass-card border border-border/70 rounded-2xl py-1.5 divide-x divide-border/60 rtl:divide-x-reverse">
+              <Stat icon={Eye} value={viewCount !== null ? String(viewCount) : "—"} label={s.views} tone="text-info" />
               <Stat icon={Users} value={String(nearbyDrivers.length)} label={s.driversAvailable} tone="text-success" />
-              <Stat icon={TrendingUp} value={points !== null ? String(points) : "—"} label={s.todayOrders} tone="text-primary" />
+              <Stat icon={TrendingUp} value={String(todayOrders)} label={s.todayOrders} tone="text-primary" />
             </div>
 
-            <div className="glass-card border border-border/70 rounded-2xl px-2.5 py-1.5 shrink-0 text-center">
+            <div className="col-span-2 flex items-center gap-2 min-w-0">
+            <div className="glass-card border border-border/70 rounded-2xl px-3 py-1.5 min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-[13px] font-bold text-foreground">
                   {balance !== null ? `${s.currency} ${balance}` : "—"}
@@ -285,10 +323,23 @@ const RideStudioLayout = () => {
                 </span>
               )}
             </button>
-            <div className="w-10 h-10 rounded-2xl glass-card border border-border/70 flex items-center justify-center shrink-0">
-              <Globe className="w-4 h-4 text-muted-foreground" />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="w-10 h-10 rounded-2xl glass-card border-border/70 shrink-0" aria-label={locales.find((item) => item.code === locale)?.label}>
+                  <Globe className="w-4 h-4 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="z-[2100] min-w-[150px]">
+                {locales.map((language) => (
+                  <DropdownMenuItem key={language.code} onClick={() => setLocale(language.code)} className="gap-2">
+                    <span>{language.flag}</span>
+                    <span className="flex-1">{language.label}</span>
+                    {language.code === locale && <Check className="w-4 h-4 text-primary" />}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             </div>
-
           </div>
         </div>
       )}
@@ -401,6 +452,8 @@ const RideStudioLayout = () => {
             onMapClick={handleMapClick}
             expandable={false}
             hideControls
+            zoomCommand={zoomCommand}
+            zoomCommandId={zoomCommandId}
             className="w-full h-full"
           />
           <button
@@ -415,9 +468,9 @@ const RideStudioLayout = () => {
               <Crosshair className="w-4 h-4 text-foreground" />
             </button>
             <div className="rounded-2xl bg-background/70 backdrop-blur-md border border-border/60 overflow-hidden flex flex-col">
-              <span className="w-10 h-9 flex items-center justify-center text-foreground"><Plus className="w-4 h-4" /></span>
+              <button onClick={() => commandZoom("in")} className="w-10 h-9 flex items-center justify-center text-foreground" aria-label="+"><Plus className="w-4 h-4" /></button>
               <span className="h-px bg-border/60" />
-              <span className="w-10 h-9 flex items-center justify-center text-foreground"><Minus className="w-4 h-4" /></span>
+              <button onClick={() => commandZoom("out")} className="w-10 h-9 flex items-center justify-center text-foreground" aria-label="−"><Minus className="w-4 h-4" /></button>
             </div>
           </div>
         </div>
@@ -549,9 +602,9 @@ const RideStudioLayout = () => {
             </div>
             <div className="flex-1 min-w-2" />
             {[
-              { icon: Radio, label: s.liveTracking, action: () => navigate("/customer/tracking") },
+              { icon: Radio, label: s.liveTracking, action: trackActiveRide },
               { icon: Share2, label: s.shareTrip, action: shareTrip },
-              { icon: Headphones, label: s.support, action: () => navigate("/support") },
+              { icon: Headphones, label: s.support, action: () => navigate("/customer/support") },
             ].map((item, i) => (
               <div key={i} className="flex items-center shrink-0">
                 {i > 0 && <span className="w-4 sm:w-6 border-t border-dashed border-border/70 mb-4" />}
@@ -576,14 +629,14 @@ const RideStudioLayout = () => {
             <Clock className="w-4 h-4 text-info" />
             {s.scheduleLater}
           </Button>
-          <button
+          <Button
             onClick={() => submit()}
             disabled={submitting || !destCoords}
             className="flex-1 h-14 rounded-2xl text-primary-foreground font-extrabold text-[16px] flex items-center justify-center gap-2 disabled:opacity-50"
             style={{ background: "linear-gradient(90deg, hsl(var(--info)), hsl(var(--success)))", boxShadow: `0 10px 30px -12px hsl(var(--info) / 0.8)` }}
           >
             {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><span className="flex-1 text-center">{s.requestNow}</span><Car className="w-6 h-6" /></>}
-          </button>
+          </Button>
         </div>
 
       </div>

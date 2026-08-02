@@ -8,7 +8,8 @@ const StudioRide = lazy(() => import("@/pages/customer/RideStudioLayout"));
 
 /** Picks the customer ride layout configured in the admin UI Studio. */
 const RideEntry = () => {
-  const { layout, loading } = useUiStudio("customer");
+  const ui = useUiStudio("customer");
+  const { layout, loading } = ui;
 
   if (loading) {
     return (
