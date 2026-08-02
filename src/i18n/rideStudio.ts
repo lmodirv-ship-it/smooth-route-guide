@@ -50,6 +50,10 @@ export const rideStudioStrings = {
     cancel: "إلغاء",
     save: "حفظ",
     linkCopied: "تم نسخ رابط الرحلة",
+    noActiveRide: "لا توجد رحلة نشطة للتتبع",
+    notificationsTitle: "الإشعارات",
+    noNotifications: "لا توجد إشعارات",
+    back: "رجوع",
   },
   fr: {
     requestRide: "Demander une course",
@@ -101,6 +105,10 @@ export const rideStudioStrings = {
     cancel: "Annuler",
     save: "Enregistrer",
     linkCopied: "Lien copie",
+    noActiveRide: "Aucune course active a suivre",
+    notificationsTitle: "Notifications",
+    noNotifications: "Aucune notification",
+    back: "Retour",
   },
   en: {
     requestRide: "Request a ride",
@@ -152,6 +160,10 @@ export const rideStudioStrings = {
     cancel: "Cancel",
     save: "Save",
     linkCopied: "Trip link copied",
+    noActiveRide: "There is no active ride to track",
+    notificationsTitle: "Notifications",
+    noNotifications: "No notifications",
+    back: "Back",
   },
   es: {
     requestRide: "Pedir viaje",
@@ -203,6 +215,10 @@ export const rideStudioStrings = {
     cancel: "Cancelar",
     save: "Guardar",
     linkCopied: "Enlace copiado",
+    noActiveRide: "No hay un viaje activo para seguir",
+    notificationsTitle: "Notificaciones",
+    noNotifications: "No hay notificaciones",
+    back: "Volver",
   },
 };
 

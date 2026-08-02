@@ -68,6 +68,7 @@ const ClientBooking = lazy(() => import("@/pages/client/ClientBooking"));
 const ClientPayment = lazy(() => import("@/pages/client/ClientPayment"));
 const ClientWallet = lazy(() => import("@/pages/client/ClientWallet"));
 const ClientHistory = lazy(() => import("@/pages/client/ClientHistory"));
+const ClientNotifications = lazy(() => import("@/pages/client/ClientNotifications"));
 const ClientProfile = lazy(() => import("@/pages/client/ClientProfile"));
 const ClientSupport = lazy(() => import("@/pages/client/ClientSupport"));
 const ClientDocuments = lazy(() => import("@/pages/client/ClientDocuments"));
@@ -145,6 +146,7 @@ export const mainRouteElements = (
       <Route path="/customer/payment" element={<RequireRole allowed={["client"]}><LazyPage component={ClientPayment} /></RequireRole>} />
       <Route path="/customer/wallet" element={<RequireRole allowed={["client"]}><LazyPage component={ClientWallet} /></RequireRole>} />
       <Route path="/customer/history" element={<RequireRole allowed={["client"]}><LazyPage component={ClientHistory} /></RequireRole>} />
+      <Route path="/customer/notifications" element={<RequireRole allowed={["client"]}><LazyPage component={ClientNotifications} /></RequireRole>} />
       <Route path="/customer/profile" element={<RequireRole allowed={["client"]}><LazyPage component={ClientProfile} /></RequireRole>} />
       <Route path="/customer/support" element={<RequireRole allowed={["client"]}><LazyPage component={ClientSupport} /></RequireRole>} />
       <Route path="/customer/documents" element={<RequireRole allowed={["client"]}><LazyPage component={ClientDocuments} /></RequireRole>} />
