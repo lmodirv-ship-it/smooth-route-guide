@@ -94,25 +94,31 @@ const BottomNav = ({ role }: BottomNavProps) => {
               <span
                 className={`flex items-center justify-center transition-all ${
                   isCenter
-                    ? `h-11 w-11 rounded-full border ${isActive ? "border-primary/40 bg-primary/15" : "border-border/60 bg-secondary/40"}`
+                    ? "h-12 w-12 -mt-5 rounded-full border-2 border-primary/70 bg-background"
                     : "h-8 w-8 rounded-xl"
                 }`}
-                style={isCenter && isActive ? { boxShadow: "0 0 18px -4px hsl(var(--primary) / 0.7)" } : undefined}
+                style={isCenter ? { boxShadow: "0 0 22px -2px hsl(var(--primary) / 0.85), inset 0 0 12px -6px hsl(var(--primary) / 0.9)" } : undefined}
               >
                 <item.icon
-                  className={`transition-colors ${isCenter ? "h-5 w-5" : "h-5 w-5"} ${
-                    isActive ? (isCenter ? "text-primary" : "text-info") : "text-muted-foreground"
+                  className={`transition-colors ${isCenter ? "h-6 w-6 text-primary" : "h-5 w-5"} ${
+                    !isCenter ? (isActive ? "text-info" : "text-muted-foreground") : ""
                   }`}
                 />
               </span>
               <span
                 className={`text-[10px] transition-colors ${
-                  isActive ? (isCenter ? "font-bold text-primary" : "font-bold text-foreground") : "font-medium text-muted-foreground"
+                  isCenter
+                    ? "font-bold text-primary"
+                    : isActive
+                      ? "font-bold text-info"
+                      : "font-medium text-muted-foreground"
                 }`}
               >
                 {getLabel(item.labelKey)}
               </span>
+              {isActive && !isCenter && <span className="h-1 w-1 rounded-full bg-info" />}
             </motion.button>
+
           );
         })}
       </div>
