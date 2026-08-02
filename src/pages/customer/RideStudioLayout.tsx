@@ -253,23 +253,18 @@ const RideStudioLayout = () => {
     setZoomCommandId((value) => value + 1);
   };
 
-  // Design spec canvas: 1024 x 1536 (2:3). All sizes scale proportionally to the viewport.
-  const SC = "calc(min(100vw, 520px) / 1024)";
-  const u = (n: number) => `calc(${n} * ${SC})`;
+  // Design spec: 390x844 (iPhone 15 Pro) / 412x915 — 8px grid, 24px outer padding, 20px radius
   const SPEC = {
-    pad: u(24),
-    radius: u(20),
-    grid: u(8),
-    topBar: u(120),
-    topCards: u(160),
-    map: u(520),
-    options: u(250),
-    action: u(80),
-    nav: u(90),
+    pad: 24,
+    radius: 20,
+    grid: 8,
+    map: "45dvh",
+    cta: 56,
   };
 
-  const radius = SPEC.radius;
-  const gap = SPEC.grid;
+  const radius = `${SPEC.radius}px`;
+  const gap = `${SPEC.grid}px`;
+
   const mapRoute = userLocation && destCoords ? { pickup: userLocation, destination: destCoords } : null;
 
 
