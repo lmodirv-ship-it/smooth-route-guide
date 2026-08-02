@@ -67,6 +67,7 @@ const RideStudioLayout = () => {
   const [payment, setPayment] = useState<"cash" | "card" | "wallet">("cash");
   const [notes, setNotes] = useState("");
   const [showNotes, setShowNotes] = useState(false);
+  const [openField, setOpenField] = useState<"vehicle" | "payment" | null>(null);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [scheduleAt, setScheduleAt] = useState("");
   const [balance, setBalance] = useState<number | null>(null);
