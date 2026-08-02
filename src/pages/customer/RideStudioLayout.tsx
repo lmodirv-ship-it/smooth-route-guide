@@ -540,22 +540,23 @@ const RideStudioLayout = () => {
                       )}
                     </div>
 
-                    <div className="glass-card border border-border/70 px-2.5 py-2" style={{ borderRadius: radius }}>
-                      <p className="text-[9px] text-muted-foreground mb-1.5">{s.passengers}</p>
-                      <div className="flex items-center gap-1.5">
+                    <div className="glass-card border border-border/70 px-2 py-1.5 h-[52px] flex flex-col justify-center" style={{ borderRadius: radius }}>
+                      <p className="text-[9px] text-muted-foreground mb-1">{s.passengers}</p>
+                      <div className="flex items-center gap-1">
                         <Users className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        <button onClick={() => setPassengers(p => Math.max(1, p - 1))} className="w-5 h-5 rounded-md glass border border-border flex items-center justify-center">
-                          <Minus className="w-3 h-3 text-muted-foreground" />
+                        <button onClick={() => setPassengers(p => Math.max(1, p - 1))} className="w-4 h-4 rounded glass border border-border flex items-center justify-center">
+                          <Minus className="w-2.5 h-2.5 text-muted-foreground" />
                         </button>
                         <span className="text-[11px] font-semibold text-foreground flex-1 text-center">{passengers}</span>
                         <button
                           onClick={() => setPassengers(p => Math.min(activeVehicle?.max_passengers ?? 4, p + 1))}
-                          className="w-5 h-5 rounded-md glass border border-border flex items-center justify-center"
+                          className="w-4 h-4 rounded glass border border-border flex items-center justify-center"
                         >
-                          <Plus className="w-3 h-3 text-muted-foreground" />
+                          <Plus className="w-2.5 h-2.5 text-muted-foreground" />
                         </button>
                       </div>
                     </div>
+
 
                     <div className="relative">
                       <Field
