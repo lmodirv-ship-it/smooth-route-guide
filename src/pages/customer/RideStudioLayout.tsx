@@ -552,53 +552,56 @@ const RideStudioLayout = () => {
 
         {/* Extra options + fare */}
         {(o.showOptionsBar || o.showFareCard) && (
-          <div className="glass-card p-2.5 border border-border/70" style={{ borderRadius: radius }}>
-            <div className="flex items-start gap-2">
-              {/* Fare box (start side) */}
+          <div className="glass-card border border-ride-border/80" style={{ borderRadius: SPEC.radius, padding: SPEC.grid * 1.5 }}>
+            <div className="flex items-start" style={{ gap: SPEC.grid }}>
+              {/* Fare box 140x120 */}
               {o.showFareCard && (
-                <div className="rounded-xl border border-info/25 bg-info/5 p-1.5 w-[104px] sm:w-[130px] shrink-0 order-first">
+                <div
+                  className="rounded-2xl border border-ride-blue/30 bg-ride-blue/5 shrink-0 order-first flex flex-col justify-between"
+                  style={{ width: SPEC.fareW, height: SPEC.fareH, padding: 10 }}
+                >
                   <div className="flex items-center gap-1">
-                    <Info className="w-2.5 h-2.5 text-info" />
-                    <span className="text-[8px] text-muted-foreground truncate">{s.estimatedCost}</span>
+                    <Info className="w-3 h-3 text-ride-blue" />
+                    <span className="text-[13px] text-ride-muted truncate">{s.estimatedCost}</span>
                   </div>
-                  <p className="text-[15px] sm:text-[17px] font-extrabold text-success leading-tight mt-0.5">
-                    {priceLow !== null ? `${priceLow} - ${priceHigh}` : "—"}
-                    {priceLow !== null && <span className="text-[10px] font-bold ms-1">{s.currency}</span>}
+                  <p className="text-[22px] font-bold text-ride-green leading-tight">
+                    {priceLow !== null ? `${priceLow}-${priceHigh}` : "—"}
+                    {priceLow !== null && <span className="text-[13px] font-bold ms-1">{s.currency}</span>}
                   </p>
 
-                  <div className="flex items-center gap-1 mt-1">
-                    <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
-                    <span className="text-[9px] text-muted-foreground">
-                      {etaLow !== null ? `${etaLow} - ${etaHigh} ${s.min}` : "—"}
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-ride-muted shrink-0" />
+                    <span className="text-[13px] text-ride-muted">
+                      {etaLow !== null ? `${etaLow}-${etaHigh} ${s.min}` : "—"}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <Share2 className="w-3 h-3 text-muted-foreground shrink-0" />
-                    <span className="text-[9px] text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Share2 className="w-3.5 h-3.5 text-ride-muted shrink-0" />
+                    <span className="text-[13px] text-ride-muted">
                       {rideDistance !== null ? `${rideDistance.toFixed(1)} ${s.km}` : "—"}
                     </span>
                   </div>
                 </div>
               )}
 
-              {/* Option fields */}
+              {/* Option fields — 80x70 each, horizontal scroll */}
               {o.showOptionsBar && (
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold text-foreground mb-1">{s.extraOptions}</p>
-                  <div className="grid grid-cols-4 gap-1">
+                  <p className="text-[13px] font-medium text-foreground mb-1.5">{s.extraOptions}</p>
+                  <div className="flex overflow-x-auto no-scrollbar" style={{ gap: SPEC.grid }}>
 
 
-                    <div className="relative">
+                    <div className="relative shrink-0">
                       <Field icon={Car} label={s.rideType} value={activeVehicle ? vehicleLabel(activeVehicle) : "—"} onClick={() => setOpenField(f => f === "vehicle" ? null : "vehicle")} />
                       {openField === "vehicle" && (
-                        <div className="absolute z-30 mt-1 w-full rounded-2xl glass-strong border border-border p-1.5 space-y-1">
+                        <div className="absolute z-30 mt-1 min-w-[140px] rounded-2xl glass-strong border border-ride-border p-1.5 space-y-1">
                           {vehicleTypes.map(v => {
                             const Icon = ICONS[v.icon] || Car;
                             return (
                               <button
                                 key={v.id}
                                 onClick={() => { setVehicleCode(v.code); setPassengers(p => Math.min(p, v.max_passengers)); setOpenField(null); }}
-                                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[11px] ${v.code === vehicleCode ? "bg-primary/15 text-primary" : "text-muted-foreground"}`}
+                                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[13px] ${v.code === vehicleCode ? "bg-ride-blue/15 text-ride-blue" : "text-ride-muted"}`}
                               >
                                 <Icon className="w-3.5 h-3.5" />
                                 {vehicleLabel(v)}
@@ -609,26 +612,27 @@ const RideStudioLayout = () => {
                       )}
                     </div>
 
-                    <div className="glass-card border border-border/70 px-1.5 py-1 h-[44px] flex flex-col justify-center" style={{ borderRadius: radius }}>
-                      <p className="text-[8px] text-muted-foreground mb-0.5 truncate">{s.passengers}</p>
+                    <div
+                      className="glass-card border border-ride-border/80 px-1.5 py-1 shrink-0 flex flex-col justify-center"
+                      style={{ width: SPEC.optW, height: SPEC.optH, borderRadius: SPEC.cardRadius }}
+                    >
+                      <p className="text-[9px] text-ride-muted mb-0.5 truncate">{s.passengers}</p>
                       <div className="flex items-center gap-0.5">
-                        <Users className="w-3 h-3 text-muted-foreground shrink-0" />
-
-                        <button onClick={() => setPassengers(p => Math.max(1, p - 1))} className="w-4 h-4 rounded glass border border-border flex items-center justify-center">
-                          <Minus className="w-2.5 h-2.5 text-muted-foreground" />
+                        <button onClick={() => setPassengers(p => Math.max(1, p - 1))} className="w-5 h-5 rounded glass border border-ride-border flex items-center justify-center">
+                          <Minus className="w-2.5 h-2.5 text-ride-muted" />
                         </button>
-                        <span className="text-[11px] font-semibold text-foreground flex-1 text-center">{passengers}</span>
+                        <span className="text-[13px] font-semibold text-foreground flex-1 text-center">{passengers}</span>
                         <button
                           onClick={() => setPassengers(p => Math.min(activeVehicle?.max_passengers ?? 4, p + 1))}
-                          className="w-4 h-4 rounded glass border border-border flex items-center justify-center"
+                          className="w-5 h-5 rounded glass border border-ride-border flex items-center justify-center"
                         >
-                          <Plus className="w-2.5 h-2.5 text-muted-foreground" />
+                          <Plus className="w-2.5 h-2.5 text-ride-muted" />
                         </button>
                       </div>
                     </div>
 
 
-                    <div className="relative">
+                    <div className="relative shrink-0">
                       <Field
                         icon={payment === "cash" ? Banknote : payment === "card" ? CreditCard : WalletIcon}
                         label={s.payment}
@@ -636,12 +640,12 @@ const RideStudioLayout = () => {
                         onClick={() => setOpenField(f => f === "payment" ? null : "payment")}
                       />
                       {openField === "payment" && (
-                        <div className="absolute z-30 mt-1 w-full rounded-2xl glass-strong border border-border p-1.5 space-y-1">
+                        <div className="absolute z-30 mt-1 min-w-[140px] rounded-2xl glass-strong border border-ride-border p-1.5 space-y-1">
                           {([["cash", Banknote, s.cash], ["card", CreditCard, s.card], ["wallet", WalletIcon, s.wallet]] as const).map(([code, Icon, label]) => (
                             <button
                               key={code}
                               onClick={() => { setPayment(code); setOpenField(null); }}
-                              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[11px] ${payment === code ? "bg-primary/15 text-primary" : "text-muted-foreground"}`}
+                              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[13px] ${payment === code ? "bg-ride-blue/15 text-ride-blue" : "text-ride-muted"}`}
                             >
                               <Icon className="w-3.5 h-3.5" />
                               {label}
@@ -651,7 +655,7 @@ const RideStudioLayout = () => {
                       )}
                     </div>
 
-                    <Field icon={StickyNote} label={s.notes} value={notes ? notes.slice(0, 18) : s.addNote} onClick={() => setShowNotes(v => !v)} />
+                    <Field icon={StickyNote} label={s.notes} value={notes ? notes.slice(0, 12) : s.addNote} onClick={() => setShowNotes(v => !v)} />
                   </div>
                 </div>
               )}
@@ -662,7 +666,7 @@ const RideStudioLayout = () => {
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 placeholder={s.notePlaceholder}
-                className="mt-2 text-xs glass border-border rounded-xl"
+                className="mt-2 text-xs glass border-ride-border rounded-xl"
                 rows={2}
               />
             )}
@@ -670,31 +674,26 @@ const RideStudioLayout = () => {
         )}
 
 
-        {/* Safety strip */}
+        {/* Services strip — 80x60 items */}
         {o.showSafetyStrip && (
-          <div className="glass-card border border-border/70 p-2 flex items-center gap-1" style={{ borderRadius: radius }}>
-            <span className="w-8 h-8 rounded-xl bg-success/12 border border-success/25 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-4 h-4 text-success" />
-            </span>
-            <div className="min-w-0 ms-1">
-              <p className="text-[11px] font-semibold text-foreground leading-tight">{s.safeTrip}</p>
-              <p className="text-[8px] text-muted-foreground truncate">{s.liveTracking}</p>
-            </div>
-            <div className="flex-1 min-w-1" />
+          <div className="glass-card border border-ride-border/80 p-2 flex items-center overflow-x-auto no-scrollbar" style={{ borderRadius: SPEC.radius, gap: SPEC.grid }}>
             {[
+              { icon: ShieldCheck, label: s.safeTrip, action: () => {} },
               { icon: Radio, label: s.liveTracking, action: trackActiveRide },
               { icon: Share2, label: s.shareTrip, action: shareTrip },
               { icon: Headphones, label: s.support, action: () => navigate("/customer/support") },
             ].map((item, i) => (
-              <div key={i} className="flex items-center shrink-0">
-                {i > 0 && <span className="w-3 sm:w-5 border-t border-dashed border-border/70 mb-3.5" />}
-                <button onClick={item.action} className="flex flex-col items-center gap-0.5 w-[54px]">
-                  <span className="w-7 h-7 rounded-full bg-success/10 border border-success/25 flex items-center justify-center">
-                    <item.icon className="w-3.5 h-3.5 text-success" />
-                  </span>
-                  <span className="text-[8px] text-muted-foreground text-center leading-tight truncate w-full">{item.label}</span>
-                </button>
-              </div>
+              <button
+                key={i}
+                onClick={item.action}
+                className="shrink-0 flex flex-col items-center justify-center gap-1"
+                style={{ width: SPEC.svcW, height: SPEC.svcH }}
+              >
+                <span className="w-7 h-7 rounded-full bg-ride-green/10 border border-ride-green/25 flex items-center justify-center">
+                  <item.icon className="w-3.5 h-3.5 text-ride-green" />
+                </span>
+                <span className="text-[9px] text-ride-muted text-center leading-tight truncate w-full">{item.label}</span>
+              </button>
             ))}
           </div>
         )}
@@ -703,27 +702,28 @@ const RideStudioLayout = () => {
         <div className="flex" style={{ gap: SPEC.grid }}>
           <Button
             variant="outline"
-            className="px-3 border-border/70 glass text-[11px] gap-1 text-foreground shrink-0"
-            style={{ height: SPEC.cta, borderRadius: radius }}
+            className="border-ride-border/80 glass text-[13px] gap-1 text-foreground shrink-0 px-2"
+            style={{ height: SPEC.cta, width: SPEC.ctaLaterW, borderRadius: SPEC.ctaRadius }}
             onClick={() => setScheduleOpen(true)}
           >
-            <Clock className="w-4 h-4 text-info" />
+            <Clock className="w-4 h-4 text-ride-blue" />
             {s.scheduleLater}
           </Button>
           <Button
             onClick={() => submit()}
             disabled={submitting || !destCoords}
-            className="flex-1 text-primary-foreground font-extrabold text-[15px] flex items-center justify-center gap-2 disabled:opacity-50 transition-transform active:scale-[0.98]"
+            className="flex-1 text-primary-foreground font-bold text-[16px] flex items-center justify-center gap-2 disabled:opacity-50 transition-transform active:scale-[0.98]"
             style={{
               height: SPEC.cta,
-              borderRadius: radius,
-              background: "linear-gradient(90deg, hsl(var(--info)), hsl(var(--success)))",
-              boxShadow: `0 14px 32px -14px hsl(var(--info) / 0.9)`,
+              borderRadius: SPEC.ctaRadius,
+              background: "linear-gradient(90deg, hsl(var(--ride-green)), hsl(var(--ride-blue)))",
+              boxShadow: `0 14px 32px -14px hsl(var(--ride-blue) / 0.9)`,
             }}
           >
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span className="flex-1 text-center">{s.requestNow}</span><Car className="w-5 h-5" /></>}
           </Button>
         </div>
+
 
 
 
