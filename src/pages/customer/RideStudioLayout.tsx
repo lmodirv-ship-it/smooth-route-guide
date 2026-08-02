@@ -111,8 +111,15 @@ const RideStudioLayout = () => {
       ]);
       if (w) setBalance(Number((w as any).balance) || 0);
       if (st) setPoints(Number((st as any).stars) || 0);
+      const { count } = await supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .is("read_at", null);
+      setUnreadCount(count ?? 0);
     })();
   }, []);
+
 
   const activeVehicle = vehicleTypes.find(v => v.code === vehicleCode);
   const multiplier = activeVehicle?.price_multiplier ?? 1;
