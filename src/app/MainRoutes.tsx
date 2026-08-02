@@ -108,6 +108,7 @@ export const mainRouteElements = (
     <Route path="/splash" element={<LazyPage component={Splash} />} />
     <Route path="/welcome" element={<LazyPage component={Welcome} />} />
     <Route path="/login" element={<LazyPage component={AuthPage} />} />
+    <Route path="/signup" element={<Navigate to="/auth/client?mode=signup" replace />} />
     <Route path="/.lovable/oauth/consent" element={<LazyPage component={OAuthConsent} />} />
     <Route path="/connect" element={<LazyPage component={ConnectMCP} />} />
     <Route path="/auth/:role" element={<LazyPage component={AuthPage} />} />

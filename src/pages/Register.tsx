@@ -78,7 +78,7 @@ const Register = () => {
 
           <div className="space-y-3">
             <Link
-              to={`/auth/${role}`}
+              to={`/auth/${role}?mode=signup`}
               className="block w-full gradient-primary text-primary-foreground font-bold py-3.5 rounded-xl text-base"
             >
               متابعة التسجيل

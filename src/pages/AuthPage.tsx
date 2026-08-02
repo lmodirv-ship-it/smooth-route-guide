@@ -52,7 +52,9 @@ const AuthPage = () => {
   const role = (roleParam as RoleId) || "client";
   const config = roleConfig[role] || roleConfig.client;
 
-  const [isLogin, setIsLogin] = useState(true);
+  const signupRequested =
+    searchParams.get("mode") === "signup" || searchParams.get("signup") === "1";
+  const [isLogin, setIsLogin] = useState(!signupRequested);
   const [authMethod, setAuthMethod] = useState<"email" | "phone">("email");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);

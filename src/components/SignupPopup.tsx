@@ -128,7 +128,7 @@ const SignupPopup = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => { dismiss(); navigate("/login"); }}
+                  onClick={() => { dismiss(); navigate("/auth/client?mode=signup"); }}
                   className="w-full h-11"
                 >
                   لدي حساب بالفعل — تسجيل الدخول

@@ -10,9 +10,10 @@ export default function ServerErrorPage() {
       <p className="text-muted-foreground mb-6 max-w-md">
         حدث خطأ غير متوقع في الخادم. حاول تحديث الصفحة، وإن استمر الخطأ تواصل مع الدعم.
       </p>
-      <div className="flex gap-3">
-        <Button onClick={() => window.location.reload()}>تحديث</Button>
-        <Button variant="outline" asChild><Link to="/">الرئيسية</Link></Button>
+      <div className="flex flex-wrap gap-3 justify-center">
+        <Button asChild><Link to="/auth/client?mode=signup">إنشاء حساب جديد</Link></Button>
+        <Button variant="outline" onClick={() => window.location.reload()}>تحديث</Button>
+        <Button variant="ghost" asChild><Link to="/">الرئيسية</Link></Button>
       </div>
     </main>
   );
