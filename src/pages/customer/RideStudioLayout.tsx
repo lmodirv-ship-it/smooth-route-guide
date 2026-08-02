@@ -299,8 +299,12 @@ const RideStudioLayout = () => {
     <div className="min-h-[calc(100dvh-2.75rem)] gradient-dark pb-28" dir={dir}>
       {/* Top bar — avatar + stats pill + balance + actions */}
       {o.showTopBar && (
-        <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl px-2 py-1.5">
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <div
+          className="sticky top-0 z-40 bg-background/70 backdrop-blur-2xl border-b border-border/40"
+          style={{ paddingInline: SPEC.pad, paddingBlock: SPEC.grid }}
+        >
+          <div className="flex items-center overflow-x-auto no-scrollbar" style={{ gap: SPEC.grid }}>
+
             <div className="relative shrink-0">
               <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center border border-border/60 overflow-hidden">
                 {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : <Car className="w-4 h-4 text-primary-foreground" />}
