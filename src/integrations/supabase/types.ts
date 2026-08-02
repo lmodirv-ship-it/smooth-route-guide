@@ -6991,6 +6991,23 @@ export type Database = {
       }
     }
     Functions: {
+      _wallet_ensure: {
+        Args: { p_user_id: string }
+        Returns: {
+          balance: number
+          created_at: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "wallet"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      _wallet_is_staff: { Args: { p_uid: string }; Returns: boolean }
       admin_export_table: { Args: { _table: string }; Returns: Json[] }
       admin_get_recent_audit: {
         Args: { _limit?: number }
@@ -7014,6 +7031,10 @@ export type Database = {
       approve_driver_candidate: {
         Args: { p_candidate_id: string }
         Returns: string
+      }
+      approve_wallet_recharge: {
+        Args: { p_request_id: string }
+        Returns: number
       }
       available_delivery_orders: {
         Args: never
@@ -7047,6 +7068,30 @@ export type Database = {
         }[]
       }
       cleanup_old_health_data: { Args: never; Returns: undefined }
+      credit_driver_tip: {
+        Args: { p_amount: number; p_description?: string; p_driver_id: string }
+        Returns: number
+      }
+      credit_wallet: {
+        Args: {
+          p_amount: number
+          p_description?: string
+          p_reference_id?: string
+          p_transaction_type?: string
+          p_user_id: string
+        }
+        Returns: number
+      }
+      debit_wallet: {
+        Args: {
+          p_amount: number
+          p_description?: string
+          p_reference_id?: string
+          p_transaction_type?: string
+          p_user_id?: string
+        }
+        Returns: number
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
