@@ -27,10 +27,25 @@ import { useI18n } from "@/i18n/context";
 import { rideStudioT } from "@/i18n/rideStudio";
 import { tangierLocations, locationCategories, TangierLocation } from "@/data/tangierLocations";
 import { useUiStudio, DENSITY_GAP, type UiStudioOptions } from "@/hooks/useUiStudio";
+import RideBottomSheet from "@/components/ride/RideBottomSheet";
+import { usePlaceSearch } from "@/hooks/usePlaceSearch";
+import { useDriverRealtimeTracking } from "@/hooks/useDriverRealtimeTracking";
+import { useSmoothedPosition } from "@/hooks/useSmoothedPosition";
 
 const DEFAULT_LOCATION = { lat: 35.7595, lng: -5.834 };
 
+/** Local persistence for ride option choices. */
+const PREFS = {
+  get(key: string, fallback: string) {
+    try { return localStorage.getItem(`ride_pref_${key}`) ?? fallback; } catch { return fallback; }
+  },
+  set(key: string, value: string) {
+    try { localStorage.setItem(`ride_pref_${key}`, value); } catch { /* ignore */ }
+  },
+};
+
 const ICONS: Record<string, typeof Car> = { car: Car, bus: Bus, crown: Crown, zap: Zap };
+
 
 interface VehicleType {
   id: string;
@@ -68,12 +83,12 @@ const RideStudioLayout = () => {
   const [activeCategory, setActiveCategory] = useState("all");
 
   const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([]);
-  const [vehicleCode, setVehicleCode] = useState("economy");
-  const [passengers, setPassengers] = useState(1);
-  const [payment, setPayment] = useState<"cash" | "card" | "wallet">("cash");
-  const [notes, setNotes] = useState("");
-  const [showNotes, setShowNotes] = useState(false);
-  const [openField, setOpenField] = useState<"vehicle" | "payment" | null>(null);
+  const [vehicleCode, setVehicleCode] = useState(() => PREFS.get("vehicle", "economy"));
+  const [passengers, setPassengers] = useState(() => Number(PREFS.get("passengers", "1")) || 1);
+  const [payment, setPayment] = useState<"cash" | "card" | "wallet">(() => PREFS.get("payment", "cash") as "cash" | "card" | "wallet");
+  const [notes, setNotes] = useState(() => PREFS.get("notes", ""));
+  const [sheet, setSheet] = useState<"vehicle" | "payment" | "passengers" | "notes" | null>(null);
+  const [notesDraft, setNotesDraft] = useState("");
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [scheduleAt, setScheduleAt] = useState("");
   const [balance, setBalance] = useState<number | null>(null);
@@ -83,8 +98,22 @@ const RideStudioLayout = () => {
   const [viewCount, setViewCount] = useState<number | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [activeRideId, setActiveRideId] = useState<string | null>(null);
+  const [activeDriverId, setActiveDriverId] = useState<string | null>(null);
+  const [activeRideStatus, setActiveRideStatus] = useState<string | null>(null);
   const [zoomCommand, setZoomCommand] = useState<"in" | "out" | null>(null);
   const [zoomCommandId, setZoomCommandId] = useState(0);
+
+  const { position: livePosition } = useDriverRealtimeTracking(activeDriverId);
+  const smoothedDriver = useSmoothedPosition(livePosition ? { lat: livePosition.lat, lng: livePosition.lng } : null);
+  const isLive = !!smoothedDriver && !!activeRideId;
+  const { results: searchResults, loading: searchLoading, search: runSearch, clear: clearSearch } = usePlaceSearch(locale);
+
+  // Persist option choices
+  useEffect(() => { PREFS.set("vehicle", vehicleCode); }, [vehicleCode]);
+  useEffect(() => { PREFS.set("passengers", String(passengers)); }, [passengers]);
+  useEffect(() => { PREFS.set("payment", payment); }, [payment]);
+  useEffect(() => { PREFS.set("notes", notes); }, [notes]);
+
 
 
   const { drivers: nearbyDrivers } = useNearbyDrivers();
@@ -125,7 +154,7 @@ const RideStudioLayout = () => {
         supabase.from("profiles").select("avatar_url").eq("id", user.id).maybeSingle(),
         supabase.from("ride_requests").select("id", { count: "exact", head: true }).eq("user_id", user.id).gte("created_at", startOfDay.toISOString()),
         supabase.from("site_visit_counter").select("today_visits").order("updated_at", { ascending: false }).limit(1).maybeSingle(),
-        supabase.from("ride_requests").select("id").eq("user_id", user.id).in("status", ["pending", "accepted", "in_progress"]).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("ride_requests").select("id, driver_id, status").eq("user_id", user.id).in("status", ["pending", "accepted", "in_progress"]).order("created_at", { ascending: false }).limit(1).maybeSingle(),
       ]);
       if (w) setBalance(Number((w as any).balance) || 0);
       if (st) setPoints(Number((st as any).stars) || 0);
@@ -133,6 +162,9 @@ const RideStudioLayout = () => {
       setTodayOrders(ordersCount ?? 0);
       setViewCount(visits ? Number(visits.today_visits) || 0 : null);
       setActiveRideId(activeRide?.id ?? null);
+      setActiveDriverId((activeRide as any)?.driver_id ?? null);
+      setActiveRideStatus((activeRide as any)?.status ?? null);
+
       const { count } = await supabase
         .from("notifications")
         .select("id", { count: "exact", head: true })
@@ -141,6 +173,30 @@ const RideStudioLayout = () => {
       setUnreadCount(count ?? 0);
     })();
   }, []);
+
+  // Live: follow the active ride row (driver assignment / status changes)
+  useEffect(() => {
+    if (!activeRideId) return;
+    const channel = supabase
+      .channel(`ride-live-${activeRideId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "ride_requests", filter: `id=eq.${activeRideId}` },
+        (payload) => {
+          const row = payload.new as any;
+          setActiveDriverId(row.driver_id ?? null);
+          setActiveRideStatus(row.status ?? null);
+          if (["completed", "cancelled"].includes(row.status)) {
+            setActiveRideId(null);
+            setActiveDriverId(null);
+          }
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [activeRideId]);
+
+
 
 
   const activeVehicle = vehicleTypes.find(v => v.code === vehicleCode);
@@ -175,12 +231,15 @@ const RideStudioLayout = () => {
     return filtered;
   }, [activeCategory, searchQuery]);
 
-  const selectLocation = (loc: TangierLocation) => {
-    const coords = { lat: loc.lat, lng: loc.lng };
-    if (picker === "pickup") { setUserLocation(coords); setSelectedPickupName(loc.name); }
-    else { setDestCoords(coords); setSelectedDestName(loc.name); }
-    setPicker(null); setSearchQuery(""); setActiveCategory("all");
+  const applyPoint = (name: string, lat: number, lng: number) => {
+    const coords = { lat, lng };
+    if (picker === "pickup") { setUserLocation(coords); setSelectedPickupName(name); }
+    else { setDestCoords(coords); setSelectedDestName(name); }
+    setPicker(null); setSearchQuery(""); setActiveCategory("all"); clearSearch();
   };
+
+  const selectLocation = (loc: TangierLocation) => applyPoint(loc.name, loc.lat, loc.lng);
+
 
   const handleMapClick = useCallback((latlng: { lat: number; lng: number }) => {
     setDestCoords(latlng);
@@ -512,10 +571,11 @@ const RideStudioLayout = () => {
           style={{ height: SPEC.mapH, borderRadius: SPEC.radius, boxShadow: `0 12px 32px -18px hsl(var(--ride-blue) / 0.9), 0 0 ${o.glow}px hsl(var(--primary) / ${Math.min(o.glow, 60) / 200})` }}
         >
           <LeafletMap
-            center={userLocation || DEFAULT_LOCATION}
+            center={smoothedDriver || userLocation || DEFAULT_LOCATION}
             markerPosition={destCoords || undefined}
+            driverLocation={smoothedDriver}
             nearbyDrivers={nearbyDrivers.map(d => ({ id: d.id, lat: d.lat, lng: d.lng } as any))}
-            route={mapRoute}
+            route={smoothedDriver && (destCoords || userLocation) ? { pickup: smoothedDriver, destination: (destCoords || userLocation)! } : mapRoute}
             onMapClick={handleMapClick}
             expandable={false}
             hideControls
@@ -523,6 +583,16 @@ const RideStudioLayout = () => {
             zoomCommandId={zoomCommandId}
             className="w-full h-full"
           />
+          {isLive && (
+            <div className="absolute bottom-2 start-2 end-2 z-[500] flex items-center gap-2 rounded-xl bg-background/80 backdrop-blur-md border border-ride-border/70 px-3 py-2">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ride-blue opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-ride-blue" />
+              </span>
+              <span className="text-[12px] font-semibold text-foreground">{s.liveNow}</span>
+              <span className="text-[12px] text-ride-muted truncate">{s.driverOnWay}</span>
+            </div>
+          )}
           <button
             onClick={() => setPicker("dest")}
             className="absolute top-2 start-2 z-[500] flex items-center justify-center gap-1 rounded-xl bg-background/70 backdrop-blur-md border border-ride-border/70 text-[13px] text-foreground"
@@ -531,6 +601,7 @@ const RideStudioLayout = () => {
             <Crosshair className="w-3.5 h-3.5 text-ride-muted" />
             {s.pickOnMap}
           </button>
+
           <div className="absolute top-2 end-2 flex flex-col gap-2 z-[500]">
             <button
               onClick={recenter}
@@ -584,92 +655,40 @@ const RideStudioLayout = () => {
                 </div>
               )}
 
-              {/* Option fields — 80x70 each, horizontal scroll */}
+              {/* Option fields — open interactive bottom sheets */}
               {o.showOptionsBar && (
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-foreground mb-1.5">{s.extraOptions}</p>
                   <div className="flex overflow-x-auto no-scrollbar" style={{ gap: SPEC.grid }}>
-
-
-                    <div className="relative shrink-0">
-                      <Field icon={Car} label={s.rideType} value={activeVehicle ? vehicleLabel(activeVehicle) : "—"} onClick={() => setOpenField(f => f === "vehicle" ? null : "vehicle")} />
-                      {openField === "vehicle" && (
-                        <div className="absolute z-30 mt-1 min-w-[140px] rounded-2xl glass-strong border border-ride-border p-1.5 space-y-1">
-                          {vehicleTypes.map(v => {
-                            const Icon = ICONS[v.icon] || Car;
-                            return (
-                              <button
-                                key={v.id}
-                                onClick={() => { setVehicleCode(v.code); setPassengers(p => Math.min(p, v.max_passengers)); setOpenField(null); }}
-                                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[13px] ${v.code === vehicleCode ? "bg-ride-blue/15 text-ride-blue" : "text-ride-muted"}`}
-                              >
-                                <Icon className="w-3.5 h-3.5" />
-                                {vehicleLabel(v)}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-
-                    <div
-                      className="glass-card border border-ride-border/80 px-1.5 py-1 shrink-0 flex flex-col justify-center"
-                      style={{ width: SPEC.optW, height: SPEC.optH, borderRadius: SPEC.cardRadius }}
-                    >
-                      <p className="text-[9px] text-ride-muted mb-0.5 truncate">{s.passengers}</p>
-                      <div className="flex items-center gap-0.5">
-                        <button onClick={() => setPassengers(p => Math.max(1, p - 1))} className="w-5 h-5 rounded glass border border-ride-border flex items-center justify-center">
-                          <Minus className="w-2.5 h-2.5 text-ride-muted" />
-                        </button>
-                        <span className="text-[13px] font-semibold text-foreground flex-1 text-center">{passengers}</span>
-                        <button
-                          onClick={() => setPassengers(p => Math.min(activeVehicle?.max_passengers ?? 4, p + 1))}
-                          className="w-5 h-5 rounded glass border border-ride-border flex items-center justify-center"
-                        >
-                          <Plus className="w-2.5 h-2.5 text-ride-muted" />
-                        </button>
-                      </div>
-                    </div>
-
-
-                    <div className="relative shrink-0">
-                      <Field
-                        icon={payment === "cash" ? Banknote : payment === "card" ? CreditCard : WalletIcon}
-                        label={s.payment}
-                        value={payment === "cash" ? s.cash : payment === "card" ? s.card : s.wallet}
-                        onClick={() => setOpenField(f => f === "payment" ? null : "payment")}
-                      />
-                      {openField === "payment" && (
-                        <div className="absolute z-30 mt-1 min-w-[140px] rounded-2xl glass-strong border border-ride-border p-1.5 space-y-1">
-                          {([["cash", Banknote, s.cash], ["card", CreditCard, s.card], ["wallet", WalletIcon, s.wallet]] as const).map(([code, Icon, label]) => (
-                            <button
-                              key={code}
-                              onClick={() => { setPayment(code); setOpenField(null); }}
-                              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[13px] ${payment === code ? "bg-ride-blue/15 text-ride-blue" : "text-ride-muted"}`}
-                            >
-                              <Icon className="w-3.5 h-3.5" />
-                              {label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <Field icon={StickyNote} label={s.notes} value={notes ? notes.slice(0, 12) : s.addNote} onClick={() => setShowNotes(v => !v)} />
+                    <Field
+                      icon={Car}
+                      label={s.rideType}
+                      value={activeVehicle ? vehicleLabel(activeVehicle) : "—"}
+                      onClick={() => setSheet("vehicle")}
+                    />
+                    <Field
+                      icon={Users}
+                      label={s.passengers}
+                      value={String(passengers)}
+                      onClick={() => setSheet("passengers")}
+                    />
+                    <Field
+                      icon={payment === "cash" ? Banknote : payment === "card" ? CreditCard : WalletIcon}
+                      label={s.payment}
+                      value={payment === "cash" ? s.cash : payment === "card" ? s.card : s.wallet}
+                      onClick={() => setSheet("payment")}
+                    />
+                    <Field
+                      icon={StickyNote}
+                      label={s.notes}
+                      value={notes ? notes.slice(0, 12) : s.addNote}
+                      onClick={() => { setNotesDraft(notes); setSheet("notes"); }}
+                    />
                   </div>
                 </div>
               )}
             </div>
 
-            {o.showOptionsBar && showNotes && (
-              <Textarea
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                placeholder={s.notePlaceholder}
-                className="mt-2 text-xs glass border-ride-border rounded-xl"
-                rows={2}
-              />
-            )}
           </div>
         )}
 
@@ -775,8 +794,32 @@ const RideStudioLayout = () => {
             </div>
             <div className="px-5 pb-3 relative">
               <Search className="absolute end-8 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="h-12 glass border-border rounded-2xl text-sm" autoFocus />
+              <Input
+                value={searchQuery}
+                placeholder={s.searchPlace}
+                onChange={e => { setSearchQuery(e.target.value); runSearch(e.target.value); }}
+                className="h-12 glass border-border rounded-2xl text-sm"
+                autoFocus
+              />
             </div>
+            {(searchLoading || searchResults.length > 0) && (
+              <div className="px-5 pb-3 space-y-2">
+                <p className="text-[11px] text-muted-foreground">{searchLoading ? "..." : s.searchOnline}</p>
+                {searchResults.map((r, i) => (
+                  <button
+                    key={`${r.lat}-${r.lng}-${i}`}
+                    onClick={() => applyPoint(r.name, r.lat, r.lng)}
+                    className="w-full flex items-center gap-3 p-3 rounded-2xl glass border border-border text-start"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <MapPin className="w-4 h-4 text-primary" />
+                    </div>
+                    <p className="text-sm text-foreground truncate flex-1">{r.name}</p>
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="px-5 pb-3 flex gap-2 overflow-x-auto no-scrollbar">
               {locationCategories.map(cat => (
                 <button
@@ -810,7 +853,77 @@ const RideStudioLayout = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Interactive option sheets */}
+      <RideBottomSheet open={sheet === "vehicle"} title={s.rideType} dir={dir as "rtl" | "ltr"} onClose={() => setSheet(null)}>
+        {vehicleTypes.map(v => {
+          const Icon = ICONS[v.icon] || Car;
+          return (
+            <button
+              key={v.id}
+              onClick={() => { setVehicleCode(v.code); setPassengers(p => Math.min(p, v.max_passengers)); setSheet(null); }}
+              className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl border text-start ${v.code === vehicleCode ? "border-ride-blue bg-ride-blue/10 text-ride-blue" : "border-ride-border text-ride-muted"}`}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="flex-1 text-sm font-medium">{vehicleLabel(v)}</span>
+              <span className="text-xs">×{v.price_multiplier}</span>
+            </button>
+          );
+        })}
+      </RideBottomSheet>
+
+      <RideBottomSheet open={sheet === "payment"} title={s.payment} dir={dir as "rtl" | "ltr"} onClose={() => setSheet(null)}>
+        {([["cash", Banknote, s.cash], ["card", CreditCard, s.card], ["wallet", WalletIcon, s.wallet]] as const).map(([code, Icon, label]) => (
+          <button
+            key={code}
+            onClick={() => { setPayment(code); setSheet(null); }}
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl border text-start ${payment === code ? "border-ride-blue bg-ride-blue/10 text-ride-blue" : "border-ride-border text-ride-muted"}`}
+          >
+            <Icon className="w-5 h-5" />
+            <span className="flex-1 text-sm font-medium">{label}</span>
+          </button>
+        ))}
+      </RideBottomSheet>
+
+      <RideBottomSheet open={sheet === "passengers"} title={s.passengers} dir={dir as "rtl" | "ltr"} onClose={() => setSheet(null)}>
+        <div className="flex items-center justify-between gap-4 px-2 py-4">
+          <button onClick={() => setPassengers(p => Math.max(1, p - 1))} className="w-12 h-12 rounded-2xl glass border border-ride-border flex items-center justify-center">
+            <Minus className="w-5 h-5 text-ride-muted" />
+          </button>
+          <span className="text-3xl font-bold text-foreground">{passengers}</span>
+          <button
+            onClick={() => setPassengers(p => Math.min(activeVehicle?.max_passengers ?? 4, p + 1))}
+            className="w-12 h-12 rounded-2xl glass border border-ride-border flex items-center justify-center"
+          >
+            <Plus className="w-5 h-5 text-ride-muted" />
+          </button>
+        </div>
+      </RideBottomSheet>
+
+      <RideBottomSheet
+        open={sheet === "notes"}
+        title={s.notes}
+        dir={dir as "rtl" | "ltr"}
+        onClose={() => setSheet(null)}
+        footer={
+          <Button
+            onClick={() => { setNotes(notesDraft); setSheet(null); }}
+            className="w-full h-12 rounded-2xl gradient-primary text-primary-foreground font-bold"
+          >
+            {s.done}
+          </Button>
+        }
+      >
+        <Textarea
+          value={notesDraft}
+          onChange={e => setNotesDraft(e.target.value)}
+          placeholder={s.notePlaceholder}
+          className="glass border-ride-border rounded-2xl text-sm"
+          rows={4}
+        />
+      </RideBottomSheet>
     </div>
+
   );
 };
 
