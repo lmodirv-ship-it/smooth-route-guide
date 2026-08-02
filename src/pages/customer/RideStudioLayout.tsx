@@ -68,12 +68,12 @@ const RideStudioLayout = () => {
   const [activeCategory, setActiveCategory] = useState("all");
 
   const [vehicleTypes, setVehicleTypes] = useState<VehicleType[]>([]);
-  const [vehicleCode, setVehicleCode] = useState("economy");
-  const [passengers, setPassengers] = useState(1);
-  const [payment, setPayment] = useState<"cash" | "card" | "wallet">("cash");
-  const [notes, setNotes] = useState("");
-  const [showNotes, setShowNotes] = useState(false);
-  const [openField, setOpenField] = useState<"vehicle" | "payment" | null>(null);
+  const [vehicleCode, setVehicleCode] = useState(() => PREFS.get("vehicle", "economy"));
+  const [passengers, setPassengers] = useState(() => Number(PREFS.get("passengers", "1")) || 1);
+  const [payment, setPayment] = useState<"cash" | "card" | "wallet">(() => PREFS.get("payment", "cash") as "cash" | "card" | "wallet");
+  const [notes, setNotes] = useState(() => PREFS.get("notes", ""));
+  const [sheet, setSheet] = useState<"vehicle" | "payment" | "passengers" | "notes" | null>(null);
+  const [notesDraft, setNotesDraft] = useState("");
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [scheduleAt, setScheduleAt] = useState("");
   const [balance, setBalance] = useState<number | null>(null);
@@ -83,8 +83,22 @@ const RideStudioLayout = () => {
   const [viewCount, setViewCount] = useState<number | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [activeRideId, setActiveRideId] = useState<string | null>(null);
+  const [activeDriverId, setActiveDriverId] = useState<string | null>(null);
+  const [activeRideStatus, setActiveRideStatus] = useState<string | null>(null);
   const [zoomCommand, setZoomCommand] = useState<"in" | "out" | null>(null);
   const [zoomCommandId, setZoomCommandId] = useState(0);
+
+  const { position: livePosition } = useDriverRealtimeTracking(activeDriverId);
+  const smoothedDriver = useSmoothedPosition(livePosition ? { lat: livePosition.lat, lng: livePosition.lng } : null);
+  const isLive = !!smoothedDriver && !!activeRideId;
+  const { results: searchResults, loading: searchLoading, search: runSearch, clear: clearSearch } = usePlaceSearch(locale);
+
+  // Persist option choices
+  useEffect(() => { PREFS.set("vehicle", vehicleCode); }, [vehicleCode]);
+  useEffect(() => { PREFS.set("passengers", String(passengers)); }, [passengers]);
+  useEffect(() => { PREFS.set("payment", payment); }, [payment]);
+  useEffect(() => { PREFS.set("notes", notes); }, [notes]);
+
 
 
   const { drivers: nearbyDrivers } = useNearbyDrivers();
