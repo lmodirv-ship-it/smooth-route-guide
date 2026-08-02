@@ -465,7 +465,7 @@ const RideStudioLayout = () => {
         {/* Map — biggest element */}
         <div
           className="relative overflow-hidden border border-border"
-          style={{ height: o.mapHeight, borderRadius: radius, boxShadow: `0 0 ${o.glow}px hsl(var(--primary) / ${Math.min(o.glow, 60) / 200})` }}
+          style={{ height: SPEC.map, borderRadius: radius, boxShadow: `0 12px 32px -18px hsl(var(--info) / 0.9), 0 0 ${o.glow}px hsl(var(--primary) / ${Math.min(o.glow, 60) / 200})` }}
         >
           <LeafletMap
             center={userLocation || DEFAULT_LOCATION}
