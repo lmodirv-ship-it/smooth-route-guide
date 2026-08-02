@@ -67,7 +67,7 @@ export function useUiStudio(scope: UiScope) {
     load();
 
     const channel = supabase
-      .channel(`ui_studio_${scope}`)
+      .channel(`ui_studio_${scope}_${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "ui_studio_settings", filter: `scope=eq.${scope}` },
