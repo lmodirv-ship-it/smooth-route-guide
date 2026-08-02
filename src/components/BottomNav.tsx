@@ -75,7 +75,7 @@ const BottomNav = ({ role }: BottomNavProps) => {
       className="shrink-0 border-t border-border/60 bg-background/95 backdrop-blur-xl safe-area-bottom shadow-[0_-10px_30px_-20px_hsl(var(--foreground)/0.45)]"
       dir={dir}
     >
-      <div className={`flex items-end justify-around gap-1 px-2 pt-2 pb-2`}>
+      <div className={`flex items-end justify-around gap-1 px-2 pt-1.5 pb-1.5`}>
         {items.map((item, index) => {
           const isActive =
             location.pathname === item.path ||
