@@ -568,10 +568,11 @@ const RideStudioLayout = () => {
           style={{ height: SPEC.mapH, borderRadius: SPEC.radius, boxShadow: `0 12px 32px -18px hsl(var(--ride-blue) / 0.9), 0 0 ${o.glow}px hsl(var(--primary) / ${Math.min(o.glow, 60) / 200})` }}
         >
           <LeafletMap
-            center={userLocation || DEFAULT_LOCATION}
+            center={smoothedDriver || userLocation || DEFAULT_LOCATION}
             markerPosition={destCoords || undefined}
+            driverLocation={smoothedDriver}
             nearbyDrivers={nearbyDrivers.map(d => ({ id: d.id, lat: d.lat, lng: d.lng } as any))}
-            route={mapRoute}
+            route={smoothedDriver && (destCoords || userLocation) ? { pickup: smoothedDriver, destination: (destCoords || userLocation)! } : mapRoute}
             onMapClick={handleMapClick}
             expandable={false}
             hideControls
@@ -579,6 +580,16 @@ const RideStudioLayout = () => {
             zoomCommandId={zoomCommandId}
             className="w-full h-full"
           />
+          {isLive && (
+            <div className="absolute bottom-2 start-2 end-2 z-[500] flex items-center gap-2 rounded-xl bg-background/80 backdrop-blur-md border border-ride-border/70 px-3 py-2">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ride-blue opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-ride-blue" />
+              </span>
+              <span className="text-[12px] font-semibold text-foreground">{s.liveNow}</span>
+              <span className="text-[12px] text-ride-muted truncate">{s.driverOnWay}</span>
+            </div>
+          )}
           <button
             onClick={() => setPicker("dest")}
             className="absolute top-2 start-2 z-[500] flex items-center justify-center gap-1 rounded-xl bg-background/70 backdrop-blur-md border border-ride-border/70 text-[13px] text-foreground"
@@ -587,6 +598,7 @@ const RideStudioLayout = () => {
             <Crosshair className="w-3.5 h-3.5 text-ride-muted" />
             {s.pickOnMap}
           </button>
+
           <div className="absolute top-2 end-2 flex flex-col gap-2 z-[500]">
             <button
               onClick={recenter}
