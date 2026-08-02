@@ -270,15 +270,16 @@ const RideStudioLayout = () => {
   const Field = ({ icon: Icon, label, value, onClick }: { icon: typeof Eye; label: string; value: string; onClick?: () => void }) => (
     <button
       onClick={onClick}
-      className="glass-card border border-border/70 px-2 py-1.5 text-start w-full h-[52px] flex flex-col justify-center hover:border-primary/40 transition-colors"
+      className="glass-card border border-border/70 px-1.5 py-1 text-start w-full h-[44px] flex flex-col justify-center hover:border-primary/40 transition-colors"
       style={{ borderRadius: radius }}
     >
-      <p className="text-[9px] text-muted-foreground mb-1 truncate">{label}</p>
-      <div className="flex items-center gap-1.5">
-        <Icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-        <span className="text-[11px] font-semibold text-foreground truncate flex-1">{value}</span>
-        <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
+      <p className="text-[8px] text-muted-foreground mb-0.5 truncate">{label}</p>
+      <div className="flex items-center gap-1">
+        <Icon className="w-3 h-3 text-muted-foreground shrink-0" />
+        <span className="text-[10px] font-semibold text-foreground truncate flex-1">{value}</span>
+        <ChevronDown className="w-2.5 h-2.5 text-muted-foreground shrink-0" />
       </div>
+
     </button>
   );
 
