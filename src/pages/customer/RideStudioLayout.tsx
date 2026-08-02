@@ -465,21 +465,22 @@ const RideStudioLayout = () => {
           />
           <button
             onClick={() => setPicker("dest")}
-            className="absolute top-3 start-3 z-[500] flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-background/70 backdrop-blur-md border border-border/60 text-[11px] text-foreground"
+            className="absolute top-2 start-2 z-[500] flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-background/70 backdrop-blur-md border border-border/60 text-[10px] text-foreground"
           >
-            <Crosshair className="w-3.5 h-3.5 text-muted-foreground" />
+            <Crosshair className="w-3 h-3 text-muted-foreground" />
             {s.pickOnMap}
           </button>
-          <div className="absolute top-3 end-3 flex flex-col gap-2 z-[500]">
-            <button onClick={recenter} className="w-10 h-10 rounded-2xl bg-background/70 backdrop-blur-md border border-border/60 flex items-center justify-center" aria-label={s.myLocation}>
-              <Crosshair className="w-4 h-4 text-foreground" />
+          <div className="absolute top-2 end-2 flex flex-col gap-1.5 z-[500]">
+            <button onClick={recenter} className="w-8 h-8 rounded-xl bg-background/70 backdrop-blur-md border border-border/60 flex items-center justify-center" aria-label={s.myLocation}>
+              <Crosshair className="w-3.5 h-3.5 text-foreground" />
             </button>
-            <div className="rounded-2xl bg-background/70 backdrop-blur-md border border-border/60 overflow-hidden flex flex-col">
-              <button onClick={() => commandZoom("in")} className="w-10 h-9 flex items-center justify-center text-foreground" aria-label="+"><Plus className="w-4 h-4" /></button>
+            <div className="rounded-xl bg-background/70 backdrop-blur-md border border-border/60 overflow-hidden flex flex-col">
+              <button onClick={() => commandZoom("in")} className="w-8 h-7 flex items-center justify-center text-foreground" aria-label="+"><Plus className="w-3.5 h-3.5" /></button>
               <span className="h-px bg-border/60" />
-              <button onClick={() => commandZoom("out")} className="w-10 h-9 flex items-center justify-center text-foreground" aria-label="−"><Minus className="w-4 h-4" /></button>
+              <button onClick={() => commandZoom("out")} className="w-8 h-7 flex items-center justify-center text-foreground" aria-label="−"><Minus className="w-3.5 h-3.5" /></button>
             </div>
           </div>
+
         </div>
 
         {/* Extra options + fare */}
