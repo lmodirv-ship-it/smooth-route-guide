@@ -16,8 +16,8 @@ interface NavItem {
 
 const clientNav: NavItem[] = [
   { icon: Home, labelKey: "home", path: "/customer" },
-  { icon: MapPin, labelKey: "booking", path: "/customer/ride" },
   { icon: Clock, labelKey: "history", path: "/customer/history" },
+  { icon: MapPin, labelKey: "booking", path: "/customer/ride" },
   { icon: Wallet, labelKey: "wallet", path: "/customer/wallet" },
   { icon: User, labelKey: "myAccount", path: "/customer/profile" },
 ];
