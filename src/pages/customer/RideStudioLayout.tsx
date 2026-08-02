@@ -253,9 +253,25 @@ const RideStudioLayout = () => {
     setZoomCommandId((value) => value + 1);
   };
 
-  const radius = `${o.radius}px`;
-  const gap = DENSITY_GAP[o.density];
+  // Design spec canvas: 1024 x 1536 (2:3). All sizes scale proportionally to the viewport.
+  const SC = "calc(min(100vw, 520px) / 1024)";
+  const u = (n: number) => `calc(${n} * ${SC})`;
+  const SPEC = {
+    pad: u(24),
+    radius: u(20),
+    grid: u(8),
+    topBar: u(120),
+    topCards: u(160),
+    map: u(520),
+    options: u(250),
+    action: u(80),
+    nav: u(90),
+  };
+
+  const radius = SPEC.radius;
+  const gap = SPEC.grid;
   const mapRoute = userLocation && destCoords ? { pickup: userLocation, destination: destCoords } : null;
+
 
   const Stat = ({ icon: Icon, value, label, tone }: { icon: typeof Eye; value: string; label: string; tone: string }) => (
     <div className="flex items-center gap-1 px-2 shrink-0">
