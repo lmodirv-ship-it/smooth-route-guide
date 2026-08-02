@@ -199,11 +199,16 @@ const AuthPage = () => {
           }).catch(() => {/* silent — non-blocking */});
         }
 
-        if (error) throw error;
+        // Auto-confirm is enabled: if no session came back, sign in directly.
+        if (!signUpData?.session) {
+          const { error: signInErr } = await signInWithPasswordWithTimeout({ email, password });
+          if (signInErr) throw signInErr;
+        }
 
         toast({
           title: "تم إنشاء الحساب بنجاح ✅",
         });
+
         trackEvent("sign_up", { method: "email", role });
         trackConversion();
       }
@@ -221,7 +226,9 @@ const AuthPage = () => {
         if (msg.includes("User already registered")) msg = "هذا البريد مسجل مسبقاً — سجّل الدخول بدلاً من ذلك";
         if (msg.includes("Password should be at least")) msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
         if (msg.includes("password") && msg.includes("characters")) msg = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+        if (msg.includes("Email not confirmed")) msg = "الحساب غير مفعّل بعد — حاول مرة أخرى الآن، فقد تم تفعيل الدخول المباشر";
         if (isServiceTimeoutError(err)) msg = getAuthTimeoutMessage(isLogin ? "login" : "signup");
+
       }
       toast({ title: "خطأ", description: msg, variant: "destructive" });
     } finally {
