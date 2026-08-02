@@ -253,23 +253,18 @@ const RideStudioLayout = () => {
     setZoomCommandId((value) => value + 1);
   };
 
-  // Design spec canvas: 1024 x 1536 (2:3). All sizes scale proportionally to the viewport.
-  const SC = "calc(min(100vw, 520px) / 1024)";
-  const u = (n: number) => `calc(${n} * ${SC})`;
+  // Design spec: 390x844 (iPhone 15 Pro) / 412x915 — 8px grid, 24px outer padding, 20px radius
   const SPEC = {
-    pad: u(24),
-    radius: u(20),
-    grid: u(8),
-    topBar: u(120),
-    topCards: u(160),
-    map: u(520),
-    options: u(250),
-    action: u(80),
-    nav: u(90),
+    pad: 24,
+    radius: 20,
+    grid: 8,
+    map: "45dvh",
+    cta: 56,
   };
 
-  const radius = SPEC.radius;
-  const gap = SPEC.grid;
+  const radius = `${SPEC.radius}px`;
+  const gap = `${SPEC.grid}px`;
+
   const mapRoute = userLocation && destCoords ? { pickup: userLocation, destination: destCoords } : null;
 
 
@@ -304,8 +299,12 @@ const RideStudioLayout = () => {
     <div className="min-h-[calc(100dvh-2.75rem)] gradient-dark pb-28" dir={dir}>
       {/* Top bar — avatar + stats pill + balance + actions */}
       {o.showTopBar && (
-        <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl px-2 py-1.5">
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <div
+          className="sticky top-0 z-40 bg-background/70 backdrop-blur-2xl border-b border-border/40"
+          style={{ paddingInline: SPEC.pad, paddingBlock: SPEC.grid }}
+        >
+          <div className="flex items-center overflow-x-auto no-scrollbar" style={{ gap: SPEC.grid }}>
+
             <div className="relative shrink-0">
               <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center border border-border/60 overflow-hidden">
                 {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : <Car className="w-4 h-4 text-primary-foreground" />}
@@ -363,7 +362,7 @@ const RideStudioLayout = () => {
       )}
 
 
-      <div className="px-2 pt-2" style={{ display: "flex", flexDirection: "column", gap }}>
+      <div style={{ display: "flex", flexDirection: "column", gap, paddingInline: SPEC.pad, paddingTop: SPEC.grid * 2 }}>
         {/* Compact info cards row — uniform height */}
         {o.showQuickCards && (
           <div className="flex items-stretch gap-1.5 overflow-x-auto no-scrollbar" style={{ gap }}>
@@ -466,7 +465,7 @@ const RideStudioLayout = () => {
         {/* Map — biggest element */}
         <div
           className="relative overflow-hidden border border-border"
-          style={{ height: o.mapHeight, borderRadius: radius, boxShadow: `0 0 ${o.glow}px hsl(var(--primary) / ${Math.min(o.glow, 60) / 200})` }}
+          style={{ height: SPEC.map, borderRadius: radius, boxShadow: `0 12px 32px -18px hsl(var(--info) / 0.9), 0 0 ${o.glow}px hsl(var(--primary) / ${Math.min(o.glow, 60) / 200})` }}
         >
           <LeafletMap
             center={userLocation || DEFAULT_LOCATION}
@@ -650,24 +649,32 @@ const RideStudioLayout = () => {
         )}
 
         {/* CTA */}
-        <div className="flex gap-1.5">
+        <div className="flex" style={{ gap: SPEC.grid }}>
           <Button
             variant="outline"
-            className="h-11 px-2.5 rounded-xl border-border/70 glass text-[10px] gap-1 text-foreground"
+            className="px-3 border-border/70 glass text-[11px] gap-1 text-foreground shrink-0"
+            style={{ height: SPEC.cta, borderRadius: radius }}
             onClick={() => setScheduleOpen(true)}
           >
-            <Clock className="w-3.5 h-3.5 text-info" />
+            <Clock className="w-4 h-4 text-info" />
             {s.scheduleLater}
           </Button>
           <Button
             onClick={() => submit()}
             disabled={submitting || !destCoords}
-            className="flex-1 h-11 rounded-xl text-primary-foreground font-extrabold text-[14px] flex items-center justify-center gap-2 disabled:opacity-50"
-            style={{ background: "linear-gradient(90deg, hsl(var(--info)), hsl(var(--success)))", boxShadow: `0 8px 24px -12px hsl(var(--info) / 0.8)` }}
+            className="flex-1 text-primary-foreground font-extrabold text-[15px] flex items-center justify-center gap-2 disabled:opacity-50 transition-transform active:scale-[0.98]"
+            style={{
+              height: SPEC.cta,
+              borderRadius: radius,
+              background: "linear-gradient(90deg, hsl(var(--info)), hsl(var(--success)))",
+              boxShadow: `0 14px 32px -14px hsl(var(--info) / 0.9)`,
+            }}
           >
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span className="flex-1 text-center">{s.requestNow}</span><Car className="w-5 h-5" /></>}
           </Button>
         </div>
+
+
 
 
       </div>
