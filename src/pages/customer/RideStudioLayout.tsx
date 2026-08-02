@@ -243,7 +243,7 @@ const RideStudioLayout = () => {
         <div className="sticky top-0 z-40 bg-background/85 backdrop-blur-xl px-2.5 py-2.5">
           <div className="flex items-center gap-2">
             <div className="relative shrink-0">
-              <div className="w-10 h-10 rounded-2xl gradient-primary flex items-center justify-center border border-border/60">
+              <div className="w-11 h-11 rounded-full gradient-primary flex items-center justify-center border-2 border-border/60 overflow-hidden">
                 <Car className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className="absolute -bottom-0.5 -end-0.5 w-3 h-3 rounded-full bg-success border-2 border-background" />
@@ -252,15 +252,15 @@ const RideStudioLayout = () => {
             <div className="flex-1 min-w-0 flex items-center glass-card border border-border/70 rounded-2xl py-1.5 overflow-x-auto no-scrollbar divide-x divide-border/60 rtl:divide-x-reverse">
               <Stat icon={Eye} value="—" label={s.views} tone="text-info" />
               <Stat icon={Users} value={String(nearbyDrivers.length)} label={s.driversAvailable} tone="text-success" />
-              <Stat icon={ShoppingBag} value={points !== null ? String(points) : "—"} label={s.todayOrders} tone="text-primary" />
+              <Stat icon={TrendingUp} value={points !== null ? String(points) : "—"} label={s.todayOrders} tone="text-primary" />
             </div>
 
             <div className="glass-card border border-border/70 rounded-2xl px-2.5 py-1.5 shrink-0 text-center">
               <div className="flex items-center gap-1.5">
-                <WalletIcon className="w-3.5 h-3.5 text-info" />
-                <span className="text-[12px] font-bold text-foreground">
+                <span className="text-[13px] font-bold text-foreground">
                   {balance !== null ? `${s.currency} ${balance}` : "—"}
                 </span>
+                <WalletIcon className="w-4 h-4 text-muted-foreground" />
               </div>
               <p className="text-[9px] text-muted-foreground">{s.balance}</p>
             </div>
@@ -269,11 +269,17 @@ const RideStudioLayout = () => {
               onClick={() => navigate("/customer/notifications")}
               className="relative w-10 h-10 rounded-2xl glass-card border border-border/70 flex items-center justify-center shrink-0"
             >
-              <Bell className="w-4 h-4 text-muted-foreground" />
+              <Bell className="w-4 h-4 text-primary" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -end-1 min-w-[16px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center border border-background">
+                  {unreadCount}
+                </span>
+              )}
             </button>
             <div className="w-10 h-10 rounded-2xl glass-card border border-border/70 flex items-center justify-center shrink-0">
               <Globe className="w-4 h-4 text-muted-foreground" />
             </div>
+
           </div>
         </div>
       )}
