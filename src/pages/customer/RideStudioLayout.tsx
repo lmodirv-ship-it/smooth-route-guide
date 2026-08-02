@@ -400,49 +400,58 @@ const RideStudioLayout = () => {
       <div style={{ display: "flex", flexDirection: "column", gap, paddingInline: SPEC.pad, paddingTop: SPEC.grid * 2 }}>
         {/* Compact info cards row — uniform height */}
         {o.showQuickCards && (
-          <div className="flex items-stretch gap-1.5 overflow-x-auto no-scrollbar" style={{ gap }}>
+          <div className="flex items-stretch overflow-x-auto no-scrollbar" style={{ gap }}>
             {/* Ride badge */}
-            <div className="glass-card border border-primary/25 p-2 shrink-0 w-[96px] h-[64px] flex flex-col justify-between" style={{ borderRadius: radius }}>
+            <div
+              className="glass-card border border-ride-blue/30 shrink-0 flex flex-col justify-between"
+              style={{ width: SPEC.cardW, height: SPEC.cardH, borderRadius: SPEC.cardRadius, padding: SPEC.cardPad }}
+            >
               <div className="flex items-start justify-between gap-1">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-bold text-foreground leading-tight truncate">{s.requestRide.split(" ")[0]}</p>
-                  <p className="text-[11px] font-bold text-primary leading-tight truncate">{s.requestRide.split(" ").slice(1).join(" ")}</p>
+                  <p className="text-[16px] font-medium text-foreground leading-tight truncate">{s.requestRide.split(" ")[0]}</p>
+                  <p className="text-[16px] font-semibold text-ride-blue leading-tight truncate">{s.requestRide.split(" ").slice(1).join(" ")}</p>
                 </div>
-                <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
+                <Sparkles className="w-4 h-4 text-ride-amber shrink-0" />
               </div>
               <div className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
-                <span className="text-[8px] text-muted-foreground truncate">
+                <span className="w-1.5 h-1.5 rounded-full bg-ride-green shrink-0" />
+                <span className="text-[13px] text-ride-muted truncate">
                   {nearbyDrivers.length > 0 ? `${nearbyDrivers.length} ${s.driversAvailable}` : s.searching}
                 </span>
               </div>
             </div>
 
             {/* Activity points */}
-            <div className="glass-card border border-border/70 p-2 shrink-0 w-[116px] h-[64px] flex flex-col justify-between" style={{ borderRadius: radius }}>
+            <div
+              className="glass-card border border-ride-border/80 shrink-0 flex flex-col justify-between"
+              style={{ width: SPEC.cardW, height: SPEC.cardH, borderRadius: SPEC.cardRadius, padding: SPEC.cardPad }}
+            >
               <div className="text-end">
-                <p className="text-[8px] text-muted-foreground">{s.activityPoints}</p>
-                <p className="text-[13px] font-bold text-foreground leading-tight">{points ?? 0}/999</p>
+                <p className="text-[13px] text-ride-muted">{s.activityPoints}</p>
+                <p className="text-[22px] font-bold text-foreground leading-tight">{points ?? 0}/999</p>
               </div>
-              <div className="h-1 rounded-full bg-secondary/60 overflow-hidden">
-                <div className="h-full rounded-full bg-success" style={{ width: `${Math.min(100, ((points ?? 0) / 999) * 100)}%` }} />
+              <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
+                <div className="h-full rounded-full bg-ride-green" style={{ width: `${Math.min(100, ((points ?? 0) / 999) * 100)}%` }} />
               </div>
               <div className="flex items-center justify-end gap-1">
-                <span className="text-[8px] text-muted-foreground">{s.safeTrip}</span>
-                <ShieldCheck className="w-3 h-3 text-success" />
+                <span className="text-[13px] text-ride-muted">{s.safeTrip}</span>
+                <ShieldCheck className="w-3.5 h-3.5 text-ride-green" />
               </div>
             </div>
 
             {/* Plate */}
             {userCode && (
-              <div className="glass-card border border-border/70 p-2 shrink-0 w-[104px] h-[64px] text-end flex flex-col justify-between" style={{ borderRadius: radius }}>
+              <div
+                className="glass-card border border-ride-border/80 shrink-0 text-end flex flex-col justify-between"
+                style={{ width: SPEC.cardW, height: SPEC.cardH, borderRadius: SPEC.cardRadius, padding: SPEC.cardPad }}
+              >
                 <div>
-                  <p className="text-[8px] text-muted-foreground">{s.plate}</p>
-                  <p className="text-[13px] font-mono font-bold text-foreground leading-tight">{userCode}</p>
+                  <p className="text-[13px] text-ride-muted">{s.plate}</p>
+                  <p className="text-[22px] font-mono font-bold text-foreground leading-tight">{userCode}</p>
                 </div>
                 <div className="flex justify-end">
-                  <span className="w-6 h-6 rounded-full bg-primary/12 border border-primary/25 flex items-center justify-center">
-                    <Car className="w-3 h-3 text-primary" />
+                  <span className="w-8 h-8 rounded-full bg-ride-blue/15 border border-ride-blue/30 flex items-center justify-center">
+                    <Car className="w-4 h-4 text-ride-blue" />
                   </span>
                 </div>
               </div>
@@ -451,22 +460,22 @@ const RideStudioLayout = () => {
             {/* Pickup */}
             <button
               onClick={() => setPicker("pickup")}
-              className="glass-card border border-border/70 p-2 shrink-0 w-[168px] h-[64px] text-start"
-              style={{ borderRadius: radius }}
+              className="glass-card border border-ride-border/80 shrink-0 text-start"
+              style={{ width: SPEC.cardW, height: SPEC.cardH, borderRadius: SPEC.cardRadius, padding: SPEC.cardPad }}
             >
               <div className="flex items-center justify-between gap-1.5 h-full">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                    <span className="text-[8px] text-muted-foreground">{s.pickup}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-ride-green" />
+                    <span className="text-[13px] text-ride-muted">{s.pickup}</span>
                   </div>
-                  <p className="text-[11px] font-semibold text-foreground truncate mt-0.5">
+                  <p className="text-[16px] font-medium text-foreground truncate mt-1">
                     {selectedPickupName || (pickupLoading ? s.locating : pickupName || s.yourLocation)}
                   </p>
-                  <p className="text-[8px] text-muted-foreground truncate">{s.pickOnMap}</p>
+                  <p className="text-[13px] text-ride-muted truncate">{s.pickOnMap}</p>
                 </div>
-                <span className="w-7 h-7 rounded-full bg-success/12 border border-success/25 flex items-center justify-center shrink-0">
-                  <Crosshair className="w-3.5 h-3.5 text-success" />
+                <span className="w-8 h-8 rounded-full bg-ride-green/15 border border-ride-green/30 flex items-center justify-center shrink-0">
+                  <Crosshair className="w-4 h-4 text-ride-green" />
                 </span>
               </div>
             </button>
@@ -474,22 +483,22 @@ const RideStudioLayout = () => {
             {/* Destination */}
             <button
               onClick={() => setPicker("dest")}
-              className="glass-card border border-border/70 p-2 shrink-0 w-[182px] h-[64px] text-start"
-              style={{ borderRadius: radius }}
+              className="glass-card border border-ride-border/80 shrink-0 text-start"
+              style={{ width: SPEC.cardW, height: SPEC.cardH, borderRadius: SPEC.cardRadius, padding: SPEC.cardPad }}
             >
               <div className="flex items-center justify-between gap-1.5 h-full">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-info" />
-                    <span className="text-[8px] text-muted-foreground">{s.destination}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-ride-blue" />
+                    <span className="text-[13px] text-ride-muted">{s.destination}</span>
                   </div>
-                  <p className="text-[11px] font-semibold text-foreground truncate mt-0.5">
+                  <p className="text-[16px] font-medium text-foreground truncate mt-1">
                     {selectedDestName || destName || s.destinationPlaceholder}
                   </p>
-                  <p className="text-[8px] text-muted-foreground truncate">{s.pickOnMap}</p>
+                  <p className="text-[13px] text-ride-muted truncate">{s.pickOnMap}</p>
                 </div>
-                <span className="w-7 h-7 rounded-full bg-info/12 border border-info/25 flex items-center justify-center shrink-0">
-                  <MapPin className="w-3.5 h-3.5 text-info" />
+                <span className="w-8 h-8 rounded-full bg-ride-blue/15 border border-ride-blue/30 flex items-center justify-center shrink-0">
+                  <MapPin className="w-4 h-4 text-ride-blue" />
                 </span>
               </div>
             </button>
@@ -497,10 +506,10 @@ const RideStudioLayout = () => {
         )}
 
 
-        {/* Map — biggest element */}
+        {/* Map — 358x360 */}
         <div
-          className="relative overflow-hidden border border-border"
-          style={{ height: SPEC.map, borderRadius: radius, boxShadow: `0 12px 32px -18px hsl(var(--info) / 0.9), 0 0 ${o.glow}px hsl(var(--primary) / ${Math.min(o.glow, 60) / 200})` }}
+          className="relative overflow-hidden border border-ride-border w-full"
+          style={{ height: SPEC.mapH, borderRadius: SPEC.radius, boxShadow: `0 12px 32px -18px hsl(var(--ride-blue) / 0.9), 0 0 ${o.glow}px hsl(var(--primary) / ${Math.min(o.glow, 60) / 200})` }}
         >
           <LeafletMap
             center={userLocation || DEFAULT_LOCATION}
@@ -516,23 +525,30 @@ const RideStudioLayout = () => {
           />
           <button
             onClick={() => setPicker("dest")}
-            className="absolute top-2 start-2 z-[500] flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-background/70 backdrop-blur-md border border-border/60 text-[10px] text-foreground"
+            className="absolute top-2 start-2 z-[500] flex items-center justify-center gap-1 rounded-xl bg-background/70 backdrop-blur-md border border-ride-border/70 text-[13px] text-foreground"
+            style={{ width: SPEC.pickBtnW, height: SPEC.pickBtnH }}
           >
-            <Crosshair className="w-3 h-3 text-muted-foreground" />
+            <Crosshair className="w-3.5 h-3.5 text-ride-muted" />
             {s.pickOnMap}
           </button>
-          <div className="absolute top-2 end-2 flex flex-col gap-1.5 z-[500]">
-            <button onClick={recenter} className="w-8 h-8 rounded-xl bg-background/70 backdrop-blur-md border border-border/60 flex items-center justify-center" aria-label={s.myLocation}>
-              <Crosshair className="w-3.5 h-3.5 text-foreground" />
+          <div className="absolute top-2 end-2 flex flex-col gap-2 z-[500]">
+            <button
+              onClick={recenter}
+              className="rounded-xl bg-background/70 backdrop-blur-md border border-ride-border/70 flex items-center justify-center"
+              style={{ width: SPEC.locateBtn, height: SPEC.locateBtn }}
+              aria-label={s.myLocation}
+            >
+              <Crosshair className="w-4 h-4 text-foreground" />
             </button>
-            <div className="rounded-xl bg-background/70 backdrop-blur-md border border-border/60 overflow-hidden flex flex-col">
-              <button onClick={() => commandZoom("in")} className="w-8 h-7 flex items-center justify-center text-foreground" aria-label="+"><Plus className="w-3.5 h-3.5" /></button>
-              <span className="h-px bg-border/60" />
-              <button onClick={() => commandZoom("out")} className="w-8 h-7 flex items-center justify-center text-foreground" aria-label="−"><Minus className="w-3.5 h-3.5" /></button>
+            <div className="rounded-xl bg-background/70 backdrop-blur-md border border-ride-border/70 overflow-hidden flex flex-col">
+              <button onClick={() => commandZoom("in")} className="flex items-center justify-center text-foreground" style={{ width: SPEC.zoomBtn, height: SPEC.zoomBtn }} aria-label="+"><Plus className="w-4 h-4" /></button>
+              <span className="h-px bg-ride-border/70" />
+              <button onClick={() => commandZoom("out")} className="flex items-center justify-center text-foreground" style={{ width: SPEC.zoomBtn, height: SPEC.zoomBtn }} aria-label="−"><Minus className="w-4 h-4" /></button>
             </div>
           </div>
 
         </div>
+
 
         {/* Extra options + fare */}
         {(o.showOptionsBar || o.showFareCard) && (
