@@ -1,14 +1,14 @@
 import { Link } from "react-router-dom";
-import { ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/hn-driver-badge.png";
 
 export default function ForbiddenPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
-      <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
-      <h1 className="text-3xl font-bold mb-2">403 — ممنوع الوصول</h1>
+      <img src={logo} alt="HN Driver" className="h-24 w-auto mb-4 drop-shadow-lg" />
+      <h1 className="text-3xl font-bold mb-2">مجموعة HN Driver ترحب بكم</h1>
       <p className="text-muted-foreground mb-6 max-w-md">
-        ليست لديك الصلاحيات اللازمة للوصول إلى هذه الصفحة. قم بتسجيل الدخول بحساب مناسب أو ارجع إلى الصفحة الرئيسية.
+        نحن في خدمتكم. يمكنكم إنشاء حساب جديد أو تسجيل الدخول للوصول إلى حسابكم.
       </p>
       <div className="flex flex-wrap gap-3 justify-center">
         <Button asChild><Link to="/auth/client?mode=signup">إنشاء حساب جديد</Link></Button>
@@ -18,3 +18,4 @@ export default function ForbiddenPage() {
     </main>
   );
 }
+
