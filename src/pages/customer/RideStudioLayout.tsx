@@ -253,13 +253,35 @@ const RideStudioLayout = () => {
     setZoomCommandId((value) => value + 1);
   };
 
-  // Design spec: 390x844 (iPhone 15 Pro) / 412x915 — 8px grid, 24px outer padding, 20px radius
+  // Design spec: 390x844 — outer padding 16, radius 20, 8px grid
   const SPEC = {
-    pad: 24,
+    pad: 16,
     radius: 20,
     grid: 8,
-    map: "45dvh",
+    header: 72,
+    avatar: 44,
+    statW: 72,
+    statH: 56,
+    iconBtn: 40,
+    cardW: 160,
+    cardH: 110,
+    cardRadius: 18,
+    cardPad: 16,
+    mapH: 360,
+    locateBtn: 44,
+    zoomBtn: 48,
+    pickBtnW: 120,
+    pickBtnH: 40,
+    optW: 80,
+    optH: 70,
+    fareW: 140,
+    fareH: 120,
+    svcW: 80,
+    svcH: 60,
+    ctaLaterW: 110,
+    ctaMainW: 230,
     cta: 56,
+    ctaRadius: 18,
   };
 
   const radius = `${SPEC.radius}px`;
@@ -269,30 +291,31 @@ const RideStudioLayout = () => {
 
 
   const Stat = ({ icon: Icon, value, label, tone }: { icon: typeof Eye; value: string; label: string; tone: string }) => (
-    <div className="flex items-center gap-1 px-2 shrink-0">
+    <div
+      className="glass-card border border-ride-border/80 shrink-0 flex flex-col items-center justify-center gap-0.5"
+      style={{ width: SPEC.statW, height: SPEC.statH, borderRadius: 14 }}
+    >
       <Icon className={`w-3.5 h-3.5 ${tone}`} />
-      <div className="leading-tight min-w-0">
-        <p className="text-[11px] font-bold text-foreground truncate">{value}</p>
-        <p className="text-[8px] text-muted-foreground truncate">{label}</p>
-      </div>
+      <p className="text-[13px] font-bold text-foreground leading-none truncate max-w-full px-1">{value}</p>
+      <p className="text-[9px] text-ride-muted truncate max-w-full px-1">{label}</p>
     </div>
   );
 
   const Field = ({ icon: Icon, label, value, onClick }: { icon: typeof Eye; label: string; value: string; onClick?: () => void }) => (
     <button
       onClick={onClick}
-      className="glass-card border border-border/70 px-1.5 py-1 text-start w-full h-[44px] flex flex-col justify-center hover:border-primary/40 transition-colors"
-      style={{ borderRadius: radius }}
+      className="glass-card border border-ride-border/80 px-1.5 py-1 text-start flex flex-col justify-center shrink-0 hover:border-ride-blue/50 transition-colors"
+      style={{ width: SPEC.optW, height: SPEC.optH, borderRadius: SPEC.cardRadius }}
     >
-      <p className="text-[8px] text-muted-foreground mb-0.5 truncate">{label}</p>
-      <div className="flex items-center gap-1">
-        <Icon className="w-3 h-3 text-muted-foreground shrink-0" />
-        <span className="text-[10px] font-semibold text-foreground truncate flex-1">{value}</span>
-        <ChevronDown className="w-2.5 h-2.5 text-muted-foreground shrink-0" />
+      <Icon className="w-3.5 h-3.5 text-ride-blue mb-1" />
+      <p className="text-[9px] text-ride-muted truncate w-full">{label}</p>
+      <div className="flex items-center gap-1 w-full">
+        <span className="text-[11px] font-semibold text-foreground truncate flex-1">{value}</span>
+        <ChevronDown className="w-2.5 h-2.5 text-ride-muted shrink-0" />
       </div>
-
     </button>
   );
+
 
 
   return (
