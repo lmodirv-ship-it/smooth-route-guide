@@ -16,8 +16,8 @@ interface NavItem {
 
 const clientNav: NavItem[] = [
   { icon: Home, labelKey: "home", path: "/customer" },
-  { icon: MapPin, labelKey: "booking", path: "/customer/ride" },
   { icon: Clock, labelKey: "history", path: "/customer/history" },
+  { icon: MapPin, labelKey: "booking", path: "/customer/ride" },
   { icon: Wallet, labelKey: "wallet", path: "/customer/wallet" },
   { icon: User, labelKey: "myAccount", path: "/customer/profile" },
 ];
@@ -68,34 +68,47 @@ const BottomNav = ({ role }: BottomNavProps) => {
 
   const rootPath = items[0]?.path || "/";
 
+  const centerIndex = items.length === 5 ? 2 : -1;
+
   return (
     <nav
-      className="shrink-0 border-t border-border/30 bg-card/95 backdrop-blur-xl safe-area-bottom"
+      className="shrink-0 border-t border-border/40 bg-background/90 backdrop-blur-xl safe-area-bottom"
       dir={dir}
     >
-      <div className={`grid gap-2 px-2 py-2 ${items.length <= 3 ? `grid-cols-${items.length}` : 'grid-cols-5'}`}>
-        {items.map((item) => {
+      <div className={`flex items-end justify-around gap-1 px-2 pt-2 pb-2`}>
+        {items.map((item, index) => {
           const isActive =
             location.pathname === item.path ||
             (item.path !== rootPath && location.pathname.startsWith(item.path));
+          const isCenter = index === centerIndex;
 
           return (
             <motion.button
               data-active={isActive}
               key={item.path}
               onClick={() => navigate(item.path)}
-              whileTap={{ scale: 0.9 }}
-              className="glass-nav-tile relative flex min-h-[4rem] flex-col items-center justify-center gap-1 px-2 py-2"
+              whileTap={{ scale: 0.92 }}
+              className="relative flex flex-1 flex-col items-center justify-end gap-1 py-1"
               style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
             >
-              {isActive ? (
-                <motion.div layoutId={`bottomnav-${role}`} className="absolute inset-0 rounded-[1rem]" transition={{ type: "spring", stiffness: 400, damping: 30 }} />
-              ) : null}
-              <item.icon
-                className={`relative z-10 h-5 w-5 transition-colors ${isActive ? "text-primary-foreground" : "text-foreground"}`}
-              />
               <span
-                className={`relative z-10 text-[10px] transition-colors ${isActive ? "font-bold text-primary-foreground" : "font-medium text-muted-foreground"}`}
+                className={`flex items-center justify-center transition-all ${
+                  isCenter
+                    ? `h-11 w-11 rounded-full border ${isActive ? "border-primary/40 bg-primary/15" : "border-border/60 bg-secondary/40"}`
+                    : "h-8 w-8 rounded-xl"
+                }`}
+                style={isCenter && isActive ? { boxShadow: "0 0 18px -4px hsl(var(--primary) / 0.7)" } : undefined}
+              >
+                <item.icon
+                  className={`transition-colors ${isCenter ? "h-5 w-5" : "h-5 w-5"} ${
+                    isActive ? (isCenter ? "text-primary" : "text-info") : "text-muted-foreground"
+                  }`}
+                />
+              </span>
+              <span
+                className={`text-[10px] transition-colors ${
+                  isActive ? (isCenter ? "font-bold text-primary" : "font-bold text-foreground") : "font-medium text-muted-foreground"
+                }`}
               >
                 {getLabel(item.labelKey)}
               </span>
