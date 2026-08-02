@@ -75,7 +75,7 @@ const BottomNav = ({ role }: BottomNavProps) => {
       className="shrink-0 border-t border-border/60 bg-background/95 backdrop-blur-xl safe-area-bottom shadow-[0_-10px_30px_-20px_hsl(var(--foreground)/0.45)]"
       dir={dir}
     >
-      <div className={`flex items-end justify-around gap-1 px-2 pt-1.5 pb-1.5`}>
+      <div className="flex items-center justify-around gap-1 px-2" style={{ height: 72 }}>
         {items.map((item, index) => {
           const isActive =
             location.pathname === item.path ||
@@ -88,23 +88,24 @@ const BottomNav = ({ role }: BottomNavProps) => {
               key={item.path}
               onClick={() => navigate(item.path)}
               whileTap={{ scale: 0.92 }}
-              className="relative flex flex-1 flex-col items-center justify-end gap-1 py-1"
-              style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+              className="relative flex flex-col items-center justify-center gap-1"
+              style={{ width: 60, height: 60, touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
             >
               <span
                 className={`flex items-center justify-center transition-all ${
                   isCenter
-                    ? "h-10 w-10 -mt-4 rounded-full border-2 border-warning/80 bg-background"
-                    : "h-7 w-7 rounded-xl"
+                    ? "h-11 w-11 -mt-4 rounded-full border-2 border-warning/80 bg-background"
+                    : "h-8 w-8 rounded-xl"
                 }`}
                 style={isCenter ? { boxShadow: "0 0 18px -2px hsl(var(--warning) / 0.85), inset 0 0 10px -6px hsl(var(--warning) / 0.9)" } : undefined}
               >
                 <item.icon
-                  className={`transition-colors ${isCenter ? "h-5 w-5 text-warning" : "h-4 w-4"} ${
+                  className={`transition-colors ${isCenter ? "h-5 w-5 text-warning" : "h-[18px] w-[18px]"} ${
                     !isCenter ? (isActive ? "text-info" : "text-muted-foreground") : ""
                   }`}
                 />
               </span>
+
 
               <span
                 className={`text-[10px] transition-colors ${

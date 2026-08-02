@@ -54,6 +54,15 @@ export default {
         success: "hsl(var(--success))",
         warning: "hsl(var(--warning))",
         info: "hsl(var(--info))",
+        ride: {
+          bg: "hsl(var(--ride-bg))",
+          card: "hsl(var(--ride-card))",
+          border: "hsl(var(--ride-border))",
+          blue: "hsl(var(--ride-blue))",
+          green: "hsl(var(--ride-green))",
+          amber: "hsl(var(--ride-amber))",
+          muted: "hsl(var(--ride-muted))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

@@ -253,13 +253,35 @@ const RideStudioLayout = () => {
     setZoomCommandId((value) => value + 1);
   };
 
-  // Design spec: 390x844 (iPhone 15 Pro) / 412x915 — 8px grid, 24px outer padding, 20px radius
+  // Design spec: 390x844 — outer padding 16, radius 20, 8px grid
   const SPEC = {
-    pad: 24,
+    pad: 16,
     radius: 20,
     grid: 8,
-    map: "45dvh",
+    header: 72,
+    avatar: 44,
+    statW: 72,
+    statH: 56,
+    iconBtn: 40,
+    cardW: 160,
+    cardH: 110,
+    cardRadius: 18,
+    cardPad: 16,
+    mapH: 360,
+    locateBtn: 44,
+    zoomBtn: 48,
+    pickBtnW: 120,
+    pickBtnH: 40,
+    optW: 80,
+    optH: 70,
+    fareW: 140,
+    fareH: 120,
+    svcW: 80,
+    svcH: 60,
+    ctaLaterW: 110,
+    ctaMainW: 230,
     cta: 56,
+    ctaRadius: 18,
   };
 
   const radius = `${SPEC.radius}px`;
@@ -269,30 +291,31 @@ const RideStudioLayout = () => {
 
 
   const Stat = ({ icon: Icon, value, label, tone }: { icon: typeof Eye; value: string; label: string; tone: string }) => (
-    <div className="flex items-center gap-1 px-2 shrink-0">
+    <div
+      className="glass-card border border-ride-border/80 shrink-0 flex flex-col items-center justify-center gap-0.5"
+      style={{ width: SPEC.statW, height: SPEC.statH, borderRadius: 14 }}
+    >
       <Icon className={`w-3.5 h-3.5 ${tone}`} />
-      <div className="leading-tight min-w-0">
-        <p className="text-[11px] font-bold text-foreground truncate">{value}</p>
-        <p className="text-[8px] text-muted-foreground truncate">{label}</p>
-      </div>
+      <p className="text-[13px] font-bold text-foreground leading-none truncate max-w-full px-1">{value}</p>
+      <p className="text-[9px] text-ride-muted truncate max-w-full px-1">{label}</p>
     </div>
   );
 
   const Field = ({ icon: Icon, label, value, onClick }: { icon: typeof Eye; label: string; value: string; onClick?: () => void }) => (
     <button
       onClick={onClick}
-      className="glass-card border border-border/70 px-1.5 py-1 text-start w-full h-[44px] flex flex-col justify-center hover:border-primary/40 transition-colors"
-      style={{ borderRadius: radius }}
+      className="glass-card border border-ride-border/80 px-1.5 py-1 text-start flex flex-col justify-center shrink-0 hover:border-ride-blue/50 transition-colors"
+      style={{ width: SPEC.optW, height: SPEC.optH, borderRadius: SPEC.cardRadius }}
     >
-      <p className="text-[8px] text-muted-foreground mb-0.5 truncate">{label}</p>
-      <div className="flex items-center gap-1">
-        <Icon className="w-3 h-3 text-muted-foreground shrink-0" />
-        <span className="text-[10px] font-semibold text-foreground truncate flex-1">{value}</span>
-        <ChevronDown className="w-2.5 h-2.5 text-muted-foreground shrink-0" />
+      <Icon className="w-3.5 h-3.5 text-ride-blue mb-1" />
+      <p className="text-[9px] text-ride-muted truncate w-full">{label}</p>
+      <div className="flex items-center gap-1 w-full">
+        <span className="text-[11px] font-semibold text-foreground truncate flex-1">{value}</span>
+        <ChevronDown className="w-2.5 h-2.5 text-ride-muted shrink-0" />
       </div>
-
     </button>
   );
+
 
 
   return (
@@ -300,41 +323,46 @@ const RideStudioLayout = () => {
       {/* Top bar — avatar + stats pill + balance + actions */}
       {o.showTopBar && (
         <div
-          className="sticky top-0 z-40 bg-background/70 backdrop-blur-2xl border-b border-border/40"
-          style={{ paddingInline: SPEC.pad, paddingBlock: SPEC.grid }}
+          className="sticky top-0 z-40 bg-background/70 backdrop-blur-2xl border-b border-ride-border/60"
+          style={{ paddingInline: SPEC.pad, minHeight: SPEC.header, display: "flex", alignItems: "center" }}
         >
-          <div className="flex items-center overflow-x-auto no-scrollbar" style={{ gap: SPEC.grid }}>
+          <div className="flex items-center overflow-x-auto no-scrollbar w-full" style={{ gap: SPEC.grid }}>
 
             <div className="relative shrink-0">
-              <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center border border-border/60 overflow-hidden">
-                {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : <Car className="w-4 h-4 text-primary-foreground" />}
+              <div
+                className="rounded-full gradient-primary flex items-center justify-center border border-ride-border overflow-hidden"
+                style={{ width: SPEC.avatar, height: SPEC.avatar }}
+              >
+                {avatarUrl ? <img src={avatarUrl} alt="" className="h-full w-full object-cover" /> : <Car className="w-5 h-5 text-primary-foreground" />}
               </div>
-              <span className="absolute -bottom-0.5 -end-0.5 w-2.5 h-2.5 rounded-full bg-success border-2 border-background" />
+              <span className="absolute -bottom-0.5 -end-0.5 w-3 h-3 rounded-full bg-ride-green border-2 border-background" />
             </div>
 
-            <div className="flex items-center glass-card border border-border/70 rounded-xl py-1 divide-x divide-border/60 rtl:divide-x-reverse shrink-0">
-              <Stat icon={Eye} value={viewCount !== null ? String(viewCount) : "—"} label={s.views} tone="text-info" />
-              <Stat icon={Users} value={String(nearbyDrivers.length)} label={s.driversAvailable} tone="text-success" />
-              <Stat icon={TrendingUp} value={String(todayOrders)} label={s.todayOrders} tone="text-primary" />
-            </div>
+            <Stat icon={Eye} value={viewCount !== null ? String(viewCount) : "—"} label={s.views} tone="text-ride-blue" />
+            <Stat icon={Users} value={String(nearbyDrivers.length)} label={s.driversAvailable} tone="text-ride-green" />
+            <Stat icon={TrendingUp} value={String(todayOrders)} label={s.todayOrders} tone="text-ride-amber" />
 
-            <div className="glass-card border border-border/70 rounded-xl px-2.5 py-1 shrink-0">
+            <div
+              className="glass-card border border-ride-border/80 px-2.5 shrink-0 flex flex-col justify-center"
+              style={{ height: SPEC.statH, borderRadius: 14 }}
+            >
               <div className="flex items-center gap-1">
-                <span className="text-[12px] font-bold text-foreground whitespace-nowrap">
+                <span className="text-[13px] font-bold text-foreground whitespace-nowrap">
                   {balance !== null ? `${s.currency} ${balance}` : "—"}
                 </span>
-                <WalletIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                <WalletIcon className="w-3.5 h-3.5 text-ride-muted" />
               </div>
-              <p className="text-[8px] text-muted-foreground">{s.balance}</p>
+              <p className="text-[9px] text-ride-muted">{s.balance}</p>
             </div>
 
             <div className="flex-1 min-w-0" />
 
             <button
               onClick={() => navigate("/customer/notifications")}
-              className="relative w-9 h-9 rounded-xl glass-card border border-border/70 flex items-center justify-center shrink-0"
+              className="relative rounded-xl glass-card border border-ride-border/80 flex items-center justify-center shrink-0"
+              style={{ width: SPEC.iconBtn, height: SPEC.iconBtn }}
             >
-              <Bell className="w-4 h-4 text-primary" />
+              <Bell className="w-4 h-4 text-ride-amber" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -end-1 min-w-[14px] h-3.5 px-1 rounded-full bg-primary text-primary-foreground text-[8px] font-bold flex items-center justify-center border border-background">
                   {unreadCount}
@@ -343,8 +371,14 @@ const RideStudioLayout = () => {
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="w-9 h-9 rounded-xl glass-card border-border/70 shrink-0" aria-label={locales.find((item) => item.code === locale)?.label}>
-                  <Globe className="w-4 h-4 text-muted-foreground" />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-xl glass-card border-ride-border/80 shrink-0"
+                  style={{ width: SPEC.iconBtn, height: SPEC.iconBtn }}
+                  aria-label={locales.find((item) => item.code === locale)?.label}
+                >
+                  <Globe className="w-4 h-4 text-ride-muted" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="z-[2100] min-w-[150px]">
@@ -359,55 +393,65 @@ const RideStudioLayout = () => {
             </DropdownMenu>
           </div>
         </div>
+
       )}
 
 
       <div style={{ display: "flex", flexDirection: "column", gap, paddingInline: SPEC.pad, paddingTop: SPEC.grid * 2 }}>
         {/* Compact info cards row — uniform height */}
         {o.showQuickCards && (
-          <div className="flex items-stretch gap-1.5 overflow-x-auto no-scrollbar" style={{ gap }}>
+          <div className="flex items-stretch overflow-x-auto no-scrollbar" style={{ gap }}>
             {/* Ride badge */}
-            <div className="glass-card border border-primary/25 p-2 shrink-0 w-[96px] h-[64px] flex flex-col justify-between" style={{ borderRadius: radius }}>
+            <div
+              className="glass-card border border-ride-blue/30 shrink-0 flex flex-col justify-between"
+              style={{ width: SPEC.cardW, height: SPEC.cardH, borderRadius: SPEC.cardRadius, padding: SPEC.cardPad }}
+            >
               <div className="flex items-start justify-between gap-1">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-bold text-foreground leading-tight truncate">{s.requestRide.split(" ")[0]}</p>
-                  <p className="text-[11px] font-bold text-primary leading-tight truncate">{s.requestRide.split(" ").slice(1).join(" ")}</p>
+                  <p className="text-[16px] font-medium text-foreground leading-tight truncate">{s.requestRide.split(" ")[0]}</p>
+                  <p className="text-[16px] font-semibold text-ride-blue leading-tight truncate">{s.requestRide.split(" ").slice(1).join(" ")}</p>
                 </div>
-                <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
+                <Sparkles className="w-4 h-4 text-ride-amber shrink-0" />
               </div>
               <div className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
-                <span className="text-[8px] text-muted-foreground truncate">
+                <span className="w-1.5 h-1.5 rounded-full bg-ride-green shrink-0" />
+                <span className="text-[13px] text-ride-muted truncate">
                   {nearbyDrivers.length > 0 ? `${nearbyDrivers.length} ${s.driversAvailable}` : s.searching}
                 </span>
               </div>
             </div>
 
             {/* Activity points */}
-            <div className="glass-card border border-border/70 p-2 shrink-0 w-[116px] h-[64px] flex flex-col justify-between" style={{ borderRadius: radius }}>
+            <div
+              className="glass-card border border-ride-border/80 shrink-0 flex flex-col justify-between"
+              style={{ width: SPEC.cardW, height: SPEC.cardH, borderRadius: SPEC.cardRadius, padding: SPEC.cardPad }}
+            >
               <div className="text-end">
-                <p className="text-[8px] text-muted-foreground">{s.activityPoints}</p>
-                <p className="text-[13px] font-bold text-foreground leading-tight">{points ?? 0}/999</p>
+                <p className="text-[13px] text-ride-muted">{s.activityPoints}</p>
+                <p className="text-[22px] font-bold text-foreground leading-tight">{points ?? 0}/999</p>
               </div>
-              <div className="h-1 rounded-full bg-secondary/60 overflow-hidden">
-                <div className="h-full rounded-full bg-success" style={{ width: `${Math.min(100, ((points ?? 0) / 999) * 100)}%` }} />
+              <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
+                <div className="h-full rounded-full bg-ride-green" style={{ width: `${Math.min(100, ((points ?? 0) / 999) * 100)}%` }} />
               </div>
               <div className="flex items-center justify-end gap-1">
-                <span className="text-[8px] text-muted-foreground">{s.safeTrip}</span>
-                <ShieldCheck className="w-3 h-3 text-success" />
+                <span className="text-[13px] text-ride-muted">{s.safeTrip}</span>
+                <ShieldCheck className="w-3.5 h-3.5 text-ride-green" />
               </div>
             </div>
 
             {/* Plate */}
             {userCode && (
-              <div className="glass-card border border-border/70 p-2 shrink-0 w-[104px] h-[64px] text-end flex flex-col justify-between" style={{ borderRadius: radius }}>
+              <div
+                className="glass-card border border-ride-border/80 shrink-0 text-end flex flex-col justify-between"
+                style={{ width: SPEC.cardW, height: SPEC.cardH, borderRadius: SPEC.cardRadius, padding: SPEC.cardPad }}
+              >
                 <div>
-                  <p className="text-[8px] text-muted-foreground">{s.plate}</p>
-                  <p className="text-[13px] font-mono font-bold text-foreground leading-tight">{userCode}</p>
+                  <p className="text-[13px] text-ride-muted">{s.plate}</p>
+                  <p className="text-[22px] font-mono font-bold text-foreground leading-tight">{userCode}</p>
                 </div>
                 <div className="flex justify-end">
-                  <span className="w-6 h-6 rounded-full bg-primary/12 border border-primary/25 flex items-center justify-center">
-                    <Car className="w-3 h-3 text-primary" />
+                  <span className="w-8 h-8 rounded-full bg-ride-blue/15 border border-ride-blue/30 flex items-center justify-center">
+                    <Car className="w-4 h-4 text-ride-blue" />
                   </span>
                 </div>
               </div>
@@ -416,22 +460,22 @@ const RideStudioLayout = () => {
             {/* Pickup */}
             <button
               onClick={() => setPicker("pickup")}
-              className="glass-card border border-border/70 p-2 shrink-0 w-[168px] h-[64px] text-start"
-              style={{ borderRadius: radius }}
+              className="glass-card border border-ride-border/80 shrink-0 text-start"
+              style={{ width: SPEC.cardW, height: SPEC.cardH, borderRadius: SPEC.cardRadius, padding: SPEC.cardPad }}
             >
               <div className="flex items-center justify-between gap-1.5 h-full">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                    <span className="text-[8px] text-muted-foreground">{s.pickup}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-ride-green" />
+                    <span className="text-[13px] text-ride-muted">{s.pickup}</span>
                   </div>
-                  <p className="text-[11px] font-semibold text-foreground truncate mt-0.5">
+                  <p className="text-[16px] font-medium text-foreground truncate mt-1">
                     {selectedPickupName || (pickupLoading ? s.locating : pickupName || s.yourLocation)}
                   </p>
-                  <p className="text-[8px] text-muted-foreground truncate">{s.pickOnMap}</p>
+                  <p className="text-[13px] text-ride-muted truncate">{s.pickOnMap}</p>
                 </div>
-                <span className="w-7 h-7 rounded-full bg-success/12 border border-success/25 flex items-center justify-center shrink-0">
-                  <Crosshair className="w-3.5 h-3.5 text-success" />
+                <span className="w-8 h-8 rounded-full bg-ride-green/15 border border-ride-green/30 flex items-center justify-center shrink-0">
+                  <Crosshair className="w-4 h-4 text-ride-green" />
                 </span>
               </div>
             </button>
@@ -439,22 +483,22 @@ const RideStudioLayout = () => {
             {/* Destination */}
             <button
               onClick={() => setPicker("dest")}
-              className="glass-card border border-border/70 p-2 shrink-0 w-[182px] h-[64px] text-start"
-              style={{ borderRadius: radius }}
+              className="glass-card border border-ride-border/80 shrink-0 text-start"
+              style={{ width: SPEC.cardW, height: SPEC.cardH, borderRadius: SPEC.cardRadius, padding: SPEC.cardPad }}
             >
               <div className="flex items-center justify-between gap-1.5 h-full">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-info" />
-                    <span className="text-[8px] text-muted-foreground">{s.destination}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-ride-blue" />
+                    <span className="text-[13px] text-ride-muted">{s.destination}</span>
                   </div>
-                  <p className="text-[11px] font-semibold text-foreground truncate mt-0.5">
+                  <p className="text-[16px] font-medium text-foreground truncate mt-1">
                     {selectedDestName || destName || s.destinationPlaceholder}
                   </p>
-                  <p className="text-[8px] text-muted-foreground truncate">{s.pickOnMap}</p>
+                  <p className="text-[13px] text-ride-muted truncate">{s.pickOnMap}</p>
                 </div>
-                <span className="w-7 h-7 rounded-full bg-info/12 border border-info/25 flex items-center justify-center shrink-0">
-                  <MapPin className="w-3.5 h-3.5 text-info" />
+                <span className="w-8 h-8 rounded-full bg-ride-blue/15 border border-ride-blue/30 flex items-center justify-center shrink-0">
+                  <MapPin className="w-4 h-4 text-ride-blue" />
                 </span>
               </div>
             </button>
@@ -462,10 +506,10 @@ const RideStudioLayout = () => {
         )}
 
 
-        {/* Map — biggest element */}
+        {/* Map — 358x360 */}
         <div
-          className="relative overflow-hidden border border-border"
-          style={{ height: SPEC.map, borderRadius: radius, boxShadow: `0 12px 32px -18px hsl(var(--info) / 0.9), 0 0 ${o.glow}px hsl(var(--primary) / ${Math.min(o.glow, 60) / 200})` }}
+          className="relative overflow-hidden border border-ride-border w-full"
+          style={{ height: SPEC.mapH, borderRadius: SPEC.radius, boxShadow: `0 12px 32px -18px hsl(var(--ride-blue) / 0.9), 0 0 ${o.glow}px hsl(var(--primary) / ${Math.min(o.glow, 60) / 200})` }}
         >
           <LeafletMap
             center={userLocation || DEFAULT_LOCATION}
@@ -481,73 +525,83 @@ const RideStudioLayout = () => {
           />
           <button
             onClick={() => setPicker("dest")}
-            className="absolute top-2 start-2 z-[500] flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-background/70 backdrop-blur-md border border-border/60 text-[10px] text-foreground"
+            className="absolute top-2 start-2 z-[500] flex items-center justify-center gap-1 rounded-xl bg-background/70 backdrop-blur-md border border-ride-border/70 text-[13px] text-foreground"
+            style={{ width: SPEC.pickBtnW, height: SPEC.pickBtnH }}
           >
-            <Crosshair className="w-3 h-3 text-muted-foreground" />
+            <Crosshair className="w-3.5 h-3.5 text-ride-muted" />
             {s.pickOnMap}
           </button>
-          <div className="absolute top-2 end-2 flex flex-col gap-1.5 z-[500]">
-            <button onClick={recenter} className="w-8 h-8 rounded-xl bg-background/70 backdrop-blur-md border border-border/60 flex items-center justify-center" aria-label={s.myLocation}>
-              <Crosshair className="w-3.5 h-3.5 text-foreground" />
+          <div className="absolute top-2 end-2 flex flex-col gap-2 z-[500]">
+            <button
+              onClick={recenter}
+              className="rounded-xl bg-background/70 backdrop-blur-md border border-ride-border/70 flex items-center justify-center"
+              style={{ width: SPEC.locateBtn, height: SPEC.locateBtn }}
+              aria-label={s.myLocation}
+            >
+              <Crosshair className="w-4 h-4 text-foreground" />
             </button>
-            <div className="rounded-xl bg-background/70 backdrop-blur-md border border-border/60 overflow-hidden flex flex-col">
-              <button onClick={() => commandZoom("in")} className="w-8 h-7 flex items-center justify-center text-foreground" aria-label="+"><Plus className="w-3.5 h-3.5" /></button>
-              <span className="h-px bg-border/60" />
-              <button onClick={() => commandZoom("out")} className="w-8 h-7 flex items-center justify-center text-foreground" aria-label="−"><Minus className="w-3.5 h-3.5" /></button>
+            <div className="rounded-xl bg-background/70 backdrop-blur-md border border-ride-border/70 overflow-hidden flex flex-col">
+              <button onClick={() => commandZoom("in")} className="flex items-center justify-center text-foreground" style={{ width: SPEC.zoomBtn, height: SPEC.zoomBtn }} aria-label="+"><Plus className="w-4 h-4" /></button>
+              <span className="h-px bg-ride-border/70" />
+              <button onClick={() => commandZoom("out")} className="flex items-center justify-center text-foreground" style={{ width: SPEC.zoomBtn, height: SPEC.zoomBtn }} aria-label="−"><Minus className="w-4 h-4" /></button>
             </div>
           </div>
 
         </div>
 
+
         {/* Extra options + fare */}
         {(o.showOptionsBar || o.showFareCard) && (
-          <div className="glass-card p-2.5 border border-border/70" style={{ borderRadius: radius }}>
-            <div className="flex items-start gap-2">
-              {/* Fare box (start side) */}
+          <div className="glass-card border border-ride-border/80" style={{ borderRadius: SPEC.radius, padding: SPEC.grid * 1.5 }}>
+            <div className="flex items-start" style={{ gap: SPEC.grid }}>
+              {/* Fare box 140x120 */}
               {o.showFareCard && (
-                <div className="rounded-xl border border-info/25 bg-info/5 p-1.5 w-[104px] sm:w-[130px] shrink-0 order-first">
+                <div
+                  className="rounded-2xl border border-ride-blue/30 bg-ride-blue/5 shrink-0 order-first flex flex-col justify-between"
+                  style={{ width: SPEC.fareW, height: SPEC.fareH, padding: 10 }}
+                >
                   <div className="flex items-center gap-1">
-                    <Info className="w-2.5 h-2.5 text-info" />
-                    <span className="text-[8px] text-muted-foreground truncate">{s.estimatedCost}</span>
+                    <Info className="w-3 h-3 text-ride-blue" />
+                    <span className="text-[13px] text-ride-muted truncate">{s.estimatedCost}</span>
                   </div>
-                  <p className="text-[15px] sm:text-[17px] font-extrabold text-success leading-tight mt-0.5">
-                    {priceLow !== null ? `${priceLow} - ${priceHigh}` : "—"}
-                    {priceLow !== null && <span className="text-[10px] font-bold ms-1">{s.currency}</span>}
+                  <p className="text-[22px] font-bold text-ride-green leading-tight">
+                    {priceLow !== null ? `${priceLow}-${priceHigh}` : "—"}
+                    {priceLow !== null && <span className="text-[13px] font-bold ms-1">{s.currency}</span>}
                   </p>
 
-                  <div className="flex items-center gap-1 mt-1">
-                    <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
-                    <span className="text-[9px] text-muted-foreground">
-                      {etaLow !== null ? `${etaLow} - ${etaHigh} ${s.min}` : "—"}
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-ride-muted shrink-0" />
+                    <span className="text-[13px] text-ride-muted">
+                      {etaLow !== null ? `${etaLow}-${etaHigh} ${s.min}` : "—"}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <Share2 className="w-3 h-3 text-muted-foreground shrink-0" />
-                    <span className="text-[9px] text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Share2 className="w-3.5 h-3.5 text-ride-muted shrink-0" />
+                    <span className="text-[13px] text-ride-muted">
                       {rideDistance !== null ? `${rideDistance.toFixed(1)} ${s.km}` : "—"}
                     </span>
                   </div>
                 </div>
               )}
 
-              {/* Option fields */}
+              {/* Option fields — 80x70 each, horizontal scroll */}
               {o.showOptionsBar && (
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold text-foreground mb-1">{s.extraOptions}</p>
-                  <div className="grid grid-cols-4 gap-1">
+                  <p className="text-[13px] font-medium text-foreground mb-1.5">{s.extraOptions}</p>
+                  <div className="flex overflow-x-auto no-scrollbar" style={{ gap: SPEC.grid }}>
 
 
-                    <div className="relative">
+                    <div className="relative shrink-0">
                       <Field icon={Car} label={s.rideType} value={activeVehicle ? vehicleLabel(activeVehicle) : "—"} onClick={() => setOpenField(f => f === "vehicle" ? null : "vehicle")} />
                       {openField === "vehicle" && (
-                        <div className="absolute z-30 mt-1 w-full rounded-2xl glass-strong border border-border p-1.5 space-y-1">
+                        <div className="absolute z-30 mt-1 min-w-[140px] rounded-2xl glass-strong border border-ride-border p-1.5 space-y-1">
                           {vehicleTypes.map(v => {
                             const Icon = ICONS[v.icon] || Car;
                             return (
                               <button
                                 key={v.id}
                                 onClick={() => { setVehicleCode(v.code); setPassengers(p => Math.min(p, v.max_passengers)); setOpenField(null); }}
-                                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[11px] ${v.code === vehicleCode ? "bg-primary/15 text-primary" : "text-muted-foreground"}`}
+                                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[13px] ${v.code === vehicleCode ? "bg-ride-blue/15 text-ride-blue" : "text-ride-muted"}`}
                               >
                                 <Icon className="w-3.5 h-3.5" />
                                 {vehicleLabel(v)}
@@ -558,26 +612,27 @@ const RideStudioLayout = () => {
                       )}
                     </div>
 
-                    <div className="glass-card border border-border/70 px-1.5 py-1 h-[44px] flex flex-col justify-center" style={{ borderRadius: radius }}>
-                      <p className="text-[8px] text-muted-foreground mb-0.5 truncate">{s.passengers}</p>
+                    <div
+                      className="glass-card border border-ride-border/80 px-1.5 py-1 shrink-0 flex flex-col justify-center"
+                      style={{ width: SPEC.optW, height: SPEC.optH, borderRadius: SPEC.cardRadius }}
+                    >
+                      <p className="text-[9px] text-ride-muted mb-0.5 truncate">{s.passengers}</p>
                       <div className="flex items-center gap-0.5">
-                        <Users className="w-3 h-3 text-muted-foreground shrink-0" />
-
-                        <button onClick={() => setPassengers(p => Math.max(1, p - 1))} className="w-4 h-4 rounded glass border border-border flex items-center justify-center">
-                          <Minus className="w-2.5 h-2.5 text-muted-foreground" />
+                        <button onClick={() => setPassengers(p => Math.max(1, p - 1))} className="w-5 h-5 rounded glass border border-ride-border flex items-center justify-center">
+                          <Minus className="w-2.5 h-2.5 text-ride-muted" />
                         </button>
-                        <span className="text-[11px] font-semibold text-foreground flex-1 text-center">{passengers}</span>
+                        <span className="text-[13px] font-semibold text-foreground flex-1 text-center">{passengers}</span>
                         <button
                           onClick={() => setPassengers(p => Math.min(activeVehicle?.max_passengers ?? 4, p + 1))}
-                          className="w-4 h-4 rounded glass border border-border flex items-center justify-center"
+                          className="w-5 h-5 rounded glass border border-ride-border flex items-center justify-center"
                         >
-                          <Plus className="w-2.5 h-2.5 text-muted-foreground" />
+                          <Plus className="w-2.5 h-2.5 text-ride-muted" />
                         </button>
                       </div>
                     </div>
 
 
-                    <div className="relative">
+                    <div className="relative shrink-0">
                       <Field
                         icon={payment === "cash" ? Banknote : payment === "card" ? CreditCard : WalletIcon}
                         label={s.payment}
@@ -585,12 +640,12 @@ const RideStudioLayout = () => {
                         onClick={() => setOpenField(f => f === "payment" ? null : "payment")}
                       />
                       {openField === "payment" && (
-                        <div className="absolute z-30 mt-1 w-full rounded-2xl glass-strong border border-border p-1.5 space-y-1">
+                        <div className="absolute z-30 mt-1 min-w-[140px] rounded-2xl glass-strong border border-ride-border p-1.5 space-y-1">
                           {([["cash", Banknote, s.cash], ["card", CreditCard, s.card], ["wallet", WalletIcon, s.wallet]] as const).map(([code, Icon, label]) => (
                             <button
                               key={code}
                               onClick={() => { setPayment(code); setOpenField(null); }}
-                              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[11px] ${payment === code ? "bg-primary/15 text-primary" : "text-muted-foreground"}`}
+                              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[13px] ${payment === code ? "bg-ride-blue/15 text-ride-blue" : "text-ride-muted"}`}
                             >
                               <Icon className="w-3.5 h-3.5" />
                               {label}
@@ -600,7 +655,7 @@ const RideStudioLayout = () => {
                       )}
                     </div>
 
-                    <Field icon={StickyNote} label={s.notes} value={notes ? notes.slice(0, 18) : s.addNote} onClick={() => setShowNotes(v => !v)} />
+                    <Field icon={StickyNote} label={s.notes} value={notes ? notes.slice(0, 12) : s.addNote} onClick={() => setShowNotes(v => !v)} />
                   </div>
                 </div>
               )}
@@ -611,7 +666,7 @@ const RideStudioLayout = () => {
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 placeholder={s.notePlaceholder}
-                className="mt-2 text-xs glass border-border rounded-xl"
+                className="mt-2 text-xs glass border-ride-border rounded-xl"
                 rows={2}
               />
             )}
@@ -619,31 +674,26 @@ const RideStudioLayout = () => {
         )}
 
 
-        {/* Safety strip */}
+        {/* Services strip — 80x60 items */}
         {o.showSafetyStrip && (
-          <div className="glass-card border border-border/70 p-2 flex items-center gap-1" style={{ borderRadius: radius }}>
-            <span className="w-8 h-8 rounded-xl bg-success/12 border border-success/25 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-4 h-4 text-success" />
-            </span>
-            <div className="min-w-0 ms-1">
-              <p className="text-[11px] font-semibold text-foreground leading-tight">{s.safeTrip}</p>
-              <p className="text-[8px] text-muted-foreground truncate">{s.liveTracking}</p>
-            </div>
-            <div className="flex-1 min-w-1" />
+          <div className="glass-card border border-ride-border/80 p-2 flex items-center overflow-x-auto no-scrollbar" style={{ borderRadius: SPEC.radius, gap: SPEC.grid }}>
             {[
+              { icon: ShieldCheck, label: s.safeTrip, action: () => {} },
               { icon: Radio, label: s.liveTracking, action: trackActiveRide },
               { icon: Share2, label: s.shareTrip, action: shareTrip },
               { icon: Headphones, label: s.support, action: () => navigate("/customer/support") },
             ].map((item, i) => (
-              <div key={i} className="flex items-center shrink-0">
-                {i > 0 && <span className="w-3 sm:w-5 border-t border-dashed border-border/70 mb-3.5" />}
-                <button onClick={item.action} className="flex flex-col items-center gap-0.5 w-[54px]">
-                  <span className="w-7 h-7 rounded-full bg-success/10 border border-success/25 flex items-center justify-center">
-                    <item.icon className="w-3.5 h-3.5 text-success" />
-                  </span>
-                  <span className="text-[8px] text-muted-foreground text-center leading-tight truncate w-full">{item.label}</span>
-                </button>
-              </div>
+              <button
+                key={i}
+                onClick={item.action}
+                className="shrink-0 flex flex-col items-center justify-center gap-1"
+                style={{ width: SPEC.svcW, height: SPEC.svcH }}
+              >
+                <span className="w-7 h-7 rounded-full bg-ride-green/10 border border-ride-green/25 flex items-center justify-center">
+                  <item.icon className="w-3.5 h-3.5 text-ride-green" />
+                </span>
+                <span className="text-[9px] text-ride-muted text-center leading-tight truncate w-full">{item.label}</span>
+              </button>
             ))}
           </div>
         )}
@@ -652,27 +702,28 @@ const RideStudioLayout = () => {
         <div className="flex" style={{ gap: SPEC.grid }}>
           <Button
             variant="outline"
-            className="px-3 border-border/70 glass text-[11px] gap-1 text-foreground shrink-0"
-            style={{ height: SPEC.cta, borderRadius: radius }}
+            className="border-ride-border/80 glass text-[13px] gap-1 text-foreground shrink-0 px-2"
+            style={{ height: SPEC.cta, width: SPEC.ctaLaterW, borderRadius: SPEC.ctaRadius }}
             onClick={() => setScheduleOpen(true)}
           >
-            <Clock className="w-4 h-4 text-info" />
+            <Clock className="w-4 h-4 text-ride-blue" />
             {s.scheduleLater}
           </Button>
           <Button
             onClick={() => submit()}
             disabled={submitting || !destCoords}
-            className="flex-1 text-primary-foreground font-extrabold text-[15px] flex items-center justify-center gap-2 disabled:opacity-50 transition-transform active:scale-[0.98]"
+            className="flex-1 text-primary-foreground font-bold text-[16px] flex items-center justify-center gap-2 disabled:opacity-50 transition-transform active:scale-[0.98]"
             style={{
               height: SPEC.cta,
-              borderRadius: radius,
-              background: "linear-gradient(90deg, hsl(var(--info)), hsl(var(--success)))",
-              boxShadow: `0 14px 32px -14px hsl(var(--info) / 0.9)`,
+              borderRadius: SPEC.ctaRadius,
+              background: "linear-gradient(90deg, hsl(var(--ride-green)), hsl(var(--ride-blue)))",
+              boxShadow: `0 14px 32px -14px hsl(var(--ride-blue) / 0.9)`,
             }}
           >
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <><span className="flex-1 text-center">{s.requestNow}</span><Car className="w-5 h-5" /></>}
           </Button>
         </div>
+
 
 
 
