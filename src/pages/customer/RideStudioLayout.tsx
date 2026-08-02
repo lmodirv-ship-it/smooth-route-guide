@@ -613,92 +613,40 @@ const RideStudioLayout = () => {
                 </div>
               )}
 
-              {/* Option fields — 80x70 each, horizontal scroll */}
+              {/* Option fields — open interactive bottom sheets */}
               {o.showOptionsBar && (
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-foreground mb-1.5">{s.extraOptions}</p>
                   <div className="flex overflow-x-auto no-scrollbar" style={{ gap: SPEC.grid }}>
-
-
-                    <div className="relative shrink-0">
-                      <Field icon={Car} label={s.rideType} value={activeVehicle ? vehicleLabel(activeVehicle) : "—"} onClick={() => setOpenField(f => f === "vehicle" ? null : "vehicle")} />
-                      {openField === "vehicle" && (
-                        <div className="absolute z-30 mt-1 min-w-[140px] rounded-2xl glass-strong border border-ride-border p-1.5 space-y-1">
-                          {vehicleTypes.map(v => {
-                            const Icon = ICONS[v.icon] || Car;
-                            return (
-                              <button
-                                key={v.id}
-                                onClick={() => { setVehicleCode(v.code); setPassengers(p => Math.min(p, v.max_passengers)); setOpenField(null); }}
-                                className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[13px] ${v.code === vehicleCode ? "bg-ride-blue/15 text-ride-blue" : "text-ride-muted"}`}
-                              >
-                                <Icon className="w-3.5 h-3.5" />
-                                {vehicleLabel(v)}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-
-                    <div
-                      className="glass-card border border-ride-border/80 px-1.5 py-1 shrink-0 flex flex-col justify-center"
-                      style={{ width: SPEC.optW, height: SPEC.optH, borderRadius: SPEC.cardRadius }}
-                    >
-                      <p className="text-[9px] text-ride-muted mb-0.5 truncate">{s.passengers}</p>
-                      <div className="flex items-center gap-0.5">
-                        <button onClick={() => setPassengers(p => Math.max(1, p - 1))} className="w-5 h-5 rounded glass border border-ride-border flex items-center justify-center">
-                          <Minus className="w-2.5 h-2.5 text-ride-muted" />
-                        </button>
-                        <span className="text-[13px] font-semibold text-foreground flex-1 text-center">{passengers}</span>
-                        <button
-                          onClick={() => setPassengers(p => Math.min(activeVehicle?.max_passengers ?? 4, p + 1))}
-                          className="w-5 h-5 rounded glass border border-ride-border flex items-center justify-center"
-                        >
-                          <Plus className="w-2.5 h-2.5 text-ride-muted" />
-                        </button>
-                      </div>
-                    </div>
-
-
-                    <div className="relative shrink-0">
-                      <Field
-                        icon={payment === "cash" ? Banknote : payment === "card" ? CreditCard : WalletIcon}
-                        label={s.payment}
-                        value={payment === "cash" ? s.cash : payment === "card" ? s.card : s.wallet}
-                        onClick={() => setOpenField(f => f === "payment" ? null : "payment")}
-                      />
-                      {openField === "payment" && (
-                        <div className="absolute z-30 mt-1 min-w-[140px] rounded-2xl glass-strong border border-ride-border p-1.5 space-y-1">
-                          {([["cash", Banknote, s.cash], ["card", CreditCard, s.card], ["wallet", WalletIcon, s.wallet]] as const).map(([code, Icon, label]) => (
-                            <button
-                              key={code}
-                              onClick={() => { setPayment(code); setOpenField(null); }}
-                              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-xl text-[13px] ${payment === code ? "bg-ride-blue/15 text-ride-blue" : "text-ride-muted"}`}
-                            >
-                              <Icon className="w-3.5 h-3.5" />
-                              {label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <Field icon={StickyNote} label={s.notes} value={notes ? notes.slice(0, 12) : s.addNote} onClick={() => setShowNotes(v => !v)} />
+                    <Field
+                      icon={Car}
+                      label={s.rideType}
+                      value={activeVehicle ? vehicleLabel(activeVehicle) : "—"}
+                      onClick={() => setSheet("vehicle")}
+                    />
+                    <Field
+                      icon={Users}
+                      label={s.passengers}
+                      value={String(passengers)}
+                      onClick={() => setSheet("passengers")}
+                    />
+                    <Field
+                      icon={payment === "cash" ? Banknote : payment === "card" ? CreditCard : WalletIcon}
+                      label={s.payment}
+                      value={payment === "cash" ? s.cash : payment === "card" ? s.card : s.wallet}
+                      onClick={() => setSheet("payment")}
+                    />
+                    <Field
+                      icon={StickyNote}
+                      label={s.notes}
+                      value={notes ? notes.slice(0, 12) : s.addNote}
+                      onClick={() => { setNotesDraft(notes); setSheet("notes"); }}
+                    />
                   </div>
                 </div>
               )}
             </div>
 
-            {o.showOptionsBar && showNotes && (
-              <Textarea
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                placeholder={s.notePlaceholder}
-                className="mt-2 text-xs glass border-ride-border rounded-xl"
-                rows={2}
-              />
-            )}
           </div>
         )}
 
