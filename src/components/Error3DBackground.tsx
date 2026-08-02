@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import natureScene from "@/assets/nature-scene.jpg";
 
 type StyleKey = "edge" | "neon" | "nature";
 
