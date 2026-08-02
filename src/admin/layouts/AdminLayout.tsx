@@ -5,7 +5,7 @@ import {
   BarChart3, FileText, Car, Users, TrendingUp, MapPin,
   AlertTriangle, FileCheck, Headphones, Settings, Shield,
   Search, Bell, Activity, Bot, Send, X, Loader2, UtensilsCrossed, UserCog, Percent,
-  ShieldCheck, ShieldOff, Globe, RefreshCw, BrainCircuit, Menu, MessageSquare, MessagesSquare, Package, Palette, Monitor, GitBranch, Database, Wallet, Camera, CameraOff, CreditCard, Ticket, Mail, Map as MapIcon
+  ShieldCheck, ShieldOff, Globe, RefreshCw, BrainCircuit, Menu, MessageSquare, MessagesSquare, Package, Palette, Monitor, GitBranch, Database, Wallet, Camera, CameraOff, CreditCard, Ticket, Mail, Map as MapIcon, LayoutTemplate
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -129,6 +129,7 @@ const AdminLayout = () => {
     { path: "/admin/messaging", icon: MessageSquare, label: "المحادثات الداخلية" },
     { path: "/admin/community-chat", icon: MessagesSquare, label: "الدردشة المجتمعية" },
     { path: "/admin/themes", icon: Palette, label: "Themes" },
+    { path: "/admin/ui-studio", icon: LayoutTemplate, label: "🎨 ستوديو الواجهات" },
     { path: "/admin/ads", icon: Monitor, label: "Ads Management" },
     { path: "/admin/partner-sites", icon: Monitor, label: "🌐 المواقع الشريكة" },
     { path: "/admin/analytics", icon: BarChart3, label: "تحليلات الزوار" },

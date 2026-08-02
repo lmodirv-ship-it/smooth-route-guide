@@ -5366,6 +5366,7 @@ export type Database = {
           city: string | null
           country: string | null
           created_at: string
+          customer_notes: string | null
           destination: string
           destination_lat: number | null
           destination_lng: number | null
@@ -5373,12 +5374,16 @@ export type Database = {
           driver_id: string | null
           estimated_time: number | null
           id: string
+          passengers: number | null
+          payment_method: string | null
           pickup: string
           pickup_lat: number | null
           pickup_lng: number | null
           price: number | null
+          scheduled_at: string | null
           status: string
           user_id: string
+          vehicle_type: string | null
           zone_id: string | null
         }
         Insert: {
@@ -5389,6 +5394,7 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string
+          customer_notes?: string | null
           destination?: string
           destination_lat?: number | null
           destination_lng?: number | null
@@ -5396,12 +5402,16 @@ export type Database = {
           driver_id?: string | null
           estimated_time?: number | null
           id?: string
+          passengers?: number | null
+          payment_method?: string | null
           pickup?: string
           pickup_lat?: number | null
           pickup_lng?: number | null
           price?: number | null
+          scheduled_at?: string | null
           status?: string
           user_id: string
+          vehicle_type?: string | null
           zone_id?: string | null
         }
         Update: {
@@ -5412,6 +5422,7 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string
+          customer_notes?: string | null
           destination?: string
           destination_lat?: number | null
           destination_lng?: number | null
@@ -5419,12 +5430,16 @@ export type Database = {
           driver_id?: string | null
           estimated_time?: number | null
           id?: string
+          passengers?: number | null
+          payment_method?: string | null
           pickup?: string
           pickup_lat?: number | null
           pickup_lng?: number | null
           price?: number | null
+          scheduled_at?: string | null
           status?: string
           user_id?: string
+          vehicle_type?: string | null
           zone_id?: string | null
         }
         Relationships: [
@@ -5436,6 +5451,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ride_safety_contacts: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          phone: string
+          relation: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          phone: string
+          relation?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string
+          relation?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ride_vehicle_types: {
+        Row: {
+          code: string
+          created_at: string
+          icon: string
+          id: string
+          is_active: boolean
+          max_passengers: number
+          name_ar: string
+          name_en: string
+          name_fr: string
+          price_multiplier: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          max_passengers?: number
+          name_ar: string
+          name_en?: string
+          name_fr?: string
+          price_multiplier?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          max_passengers?: number
+          name_ar?: string
+          name_en?: string
+          name_fr?: string
+          price_multiplier?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       role_permissions: {
         Row: {
@@ -6639,6 +6729,36 @@ export type Database = {
           twilio_sid?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      ui_studio_settings: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          layout: string
+          options: Json
+          scope: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          layout?: string
+          options?: Json
+          scope: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          layout?: string
+          options?: Json
+          scope?: string
+          updated_at?: string
         }
         Relationships: []
       }
