@@ -231,12 +231,15 @@ const RideStudioLayout = () => {
     return filtered;
   }, [activeCategory, searchQuery]);
 
-  const selectLocation = (loc: TangierLocation) => {
-    const coords = { lat: loc.lat, lng: loc.lng };
-    if (picker === "pickup") { setUserLocation(coords); setSelectedPickupName(loc.name); }
-    else { setDestCoords(coords); setSelectedDestName(loc.name); }
-    setPicker(null); setSearchQuery(""); setActiveCategory("all");
+  const applyPoint = (name: string, lat: number, lng: number) => {
+    const coords = { lat, lng };
+    if (picker === "pickup") { setUserLocation(coords); setSelectedPickupName(name); }
+    else { setDestCoords(coords); setSelectedDestName(name); }
+    setPicker(null); setSearchQuery(""); setActiveCategory("all"); clearSearch();
   };
+
+  const selectLocation = (loc: TangierLocation) => applyPoint(loc.name, loc.lat, loc.lng);
+
 
   const handleMapClick = useCallback((latlng: { lat: number; lng: number }) => {
     setDestCoords(latlng);
