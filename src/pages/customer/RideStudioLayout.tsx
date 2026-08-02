@@ -346,48 +346,52 @@ const RideStudioLayout = () => {
       )}
 
 
-      <div className="px-2.5 pt-2.5" style={{ display: "flex", flexDirection: "column", gap }}>
-        {/* Compact info cards row */}
+      <div className="px-2 pt-2" style={{ display: "flex", flexDirection: "column", gap }}>
+        {/* Compact info cards row — uniform height */}
         {o.showQuickCards && (
-          <div className="flex gap-2 overflow-x-auto no-scrollbar" style={{ gap }}>
+          <div className="flex items-stretch gap-1.5 overflow-x-auto no-scrollbar" style={{ gap }}>
             {/* Ride badge */}
-            <div className="glass-card border border-primary/25 p-2.5 shrink-0 w-[112px]" style={{ borderRadius: radius }}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[13px] font-bold text-foreground leading-tight">{s.requestRide.split(" ")[0]}</p>
-                  <p className="text-[13px] font-bold text-primary leading-tight">{s.requestRide.split(" ").slice(1).join(" ")}</p>
+            <div className="glass-card border border-primary/25 p-2 shrink-0 w-[96px] h-[64px] flex flex-col justify-between" style={{ borderRadius: radius }}>
+              <div className="flex items-start justify-between gap-1">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold text-foreground leading-tight truncate">{s.requestRide.split(" ")[0]}</p>
+                  <p className="text-[11px] font-bold text-primary leading-tight truncate">{s.requestRide.split(" ").slice(1).join(" ")}</p>
                 </div>
-                <Sparkles className="w-4 h-4 text-primary" />
+                <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
               </div>
-              <div className="flex items-center gap-1 mt-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                <span className="text-[9px] text-muted-foreground truncate">
+              <div className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
+                <span className="text-[8px] text-muted-foreground truncate">
                   {nearbyDrivers.length > 0 ? `${nearbyDrivers.length} ${s.driversAvailable}` : s.searching}
                 </span>
               </div>
             </div>
 
             {/* Activity points */}
-            <div className="glass-card border border-border/70 p-2.5 shrink-0 w-[132px]" style={{ borderRadius: radius }}>
-              <p className="text-[9px] text-muted-foreground text-end">{s.activityPoints}</p>
-              <p className="text-[15px] font-bold text-foreground text-end leading-tight">{points ?? 0}/999</p>
-              <div className="h-1.5 rounded-full bg-secondary/60 mt-1.5 overflow-hidden">
+            <div className="glass-card border border-border/70 p-2 shrink-0 w-[116px] h-[64px] flex flex-col justify-between" style={{ borderRadius: radius }}>
+              <div className="text-end">
+                <p className="text-[8px] text-muted-foreground">{s.activityPoints}</p>
+                <p className="text-[13px] font-bold text-foreground leading-tight">{points ?? 0}/999</p>
+              </div>
+              <div className="h-1 rounded-full bg-secondary/60 overflow-hidden">
                 <div className="h-full rounded-full bg-success" style={{ width: `${Math.min(100, ((points ?? 0) / 999) * 100)}%` }} />
               </div>
-              <div className="flex items-center justify-end gap-1 mt-1.5">
-                <span className="text-[9px] text-muted-foreground">{s.safeTrip}</span>
+              <div className="flex items-center justify-end gap-1">
+                <span className="text-[8px] text-muted-foreground">{s.safeTrip}</span>
                 <ShieldCheck className="w-3 h-3 text-success" />
               </div>
             </div>
 
             {/* Plate */}
             {userCode && (
-              <div className="glass-card border border-border/70 p-2.5 shrink-0 w-[120px] text-end" style={{ borderRadius: radius }}>
-                <p className="text-[9px] text-muted-foreground">{s.plate}</p>
-                <p className="text-[15px] font-mono font-bold text-foreground leading-tight">{userCode}</p>
-                <div className="flex justify-end mt-1.5">
-                  <span className="w-7 h-7 rounded-full bg-primary/12 border border-primary/25 flex items-center justify-center">
-                    <Car className="w-3.5 h-3.5 text-primary" />
+              <div className="glass-card border border-border/70 p-2 shrink-0 w-[104px] h-[64px] text-end flex flex-col justify-between" style={{ borderRadius: radius }}>
+                <div>
+                  <p className="text-[8px] text-muted-foreground">{s.plate}</p>
+                  <p className="text-[13px] font-mono font-bold text-foreground leading-tight">{userCode}</p>
+                </div>
+                <div className="flex justify-end">
+                  <span className="w-6 h-6 rounded-full bg-primary/12 border border-primary/25 flex items-center justify-center">
+                    <Car className="w-3 h-3 text-primary" />
                   </span>
                 </div>
               </div>
@@ -396,22 +400,22 @@ const RideStudioLayout = () => {
             {/* Pickup */}
             <button
               onClick={() => setPicker("pickup")}
-              className="glass-card border border-border/70 p-2.5 shrink-0 w-[190px] text-start"
+              className="glass-card border border-border/70 p-2 shrink-0 w-[168px] h-[64px] text-start"
               style={{ borderRadius: radius }}
             >
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-between gap-1.5 h-full">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-success" />
-                    <span className="text-[9px] text-muted-foreground">{s.pickup}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-success" />
+                    <span className="text-[8px] text-muted-foreground">{s.pickup}</span>
                   </div>
-                  <p className="text-[12px] font-semibold text-foreground truncate mt-0.5">
+                  <p className="text-[11px] font-semibold text-foreground truncate mt-0.5">
                     {selectedPickupName || (pickupLoading ? s.locating : pickupName || s.yourLocation)}
                   </p>
-                  <p className="text-[9px] text-muted-foreground truncate">{s.pickOnMap}</p>
+                  <p className="text-[8px] text-muted-foreground truncate">{s.pickOnMap}</p>
                 </div>
-                <span className="w-9 h-9 rounded-full bg-success/12 border border-success/25 flex items-center justify-center shrink-0">
-                  <Crosshair className="w-4 h-4 text-success" />
+                <span className="w-7 h-7 rounded-full bg-success/12 border border-success/25 flex items-center justify-center shrink-0">
+                  <Crosshair className="w-3.5 h-3.5 text-success" />
                 </span>
               </div>
             </button>
@@ -419,27 +423,28 @@ const RideStudioLayout = () => {
             {/* Destination */}
             <button
               onClick={() => setPicker("dest")}
-              className="glass-card border border-border/70 p-2.5 shrink-0 w-[210px] text-start"
+              className="glass-card border border-border/70 p-2 shrink-0 w-[182px] h-[64px] text-start"
               style={{ borderRadius: radius }}
             >
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-between gap-1.5 h-full">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-info" />
-                    <span className="text-[9px] text-muted-foreground">{s.destination}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-info" />
+                    <span className="text-[8px] text-muted-foreground">{s.destination}</span>
                   </div>
-                  <p className="text-[12px] font-semibold text-foreground truncate mt-0.5">
+                  <p className="text-[11px] font-semibold text-foreground truncate mt-0.5">
                     {selectedDestName || destName || s.destinationPlaceholder}
                   </p>
-                  <p className="text-[9px] text-muted-foreground truncate">{s.pickOnMap}</p>
+                  <p className="text-[8px] text-muted-foreground truncate">{s.pickOnMap}</p>
                 </div>
-                <span className="w-9 h-9 rounded-full bg-info/12 border border-info/25 flex items-center justify-center shrink-0">
-                  <MapPin className="w-4 h-4 text-info" />
+                <span className="w-7 h-7 rounded-full bg-info/12 border border-info/25 flex items-center justify-center shrink-0">
+                  <MapPin className="w-3.5 h-3.5 text-info" />
                 </span>
               </div>
             </button>
           </div>
         )}
+
 
         {/* Map — biggest element */}
         <div
