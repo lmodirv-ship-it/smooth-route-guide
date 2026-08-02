@@ -154,7 +154,7 @@ const RideStudioLayout = () => {
         supabase.from("profiles").select("avatar_url").eq("id", user.id).maybeSingle(),
         supabase.from("ride_requests").select("id", { count: "exact", head: true }).eq("user_id", user.id).gte("created_at", startOfDay.toISOString()),
         supabase.from("site_visit_counter").select("today_visits").order("updated_at", { ascending: false }).limit(1).maybeSingle(),
-        supabase.from("ride_requests").select("id").eq("user_id", user.id).in("status", ["pending", "accepted", "in_progress"]).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("ride_requests").select("id, driver_id, status").eq("user_id", user.id).in("status", ["pending", "accepted", "in_progress"]).order("created_at", { ascending: false }).limit(1).maybeSingle(),
       ]);
       if (w) setBalance(Number((w as any).balance) || 0);
       if (st) setPoints(Number((st as any).stars) || 0);
@@ -162,6 +162,9 @@ const RideStudioLayout = () => {
       setTodayOrders(ordersCount ?? 0);
       setViewCount(visits ? Number(visits.today_visits) || 0 : null);
       setActiveRideId(activeRide?.id ?? null);
+      setActiveDriverId((activeRide as any)?.driver_id ?? null);
+      setActiveRideStatus((activeRide as any)?.status ?? null);
+
       const { count } = await supabase
         .from("notifications")
         .select("id", { count: "exact", head: true })
