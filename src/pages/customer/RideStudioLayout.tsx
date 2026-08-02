@@ -5,7 +5,7 @@ import {
   MapPin, Navigation, Loader2, Search, X, Car, Clock, Crosshair, Bell, Globe,
   Users, Eye, ShoppingBag, Wallet as WalletIcon, Star, ShieldCheck, Share2, Radio,
   Headphones, CalendarClock, Plus, Minus, StickyNote, CreditCard, Banknote, Zap, Crown, Bus,
-  ChevronDown, Sparkles, Info,
+  ChevronDown, Sparkles, Info, TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
