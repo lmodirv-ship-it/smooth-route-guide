@@ -270,15 +270,16 @@ const RideStudioLayout = () => {
   const Field = ({ icon: Icon, label, value, onClick }: { icon: typeof Eye; label: string; value: string; onClick?: () => void }) => (
     <button
       onClick={onClick}
-      className="glass-card border border-border/70 px-2 py-1.5 text-start w-full h-[52px] flex flex-col justify-center hover:border-primary/40 transition-colors"
+      className="glass-card border border-border/70 px-1.5 py-1 text-start w-full h-[44px] flex flex-col justify-center hover:border-primary/40 transition-colors"
       style={{ borderRadius: radius }}
     >
-      <p className="text-[9px] text-muted-foreground mb-1 truncate">{label}</p>
-      <div className="flex items-center gap-1.5">
-        <Icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-        <span className="text-[11px] font-semibold text-foreground truncate flex-1">{value}</span>
-        <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
+      <p className="text-[8px] text-muted-foreground mb-0.5 truncate">{label}</p>
+      <div className="flex items-center gap-1">
+        <Icon className="w-3 h-3 text-muted-foreground shrink-0" />
+        <span className="text-[10px] font-semibold text-foreground truncate flex-1">{value}</span>
+        <ChevronDown className="w-2.5 h-2.5 text-muted-foreground shrink-0" />
       </div>
+
     </button>
   );
 
@@ -489,15 +490,16 @@ const RideStudioLayout = () => {
             <div className="flex items-start gap-2">
               {/* Fare box (start side) */}
               {o.showFareCard && (
-                <div className="rounded-xl border border-info/25 bg-info/5 p-2 w-[124px] sm:w-[160px] shrink-0 order-first">
+                <div className="rounded-xl border border-info/25 bg-info/5 p-1.5 w-[104px] sm:w-[130px] shrink-0 order-first">
                   <div className="flex items-center gap-1">
-                    <Info className="w-3 h-3 text-info" />
-                    <span className="text-[9px] text-muted-foreground truncate">{s.estimatedCost}</span>
+                    <Info className="w-2.5 h-2.5 text-info" />
+                    <span className="text-[8px] text-muted-foreground truncate">{s.estimatedCost}</span>
                   </div>
-                  <p className="text-[18px] sm:text-[21px] font-extrabold text-success leading-tight mt-0.5">
+                  <p className="text-[15px] sm:text-[17px] font-extrabold text-success leading-tight mt-0.5">
                     {priceLow !== null ? `${priceLow} - ${priceHigh}` : "—"}
-                    {priceLow !== null && <span className="text-[12px] font-bold ms-1">{s.currency}</span>}
+                    {priceLow !== null && <span className="text-[10px] font-bold ms-1">{s.currency}</span>}
                   </p>
+
                   <div className="flex items-center gap-1 mt-1">
                     <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
                     <span className="text-[9px] text-muted-foreground">
@@ -516,8 +518,9 @@ const RideStudioLayout = () => {
               {/* Option fields */}
               {o.showOptionsBar && (
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-semibold text-foreground mb-1.5">{s.extraOptions}</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  <p className="text-[10px] font-semibold text-foreground mb-1">{s.extraOptions}</p>
+                  <div className="grid grid-cols-4 gap-1">
+
 
                     <div className="relative">
                       <Field icon={Car} label={s.rideType} value={activeVehicle ? vehicleLabel(activeVehicle) : "—"} onClick={() => setOpenField(f => f === "vehicle" ? null : "vehicle")} />
@@ -540,10 +543,11 @@ const RideStudioLayout = () => {
                       )}
                     </div>
 
-                    <div className="glass-card border border-border/70 px-2 py-1.5 h-[52px] flex flex-col justify-center" style={{ borderRadius: radius }}>
-                      <p className="text-[9px] text-muted-foreground mb-1">{s.passengers}</p>
-                      <div className="flex items-center gap-1">
-                        <Users className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                    <div className="glass-card border border-border/70 px-1.5 py-1 h-[44px] flex flex-col justify-center" style={{ borderRadius: radius }}>
+                      <p className="text-[8px] text-muted-foreground mb-0.5 truncate">{s.passengers}</p>
+                      <div className="flex items-center gap-0.5">
+                        <Users className="w-3 h-3 text-muted-foreground shrink-0" />
+
                         <button onClick={() => setPassengers(p => Math.max(1, p - 1))} className="w-4 h-4 rounded glass border border-border flex items-center justify-center">
                           <Minus className="w-2.5 h-2.5 text-muted-foreground" />
                         </button>
