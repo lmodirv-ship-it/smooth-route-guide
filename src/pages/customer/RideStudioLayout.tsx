@@ -853,7 +853,77 @@ const RideStudioLayout = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Interactive option sheets */}
+      <RideBottomSheet open={sheet === "vehicle"} title={s.rideType} dir={dir as "rtl" | "ltr"} onClose={() => setSheet(null)}>
+        {vehicleTypes.map(v => {
+          const Icon = ICONS[v.icon] || Car;
+          return (
+            <button
+              key={v.id}
+              onClick={() => { setVehicleCode(v.code); setPassengers(p => Math.min(p, v.max_passengers)); setSheet(null); }}
+              className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl border text-start ${v.code === vehicleCode ? "border-ride-blue bg-ride-blue/10 text-ride-blue" : "border-ride-border text-ride-muted"}`}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="flex-1 text-sm font-medium">{vehicleLabel(v)}</span>
+              <span className="text-xs">×{v.price_multiplier}</span>
+            </button>
+          );
+        })}
+      </RideBottomSheet>
+
+      <RideBottomSheet open={sheet === "payment"} title={s.payment} dir={dir as "rtl" | "ltr"} onClose={() => setSheet(null)}>
+        {([["cash", Banknote, s.cash], ["card", CreditCard, s.card], ["wallet", WalletIcon, s.wallet]] as const).map(([code, Icon, label]) => (
+          <button
+            key={code}
+            onClick={() => { setPayment(code); setSheet(null); }}
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl border text-start ${payment === code ? "border-ride-blue bg-ride-blue/10 text-ride-blue" : "border-ride-border text-ride-muted"}`}
+          >
+            <Icon className="w-5 h-5" />
+            <span className="flex-1 text-sm font-medium">{label}</span>
+          </button>
+        ))}
+      </RideBottomSheet>
+
+      <RideBottomSheet open={sheet === "passengers"} title={s.passengers} dir={dir as "rtl" | "ltr"} onClose={() => setSheet(null)}>
+        <div className="flex items-center justify-between gap-4 px-2 py-4">
+          <button onClick={() => setPassengers(p => Math.max(1, p - 1))} className="w-12 h-12 rounded-2xl glass border border-ride-border flex items-center justify-center">
+            <Minus className="w-5 h-5 text-ride-muted" />
+          </button>
+          <span className="text-3xl font-bold text-foreground">{passengers}</span>
+          <button
+            onClick={() => setPassengers(p => Math.min(activeVehicle?.max_passengers ?? 4, p + 1))}
+            className="w-12 h-12 rounded-2xl glass border border-ride-border flex items-center justify-center"
+          >
+            <Plus className="w-5 h-5 text-ride-muted" />
+          </button>
+        </div>
+      </RideBottomSheet>
+
+      <RideBottomSheet
+        open={sheet === "notes"}
+        title={s.notes}
+        dir={dir as "rtl" | "ltr"}
+        onClose={() => setSheet(null)}
+        footer={
+          <Button
+            onClick={() => { setNotes(notesDraft); setSheet(null); }}
+            className="w-full h-12 rounded-2xl gradient-primary text-primary-foreground font-bold"
+          >
+            {s.done}
+          </Button>
+        }
+      >
+        <Textarea
+          value={notesDraft}
+          onChange={e => setNotesDraft(e.target.value)}
+          placeholder={s.notePlaceholder}
+          className="glass border-ride-border rounded-2xl text-sm"
+          rows={4}
+        />
+      </RideBottomSheet>
     </div>
+
   );
 };
 
