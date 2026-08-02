@@ -146,6 +146,9 @@ interface LeafletMapProps {
   driverIconType?: "car" | "motorcycle";
   /** Heatmap points for demand visualization */
   heatPoints?: HeatPoint[];
+  /** Optional external zoom commands for custom map controls. */
+  zoomCommand?: "in" | "out" | null;
+  zoomCommandId?: number;
   children?: React.ReactNode;
 }
 
@@ -169,6 +172,8 @@ const LeafletMap = ({
   externalExpanded,
   driverIconType = "car",
   heatPoints = [],
+  zoomCommand,
+  zoomCommandId,
   children,
 }: LeafletMapProps) => {
   const mapElementRef = useRef<HTMLDivElement | null>(null);
@@ -270,6 +275,13 @@ const LeafletMap = ({
     if (!mapInstanceRef.current) return;
     mapInstanceRef.current.setView(mapCenter, zoom, { animate: false });
   }, [mapCenter, zoom]);
+
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !zoomCommand) return;
+    if (zoomCommand === "in") map.zoomIn();
+    else map.zoomOut();
+  }, [zoomCommand, zoomCommandId]);
 
   // Auto-refresh map every 60 seconds
   useEffect(() => {

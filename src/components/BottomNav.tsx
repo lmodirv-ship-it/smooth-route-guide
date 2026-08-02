@@ -72,7 +72,7 @@ const BottomNav = ({ role }: BottomNavProps) => {
 
   return (
     <nav
-      className="shrink-0 border-t border-border/40 bg-background/90 backdrop-blur-xl safe-area-bottom"
+      className="shrink-0 border-t border-border/60 bg-background/95 backdrop-blur-xl safe-area-bottom shadow-[0_-10px_30px_-20px_hsl(var(--foreground)/0.45)]"
       dir={dir}
     >
       <div className={`flex items-end justify-around gap-1 px-2 pt-2 pb-2`}>
@@ -94,13 +94,13 @@ const BottomNav = ({ role }: BottomNavProps) => {
               <span
                 className={`flex items-center justify-center transition-all ${
                   isCenter
-                    ? "h-12 w-12 -mt-5 rounded-full border-2 border-primary/70 bg-background"
+                    ? "h-12 w-12 -mt-5 rounded-full border-2 border-warning/80 bg-background"
                     : "h-8 w-8 rounded-xl"
                 }`}
-                style={isCenter ? { boxShadow: "0 0 22px -2px hsl(var(--primary) / 0.85), inset 0 0 12px -6px hsl(var(--primary) / 0.9)" } : undefined}
+                style={isCenter ? { boxShadow: "0 0 22px -2px hsl(var(--warning) / 0.85), inset 0 0 12px -6px hsl(var(--warning) / 0.9)" } : undefined}
               >
                 <item.icon
-                  className={`transition-colors ${isCenter ? "h-6 w-6 text-primary" : "h-5 w-5"} ${
+                  className={`transition-colors ${isCenter ? "h-6 w-6 text-warning" : "h-5 w-5"} ${
                     !isCenter ? (isActive ? "text-info" : "text-muted-foreground") : ""
                   }`}
                 />
@@ -108,7 +108,7 @@ const BottomNav = ({ role }: BottomNavProps) => {
               <span
                 className={`text-[10px] transition-colors ${
                   isCenter
-                    ? "font-bold text-primary"
+                    ? "font-bold text-warning"
                     : isActive
                       ? "font-bold text-info"
                       : "font-medium text-muted-foreground"

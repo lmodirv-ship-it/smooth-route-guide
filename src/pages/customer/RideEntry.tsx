@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 import { useUiStudio } from "@/hooks/useUiStudio";
+import BottomNav from "@/components/BottomNav";
 
 const ClassicRide = lazy(() => import("@/pages/CustomerPage"));
 const StudioRide = lazy(() => import("@/pages/customer/RideStudioLayout"));
@@ -19,9 +20,16 @@ const RideEntry = () => {
 
   const Layout = layout === "studio" ? StudioRide : ClassicRide;
   return (
-    <Suspense fallback={<div className="min-h-[60dvh] flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}>
-      <Layout />
-    </Suspense>
+    <div className="relative min-h-[calc(100dvh-2.75rem)]">
+      <Suspense fallback={<div className="min-h-[60dvh] flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>}>
+        <Layout />
+      </Suspense>
+      {layout === "studio" && ui.options.showBottomNav && (
+        <div className="fixed inset-x-0 bottom-0 z-[1000]">
+          <BottomNav role="client" />
+        </div>
+      )}
+    </div>
   );
 };
 
