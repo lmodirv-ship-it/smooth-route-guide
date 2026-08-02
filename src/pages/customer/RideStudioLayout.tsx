@@ -174,6 +174,30 @@ const RideStudioLayout = () => {
     })();
   }, []);
 
+  // Live: follow the active ride row (driver assignment / status changes)
+  useEffect(() => {
+    if (!activeRideId) return;
+    const channel = supabase
+      .channel(`ride-live-${activeRideId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "ride_requests", filter: `id=eq.${activeRideId}` },
+        (payload) => {
+          const row = payload.new as any;
+          setActiveDriverId(row.driver_id ?? null);
+          setActiveRideStatus(row.status ?? null);
+          if (["completed", "cancelled"].includes(row.status)) {
+            setActiveRideId(null);
+            setActiveDriverId(null);
+          }
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [activeRideId]);
+
+
+
 
   const activeVehicle = vehicleTypes.find(v => v.code === vehicleCode);
   const multiplier = activeVehicle?.price_multiplier ?? 1;
