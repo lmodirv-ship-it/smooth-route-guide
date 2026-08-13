@@ -981,6 +981,32 @@ export function describeWrite(name: string, args: any): string {
 }
 
 /** تنفيذ عملية كتابة — لا تُستدعى إلا من ai-admin-execute بعد الموافقة. */
+/** مفاتيح الإعدادات المسموح للمساعد بتعديلها فقط. */
+export const ALLOWED_SETTING_KEYS = [
+  "pricing", "delivery_pricing", "order_commission_percentage", "geo_settings",
+  "free_period", "notifications", "general", "ui_visibility", "supported_languages",
+  "default_language", "enable_language_switcher", "branding_settings", "active_theme",
+];
+
+/** شحن محفظة مباشرةً بصلاحية الخدمة (دوال قاعدة البيانات تتطلب جلسة مستخدم). */
+async function creditWallet(db: any, userId: string, amount: number, description: string, type = "topup", referenceId?: string) {
+  let { data: w } = await db.from("wallet").select("id, balance").eq("user_id", userId).maybeSingle();
+  if (!w) {
+    const { data: created, error } = await db.from("wallet").insert({ user_id: userId, balance: 0 }).select("id, balance").single();
+    if (error) throw new Error(error.message);
+    w = created;
+  }
+  const newBalance = Number(w.balance ?? 0) + amount;
+  const { error: uErr } = await db.from("wallet").update({ balance: newBalance, updated_at: new Date().toISOString() }).eq("id", w.id);
+  if (uErr) throw new Error(uErr.message);
+  const { error: tErr } = await db.from("wallet_transactions").insert({
+    wallet_id: w.id, user_id: userId, amount, balance_after: newBalance,
+    transaction_type: type, description, reference_id: referenceId ?? null,
+  });
+  if (tErr) throw new Error(tErr.message);
+  return newBalance;
+}
+
 export async function executeWriteTool(db: any, name: string, args: any): Promise<{ before: any; after: any; summary: string }> {
   const need = (k: string) => {
     const v = args?.[k];
