@@ -520,6 +520,48 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_provider_keys: {
+        Row: {
+          api_key: string
+          base_url: string | null
+          created_at: string
+          id: string
+          is_enabled: boolean
+          label: string | null
+          last_check_at: string | null
+          models_count: number
+          provider: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          api_key: string
+          base_url?: string | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          label?: string | null
+          last_check_at?: string | null
+          models_count?: number
+          provider: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string
+          base_url?: string | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          label?: string | null
+          last_check_at?: string | null
+          models_count?: number
+          provider?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_quick_commands: {
         Row: {
           created_at: string
