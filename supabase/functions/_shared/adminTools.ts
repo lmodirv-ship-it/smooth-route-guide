@@ -333,6 +333,238 @@ export const TOOL_SPECS: ToolSpec[] = [
     description: "نشر صفحة ديناميكية أو إخفاؤها.",
     parameters: obj({ slug: str("الرابط اللطيف"), published: { type: "boolean", description: "منشورة أم لا" } }, ["slug", "published"]),
   },
+
+  // ───────────── قراءة موسّعة ─────────────
+  {
+    name: "user_lookup",
+    kind: "read",
+    label: "بحث مستخدم",
+    risk: "low",
+    description: "بحث عن مستخدم بالاسم أو الهاتف أو رمز المستخدم، مع أدواره وحالته ورصيد محفظته ونجومه.",
+    parameters: obj({ query: str("الاسم أو الهاتف أو رمز المستخدم"), limit: num("عدد النتائج") }, ["query"]),
+  },
+  {
+    name: "wallet_report",
+    kind: "read",
+    label: "تقرير المحفظة",
+    risk: "low",
+    description: "طلبات الشحن المعلّقة، آخر حركات المحفظة، وإجمالي الأرصدة.",
+    parameters: obj({ limit: num("عدد النتائج") }),
+  },
+  {
+    name: "finance_report",
+    kind: "read",
+    label: "تقرير مالي شامل",
+    risk: "low",
+    description: "الاشتراكات النشطة (سائقين وعملاء)، المدفوعات، عمولات المنصة، والنجوم الممنوحة.",
+    parameters: obj({ days: num("عدد الأيام (افتراضي 30)") }),
+  },
+  {
+    name: "support_queue",
+    kind: "read",
+    label: "طابور الدعم",
+    risk: "low",
+    description: "الشكاوى والتذاكر المفتوحة مرتبة من الأقدم إلى الأحدث.",
+    parameters: obj({ limit: num("عدد النتائج") }),
+  },
+  {
+    name: "marketing_report",
+    kind: "read",
+    label: "تقرير التسويق",
+    risk: "low",
+    description: "الكوبونات النشطة واستعمالها، الإعلانات الظاهرة، وأداء الإحالات.",
+    parameters: obj({ limit: num("عدد النتائج") }),
+  },
+  {
+    name: "content_audit",
+    kind: "read",
+    label: "جرد المحتوى",
+    risk: "low",
+    description: "الصفحات الديناميكية والمقالات وحالة النشر، وعدد الترجمات لكل لغة.",
+    parameters: obj({ limit: num("عدد النتائج") }),
+  },
+
+  // ───────────── كتابة موسّعة ─────────────
+  {
+    name: "set_user_suspended",
+    kind: "write",
+    label: "إيقاف/تفعيل حساب مستخدم",
+    risk: "high",
+    description: "تعليق حساب مستخدم أو رفع التعليق عنه.",
+    parameters: obj({
+      user_code: str("رمز المستخدم"),
+      suspended: { type: "boolean", description: "true للإيقاف، false للتفعيل" },
+    }, ["user_code", "suspended"]),
+  },
+  {
+    name: "set_user_role",
+    kind: "write",
+    label: "تغيير دور مستخدم",
+    risk: "high",
+    description: "إسناد دور واحد لمستخدم (يُستبدل دوره الحالي لغير المسؤولين). الأدوار: moderator, agent, driver, delivery, store_owner, user.",
+    parameters: obj({
+      user_code: str("رمز المستخدم"),
+      role: str("الدور الجديد: moderator, agent, driver, delivery, store_owner, user"),
+    }, ["user_code", "role"]),
+  },
+  {
+    name: "credit_wallet_tool",
+    kind: "write",
+    label: "شحن محفظة مستخدم",
+    risk: "high",
+    description: "إضافة رصيد إلى محفظة مستخدم مع تسجيل الحركة.",
+    parameters: obj({
+      user_code: str("رمز المستخدم"),
+      amount: num("المبلغ بالدرهم (> 0)"),
+      description: str("سبب الشحن"),
+    }, ["user_code", "amount"]),
+  },
+  {
+    name: "approve_wallet_recharge_tool",
+    kind: "write",
+    label: "اعتماد طلب شحن",
+    risk: "high",
+    description: "اعتماد أو رفض طلب شحن محفظة معلّق؛ عند الاعتماد يُضاف المبلغ للرصيد.",
+    parameters: obj({
+      request_id: str("معرّف طلب الشحن"),
+      approve: { type: "boolean", description: "true للاعتماد، false للرفض" },
+      note: str("ملاحظة اختيارية"),
+    }, ["request_id", "approve"]),
+  },
+  {
+    name: "grant_reward_stars",
+    kind: "write",
+    label: "منح نجوم مكافأة",
+    risk: "medium",
+    description: "منح أو خصم نجوم مكافأة لمستخدم مع تسجيل السبب في السجلّ.",
+    parameters: obj({
+      user_code: str("رمز المستخدم"),
+      stars: num("عدد النجوم (سالب للخصم)"),
+      reason: str("سبب المنح"),
+    }, ["user_code", "stars"]),
+  },
+  {
+    name: "create_coupon",
+    kind: "write",
+    label: "إنشاء كوبون",
+    risk: "medium",
+    description: "إنشاء كوبون تخفيض جديد (نسبة أو مبلغ ثابت) مع صلاحية وحدود استعمال.",
+    parameters: obj({
+      code: str("رمز الكوبون"),
+      discount_type: str("percent أو fixed"),
+      discount_value: num("قيمة التخفيض"),
+      max_discount: num("سقف التخفيض بالدرهم"),
+      min_order_amount: num("الحد الأدنى للطلب"),
+      max_uses: num("أقصى عدد استعمالات إجمالي"),
+      max_uses_per_user: num("أقصى عدد استعمالات لكل مستخدم"),
+      days_valid: num("عدد أيام الصلاحية (افتراضي 30)"),
+      applies_to: str("all أو delivery أو ride"),
+      description: str("وصف الكوبون"),
+    }, ["code", "discount_type", "discount_value"]),
+  },
+  {
+    name: "set_coupon_active",
+    kind: "write",
+    label: "تفعيل/تعطيل كوبون",
+    risk: "medium",
+    description: "تفعيل كوبون أو تعطيله.",
+    parameters: obj({ code: str("رمز الكوبون"), active: { type: "boolean", description: "مفعّل أم لا" } }, ["code", "active"]),
+  },
+  {
+    name: "create_ad",
+    kind: "write",
+    label: "إنشاء إعلان",
+    risk: "medium",
+    description: "إضافة صندوق إعلاني جديد في الصفحة الرئيسية (نص أو صورة).",
+    parameters: obj({
+      title: str("عنوان الإعلان"),
+      content_type: str("text أو image"),
+      content_text: str("نص الإعلان"),
+      image_url: str("رابط الصورة"),
+      link_url: str("رابط عند الضغط"),
+      slot_number: num("رقم الخانة (1-6)"),
+      days_valid: num("عدد أيام العرض"),
+      active: { type: "boolean", description: "يبدأ مفعّلاً أم لا (افتراضي لا)" },
+    }, ["title"]),
+  },
+  {
+    name: "set_ad_active",
+    kind: "write",
+    label: "تفعيل/إيقاف إعلان",
+    risk: "medium",
+    description: "تفعيل إعلان أو إيقافه بالعنوان.",
+    parameters: obj({ title: str("عنوان الإعلان"), active: { type: "boolean", description: "مفعّل أم لا" } }, ["title", "active"]),
+  },
+  {
+    name: "update_app_setting",
+    kind: "write",
+    label: "تعديل إعداد المنصة",
+    risk: "high",
+    description: "تعديل قيمة إعداد من إعدادات المنصة المسموح بها (تسعير، عمولة، نصف قطر الإرسال، فترة مجانية…).",
+    parameters: obj({ key: str("مفتاح الإعداد"), value: str("القيمة الجديدة (رقم أو نص أو JSON)") }, ["key", "value"]),
+  },
+  {
+    name: "upsert_translation",
+    kind: "write",
+    label: "إضافة/تعديل ترجمة",
+    risk: "low",
+    description: "إضافة مفتاح ترجمة أو تعديل قيمته للغة معيّنة.",
+    parameters: obj({
+      locale: str("اللغة: ar, fr, en, es"),
+      key: str("مفتاح الترجمة"),
+      value: str("النص المترجم"),
+      namespace: str("المجال (افتراضي common)"),
+    }, ["locale", "key", "value"]),
+  },
+  {
+    name: "set_complaint_status",
+    kind: "write",
+    label: "تحديث شكوى",
+    risk: "medium",
+    description: "تغيير حالة شكوى وإضافة ملاحظة الوكيل.",
+    parameters: obj({
+      complaint_code: str("رمز الشكوى"),
+      status: str("open, in_progress, resolved, closed"),
+      note: str("ملاحظة"),
+    }, ["complaint_code", "status"]),
+  },
+  {
+    name: "set_ticket_status",
+    kind: "write",
+    label: "تحديث تذكرة دعم",
+    risk: "medium",
+    description: "تغيير حالة أو أولوية تذكرة دعم.",
+    parameters: obj({
+      ticket_code: str("رمز التذكرة"),
+      status: str("open, in_progress, resolved, closed"),
+      priority: str("low, normal, high, urgent"),
+    }, ["ticket_code"]),
+  },
+  {
+    name: "extend_subscription",
+    kind: "write",
+    label: "تمديد اشتراك",
+    risk: "medium",
+    description: "تمديد اشتراك سائق أو عميل بعدد أيام محدّد وتفعيله.",
+    parameters: obj({
+      target: str("driver أو customer"),
+      code: str("رمز السائق أو رمز المستخدم"),
+      days: num("عدد أيام التمديد"),
+    }, ["target", "code", "days"]),
+  },
+  {
+    name: "broadcast_notification",
+    kind: "write",
+    label: "إشعار جماعي",
+    risk: "medium",
+    description: "إرسال إشعار لشريحة من المستخدمين (حسب الدور و/أو المدينة) بحدّ أقصى 500 مستلم.",
+    parameters: obj({
+      message: str("نص الإشعار"),
+      role: str("الدور المستهدف: user, driver, delivery, store_owner, agent (اتركه فارغاً للجميع)"),
+      city: str("المدينة (اختياري)"),
+      limit: num("أقصى عدد مستلمين (حتى 500)"),
+    }, ["message"]),
+  },
 ];
 
 
@@ -622,6 +854,119 @@ export async function runReadTool(db: any, name: string, args: any): Promise<any
       };
     }
 
+    case "user_lookup": {
+      const term = String(args?.query ?? "").trim();
+      const { data: profs } = await db.from("profiles")
+        .select("id, name, phone, user_code, city, country, is_suspended, is_confirmed, avg_rating, created_at")
+        .or(`name.ilike.%${term}%,phone.ilike.%${term}%,user_code.ilike.%${term}%,email.ilike.%${term}%`)
+        .limit(Math.min(limit, 10));
+      if (!profs?.length) return { found: false, message: "لم يُعثر على مستخدم مطابق" };
+      const out = [];
+      for (const p of profs) {
+        const [{ data: roles }, { data: w }, { data: stars }] = await Promise.all([
+          db.from("user_roles").select("role").eq("user_id", p.id),
+          db.from("wallet").select("balance").eq("user_id", p.id).maybeSingle(),
+          db.from("reward_stars").select("stars, level").eq("user_id", p.id).maybeSingle(),
+        ]);
+        out.push({
+          ...p,
+          الأدوار: (roles ?? []).map((r: any) => r.role),
+          رصيد_المحفظة: Number(w?.balance ?? 0),
+          النجوم: stars?.stars ?? 0,
+          المستوى: stars?.level ?? "—",
+        });
+      }
+      return { found: true, count: out.length, users: out };
+    }
+
+    case "wallet_report": {
+      const [pending, txs, wallets] = await Promise.all([
+        db.from("wallet_recharge_requests").select("id, user_id, amount, status, notes, created_at")
+          .eq("status", "pending").order("created_at", { ascending: true }).limit(limit),
+        db.from("wallet_transactions").select("user_id, amount, transaction_type, description, balance_after, created_at")
+          .order("created_at", { ascending: false }).limit(limit),
+        db.from("wallet").select("balance"),
+      ]);
+      const total = (wallets.data ?? []).reduce((a: number, x: any) => a + Number(x.balance ?? 0), 0);
+      return {
+        طلبات_شحن_معلّقة: pending.data ?? [],
+        عدد_المحافظ: (wallets.data ?? []).length,
+        إجمالي_الأرصدة: total,
+        آخر_الحركات: txs.data ?? [],
+      };
+    }
+
+    case "finance_report": {
+      const days = clamp(args?.days, 30, 365);
+      const since = new Date(Date.now() - days * 86400000).toISOString();
+      const [dsub, csub, pays, rev, stars] = await Promise.all([
+        db.from("driver_subscriptions").select("status, amount_paid, expires_at").eq("status", "active"),
+        db.from("customer_subscriptions").select("status, amount_paid, credits_remaining, expires_at").eq("status", "active"),
+        db.from("payments").select("amount, method, status, created_at").gte("created_at", since),
+        db.from("platform_revenue").select("amount, source, created_at").gte("created_at", since),
+        db.from("star_history").select("stars_change, created_at").gte("created_at", since),
+      ]);
+      const sum = (rows: any[], k: string) => rows.reduce((a, x) => a + Number(x[k] ?? 0), 0);
+      return {
+        المدة_بالأيام: days,
+        اشتراكات_سائقين_نشطة: (dsub.data ?? []).length,
+        اشتراكات_عملاء_نشطة: (csub.data ?? []).length,
+        مداخيل_الاشتراكات: sum(dsub.data ?? [], "amount_paid") + sum(csub.data ?? [], "amount_paid"),
+        عدد_المدفوعات: (pays.data ?? []).length,
+        مجموع_المدفوعات: sum(pays.data ?? [], "amount"),
+        عمولات_المنصة: sum(rev.data ?? [], "amount"),
+        نجوم_ممنوحة: sum(stars.data ?? [], "stars_change"),
+      };
+    }
+
+    case "support_queue": {
+      const [complaints, tickets] = await Promise.all([
+        db.from("complaints").select("complaint_code, category, description, status, priority, created_at")
+          .not("status", "in", "(resolved,closed)").order("created_at", { ascending: true }).limit(limit),
+        db.from("tickets").select("ticket_code, title, category, status, priority, created_at")
+          .not("status", "in", "(resolved,closed)").order("created_at", { ascending: true }).limit(limit),
+      ]);
+      return {
+        شكاوى_مفتوحة: complaints.data ?? [],
+        تذاكر_مفتوحة: tickets.data ?? [],
+      };
+    }
+
+    case "marketing_report": {
+      const [coupons, ads, refs] = await Promise.all([
+        db.from("coupons").select("code, discount_type, discount_value, is_active, current_uses, max_uses, expires_at")
+          .order("created_at", { ascending: false }).limit(limit),
+        db.from("ads").select("title, slot_number, content_type, is_active, start_date, end_date")
+          .order("slot_number").limit(limit),
+        db.from("referrals").select("status, reward_given, reward_amount, created_at").limit(500),
+      ]);
+      const r = refs.data ?? [];
+      return {
+        الكوبونات: coupons.data ?? [],
+        الإعلانات: ads.data ?? [],
+        الإحالات: {
+          الإجمالي: r.length,
+          مكتملة: r.filter((x: any) => x.status === "completed").length,
+          مكافآت_مدفوعة: r.filter((x: any) => x.reward_given).length,
+        },
+      };
+    }
+
+    case "content_audit": {
+      const [pages, posts, trans] = await Promise.all([
+        db.from("dynamic_pages").select("slug, title, is_published, updated_at").order("updated_at", { ascending: false }).limit(limit),
+        db.from("blog_posts").select("slug, title, published, language, created_at").order("created_at", { ascending: false }).limit(limit),
+        db.from("platform_translations").select("locale"),
+      ]);
+      const byLocale: Record<string, number> = {};
+      for (const t of trans.data ?? []) byLocale[t.locale] = (byLocale[t.locale] ?? 0) + 1;
+      return {
+        الصفحات: pages.data ?? [],
+        المقالات: posts.data ?? [],
+        الترجمات_حسب_اللغة: byLocale,
+      };
+    }
+
 
     default:
       throw new Error(`أداة قراءة غير معروفة: ${name}`);
@@ -636,6 +981,32 @@ export function describeWrite(name: string, args: any): string {
 }
 
 /** تنفيذ عملية كتابة — لا تُستدعى إلا من ai-admin-execute بعد الموافقة. */
+/** مفاتيح الإعدادات المسموح للمساعد بتعديلها فقط. */
+export const ALLOWED_SETTING_KEYS = [
+  "pricing", "delivery_pricing", "order_commission_percentage", "geo_settings",
+  "free_period", "notifications", "general", "ui_visibility", "supported_languages",
+  "default_language", "enable_language_switcher", "branding_settings", "active_theme",
+];
+
+/** شحن محفظة مباشرةً بصلاحية الخدمة (دوال قاعدة البيانات تتطلب جلسة مستخدم). */
+async function creditWallet(db: any, userId: string, amount: number, description: string, type = "topup", referenceId?: string) {
+  let { data: w } = await db.from("wallet").select("id, balance").eq("user_id", userId).maybeSingle();
+  if (!w) {
+    const { data: created, error } = await db.from("wallet").insert({ user_id: userId, balance: 0 }).select("id, balance").single();
+    if (error) throw new Error(error.message);
+    w = created;
+  }
+  const newBalance = Number(w.balance ?? 0) + amount;
+  const { error: uErr } = await db.from("wallet").update({ balance: newBalance, updated_at: new Date().toISOString() }).eq("id", w.id);
+  if (uErr) throw new Error(uErr.message);
+  const { error: tErr } = await db.from("wallet_transactions").insert({
+    wallet_id: w.id, user_id: userId, amount, balance_after: newBalance,
+    transaction_type: type, description, reference_id: referenceId ?? null,
+  });
+  if (tErr) throw new Error(tErr.message);
+  return newBalance;
+}
+
 export async function executeWriteTool(db: any, name: string, args: any): Promise<{ before: any; after: any; summary: string }> {
   const need = (k: string) => {
     const v = args?.[k];
@@ -845,6 +1216,295 @@ export async function executeWriteTool(db: any, name: string, args: any): Promis
         .eq("id", before.id).select("slug, title, is_published").single();
       if (error) throw new Error(error.message);
       return { before, after: data, summary: `الصفحة /${before.slug}: ${published ? "نُشرت" : "أُخفيت"}` };
+    }
+
+    // ───────────── مستخدمون ومحفظة ─────────────
+    case "set_user_suspended": {
+      const suspended = args?.suspended === true || args?.suspended === "true";
+      const before = await one("profiles", "user_code", need("user_code"), "id, name, user_code, is_suspended");
+      const { data, error } = await db.from("profiles").update({ is_suspended: suspended })
+        .eq("id", before.id).select("user_code, name, is_suspended").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `${before.name} (${before.user_code}): ${suspended ? "تم إيقاف الحساب" : "تم تفعيل الحساب"}` };
+    }
+
+    case "set_user_role": {
+      const allowed = ["moderator", "agent", "driver", "delivery", "store_owner", "user"];
+      const role = String(need("role"));
+      if (!allowed.includes(role)) throw new Error("دور غير مسموح به عبر المساعد (دور admin يُدار يدوياً فقط)");
+      const prof = await one("profiles", "user_code", need("user_code"), "id, name, user_code");
+      const { data: current } = await db.from("user_roles").select("id, role").eq("user_id", prof.id);
+      const roles = (current ?? []).map((r: any) => r.role);
+      if (roles.includes("admin")) throw new Error("لا يمكن تعديل أدوار حساب مسؤول عبر المساعد");
+      if (roles.includes(role)) throw new Error(`المستخدم يحمل الدور ${role} أصلاً`);
+      const { error: delErr } = await db.from("user_roles").delete().eq("user_id", prof.id);
+      if (delErr) throw new Error(delErr.message);
+      const { data, error } = await db.from("user_roles").insert({ user_id: prof.id, role }).select("role").single();
+      if (error) throw new Error(error.message);
+      return { before: { user_code: prof.user_code, roles }, after: data, summary: `${prof.name} (${prof.user_code}): ${roles.join("، ") || "—"} → ${role}` };
+    }
+
+    case "credit_wallet_tool": {
+      const amount = Number(need("amount"));
+      if (!Number.isFinite(amount) || amount <= 0) throw new Error("المبلغ يجب أن يكون أكبر من صفر");
+      const prof = await one("profiles", "user_code", need("user_code"), "id, name, user_code");
+      const newBalance = await creditWallet(db, prof.id, amount, args?.description ? String(args.description) : "شحن عبر المساعد الإداري", "topup");
+      return {
+        before: { user_code: prof.user_code, balance: newBalance - amount },
+        after: { user_code: prof.user_code, balance: newBalance },
+        summary: `شحن ${amount} درهم لمحفظة ${prof.name} (${prof.user_code}) — الرصيد الجديد ${newBalance}`,
+      };
+    }
+
+    case "approve_wallet_recharge_tool": {
+      const approve = args?.approve === true || args?.approve === "true";
+      const req = await one("wallet_recharge_requests", "id", need("request_id"), "id, user_id, amount, status, notes");
+      if (req.status !== "pending") throw new Error("طلب الشحن ليس معلّقاً");
+      const patch: any = { status: approve ? "approved" : "rejected", handler_role: "admin", updated_at: new Date().toISOString() };
+      if (args?.note) patch.notes = `${req.notes ?? ""}\n[AI] ${args.note}`.trim();
+      const { data, error } = await db.from("wallet_recharge_requests").update(patch).eq("id", req.id)
+        .select("id, amount, status").single();
+      if (error) throw new Error(error.message);
+      let balance: number | null = null;
+      if (approve) balance = await creditWallet(db, req.user_id, Number(req.amount), "اعتماد طلب شحن المحفظة", "topup", req.id);
+      return { before: req, after: { ...data, balance }, summary: approve ? `اعتماد شحن ${req.amount} درهم — الرصيد الجديد ${balance}` : `رفض طلب شحن ${req.amount} درهم` };
+    }
+
+    case "grant_reward_stars": {
+      const delta = Math.trunc(Number(need("stars")));
+      if (!Number.isFinite(delta) || delta === 0) throw new Error("عدد النجوم يجب أن يكون رقماً غير صفري");
+      const prof = await one("profiles", "user_code", need("user_code"), "id, name, user_code");
+      const { data: row } = await db.from("reward_stars").select("id, stars, total_earned, level").eq("user_id", prof.id).maybeSingle();
+      const currentStars = Number(row?.stars ?? 0);
+      const nextStars = Math.max(0, currentStars + delta);
+      const totalEarned = Number(row?.total_earned ?? 0) + Math.max(0, delta);
+      const level = nextStars >= 500 ? "platinum" : nextStars >= 200 ? "gold" : nextStars >= 50 ? "silver" : "bronze";
+      let after: any;
+      if (row) {
+        const { data, error } = await db.from("reward_stars")
+          .update({ stars: nextStars, total_earned: totalEarned, level, updated_at: new Date().toISOString() })
+          .eq("id", row.id).select("stars, total_earned, level").single();
+        if (error) throw new Error(error.message);
+        after = data;
+      } else {
+        const { data, error } = await db.from("reward_stars")
+          .insert({ user_id: prof.id, stars: nextStars, total_earned: totalEarned, level })
+          .select("stars, total_earned, level").single();
+        if (error) throw new Error(error.message);
+        after = data;
+      }
+      await db.from("star_history").insert({
+        user_id: prof.id, stars_change: delta,
+        reason: args?.reason ? String(args.reason) : "منح عبر المساعد الإداري",
+      });
+      return { before: row ?? { stars: 0 }, after, summary: `${prof.name} (${prof.user_code}): ${currentStars} → ${nextStars} نجمة` };
+    }
+
+    // ───────────── تسويق ─────────────
+    case "create_coupon": {
+      const type = String(need("discount_type"));
+      if (!["percent", "fixed"].includes(type)) throw new Error("نوع التخفيض يجب أن يكون percent أو fixed");
+      const value = Number(need("discount_value"));
+      if (!Number.isFinite(value) || value <= 0) throw new Error("قيمة التخفيض غير صالحة");
+      if (type === "percent" && value > 100) throw new Error("نسبة التخفيض لا تتجاوز 100");
+      const days = Number(args?.days_valid ?? 30);
+      const payload: any = {
+        code: String(need("code")).trim().toUpperCase(),
+        discount_type: type,
+        discount_value: value,
+        max_discount: args?.max_discount != null ? Number(args.max_discount) : null,
+        min_order_amount: Number(args?.min_order_amount ?? 0),
+        max_uses: args?.max_uses != null ? Math.trunc(Number(args.max_uses)) : null,
+        max_uses_per_user: args?.max_uses_per_user != null ? Math.trunc(Number(args.max_uses_per_user)) : null,
+        applies_to: args?.applies_to ? String(args.applies_to) : "all",
+        description: args?.description ? String(args.description) : null,
+        expires_at: new Date(Date.now() + (Number.isFinite(days) && days > 0 ? days : 30) * 86400000).toISOString(),
+        is_active: true,
+      };
+      const { data, error } = await db.from("coupons").insert(payload).select("code, discount_type, discount_value, expires_at, is_active").single();
+      if (error) throw new Error(error.message);
+      return { before: null, after: data, summary: `كوبون ${data.code}: ${value}${type === "percent" ? "%" : " درهم"} حتى ${String(data.expires_at).slice(0, 10)}` };
+    }
+
+    case "set_coupon_active": {
+      const active = args?.active === true || args?.active === "true";
+      const before = await one("coupons", "code", String(need("code")).trim().toUpperCase(), "id, code, is_active");
+      const { data, error } = await db.from("coupons").update({ is_active: active }).eq("id", before.id)
+        .select("code, is_active").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `الكوبون ${before.code}: ${active ? "مفعّل" : "معطّل"}` };
+    }
+
+    case "create_ad": {
+      const days = Number(args?.days_valid ?? 0);
+      const payload: any = {
+        title: String(need("title")),
+        content_type: args?.content_type ? String(args.content_type) : (args?.image_url ? "image" : "text"),
+        content_text: args?.content_text ? String(args.content_text) : null,
+        image_url: args?.image_url ? String(args.image_url) : null,
+        link_url: args?.link_url ? String(args.link_url) : null,
+        slot_number: args?.slot_number != null ? Math.trunc(Number(args.slot_number)) : 1,
+        is_active: args?.active === true || args?.active === "true",
+        start_date: new Date().toISOString(),
+        end_date: Number.isFinite(days) && days > 0 ? new Date(Date.now() + days * 86400000).toISOString() : null,
+      };
+      const { data, error } = await db.from("ads").insert(payload).select("title, slot_number, content_type, is_active").single();
+      if (error) throw new Error(error.message);
+      return { before: null, after: data, summary: `إعلان «${data.title}» في الخانة ${data.slot_number} — ${data.is_active ? "مفعّل" : "غير مفعّل"}` };
+    }
+
+    case "set_ad_active": {
+      const active = args?.active === true || args?.active === "true";
+      const before = await one("ads", "title", need("title"), "id, title, is_active");
+      const { data, error } = await db.from("ads").update({ is_active: active }).eq("id", before.id)
+        .select("title, is_active").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `الإعلان «${before.title}»: ${active ? "مفعّل" : "موقوف"}` };
+    }
+
+    // ───────────── إعدادات ومحتوى ─────────────
+    case "update_app_setting": {
+      const key = String(need("key"));
+      if (!ALLOWED_SETTING_KEYS.includes(key)) {
+        throw new Error(`المفتاح «${key}» غير مسموح به. المفاتيح المسموحة: ${ALLOWED_SETTING_KEYS.join("، ")}`);
+      }
+      const raw = String(need("value"));
+      let value: any;
+      try { value = JSON.parse(raw); } catch { value = raw; }
+      const { data: before } = await db.from("app_settings").select("key, value").eq("key", key).maybeSingle();
+      const { data, error } = await db.from("app_settings").upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" })
+        .select("key, value").single();
+      if (error) throw new Error(error.message);
+      return { before: before ?? null, after: data, summary: `الإعداد ${key}: ${JSON.stringify(before?.value ?? null)} → ${JSON.stringify(value)}` };
+    }
+
+    case "upsert_translation": {
+      const locale = String(need("locale"));
+      if (!["ar", "fr", "en", "es"].includes(locale)) throw new Error("لغة غير مدعومة");
+      const key = String(need("key"));
+      const namespace = args?.namespace ? String(args.namespace) : "common";
+      const { data: before } = await db.from("platform_translations")
+        .select("id, value").eq("locale", locale).eq("namespace", namespace).eq("key", key).maybeSingle();
+      const value = String(need("value"));
+      let after: any;
+      if (before) {
+        const { data, error } = await db.from("platform_translations")
+          .update({ value, updated_at: new Date().toISOString() }).eq("id", before.id).select("locale, namespace, key, value").single();
+        if (error) throw new Error(error.message);
+        after = data;
+      } else {
+        const { data, error } = await db.from("platform_translations")
+          .insert({ locale, namespace, key, value }).select("locale, namespace, key, value").single();
+        if (error) throw new Error(error.message);
+        after = data;
+      }
+      return { before: before ?? null, after, summary: `ترجمة ${locale}/${namespace}/${key} = «${value}»` };
+    }
+
+    // ───────────── دعم واشتراكات ─────────────
+    case "set_complaint_status": {
+      const allowed = ["open", "in_progress", "resolved", "closed"];
+      const status = String(need("status"));
+      if (!allowed.includes(status)) throw new Error("حالة غير مسموح بها");
+      const before = await one("complaints", "complaint_code", need("complaint_code"), "id, complaint_code, status, agent_notes");
+      const patch: any = { status, updated_at: new Date().toISOString() };
+      if (args?.note) patch.agent_notes = `${before.agent_notes ?? ""}\n[AI] ${args.note}`.trim();
+      const { data, error } = await db.from("complaints").update(patch).eq("id", before.id).select("complaint_code, status").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `الشكوى ${before.complaint_code}: ${before.status} → ${status}` };
+    }
+
+    case "set_ticket_status": {
+      const before = await one("tickets", "ticket_code", need("ticket_code"), "id, ticket_code, status, priority");
+      const patch: any = { updated_at: new Date().toISOString() };
+      if (args?.status) {
+        const allowed = ["open", "in_progress", "resolved", "closed"];
+        if (!allowed.includes(String(args.status))) throw new Error("حالة غير مسموح بها");
+        patch.status = String(args.status);
+      }
+      if (args?.priority) {
+        const allowed = ["low", "normal", "high", "urgent"];
+        if (!allowed.includes(String(args.priority))) throw new Error("أولوية غير مسموح بها");
+        patch.priority = String(args.priority);
+      }
+      if (Object.keys(patch).length === 1) throw new Error("حدّد الحالة أو الأولوية على الأقل");
+      const { data, error } = await db.from("tickets").update(patch).eq("id", before.id).select("ticket_code, status, priority").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `التذكرة ${before.ticket_code} حُدِّثت` };
+    }
+
+    case "extend_subscription": {
+      const target = String(need("target"));
+      if (!["driver", "customer"].includes(target)) throw new Error("الهدف يجب أن يكون driver أو customer");
+      const days = Math.trunc(Number(need("days")));
+      if (!Number.isFinite(days) || days <= 0 || days > 365) throw new Error("عدد الأيام يجب أن يكون بين 1 و365");
+      const code = String(need("code"));
+      let userId: string;
+      let subTable: string;
+      let filterCol: string;
+      let filterVal: string;
+      if (target === "driver") {
+        const driver = await one("drivers", "driver_code", code, "id, driver_code, user_id");
+        userId = driver.user_id;
+        subTable = "driver_subscriptions";
+        filterCol = "driver_id";
+        filterVal = driver.id;
+      } else {
+        const prof = await one("profiles", "user_code", code, "id, user_code");
+        userId = prof.id;
+        subTable = "customer_subscriptions";
+        filterCol = "user_id";
+        filterVal = prof.id;
+      }
+      const { data: sub } = await db.from(subTable).select("id, status, expires_at")
+        .eq(filterCol, filterVal).order("expires_at", { ascending: false }).limit(1).maybeSingle();
+      const base = sub?.expires_at && new Date(sub.expires_at) > new Date() ? new Date(sub.expires_at) : new Date();
+      const expires = new Date(base.getTime() + days * 86400000).toISOString();
+      let after: any;
+      if (sub) {
+        const { data, error } = await db.from(subTable).update({ expires_at: expires, status: "active", updated_at: new Date().toISOString() })
+          .eq("id", sub.id).select("id, status, expires_at").single();
+        if (error) throw new Error(error.message);
+        after = data;
+      } else {
+        const payload: any = { user_id: userId, status: "active", starts_at: new Date().toISOString(), expires_at: expires };
+        if (target === "driver") payload.driver_id = filterVal;
+        const { data, error } = await db.from(subTable).insert(payload).select("id, status, expires_at").single();
+        if (error) throw new Error(error.message);
+        after = data;
+      }
+      return { before: sub ?? null, after, summary: `تمديد اشتراك ${code} بـ ${days} يوماً — ينتهي ${expires.slice(0, 10)}` };
+    }
+
+    case "broadcast_notification": {
+      const message = String(need("message"));
+      const cap = Math.min(Math.max(Math.trunc(Number(args?.limit ?? 200)) || 200, 1), 500);
+      let userIds: string[] = [];
+      if (args?.role) {
+        const allowed = ["user", "driver", "delivery", "store_owner", "agent", "moderator"];
+        const role = String(args.role);
+        if (!allowed.includes(role)) throw new Error("دور غير مسموح به");
+        const { data: rows, error } = await db.from("user_roles").select("user_id").eq("role", role).limit(2000);
+        if (error) throw new Error(error.message);
+        userIds = (rows ?? []).map((r: any) => r.user_id);
+        if (!userIds.length) throw new Error("لا يوجد مستخدمون بهذا الدور");
+      }
+      let q = db.from("profiles").select("id").eq("is_suspended", false).limit(cap);
+      if (userIds.length) q = q.in("id", userIds.slice(0, 1000));
+      if (args?.city) q = q.ilike("city", `%${args.city}%`);
+      const { data: profs, error: pErr } = await q;
+      if (pErr) throw new Error(pErr.message);
+      const targets = (profs ?? []).map((p: any) => p.id);
+      if (!targets.length) throw new Error("لا يوجد مستلمون مطابقون");
+      const { error } = await db.from("notifications").insert(
+        targets.map((id: string) => ({ user_id: id, message, type: "admin" })),
+      );
+      if (error) throw new Error(error.message);
+      return {
+        before: null,
+        after: { recipients: targets.length, role: args?.role ?? "الجميع", city: args?.city ?? "الكل" },
+        summary: `إرسال إشعار إلى ${targets.length} مستخدم`,
+      };
     }
 
 
