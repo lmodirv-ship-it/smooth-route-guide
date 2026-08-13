@@ -363,6 +363,11 @@ export default function AiLocalModels() {
         </div>
       </section>
 
+      {/* provider keys */}
+      <ProviderKeysSection />
+
+
+
       {/* storage paths */}
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
