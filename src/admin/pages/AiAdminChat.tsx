@@ -430,6 +430,26 @@ export default function AiAdminChat() {
                 </SelectGroup>
               )}
 
+              {keyedProviders.map(({ key, list }) => (
+                <SelectGroup key={`pk-${key.id}`}>
+                  <SelectLabel className="text-[11px] text-muted-foreground flex items-center gap-2">
+                    <img src={providerLogo(key.provider)} alt="" width={14} height={14} loading="lazy" className="rounded" />
+                    {key.label || key.provider} — مفتاح خاص ({list.length})
+                    <span className={`w-2 h-2 rounded-full ${key.status === "connected" ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                  </SelectLabel>
+                  {list.map((m) => (
+                    <SelectItem key={`pk-${m.id}`} value={m.id}>
+                      <span className="flex items-center gap-2">
+                        <img src={providerLogo(m.provider)} alt="" width={16} height={16} loading="lazy" className="rounded" />
+                        <span>{m.display_name}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              ))}
+
+
+
               {freeModels.length > 0 && (
                 <SelectGroup>
                   <SelectLabel className="text-[11px] text-muted-foreground">
