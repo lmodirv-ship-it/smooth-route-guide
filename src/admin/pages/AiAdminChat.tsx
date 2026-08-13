@@ -119,7 +119,7 @@ export default function AiAdminChat() {
 
 
   const loadCatalog = async () => {
-    const [{ data: m }, { data: a }, { data: q }, { data: lm }] = await Promise.all([
+    const [{ data: m }, { data: a }, { data: q }, { data: lm }, { data: pk }] = await Promise.all([
       db.from("ai_models")
         .select("id, display_name, provider, model_id, category, is_free")
         .eq("is_enabled", true).order("category").order("priority"),
@@ -128,12 +128,17 @@ export default function AiAdminChat() {
       db.from("ai_local_models")
         .select("id, display_name, model_id, engine, endpoint_url, category, status")
         .eq("is_enabled", true).order("priority"),
+      db.from("ai_provider_keys")
+        .select("id, provider, label, status, models_count")
+        .eq("is_enabled", true).order("provider"),
     ]);
     setModels(m ?? []);
     setAgents(a ?? []);
     setQuickCommands(q ?? []);
     setLocalModels(lm ?? []);
+    setProviderKeys(pk ?? []);
     void checkLocal(lm ?? []);
+
   };
 
   /** فحص اتصال النماذج المحلية وتحديث حالتها في قاعدة البيانات. */
