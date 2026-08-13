@@ -39,7 +39,9 @@ export default function AiAdminChat() {
   const [agents, setAgents] = useState<Record<string, any>[]>([]);
   const [localModels, setLocalModels] = useState<Record<string, any>[]>([]);
   const [localStatus, setLocalStatus] = useState<Record<string, boolean>>({});
+  const [providerKeys, setProviderKeys] = useState<Record<string, any>[]>([]);
   const [modelId, setModelId] = useState<string>("gateway");
+
 
   const [agentId, setAgentId] = useState<string>("none");
   const [chatId, setChatId] = useState<string | null>(null);
