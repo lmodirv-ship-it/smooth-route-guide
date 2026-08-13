@@ -854,6 +854,119 @@ export async function runReadTool(db: any, name: string, args: any): Promise<any
       };
     }
 
+    case "user_lookup": {
+      const term = String(args?.query ?? "").trim();
+      const { data: profs } = await db.from("profiles")
+        .select("id, name, phone, user_code, city, country, is_suspended, is_confirmed, avg_rating, created_at")
+        .or(`name.ilike.%${term}%,phone.ilike.%${term}%,user_code.ilike.%${term}%,email.ilike.%${term}%`)
+        .limit(Math.min(limit, 10));
+      if (!profs?.length) return { found: false, message: "لم يُعثر على مستخدم مطابق" };
+      const out = [];
+      for (const p of profs) {
+        const [{ data: roles }, { data: w }, { data: stars }] = await Promise.all([
+          db.from("user_roles").select("role").eq("user_id", p.id),
+          db.from("wallet").select("balance").eq("user_id", p.id).maybeSingle(),
+          db.from("reward_stars").select("stars, level").eq("user_id", p.id).maybeSingle(),
+        ]);
+        out.push({
+          ...p,
+          الأدوار: (roles ?? []).map((r: any) => r.role),
+          رصيد_المحفظة: Number(w?.balance ?? 0),
+          النجوم: stars?.stars ?? 0,
+          المستوى: stars?.level ?? "—",
+        });
+      }
+      return { found: true, count: out.length, users: out };
+    }
+
+    case "wallet_report": {
+      const [pending, txs, wallets] = await Promise.all([
+        db.from("wallet_recharge_requests").select("id, user_id, amount, status, notes, created_at")
+          .eq("status", "pending").order("created_at", { ascending: true }).limit(limit),
+        db.from("wallet_transactions").select("user_id, amount, transaction_type, description, balance_after, created_at")
+          .order("created_at", { ascending: false }).limit(limit),
+        db.from("wallet").select("balance"),
+      ]);
+      const total = (wallets.data ?? []).reduce((a: number, x: any) => a + Number(x.balance ?? 0), 0);
+      return {
+        طلبات_شحن_معلّقة: pending.data ?? [],
+        عدد_المحافظ: (wallets.data ?? []).length,
+        إجمالي_الأرصدة: total,
+        آخر_الحركات: txs.data ?? [],
+      };
+    }
+
+    case "finance_report": {
+      const days = clamp(args?.days, 30, 365);
+      const since = new Date(Date.now() - days * 86400000).toISOString();
+      const [dsub, csub, pays, rev, stars] = await Promise.all([
+        db.from("driver_subscriptions").select("status, amount_paid, expires_at").eq("status", "active"),
+        db.from("customer_subscriptions").select("status, amount_paid, credits_remaining, expires_at").eq("status", "active"),
+        db.from("payments").select("amount, method, status, created_at").gte("created_at", since),
+        db.from("platform_revenue").select("amount, source, created_at").gte("created_at", since),
+        db.from("star_history").select("stars_change, created_at").gte("created_at", since),
+      ]);
+      const sum = (rows: any[], k: string) => rows.reduce((a, x) => a + Number(x[k] ?? 0), 0);
+      return {
+        المدة_بالأيام: days,
+        اشتراكات_سائقين_نشطة: (dsub.data ?? []).length,
+        اشتراكات_عملاء_نشطة: (csub.data ?? []).length,
+        مداخيل_الاشتراكات: sum(dsub.data ?? [], "amount_paid") + sum(csub.data ?? [], "amount_paid"),
+        عدد_المدفوعات: (pays.data ?? []).length,
+        مجموع_المدفوعات: sum(pays.data ?? [], "amount"),
+        عمولات_المنصة: sum(rev.data ?? [], "amount"),
+        نجوم_ممنوحة: sum(stars.data ?? [], "stars_change"),
+      };
+    }
+
+    case "support_queue": {
+      const [complaints, tickets] = await Promise.all([
+        db.from("complaints").select("complaint_code, category, description, status, priority, created_at")
+          .not("status", "in", "(resolved,closed)").order("created_at", { ascending: true }).limit(limit),
+        db.from("tickets").select("ticket_code, title, category, status, priority, created_at")
+          .not("status", "in", "(resolved,closed)").order("created_at", { ascending: true }).limit(limit),
+      ]);
+      return {
+        شكاوى_مفتوحة: complaints.data ?? [],
+        تذاكر_مفتوحة: tickets.data ?? [],
+      };
+    }
+
+    case "marketing_report": {
+      const [coupons, ads, refs] = await Promise.all([
+        db.from("coupons").select("code, discount_type, discount_value, is_active, current_uses, max_uses, expires_at")
+          .order("created_at", { ascending: false }).limit(limit),
+        db.from("ads").select("title, slot_number, content_type, is_active, start_date, end_date")
+          .order("slot_number").limit(limit),
+        db.from("referrals").select("status, reward_given, reward_amount, created_at").limit(500),
+      ]);
+      const r = refs.data ?? [];
+      return {
+        الكوبونات: coupons.data ?? [],
+        الإعلانات: ads.data ?? [],
+        الإحالات: {
+          الإجمالي: r.length,
+          مكتملة: r.filter((x: any) => x.status === "completed").length,
+          مكافآت_مدفوعة: r.filter((x: any) => x.reward_given).length,
+        },
+      };
+    }
+
+    case "content_audit": {
+      const [pages, posts, trans] = await Promise.all([
+        db.from("dynamic_pages").select("slug, title, is_published, updated_at").order("updated_at", { ascending: false }).limit(limit),
+        db.from("blog_posts").select("slug, title, published, language, created_at").order("created_at", { ascending: false }).limit(limit),
+        db.from("platform_translations").select("locale"),
+      ]);
+      const byLocale: Record<string, number> = {};
+      for (const t of trans.data ?? []) byLocale[t.locale] = (byLocale[t.locale] ?? 0) + 1;
+      return {
+        الصفحات: pages.data ?? [],
+        المقالات: posts.data ?? [],
+        الترجمات_حسب_اللغة: byLocale,
+      };
+    }
+
 
     default:
       throw new Error(`أداة قراءة غير معروفة: ${name}`);
