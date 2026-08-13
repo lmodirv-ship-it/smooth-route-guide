@@ -16,6 +16,8 @@ import {
   Search, Download, Upload, Database, Wifi, WifiOff, Cloud, HardDrive, Zap,
 } from "lucide-react";
 import { LOCAL_ENGINES, providerLogo } from "@/admin/data/aiProviders";
+import ProviderKeysSection from "@/admin/components/ProviderKeysSection";
+
 
 const db = supabase as any;
 
@@ -362,6 +364,11 @@ export default function AiLocalModels() {
           })}
         </div>
       </section>
+
+      {/* provider keys */}
+      <ProviderKeysSection />
+
+
 
       {/* storage paths */}
       <section className="space-y-3">

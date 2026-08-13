@@ -109,21 +109,35 @@ Deno.serve(async (req) => {
       modelRow = data ?? null;
     }
 
+    // مفاتيح المزوّدين المضافة في صفحة «النماذج المحلية والإعدادات»
+    const { data: provKeys } = await admin.from("ai_provider_keys")
+      .select("provider, api_key, base_url")
+      .eq("is_enabled", true);
+    const keyByProvider = new Map<string, any>((provKeys ?? []).map((k: any) => [k.provider, k]));
+    const withProviderKey = (row: Record<string, any>) => {
+      if (row.api_key) return row;
+      const pk = keyByProvider.get(row.provider);
+      return pk ? { ...row, api_key: pk.api_key, base_url: row.base_url || pk.base_url } : row;
+    };
+
     const targets: Target[] = [];
-    if (modelRow?.api_key && modelRow.provider !== "lovable") targets.push(externalTarget(modelRow));
+    const chosen = modelRow ? withProviderKey(modelRow) : null;
+    if (chosen?.api_key && chosen.provider !== "lovable") targets.push(externalTarget(chosen));
     const lt = lovableTarget();
     if (lt) targets.push(lt);
 
-    // احتياطي 1: أي نموذج مُفعّل له مفتاح خاص (لا يعتمد على رصيد Lovable)
+    // احتياطي 1: أي نموذج مُفعّل له مفتاح خاص أو مفتاح مزوّد (لا يعتمد على رصيد Lovable)
     const { data: keyed } = await admin.from("ai_models")
       .select("provider, model_id, base_url, api_key")
-      .eq("is_enabled", true).neq("provider", "lovable").not("api_key", "is", null)
+      .eq("is_enabled", true).neq("provider", "lovable")
       .order("priority");
-    for (const row of keyed ?? []) {
+    for (const raw of keyed ?? []) {
+      const row = withProviderKey(raw);
       if (!row.api_key) continue;
       if (targets.some((t) => t.modelName === row.model_id && t.providerName === row.provider)) continue;
       targets.push(externalTarget(row));
     }
+
 
     // احتياطي 2: النماذج المحلية المُفعّلة ذات نقطة نهاية متوافقة مع OpenAI
     const { data: locals } = await admin.from("ai_local_models")

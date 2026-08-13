@@ -39,7 +39,9 @@ export default function AiAdminChat() {
   const [agents, setAgents] = useState<Record<string, any>[]>([]);
   const [localModels, setLocalModels] = useState<Record<string, any>[]>([]);
   const [localStatus, setLocalStatus] = useState<Record<string, boolean>>({});
+  const [providerKeys, setProviderKeys] = useState<Record<string, any>[]>([]);
   const [modelId, setModelId] = useState<string>("gateway");
+
 
   const [agentId, setAgentId] = useState<string>("none");
   const [chatId, setChatId] = useState<string | null>(null);
@@ -117,7 +119,7 @@ export default function AiAdminChat() {
 
 
   const loadCatalog = async () => {
-    const [{ data: m }, { data: a }, { data: q }, { data: lm }] = await Promise.all([
+    const [{ data: m }, { data: a }, { data: q }, { data: lm }, { data: pk }] = await Promise.all([
       db.from("ai_models")
         .select("id, display_name, provider, model_id, category, is_free")
         .eq("is_enabled", true).order("category").order("priority"),
@@ -126,12 +128,17 @@ export default function AiAdminChat() {
       db.from("ai_local_models")
         .select("id, display_name, model_id, engine, endpoint_url, category, status")
         .eq("is_enabled", true).order("priority"),
+      db.from("ai_provider_keys")
+        .select("id, provider, label, status, models_count")
+        .eq("is_enabled", true).order("provider"),
     ]);
     setModels(m ?? []);
     setAgents(a ?? []);
     setQuickCommands(q ?? []);
     setLocalModels(lm ?? []);
+    setProviderKeys(pk ?? []);
     void checkLocal(lm ?? []);
+
   };
 
   /** فحص اتصال النماذج المحلية وتحديث حالتها في قاعدة البيانات. */
@@ -172,20 +179,41 @@ export default function AiAdminChat() {
     loadCatalog();
     loadPulse();
     const t = setInterval(loadPulse, 5 * 60 * 1000);
-    return () => clearInterval(t);
+    const ch = supabase
+      .channel("ai-catalog-sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "ai_provider_keys" }, () => loadCatalog())
+      .on("postgres_changes", { event: "*", schema: "public", table: "ai_models" }, () => loadCatalog())
+      .subscribe();
+    return () => { clearInterval(t); supabase.removeChannel(ch); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /** مجموعات المزوّدين الذين أُضيف مفتاحهم في «النماذج المحلية والإعدادات». */
+  const keyedProviders = useMemo(() => {
+    return providerKeys
+      .map((k) => ({
+        key: k,
+        list: models.filter((m) => m.provider === k.provider && !m.is_free),
+      }))
+      .filter((g) => g.list.length > 0);
+  }, [providerKeys, models]);
+
+  const keyedProviderIds = useMemo(
+    () => new Set(keyedProviders.map((g) => g.key.provider)),
+    [keyedProviders],
+  );
 
   const grouped = useMemo(() => {
     const map = new Map<string, Record<string, any>[]>();
     for (const m of models) {
       if (m.is_free) continue; // تظهر ضمن مجموعة «نماذج مجانية»
+      if (keyedProviderIds.has(m.provider)) continue; // تظهر ضمن مجموعة مزوّدها
       const k = m.category ?? "llm";
       if (!map.has(k)) map.set(k, []);
       map.get(k)!.push(m);
     }
     return Array.from(map.entries());
-  }, [models]);
+  }, [models, keyedProviderIds]);
+
 
   const freeModels = useMemo(() => models.filter((m) => m.is_free), [models]);
   /** النموذج المحلي المختار حالياً (إن وُجد). */
@@ -401,6 +429,26 @@ export default function AiAdminChat() {
                   ))}
                 </SelectGroup>
               )}
+
+              {keyedProviders.map(({ key, list }) => (
+                <SelectGroup key={`pk-${key.id}`}>
+                  <SelectLabel className="text-[11px] text-muted-foreground flex items-center gap-2">
+                    <img src={providerLogo(key.provider)} alt="" width={14} height={14} loading="lazy" className="rounded" />
+                    {key.label || key.provider} — مفتاح خاص ({list.length})
+                    <span className={`w-2 h-2 rounded-full ${key.status === "connected" ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />
+                  </SelectLabel>
+                  {list.map((m) => (
+                    <SelectItem key={`pk-${m.id}`} value={m.id}>
+                      <span className="flex items-center gap-2">
+                        <img src={providerLogo(m.provider)} alt="" width={16} height={16} loading="lazy" className="rounded" />
+                        <span>{m.display_name}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              ))}
+
+
 
               {freeModels.length > 0 && (
                 <SelectGroup>
