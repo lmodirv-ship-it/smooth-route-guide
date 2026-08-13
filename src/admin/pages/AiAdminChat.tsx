@@ -179,20 +179,41 @@ export default function AiAdminChat() {
     loadCatalog();
     loadPulse();
     const t = setInterval(loadPulse, 5 * 60 * 1000);
-    return () => clearInterval(t);
+    const ch = supabase
+      .channel("ai-catalog-sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "ai_provider_keys" }, () => loadCatalog())
+      .on("postgres_changes", { event: "*", schema: "public", table: "ai_models" }, () => loadCatalog())
+      .subscribe();
+    return () => { clearInterval(t); supabase.removeChannel(ch); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /** مجموعات المزوّدين الذين أُضيف مفتاحهم في «النماذج المحلية والإعدادات». */
+  const keyedProviders = useMemo(() => {
+    return providerKeys
+      .map((k) => ({
+        key: k,
+        list: models.filter((m) => m.provider === k.provider && !m.is_free),
+      }))
+      .filter((g) => g.list.length > 0);
+  }, [providerKeys, models]);
+
+  const keyedProviderIds = useMemo(
+    () => new Set(keyedProviders.map((g) => g.key.provider)),
+    [keyedProviders],
+  );
 
   const grouped = useMemo(() => {
     const map = new Map<string, Record<string, any>[]>();
     for (const m of models) {
       if (m.is_free) continue; // تظهر ضمن مجموعة «نماذج مجانية»
+      if (keyedProviderIds.has(m.provider)) continue; // تظهر ضمن مجموعة مزوّدها
       const k = m.category ?? "llm";
       if (!map.has(k)) map.set(k, []);
       map.get(k)!.push(m);
     }
     return Array.from(map.entries());
-  }, [models]);
+  }, [models, keyedProviderIds]);
+
 
   const freeModels = useMemo(() => models.filter((m) => m.is_free), [models]);
   /** النموذج المحلي المختار حالياً (إن وُجد). */
