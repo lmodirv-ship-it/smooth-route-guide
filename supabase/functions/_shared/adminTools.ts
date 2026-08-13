@@ -1192,6 +1192,295 @@ export async function executeWriteTool(db: any, name: string, args: any): Promis
       return { before, after: data, summary: `الصفحة /${before.slug}: ${published ? "نُشرت" : "أُخفيت"}` };
     }
 
+    // ───────────── مستخدمون ومحفظة ─────────────
+    case "set_user_suspended": {
+      const suspended = args?.suspended === true || args?.suspended === "true";
+      const before = await one("profiles", "user_code", need("user_code"), "id, name, user_code, is_suspended");
+      const { data, error } = await db.from("profiles").update({ is_suspended: suspended })
+        .eq("id", before.id).select("user_code, name, is_suspended").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `${before.name} (${before.user_code}): ${suspended ? "تم إيقاف الحساب" : "تم تفعيل الحساب"}` };
+    }
+
+    case "set_user_role": {
+      const allowed = ["moderator", "agent", "driver", "delivery", "store_owner", "user"];
+      const role = String(need("role"));
+      if (!allowed.includes(role)) throw new Error("دور غير مسموح به عبر المساعد (دور admin يُدار يدوياً فقط)");
+      const prof = await one("profiles", "user_code", need("user_code"), "id, name, user_code");
+      const { data: current } = await db.from("user_roles").select("id, role").eq("user_id", prof.id);
+      const roles = (current ?? []).map((r: any) => r.role);
+      if (roles.includes("admin")) throw new Error("لا يمكن تعديل أدوار حساب مسؤول عبر المساعد");
+      if (roles.includes(role)) throw new Error(`المستخدم يحمل الدور ${role} أصلاً`);
+      const { error: delErr } = await db.from("user_roles").delete().eq("user_id", prof.id);
+      if (delErr) throw new Error(delErr.message);
+      const { data, error } = await db.from("user_roles").insert({ user_id: prof.id, role }).select("role").single();
+      if (error) throw new Error(error.message);
+      return { before: { user_code: prof.user_code, roles }, after: data, summary: `${prof.name} (${prof.user_code}): ${roles.join("، ") || "—"} → ${role}` };
+    }
+
+    case "credit_wallet_tool": {
+      const amount = Number(need("amount"));
+      if (!Number.isFinite(amount) || amount <= 0) throw new Error("المبلغ يجب أن يكون أكبر من صفر");
+      const prof = await one("profiles", "user_code", need("user_code"), "id, name, user_code");
+      const newBalance = await creditWallet(db, prof.id, amount, args?.description ? String(args.description) : "شحن عبر المساعد الإداري", "topup");
+      return {
+        before: { user_code: prof.user_code, balance: newBalance - amount },
+        after: { user_code: prof.user_code, balance: newBalance },
+        summary: `شحن ${amount} درهم لمحفظة ${prof.name} (${prof.user_code}) — الرصيد الجديد ${newBalance}`,
+      };
+    }
+
+    case "approve_wallet_recharge_tool": {
+      const approve = args?.approve === true || args?.approve === "true";
+      const req = await one("wallet_recharge_requests", "id", need("request_id"), "id, user_id, amount, status, notes");
+      if (req.status !== "pending") throw new Error("طلب الشحن ليس معلّقاً");
+      const patch: any = { status: approve ? "approved" : "rejected", handler_role: "admin", updated_at: new Date().toISOString() };
+      if (args?.note) patch.notes = `${req.notes ?? ""}\n[AI] ${args.note}`.trim();
+      const { data, error } = await db.from("wallet_recharge_requests").update(patch).eq("id", req.id)
+        .select("id, amount, status").single();
+      if (error) throw new Error(error.message);
+      let balance: number | null = null;
+      if (approve) balance = await creditWallet(db, req.user_id, Number(req.amount), "اعتماد طلب شحن المحفظة", "topup", req.id);
+      return { before: req, after: { ...data, balance }, summary: approve ? `اعتماد شحن ${req.amount} درهم — الرصيد الجديد ${balance}` : `رفض طلب شحن ${req.amount} درهم` };
+    }
+
+    case "grant_reward_stars": {
+      const delta = Math.trunc(Number(need("stars")));
+      if (!Number.isFinite(delta) || delta === 0) throw new Error("عدد النجوم يجب أن يكون رقماً غير صفري");
+      const prof = await one("profiles", "user_code", need("user_code"), "id, name, user_code");
+      const { data: row } = await db.from("reward_stars").select("id, stars, total_earned, level").eq("user_id", prof.id).maybeSingle();
+      const currentStars = Number(row?.stars ?? 0);
+      const nextStars = Math.max(0, currentStars + delta);
+      const totalEarned = Number(row?.total_earned ?? 0) + Math.max(0, delta);
+      const level = nextStars >= 500 ? "platinum" : nextStars >= 200 ? "gold" : nextStars >= 50 ? "silver" : "bronze";
+      let after: any;
+      if (row) {
+        const { data, error } = await db.from("reward_stars")
+          .update({ stars: nextStars, total_earned: totalEarned, level, updated_at: new Date().toISOString() })
+          .eq("id", row.id).select("stars, total_earned, level").single();
+        if (error) throw new Error(error.message);
+        after = data;
+      } else {
+        const { data, error } = await db.from("reward_stars")
+          .insert({ user_id: prof.id, stars: nextStars, total_earned: totalEarned, level })
+          .select("stars, total_earned, level").single();
+        if (error) throw new Error(error.message);
+        after = data;
+      }
+      await db.from("star_history").insert({
+        user_id: prof.id, stars_change: delta,
+        reason: args?.reason ? String(args.reason) : "منح عبر المساعد الإداري",
+      });
+      return { before: row ?? { stars: 0 }, after, summary: `${prof.name} (${prof.user_code}): ${currentStars} → ${nextStars} نجمة` };
+    }
+
+    // ───────────── تسويق ─────────────
+    case "create_coupon": {
+      const type = String(need("discount_type"));
+      if (!["percent", "fixed"].includes(type)) throw new Error("نوع التخفيض يجب أن يكون percent أو fixed");
+      const value = Number(need("discount_value"));
+      if (!Number.isFinite(value) || value <= 0) throw new Error("قيمة التخفيض غير صالحة");
+      if (type === "percent" && value > 100) throw new Error("نسبة التخفيض لا تتجاوز 100");
+      const days = Number(args?.days_valid ?? 30);
+      const payload: any = {
+        code: String(need("code")).trim().toUpperCase(),
+        discount_type: type,
+        discount_value: value,
+        max_discount: args?.max_discount != null ? Number(args.max_discount) : null,
+        min_order_amount: Number(args?.min_order_amount ?? 0),
+        max_uses: args?.max_uses != null ? Math.trunc(Number(args.max_uses)) : null,
+        max_uses_per_user: args?.max_uses_per_user != null ? Math.trunc(Number(args.max_uses_per_user)) : null,
+        applies_to: args?.applies_to ? String(args.applies_to) : "all",
+        description: args?.description ? String(args.description) : null,
+        expires_at: new Date(Date.now() + (Number.isFinite(days) && days > 0 ? days : 30) * 86400000).toISOString(),
+        is_active: true,
+      };
+      const { data, error } = await db.from("coupons").insert(payload).select("code, discount_type, discount_value, expires_at, is_active").single();
+      if (error) throw new Error(error.message);
+      return { before: null, after: data, summary: `كوبون ${data.code}: ${value}${type === "percent" ? "%" : " درهم"} حتى ${String(data.expires_at).slice(0, 10)}` };
+    }
+
+    case "set_coupon_active": {
+      const active = args?.active === true || args?.active === "true";
+      const before = await one("coupons", "code", String(need("code")).trim().toUpperCase(), "id, code, is_active");
+      const { data, error } = await db.from("coupons").update({ is_active: active }).eq("id", before.id)
+        .select("code, is_active").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `الكوبون ${before.code}: ${active ? "مفعّل" : "معطّل"}` };
+    }
+
+    case "create_ad": {
+      const days = Number(args?.days_valid ?? 0);
+      const payload: any = {
+        title: String(need("title")),
+        content_type: args?.content_type ? String(args.content_type) : (args?.image_url ? "image" : "text"),
+        content_text: args?.content_text ? String(args.content_text) : null,
+        image_url: args?.image_url ? String(args.image_url) : null,
+        link_url: args?.link_url ? String(args.link_url) : null,
+        slot_number: args?.slot_number != null ? Math.trunc(Number(args.slot_number)) : 1,
+        is_active: args?.active === true || args?.active === "true",
+        start_date: new Date().toISOString(),
+        end_date: Number.isFinite(days) && days > 0 ? new Date(Date.now() + days * 86400000).toISOString() : null,
+      };
+      const { data, error } = await db.from("ads").insert(payload).select("title, slot_number, content_type, is_active").single();
+      if (error) throw new Error(error.message);
+      return { before: null, after: data, summary: `إعلان «${data.title}» في الخانة ${data.slot_number} — ${data.is_active ? "مفعّل" : "غير مفعّل"}` };
+    }
+
+    case "set_ad_active": {
+      const active = args?.active === true || args?.active === "true";
+      const before = await one("ads", "title", need("title"), "id, title, is_active");
+      const { data, error } = await db.from("ads").update({ is_active: active }).eq("id", before.id)
+        .select("title, is_active").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `الإعلان «${before.title}»: ${active ? "مفعّل" : "موقوف"}` };
+    }
+
+    // ───────────── إعدادات ومحتوى ─────────────
+    case "update_app_setting": {
+      const key = String(need("key"));
+      if (!ALLOWED_SETTING_KEYS.includes(key)) {
+        throw new Error(`المفتاح «${key}» غير مسموح به. المفاتيح المسموحة: ${ALLOWED_SETTING_KEYS.join("، ")}`);
+      }
+      const raw = String(need("value"));
+      let value: any;
+      try { value = JSON.parse(raw); } catch { value = raw; }
+      const { data: before } = await db.from("app_settings").select("key, value").eq("key", key).maybeSingle();
+      const { data, error } = await db.from("app_settings").upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" })
+        .select("key, value").single();
+      if (error) throw new Error(error.message);
+      return { before: before ?? null, after: data, summary: `الإعداد ${key}: ${JSON.stringify(before?.value ?? null)} → ${JSON.stringify(value)}` };
+    }
+
+    case "upsert_translation": {
+      const locale = String(need("locale"));
+      if (!["ar", "fr", "en", "es"].includes(locale)) throw new Error("لغة غير مدعومة");
+      const key = String(need("key"));
+      const namespace = args?.namespace ? String(args.namespace) : "common";
+      const { data: before } = await db.from("platform_translations")
+        .select("id, value").eq("locale", locale).eq("namespace", namespace).eq("key", key).maybeSingle();
+      const value = String(need("value"));
+      let after: any;
+      if (before) {
+        const { data, error } = await db.from("platform_translations")
+          .update({ value, updated_at: new Date().toISOString() }).eq("id", before.id).select("locale, namespace, key, value").single();
+        if (error) throw new Error(error.message);
+        after = data;
+      } else {
+        const { data, error } = await db.from("platform_translations")
+          .insert({ locale, namespace, key, value }).select("locale, namespace, key, value").single();
+        if (error) throw new Error(error.message);
+        after = data;
+      }
+      return { before: before ?? null, after, summary: `ترجمة ${locale}/${namespace}/${key} = «${value}»` };
+    }
+
+    // ───────────── دعم واشتراكات ─────────────
+    case "set_complaint_status": {
+      const allowed = ["open", "in_progress", "resolved", "closed"];
+      const status = String(need("status"));
+      if (!allowed.includes(status)) throw new Error("حالة غير مسموح بها");
+      const before = await one("complaints", "complaint_code", need("complaint_code"), "id, complaint_code, status, agent_notes");
+      const patch: any = { status, updated_at: new Date().toISOString() };
+      if (args?.note) patch.agent_notes = `${before.agent_notes ?? ""}\n[AI] ${args.note}`.trim();
+      const { data, error } = await db.from("complaints").update(patch).eq("id", before.id).select("complaint_code, status").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `الشكوى ${before.complaint_code}: ${before.status} → ${status}` };
+    }
+
+    case "set_ticket_status": {
+      const before = await one("tickets", "ticket_code", need("ticket_code"), "id, ticket_code, status, priority");
+      const patch: any = { updated_at: new Date().toISOString() };
+      if (args?.status) {
+        const allowed = ["open", "in_progress", "resolved", "closed"];
+        if (!allowed.includes(String(args.status))) throw new Error("حالة غير مسموح بها");
+        patch.status = String(args.status);
+      }
+      if (args?.priority) {
+        const allowed = ["low", "normal", "high", "urgent"];
+        if (!allowed.includes(String(args.priority))) throw new Error("أولوية غير مسموح بها");
+        patch.priority = String(args.priority);
+      }
+      if (Object.keys(patch).length === 1) throw new Error("حدّد الحالة أو الأولوية على الأقل");
+      const { data, error } = await db.from("tickets").update(patch).eq("id", before.id).select("ticket_code, status, priority").single();
+      if (error) throw new Error(error.message);
+      return { before, after: data, summary: `التذكرة ${before.ticket_code} حُدِّثت` };
+    }
+
+    case "extend_subscription": {
+      const target = String(need("target"));
+      if (!["driver", "customer"].includes(target)) throw new Error("الهدف يجب أن يكون driver أو customer");
+      const days = Math.trunc(Number(need("days")));
+      if (!Number.isFinite(days) || days <= 0 || days > 365) throw new Error("عدد الأيام يجب أن يكون بين 1 و365");
+      const code = String(need("code"));
+      let userId: string;
+      let subTable: string;
+      let filterCol: string;
+      let filterVal: string;
+      if (target === "driver") {
+        const driver = await one("drivers", "driver_code", code, "id, driver_code, user_id");
+        userId = driver.user_id;
+        subTable = "driver_subscriptions";
+        filterCol = "driver_id";
+        filterVal = driver.id;
+      } else {
+        const prof = await one("profiles", "user_code", code, "id, user_code");
+        userId = prof.id;
+        subTable = "customer_subscriptions";
+        filterCol = "user_id";
+        filterVal = prof.id;
+      }
+      const { data: sub } = await db.from(subTable).select("id, status, expires_at")
+        .eq(filterCol, filterVal).order("expires_at", { ascending: false }).limit(1).maybeSingle();
+      const base = sub?.expires_at && new Date(sub.expires_at) > new Date() ? new Date(sub.expires_at) : new Date();
+      const expires = new Date(base.getTime() + days * 86400000).toISOString();
+      let after: any;
+      if (sub) {
+        const { data, error } = await db.from(subTable).update({ expires_at: expires, status: "active", updated_at: new Date().toISOString() })
+          .eq("id", sub.id).select("id, status, expires_at").single();
+        if (error) throw new Error(error.message);
+        after = data;
+      } else {
+        const payload: any = { user_id: userId, status: "active", starts_at: new Date().toISOString(), expires_at: expires };
+        if (target === "driver") payload.driver_id = filterVal;
+        const { data, error } = await db.from(subTable).insert(payload).select("id, status, expires_at").single();
+        if (error) throw new Error(error.message);
+        after = data;
+      }
+      return { before: sub ?? null, after, summary: `تمديد اشتراك ${code} بـ ${days} يوماً — ينتهي ${expires.slice(0, 10)}` };
+    }
+
+    case "broadcast_notification": {
+      const message = String(need("message"));
+      const cap = Math.min(Math.max(Math.trunc(Number(args?.limit ?? 200)) || 200, 1), 500);
+      let userIds: string[] = [];
+      if (args?.role) {
+        const allowed = ["user", "driver", "delivery", "store_owner", "agent", "moderator"];
+        const role = String(args.role);
+        if (!allowed.includes(role)) throw new Error("دور غير مسموح به");
+        const { data: rows, error } = await db.from("user_roles").select("user_id").eq("role", role).limit(2000);
+        if (error) throw new Error(error.message);
+        userIds = (rows ?? []).map((r: any) => r.user_id);
+        if (!userIds.length) throw new Error("لا يوجد مستخدمون بهذا الدور");
+      }
+      let q = db.from("profiles").select("id").eq("is_suspended", false).limit(cap);
+      if (userIds.length) q = q.in("id", userIds.slice(0, 1000));
+      if (args?.city) q = q.ilike("city", `%${args.city}%`);
+      const { data: profs, error: pErr } = await q;
+      if (pErr) throw new Error(pErr.message);
+      const targets = (profs ?? []).map((p: any) => p.id);
+      if (!targets.length) throw new Error("لا يوجد مستلمون مطابقون");
+      const { error } = await db.from("notifications").insert(
+        targets.map((id: string) => ({ user_id: id, message, type: "admin" })),
+      );
+      if (error) throw new Error(error.message);
+      return {
+        before: null,
+        after: { recipients: targets.length, role: args?.role ?? "الجميع", city: args?.city ?? "الكل" },
+        summary: `إرسال إشعار إلى ${targets.length} مستخدم`,
+      };
+    }
+
 
     default:
       throw new Error(`أداة كتابة غير معروفة: ${name}`);
