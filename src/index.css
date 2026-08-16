@@ -1733,9 +1733,10 @@
     font-size: 0.68rem;
     text-align: center;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
+    line-height: 1.25;
   }
+  .hn-path-apks > .hn-apk-btn:only-child { grid-column: 1 / -1; }
 }
 
 @media (max-width: 640px) {
