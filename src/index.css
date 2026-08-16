@@ -1737,3 +1737,9 @@
     white-space: nowrap;
   }
 }
+
+@media (max-width: 640px) {
+  .hn-admin-apks { padding: 0.55rem 0.6rem; }
+  .hn-admin-apks > strong { grid-column: 1 / -1; text-align: center; margin: 0; }
+  .hn-admin-apks a { width: 100%; justify-content: center; font-size: 0.68rem; }
+}
