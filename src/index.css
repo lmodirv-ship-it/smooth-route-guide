@@ -1675,3 +1675,65 @@
   --ring: 32 95% 48%;
   color: hsl(var(--foreground));
 }
+
+/* ═══ Mobile refinements (≤640px) — landing page ═══ */
+@media (max-width: 640px) {
+  .hn-topbar {
+    height: 3.25rem;
+    top: 0.6rem;
+    left: 0.6rem;
+    right: 0.6rem;
+    padding: 0 0.6rem;
+    gap: 0.4rem;
+    max-width: calc(100% - 1.2rem);
+    overflow: hidden;
+  }
+
+  .hn-brand { min-width: 0; gap: 0.45rem; flex: 1 1 auto; overflow: hidden; }
+  .hn-brand-text { min-width: 0; }
+  .hn-brand-text strong { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hn-brand-text span { font-size: 0.42rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hn-logo-img { width: 2.1rem; height: 2.1rem; }
+
+  .hn-top-actions { gap: 0.35rem; flex: 0 0 auto; max-width: 60%; }
+  .hn-top-actions .hn-chip { display: none; }
+  .hn-create-account {
+    height: 2.15rem;
+    padding-inline: 0.65rem;
+    font-size: 0.7rem;
+    border-radius: 0.7rem;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  /* Hero: tighter so the main CTA is reachable sooner */
+  .hn-hero-content { width: 92vw; padding-top: 4.4rem; }
+  .hn-title-block h1 { font-size: clamp(1.7rem, 8.6vw, 2.5rem); line-height: 1.08; }
+  .hn-title-block p { font-size: 0.78rem; margin-top: 0.3rem; }
+  .hn-trust-badge { display: none; }
+
+  /* Service / partner cards */
+  .hn-path { padding: 0.9rem; border-radius: 1rem; gap: 0.55rem; }
+  .hn-path h2 { font-size: 1rem; }
+  .hn-path > p { font-size: 0.76rem; line-height: 1.45; }
+  .hn-path-cta { min-height: 2.9rem; font-size: 0.92rem; }
+  .hn-path-cta-secondary { min-height: 2.6rem; font-size: 0.84rem; }
+  .hn-path-roles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  /* APK buttons: even 2-column grid instead of ragged wrapping */
+  .hn-path-apks,
+  .hn-admin-apks {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+  .hn-apk-btn {
+    width: 100%;
+    padding: 0.45rem 0.5rem;
+    font-size: 0.68rem;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
