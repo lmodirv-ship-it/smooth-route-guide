@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n/context";
 
 const CONSENT_KEY = "hn_cookie_consent";
 
 const CookieConsentBanner = () => {
+  const { t, dir } = useI18n();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -30,33 +32,37 @@ const CookieConsentBanner = () => {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-[9999] p-4 animate-in slide-in-from-bottom-5 duration-300">
-      <div className="max-w-2xl mx-auto bg-card border border-border rounded-2xl shadow-2xl p-5 flex flex-col sm:flex-row items-center gap-4" dir="rtl">
-        <div className="flex-1 text-sm text-foreground leading-relaxed">
-          <span className="font-bold">🍪 سياسة الكوكيز</span>
+    <div
+      className="fixed bottom-0 inset-x-0 z-[9999] p-2 sm:p-4 animate-in slide-in-from-bottom-5 duration-300"
+      style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.5rem)" }}
+    >
+      <div
+        className="max-w-2xl mx-auto bg-card border border-border rounded-xl sm:rounded-2xl shadow-2xl p-3 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-4"
+        dir={dir}
+      >
+        <div className="flex-1 text-xs sm:text-sm text-foreground leading-snug sm:leading-relaxed">
+          <span className="font-bold">🍪 {t.cookies.title}</span>
           <span className="mx-1">—</span>
-          نستخدم ملفات تعريف الارتباط لتحسين تجربتك وتحليل استخدام الموقع.
-          يمكنك قراءة{" "}
+          {t.cookies.message}{" "}
           <a href="/privacy" className="underline text-primary hover:text-primary/80">
-            سياسة الخصوصية
-          </a>{" "}
-          لمزيد من التفاصيل.
+            {t.cookies.privacyLink}
+          </a>
         </div>
-        <div className="flex gap-2 shrink-0">
+        <div className="flex gap-2 shrink-0 w-full sm:w-auto">
           <Button
             size="sm"
-            className="rounded-xl"
+            className="rounded-lg flex-1 sm:flex-none h-9 text-xs sm:text-sm"
             onClick={() => updateConsent(true)}
           >
-            قبول الكل
+            {t.cookies.acceptAll}
           </Button>
           <Button
             size="sm"
             variant="outline"
-            className="rounded-xl"
+            className="rounded-lg flex-1 sm:flex-none h-9 text-xs sm:text-sm"
             onClick={() => updateConsent(false)}
           >
-            رفض غير الضروري
+            {t.cookies.rejectOptional}
           </Button>
         </div>
       </div>
