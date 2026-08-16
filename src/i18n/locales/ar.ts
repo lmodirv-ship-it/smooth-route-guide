@@ -54,6 +54,13 @@ const ar: TranslationSet = {
     coverageMapTitle: "مناطق تغطيتنا في طنجة",
     coverageMapDesc: "اضغط على أي منطقة لمعرفة اسمها — نتوسع باستمرار لتغطية المزيد!",
   },
+  cookies: {
+    title: "سياسة الكوكيز",
+    message: "نستخدم ملفات تعريف الارتباط لتحسين تجربتك وتحليل استخدام الموقع.",
+    privacyLink: "سياسة الخصوصية",
+    acceptAll: "قبول الكل",
+    rejectOptional: "رفض غير الضروري",
+  },
   common: {
     login: "تسجيل الدخول",
     signup: "إنشاء حساب",

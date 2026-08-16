@@ -54,6 +54,13 @@ const es: TranslationSet = {
     coverageMapTitle: "Nuestra cobertura en Tánger",
     coverageMapDesc: "Haz clic en cualquier zona para ver su nombre — ¡nos expandimos constantemente!",
   },
+  cookies: {
+    title: "Política de cookies",
+    message: "Usamos cookies para mejorar tu experiencia y analizar el uso del sitio.",
+    privacyLink: "Política de privacidad",
+    acceptAll: "Aceptar todo",
+    rejectOptional: "Rechazar opcionales",
+  },
   common: {
     login: "Iniciar sesión",
     signup: "Registrarse",
