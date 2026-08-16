@@ -50,6 +50,13 @@ export interface TranslationSet {
     coverageMapDesc: string;
   };
   // Common
+  cookies: {
+    title: string;
+    message: string;
+    privacyLink: string;
+    acceptAll: string;
+    rejectOptional: string;
+  };
   common: {
     login: string;
     signup: string;

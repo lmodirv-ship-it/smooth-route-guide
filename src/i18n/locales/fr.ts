@@ -54,6 +54,13 @@ const fr: TranslationSet = {
     coverageMapTitle: "Notre couverture à Tanger",
     coverageMapDesc: "Cliquez sur une zone pour voir son nom — nous nous étendons constamment !",
   },
+  cookies: {
+    title: "Politique de cookies",
+    message: "Nous utilisons des cookies pour améliorer votre expérience et analyser l'utilisation du site.",
+    privacyLink: "Politique de confidentialité",
+    acceptAll: "Tout accepter",
+    rejectOptional: "Refuser le facultatif",
+  },
   common: {
     login: "Connexion",
     signup: "S'inscrire",

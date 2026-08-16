@@ -54,6 +54,13 @@ const en: TranslationSet = {
     coverageMapTitle: "Our Coverage in Tangier",
     coverageMapDesc: "Click any zone to see its name — we're constantly expanding!",
   },
+  cookies: {
+    title: "Cookie policy",
+    message: "We use cookies to improve your experience and analyse site usage.",
+    privacyLink: "Privacy policy",
+    acceptAll: "Accept all",
+    rejectOptional: "Reject optional",
+  },
   common: {
     login: "Log In",
     signup: "Sign Up",
