@@ -7229,6 +7229,10 @@ export type Database = {
           zone_id: string
         }[]
       }
+      can_call_user: {
+        Args: { _callee: string; _caller: string }
+        Returns: boolean
+      }
       cleanup_old_health_data: { Args: never; Returns: undefined }
       credit_driver_tip: {
         Args: { p_amount: number; p_description?: string; p_driver_id: string }
