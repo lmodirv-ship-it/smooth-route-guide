@@ -39,10 +39,10 @@ function pickKey(...names: string[]): string | null {
 }
 
 function mapGeminiModel(model?: string): string {
-  if (!model) return "gemini-2.5-flash";
+  if (!model) return "gemini-3.6-flash";
   if (model.startsWith("google/")) return model.replace("google/", "");
   if (model.includes("gemini")) return model;
-  return "gemini-2.5-flash";
+  return "gemini-3.6-flash";
 }
 
 function mapAnthropicModel(model?: string): string {
@@ -120,7 +120,7 @@ async function callAnthropic(key: string, opts: CallAIOptions): Promise<CallAIRe
 }
 
 async function callLovable(key: string, opts: CallAIOptions): Promise<CallAIResult> {
-  const model = opts.model || "google/gemini-2.5-flash";
+  const model = opts.model || "google/gemini-3.6-flash";
   const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -280,7 +280,7 @@ async function streamGemini(key: string, opts: CallAIOptions): Promise<Response>
 }
 
 async function streamLovable(key: string, opts: CallAIOptions): Promise<Response> {
-  const model = opts.model || "google/gemini-2.5-flash";
+  const model = opts.model || "google/gemini-3.6-flash";
   const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },

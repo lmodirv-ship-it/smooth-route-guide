@@ -49,6 +49,8 @@ export default function AiAdminChat() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [activity, setActivity] = useState<ToolEvent[]>([]);
+  /** المزوّد/النموذج المستعمل فعلياً في آخر رد (يظهر كشارة أعلى الدردشة). */
+  const [liveProvider, setLiveProvider] = useState<{ provider: string; model: string } | null>(null);
   const [quickCommands, setQuickCommands] = useState<{ id: string; label: string; prompt: string }[]>([]);
   const [pulse, setPulse] = useState<{ orders: number; stuck: number; complaints: number; alerts: number } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -325,7 +327,12 @@ export default function AiAdminChat() {
           if (!json || json === "[DONE]") continue;
           try {
             const obj = JSON.parse(json);
-            if (obj?.lovable) { setActivity((a) => [...a, obj.lovable as ToolEvent]); continue; }
+            if (obj?.lovable) {
+              const ev = obj.lovable as ToolEvent & { type?: string; provider?: string; model?: string };
+              if (ev?.type === "usage" && ev.provider) setLiveProvider({ provider: ev.provider, model: ev.model ?? "" });
+              setActivity((a) => [...a, obj.lovable as ToolEvent]);
+              continue;
+            }
             const delta = obj?.choices?.[0]?.delta?.content ?? "";
             if (delta) {
               assistant += delta;
@@ -497,6 +504,15 @@ export default function AiAdminChat() {
               ))}
             </SelectContent>
           </Select>
+          {liveProvider && (
+            <Badge
+              variant="outline"
+              className="h-9 flex items-center gap-1 text-[11px] border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+              title={`المزوّد: ${liveProvider.provider} — النموذج: ${liveProvider.model}`}
+            >
+              {liveProvider.provider === "gemini" ? "Gemini (مفتاحك)" : liveProvider.provider} · {liveProvider.model}
+            </Badge>
+          )}
           <Button size="sm" variant="ghost" onClick={loadCatalog} title="تحديث القوائم">
             <RefreshCw className="w-4 h-4" />
           </Button>

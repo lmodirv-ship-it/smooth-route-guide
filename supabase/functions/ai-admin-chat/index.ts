@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
       return {
         url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
         headers: { Authorization: `Bearer ${key.trim()}`, "Content-Type": "application/json" },
-        modelName: "gemini-2.5-flash",
+        modelName: "gemini-3.6-flash",
         providerName: "gemini",
       };
     };
