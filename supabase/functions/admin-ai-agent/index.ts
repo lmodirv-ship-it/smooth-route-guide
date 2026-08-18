@@ -1295,12 +1295,13 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         // Override ALLOWED_TABLES for the sub-assistant (restrict enum in db_select etc.)
         const subSystemPrompt = `${subAst.system_prompt}\n\nأنت مساعد فرعي متخصص. الجداول المسموحة لك فقط: ${subAst.allowed_tables.join(", ")}.\nلا تتجاوز نطاق مهامك أبداً.\n\nالمهمة المطلوبة: ${args.task}\n${args.context ? `\nسياق إضافي: ${args.context}` : ""}`;
 
-        const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-        const subResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const subTarget = buildAiTargets()[0];
+        if (!subTarget) return JSON.stringify({ error: "لا يوجد مزوّد ذكاء اصطناعي مُهيّأ" });
+        const subResponse = await fetch(subTarget.url, {
           method: "POST",
-          headers: { Authorization: `Bearer ${lovableApiKey}`, "Content-Type": "application/json" },
+          headers: subTarget.headers,
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
+            model: subTarget.model,
             messages: [
               { role: "system", content: subSystemPrompt },
               { role: "user", content: args.task },
@@ -1459,11 +1460,12 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         let subTasks = args.sub_tasks;
         if (!subTasks?.length) {
           // Auto-generate sub-tasks using AI
-          const planResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          const planTarget = buildAiTargets()[0]!;
+          const planResponse = await fetch(planTarget.url, {
             method: "POST",
-            headers: { Authorization: `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`, "Content-Type": "application/json" },
+            headers: planTarget.headers,
             body: JSON.stringify({
-              model: "google/gemini-2.5-flash",
+              model: planTarget.model,
               messages: [
                 { role: "system", content: `أنت مخطط مهام. حلل المهمة التالية وقسمها إلى 2-5 مهام فرعية. أجب فقط بتنسيق JSON.` },
                 { role: "user", content: `المهمة: ${taskDesc}\n\nقسمها إلى مهام فرعية بالتنسيق:\n[{"title":"...","description":"...","type":"design|content|data|code|analysis|communication","priority":"high|medium|low"}]` },
