@@ -103,6 +103,7 @@ const SmartAssistantPage = () => {
   const [messages, setMessages] = useState<AiMsg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [aiProvider, setAiProvider] = useState<{ provider: string; model: string } | null>(null);
   const [iframeKey, setIframeKey] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [showHistory, setShowHistory] = useState(false);
@@ -347,6 +348,7 @@ const SmartAssistantPage = () => {
 
     await callAdminAI({
       messages: [...messages, userMsg],
+      onProvider: (info) => setAiProvider(info),
       onResult: async (reply) => {
         setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
         setLoading(false);
@@ -464,6 +466,15 @@ const SmartAssistantPage = () => {
               <Save className="w-2.5 h-2.5" />
               {localLog.length} سجل
             </Badge>
+            {aiProvider && (
+              <Badge
+                variant="outline"
+                className="text-[9px] border-emerald-500/40 text-emerald-300"
+                title={`المزوّد: ${aiProvider.provider} — النموذج: ${aiProvider.model}`}
+              >
+                {aiProvider.provider === "gemini" ? "Gemini (مفتاحك)" : aiProvider.provider} · {aiProvider.model}
+              </Badge>
+            )}
             <div className="mr-auto flex items-center gap-1">
               <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-400 hover:bg-blue-900/50" onClick={() => setShowLogSettings(!showLogSettings)} title="إعدادات التسجيل المحلي">
                 <FolderOpen className="w-3.5 h-3.5" />
