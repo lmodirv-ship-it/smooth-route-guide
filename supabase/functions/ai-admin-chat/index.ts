@@ -86,6 +86,20 @@ Deno.serve(async (req) => {
         providerName: row.provider,
       };
     };
+    /** مفتاح Gemini الخاص بالمطوّر (Secrets) عبر واجهة Google المتوافقة مع OpenAI. */
+    const geminiEnvTarget = (): Target | null => {
+      const key = ["GeminiAPIK", "GEMINI1", "GEMINI2", "GENINI2", "GEMINI_API_KEY", "GOOGLE_AI_API_KEY"]
+        .map((n) => Deno.env.get(n))
+        .find((v) => v && v.trim() !== "");
+      if (!key) return null;
+      return {
+        url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+        headers: { Authorization: `Bearer ${key.trim()}`, "Content-Type": "application/json" },
+        modelName: "gemini-2.5-flash",
+        providerName: "gemini",
+      };
+    };
+
     const lovableTarget = (): Target | null => {
       const key = Deno.env.get("LOVABLE_API_KEY");
       if (!key) return null;
@@ -123,6 +137,9 @@ Deno.serve(async (req) => {
     const targets: Target[] = [];
     const chosen = modelRow ? withProviderKey(modelRow) : null;
     if (chosen?.api_key && chosen.provider !== "lovable") targets.push(externalTarget(chosen));
+    // مفتاح Gemini الخاص أولاً (يوفّر أرصدة Lovable ويستمر عند نفادها)
+    const gt = geminiEnvTarget();
+    if (gt) targets.push(gt);
     const lt = lovableTarget();
     if (lt) targets.push(lt);
 
