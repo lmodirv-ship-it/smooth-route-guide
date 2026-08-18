@@ -3868,6 +3868,36 @@ export type Database = {
         }
         Relationships: []
       }
+      login_codes: {
+        Row: {
+          attempts: number
+          code: string
+          date: string
+          email: string
+          id: string
+          validation: string
+          verification: boolean
+        }
+        Insert: {
+          attempts?: number
+          code: string
+          date?: string
+          email: string
+          id?: string
+          validation?: string
+          verification?: boolean
+        }
+        Update: {
+          attempts?: number
+          code?: string
+          date?: string
+          email?: string
+          id?: string
+          validation?: string
+          verification?: boolean
+        }
+        Relationships: []
+      }
       mailbluster_templates: {
         Row: {
           body_html: string
