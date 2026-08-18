@@ -248,6 +248,10 @@ const AdminSettings = () => {
         <TabsContent value="api_keys" className="mt-4">
           <ApiKeysSettings />
         </TabsContent>
+
+        <TabsContent value="login_code" className="mt-4">
+          <LoginCodeSettings />
+        </TabsContent>
       </Tabs>
     </div>
   );
