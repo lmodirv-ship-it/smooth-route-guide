@@ -1,0 +1,10 @@
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.ai_models TO authenticated;
+GRANT ALL ON public.ai_models TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.ai_local_models TO authenticated;
+GRANT ALL ON public.ai_local_models TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.ai_provider_keys TO authenticated;
+GRANT ALL ON public.ai_provider_keys TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.ai_agents TO authenticated;
+GRANT ALL ON public.ai_agents TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.ai_quick_commands TO authenticated;
+GRANT ALL ON public.ai_quick_commands TO service_role;
