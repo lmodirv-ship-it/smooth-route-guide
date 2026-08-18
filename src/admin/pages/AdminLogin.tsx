@@ -1,32 +1,61 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail, Loader2, ShieldCheck, Sparkles, Send, CheckCircle2 } from "lucide-react";
+import { Mail, Loader2, ShieldCheck, Sparkles, LogIn, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { dashboardForRole } from "@/lib/routes";
 import {
   getUserRolesWithTimeout,
-  signOutWithTimeout,
+  signInWithPasswordWithTimeout,
   useAuthReady,
 } from "@/hooks/useAuthReady";
 
-/** Admins authorized to receive Magic Link login. Add more as needed. */
-const ALLOWED_ADMIN_EMAILS = new Set<string>([
-  "lmodirv@gmail.com",
-]);
+/** أولوية الأدوار عند امتلاك المستخدم أكثر من دور. */
+const ROLE_PRIORITY = [
+  "admin",
+  "moderator",
+  "agent",
+  "smart_admin_assistant",
+  "store_owner",
+  "delivery",
+  "driver",
+  "user",
+];
+
+function pickRole(roles: string[]): string | null {
+  for (const r of ROLE_PRIORITY) if (roles.includes(r)) return r;
+  return roles[0] ?? null;
+}
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [password, setPassword] = useState("");
+  const [codeMode, setCodeMode] = useState(false);
   const [code, setCode] = useState("");
-  const [verifying, setVerifying] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const { ready, session } = useAuthReady();
+
+  /** يوجّه المستخدم إلى صفحته حسب دوره — بدون أي رسائل. */
+  const routeByRole = async (userId: string) => {
+    let roles: string[] = [];
+    try {
+      roles = await getUserRolesWithTimeout(userId);
+    } catch {
+      roles = [];
+    }
+    const role = pickRole(roles);
+    if (!role) {
+      navigate("/auth", { replace: true });
+      return;
+    }
+    navigate(dashboardForRole(role), { replace: true });
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -34,83 +63,92 @@ const AdminLogin = () => {
     if (!session) { setChecking(false); return () => { mounted = false; }; }
 
     void (async () => {
-      try {
-        const roles = await getUserRolesWithTimeout(session.user.id);
-        if (!mounted) return;
-        if (roles.some((r) => r === "admin")) {
-          navigate("/admin", { replace: true });
-          return;
-        }
-        await signOutWithTimeout();
-      } catch {
-        if (!mounted) return;
-      } finally {
-        if (mounted) setChecking(false);
-      }
+      await routeByRole(session.user.id);
+      if (mounted) setChecking(false);
     })();
 
     return () => { mounted = false; };
-  }, [navigate, ready, session]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, session]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  /** إرسال رمز مكوّن من 6 أرقام إلى البريد المكتوب. */
+  const sendCode = async (targetEmail?: string) => {
+    const normalized = (targetEmail ?? email).trim().toLowerCase();
+    if (!normalized) return;
+    setSending(true);
+    try {
+      await supabase.functions.invoke("send-login-code", { body: { email: normalized } });
+    } catch {
+      /* لا نعرض أي رسالة */
+    } finally {
+      setSending(false);
+      setCodeMode(true);
+      setCode("");
+    }
+  };
+
+  /** الدخول بكلمة المرور. */
+  const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const normalized = email.trim().toLowerCase();
-    if (!normalized) {
-      toast({ title: "يرجى إدخال البريد الإلكتروني", variant: "destructive" });
-      return;
-    }
-    if (!ALLOWED_ADMIN_EMAILS.has(normalized)) {
-      toast({
-        title: "غير مصرح",
-        description: "هذا البريد غير مرخّص لدخول لوحة الإدارة",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!normalized || !password) return;
 
     setLoading(true);
     try {
-      const redirectTo = `${window.location.origin}/admin/login`;
-      const { error } = await supabase.auth.signInWithOtp({
+      const { data, error } = await signInWithPasswordWithTimeout({
         email: normalized,
-        options: {
-          emailRedirectTo: redirectTo,
-          shouldCreateUser: false,
-        },
+        password,
       });
-      if (error) throw error;
-      setSent(true);
-      toast({ title: "تم إرسال رابط الدخول ✉️", description: "تحقق من بريدك واضغط على الرابط للدخول." });
-    } catch (err: any) {
-      const msg = err?.message || "تعذر إرسال رابط الدخول";
-      toast({ title: "خطأ", description: msg, variant: "destructive" });
+      if (error || !data.user) {
+        navigate("/auth", { replace: true });
+        return;
+      }
+      await routeByRole(data.user.id);
+    } catch {
+      navigate("/auth", { replace: true });
     } finally {
       setLoading(false);
     }
   };
 
-  /** الدخول برمز التحقق (يعمل داخل تطبيق الحاسوب دون فتح المتصفح). */
-  const verifyCode = async (e: React.FormEvent) => {
+  /** الدخول برمز التحقق. */
+  const handleCodeLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = code.trim();
-    if (token.length !== 6) return;
-    setVerifying(true);
+    const normalized = email.trim().toLowerCase();
+    if (code.length !== 6 || !normalized) return;
+
+    setLoading(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        email: email.trim().toLowerCase(),
-        token,
+      const { data, error } = await supabase.functions.invoke("verify-login-code", {
+        body: { email: normalized, code },
+      });
+
+      if (error || !data?.ok || !data?.token_hash) {
+        // عدم التطابق ⇒ إرسال رمز جديد تلقائياً إلى نفس البريد
+        setCode("");
+        await sendCode(normalized);
+        return;
+      }
+
+      const { data: sessionData, error: verifyError } = await supabase.auth.verifyOtp({
+        token_hash: data.token_hash as string,
         type: "email",
       });
-      if (error) throw error;
-      toast({ title: "تم تسجيل الدخول ✅" });
-      navigate("/admin", { replace: true });
-    } catch (err: any) {
-      toast({ title: "رمز غير صالح", description: err?.message ?? "تحقق من الرمز أو اطلب رمزاً جديداً", variant: "destructive" });
+
+      if (verifyError || !sessionData.user) {
+        setCode("");
+        await sendCode(normalized);
+        return;
+      }
+
+      await routeByRole(sessionData.user.id);
+    } catch {
+      setCode("");
+      await sendCode(normalized);
     } finally {
-      setVerifying(false);
+      setLoading(false);
     }
   };
-
 
   if (checking) {
     return (
@@ -146,87 +184,97 @@ const AdminLogin = () => {
               <ShieldCheck className="w-10 h-10 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-foreground tracking-tight">لوحة الإدارة</h1>
+              <h1 className="text-3xl font-bold text-foreground tracking-tight">تسجيل الدخول</h1>
               <div className="flex items-center justify-center gap-2 mt-2">
                 <Sparkles className="w-4 h-4 text-primary" />
-                <p className="text-sm text-muted-foreground font-medium">دخول آمن عبر البريد فقط</p>
+                <p className="text-sm text-muted-foreground font-medium">دخول آمن حسب الدور والصلاحيات</p>
                 <Sparkles className="w-4 h-4 text-primary" />
               </div>
             </div>
           </motion.div>
 
-          {sent ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center space-y-4 py-4"
-            >
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-9 h-9 text-primary" />
+          <form onSubmit={codeMode ? handleCodeLogin : handlePasswordLogin} className="space-y-5">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground block">البريد الإلكتروني</label>
+              <div className="relative group">
+                <Input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  type="email"
+                  autoFocus
+                  className="bg-secondary/50 border-border/50 h-13 rounded-xl pr-12 text-base transition-all duration-200 focus:bg-secondary/80 focus:border-primary/50"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Mail className="w-4 h-4 text-primary" />
+                </div>
               </div>
-              <h2 className="text-xl font-bold text-foreground">تحقّق من بريدك</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                أرسلنا رسالة إلى<br />
-                <span className="font-semibold text-foreground">{email}</span><br />
-                اضغط على الرابط، أو أدخل رمز التحقق المكوّن من 6 أرقام هنا — وهو الأنسب داخل تطبيق الحاسوب.
-              </p>
+            </div>
 
-              <form onSubmit={verifyCode} className="space-y-3">
+            {codeMode ? (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground block">رمز الدخول (6 أرقام)</label>
                 <Input
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   placeholder="••••••"
                   inputMode="numeric"
-                  autoFocus
                   dir="ltr"
+                  autoFocus
                   className="bg-secondary/50 border-border/50 h-13 rounded-xl text-center text-2xl tracking-[0.5em] font-bold"
                 />
-                <Button type="submit" disabled={verifying || code.length !== 6}
-                  className="w-full h-12 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold">
-                  {verifying ? <Loader2 className="w-5 h-5 animate-spin" /> : "دخول بالرمز"}
-                </Button>
-              </form>
-
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => { setSent(false); setEmail(""); setCode(""); }}
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                استخدام بريد آخر
-              </Button>
-            </motion.div>
-          ) : (
-
-            <form onSubmit={handleSubmit} className="space-y-5">
+              </div>
+            ) : (
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground block">البريد الإلكتروني للمسؤول</label>
+                <label className="text-sm font-medium text-muted-foreground block">كلمة المرور</label>
                 <div className="relative group">
                   <Input
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@example.com"
-                    type="email"
-                    autoFocus
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    type="password"
                     className="bg-secondary/50 border-border/50 h-13 rounded-xl pr-12 text-base transition-all duration-200 focus:bg-secondary/80 focus:border-primary/50"
                   />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Mail className="w-4 h-4 text-primary" />
+                    <KeyRound className="w-4 h-4 text-primary" />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground pt-1">
-                  سيتم إرسال رابط دخول آمن إلى بريدك. لا حاجة لكلمة مرور.
-                </p>
               </div>
+            )}
 
-              <Button type="submit" disabled={loading}
-                className="w-full h-13 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-bold text-lg shadow-lg shadow-primary/20">
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                  <span className="flex items-center gap-2"><Send className="w-5 h-5" />إرسال رابط الدخول</span>
-                )}
+            <Button
+              type="submit"
+              disabled={loading || (codeMode ? code.length !== 6 : !password)}
+              className="w-full h-13 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-bold text-lg shadow-lg shadow-primary/20"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                <span className="flex items-center gap-2"><LogIn className="w-5 h-5" />دخول</span>
+              )}
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={sending || !email.trim()}
+              onClick={() => void sendCode()}
+              className="w-full text-sm text-muted-foreground hover:text-foreground"
+            >
+              {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                codeMode ? "إعادة إرسال الرمز إلى البريد" : "نسيت كلمة المرور؟ إرسال الرمز إلى البريد"
+              )}
+            </Button>
+
+            {codeMode && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => { setCodeMode(false); setCode(""); }}
+                className="w-full text-xs text-muted-foreground hover:text-foreground"
+              >
+                العودة إلى كلمة المرور
               </Button>
-            </form>
-          )}
+            )}
+          </form>
         </div>
       </motion.div>
     </div>

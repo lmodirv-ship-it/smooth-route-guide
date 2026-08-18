@@ -20,6 +20,7 @@ import CommunicationSettings from "@/admin/components/settings/CommunicationSett
 import StoreSettings from "@/admin/components/settings/StoreSettings";
 import CommissionSettings from "@/admin/components/settings/CommissionSettings";
 import ApiKeysSettings from "@/admin/components/settings/ApiKeysSettings";
+import LoginCodeSettings from "@/admin/components/settings/LoginCodeSettings";
 
 const AdminSettings = () => {
   const { t } = useI18n();
@@ -189,6 +190,7 @@ const AdminSettings = () => {
           <TabsTrigger value="visibility" className="text-xs">👁️ الإظهار</TabsTrigger>
           <TabsTrigger value="languages" className="text-xs">🌐 اللغات</TabsTrigger>
           <TabsTrigger value="api_keys" className="text-xs">🔑 مفاتيح API</TabsTrigger>
+          <TabsTrigger value="login_code" className="text-xs">🔐 رمز الدخول</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="mt-4">
@@ -245,6 +247,10 @@ const AdminSettings = () => {
 
         <TabsContent value="api_keys" className="mt-4">
           <ApiKeysSettings />
+        </TabsContent>
+
+        <TabsContent value="login_code" className="mt-4">
+          <LoginCodeSettings />
         </TabsContent>
       </Tabs>
     </div>
