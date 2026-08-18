@@ -53,8 +53,9 @@ async function saveCommand(params: {
   } as any);
 }
 
-async function callAdminAI({ messages, onResult, onError }: {
+async function callAdminAI({ messages, onResult, onError, onProvider }: {
   messages: AiMsg[]; onResult: (text: string) => void; onError: (e: string) => void;
+  onProvider?: (info: { provider: string; model: string }) => void;
 }) {
   const { data: { session } } = await supabase.auth.getSession();
   const accessToken = session?.access_token || null;
@@ -68,6 +69,7 @@ async function callAdminAI({ messages, onResult, onError }: {
   });
   if (!resp.ok) { onError(`خطأ ${resp.status}`); return; }
   const data = await resp.json();
+  if (data?.provider) onProvider?.({ provider: data.provider, model: data.model || "" });
   onResult(data?.reply || data?.message || "لا يوجد رد");
 }
 
