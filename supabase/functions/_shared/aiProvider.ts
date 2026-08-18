@@ -152,7 +152,7 @@ async function callLovable(key: string, opts: CallAIOptions): Promise<CallAIResu
 export async function callAI(opts: CallAIOptions): Promise<CallAIResult> {
   const errors: string[] = [];
 
-  const geminiKey = pickKey("GEMINI1", "GEMINI2", "GEMINI_API_KEY", "GOOGLE_AI_API_KEY");
+  const geminiKey = pickKey("GeminiAPIK", "GEMINI1", "GEMINI2", "GENINI2", "GEMINI_API_KEY", "GOOGLE_AI_API_KEY");
   if (geminiKey) {
     try {
       return await callGemini(geminiKey, opts);
@@ -307,7 +307,7 @@ async function streamLovable(key: string, opts: CallAIOptions): Promise<Response
  */
 export async function callAIStream(opts: CallAIOptions): Promise<Response> {
   const errors: string[] = [];
-  const geminiKey = pickKey("GEMINI1", "GEMINI2", "GEMINI_API_KEY", "GOOGLE_AI_API_KEY");
+  const geminiKey = pickKey("GeminiAPIK", "GEMINI1", "GEMINI2", "GENINI2", "GEMINI_API_KEY", "GOOGLE_AI_API_KEY");
   if (geminiKey) {
     try {
       return await streamGemini(geminiKey, opts);

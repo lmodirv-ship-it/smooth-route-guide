@@ -1295,12 +1295,13 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         // Override ALLOWED_TABLES for the sub-assistant (restrict enum in db_select etc.)
         const subSystemPrompt = `${subAst.system_prompt}\n\nأنت مساعد فرعي متخصص. الجداول المسموحة لك فقط: ${subAst.allowed_tables.join(", ")}.\nلا تتجاوز نطاق مهامك أبداً.\n\nالمهمة المطلوبة: ${args.task}\n${args.context ? `\nسياق إضافي: ${args.context}` : ""}`;
 
-        const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-        const subResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const subTarget = buildAiTargets()[0];
+        if (!subTarget) return JSON.stringify({ error: "لا يوجد مزوّد ذكاء اصطناعي مُهيّأ" });
+        const subResponse = await fetch(subTarget.url, {
           method: "POST",
-          headers: { Authorization: `Bearer ${lovableApiKey}`, "Content-Type": "application/json" },
+          headers: subTarget.headers,
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
+            model: subTarget.model,
             messages: [
               { role: "system", content: subSystemPrompt },
               { role: "user", content: args.task },
@@ -1459,11 +1460,12 @@ async function executeTool(supabase: any, name: string, args: any): Promise<stri
         let subTasks = args.sub_tasks;
         if (!subTasks?.length) {
           // Auto-generate sub-tasks using AI
-          const planResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          const planTarget = buildAiTargets()[0]!;
+          const planResponse = await fetch(planTarget.url, {
             method: "POST",
-            headers: { Authorization: `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`, "Content-Type": "application/json" },
+            headers: planTarget.headers,
             body: JSON.stringify({
-              model: "google/gemini-2.5-flash",
+              model: planTarget.model,
               messages: [
                 { role: "system", content: `أنت مخطط مهام. حلل المهمة التالية وقسمها إلى 2-5 مهام فرعية. أجب فقط بتنسيق JSON.` },
                 { role: "user", content: `المهمة: ${taskDesc}\n\nقسمها إلى مهام فرعية بالتنسيق:\n[{"title":"...","description":"...","type":"design|content|data|code|analysis|communication","priority":"high|medium|low"}]` },
@@ -1954,6 +1956,33 @@ async function authenticateAdmin(req: Request): Promise<{ userId: string }> {
   return { userId };
 }
 
+/** بناء قائمة مزوّدات الذكاء: Gemini (مفتاح خاص) ← بوابة Lovable. */
+interface AiTarget { url: string; headers: Record<string, string>; model: string; provider: string }
+function buildAiTargets(): AiTarget[] {
+  const list: AiTarget[] = [];
+  const geminiKey = ["GeminiAPIK", "GEMINI1", "GEMINI2", "GENINI2", "GEMINI_API_KEY", "GOOGLE_AI_API_KEY"]
+    .map((n) => Deno.env.get(n))
+    .find((v) => v && v.trim() !== "");
+  if (geminiKey) {
+    list.push({
+      url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      headers: { Authorization: `Bearer ${geminiKey.trim()}`, "Content-Type": "application/json" },
+      model: "gemini-2.5-flash",
+      provider: "gemini",
+    });
+  }
+  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+  if (lovableKey) {
+    list.push({
+      url: "https://ai.gateway.lovable.dev/v1/chat/completions",
+      headers: { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" },
+      model: "google/gemini-2.5-flash",
+      provider: "lovable",
+    });
+  }
+  return list;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -1981,8 +2010,10 @@ serve(async (req) => {
     }
 
     const { messages } = parsed.data;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!lovableApiKey) throw new Error("LOVABLE_API_KEY not configured");
+    // مزوّدات الذكاء: مفتاح Gemini الخاص أولاً ثم بوابة Lovable كاحتياطي
+    const aiTargets = buildAiTargets();
+    if (!aiTargets.length) throw new Error("لا يوجد مفتاح ذكاء اصطناعي مُهيّأ (Gemini أو Lovable)");
+    let activeTarget = aiTargets[0];
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -2107,22 +2138,22 @@ profiles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items,
     let finalText = "";
 
     for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${lovableApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: aiMessages,
-          tools,
-          stream: false,
-        }),
-      });
+      let response: Response | null = null;
+      let lastStatus = 0;
+      for (let i = aiTargets.indexOf(activeTarget); i < aiTargets.length; i++) {
+        const t = aiTargets[i];
+        const attempt = await fetch(t.url, {
+          method: "POST",
+          headers: t.headers,
+          body: JSON.stringify({ model: t.model, messages: aiMessages, tools, stream: false }),
+        });
+        if (attempt.ok) { activeTarget = t; response = attempt; break; }
+        lastStatus = attempt.status;
+        console.error(`[AI] ${t.provider} failed ${attempt.status}: ${(await attempt.text()).slice(0, 300)}`);
+      }
 
-      if (!response.ok) {
-        const status = response.status;
+      if (!response) {
+        const status = lastStatus;
         if (status === 429) return new Response(JSON.stringify({ error: "تم تجاوز الحد المسموح، حاول لاحقاً" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         if (status === 402) return new Response(JSON.stringify({ error: "رصيد غير كافٍ" }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         return new Response(JSON.stringify({ error: "خطأ في خدمة الذكاء الاصطناعي" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -2154,7 +2185,7 @@ profiles, drivers, vehicles, ride_requests, trips, delivery_orders, order_items,
       break;
     }
 
-    return new Response(JSON.stringify({ reply: finalText }), {
+    return new Response(JSON.stringify({ reply: finalText, provider: activeTarget.provider, model: activeTarget.model }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
