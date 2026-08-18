@@ -1967,7 +1967,7 @@ function buildAiTargets(): AiTarget[] {
     list.push({
       url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
       headers: { Authorization: `Bearer ${geminiKey.trim()}`, "Content-Type": "application/json" },
-      model: "gemini-2.5-flash",
+      model: "gemini-3.6-flash",
       provider: "gemini",
     });
   }
