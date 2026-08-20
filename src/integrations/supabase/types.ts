@@ -7367,6 +7367,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_internal_chat_member: {
+        Args: { _chat_id: string; _user_id: string }
+        Returns: boolean
+      }
       log_client_error: {
         Args: { _context: string; _message: string; _meta?: Json }
         Returns: undefined
@@ -7463,6 +7467,7 @@ export type Database = {
             }
             Returns: Json
           }
+      start_internal_chat: { Args: { _contact_id: string }; Returns: string }
       validate_coupon: {
         Args: { _code: string; _order_amount?: number }
         Returns: Json

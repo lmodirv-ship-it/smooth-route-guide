@@ -218,41 +218,14 @@ const InternalChat = () => {
   const startChat = async (contactId: string) => {
     if (!currentUserId) return;
 
-    // Check if chat already exists between these two
-    const { data: myChats } = await supabase
-      .from("internal_chat_members" as any)
-      .select("chat_id")
-      .eq("user_id", currentUserId);
+    // Secure server-side creation: reuses existing 1:1 chat or creates a new one
+    const { data: chatId, error } = await supabase.rpc("start_internal_chat" as any, {
+      _contact_id: contactId,
+    } as any);
 
-    if (myChats?.length) {
-      const { data: theirChats } = await supabase
-        .from("internal_chat_members" as any)
-        .select("chat_id")
-        .eq("user_id", contactId)
-        .in("chat_id", myChats.map((c: any) => c.chat_id));
+    if (error || !chatId) return;
 
-      if (theirChats?.length) {
-        setActiveChat((theirChats[0] as any).chat_id);
-        setShowContacts(false);
-        return;
-      }
-    }
-
-    // Create new chat
-    const { data: chat } = await supabase
-      .from("internal_chats" as any)
-      .insert({} as any)
-      .select()
-      .single();
-
-    if (!chat) return;
-
-    await supabase.from("internal_chat_members" as any).insert([
-      { chat_id: (chat as any).id, user_id: currentUserId, role: "member" },
-      { chat_id: (chat as any).id, user_id: contactId, role: "member" },
-    ] as any);
-
-    setActiveChat((chat as any).id);
+    setActiveChat(chatId as unknown as string);
     setShowContacts(false);
     loadChats();
   };
