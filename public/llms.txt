@@ -1,0 +1,25 @@
+# HN GROUPE (HN Driver)
+
+> Ride hailing, delivery, and e-commerce platform operating in Morocco and beyond — book rides, order food and groceries, and send parcels.
+
+HN GROUPE runs HN Driver (rides), HN Delivery (food, grocery, pharmacy, courier), and related digital services. The platform is available on the web and as Android apps, in Arabic, French, English, and Spanish.
+
+## Pages
+
+- [Home](/): Overview of HN GROUPE services — rides, delivery, and digital products.
+- [Welcome](/welcome): Introduction to the platform and how to get started.
+- [Customer](/customer): Book a ride and manage trips as a passenger.
+- [Delivery](/delivery): Order food, groceries, pharmacy items, or send a parcel.
+- [Restaurants](/restaurants): Browse partner restaurants available for delivery.
+- [Delivery restaurants](/delivery/restaurants): Restaurant listings within the delivery service.
+- [Restaurants category](/delivery/category/restaurants): Restaurant delivery category.
+- [Grocery category](/delivery/category/grocery): Grocery delivery category.
+- [Pharmacy category](/delivery/category/pharmacy): Pharmacy delivery category.
+- [Courier](/delivery/courier): Parcel and courier delivery service.
+- [Drive with us](/driver): Information for drivers who want to join the platform.
+- [HN Groupe](/hn-groupe): The group's ecosystem of projects and companies.
+
+## Optional
+
+- [Privacy policy](/privacy): How HN GROUPE handles personal data.
+- [Terms and conditions](/terms): Terms of use for the platform.
