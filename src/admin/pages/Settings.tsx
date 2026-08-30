@@ -21,6 +21,8 @@ import StoreSettings from "@/admin/components/settings/StoreSettings";
 import CommissionSettings from "@/admin/components/settings/CommissionSettings";
 import ApiKeysSettings from "@/admin/components/settings/ApiKeysSettings";
 import LoginCodeSettings from "@/admin/components/settings/LoginCodeSettings";
+import ManaraSettings from "@/admin/components/settings/ManaraSettings";
+
 
 const AdminSettings = () => {
   const { t } = useI18n();
@@ -191,7 +193,9 @@ const AdminSettings = () => {
           <TabsTrigger value="languages" className="text-xs">🌐 اللغات</TabsTrigger>
           <TabsTrigger value="api_keys" className="text-xs">🔑 مفاتيح API</TabsTrigger>
           <TabsTrigger value="login_code" className="text-xs">🔐 رمز الدخول</TabsTrigger>
+          <TabsTrigger value="manara" className="text-xs">🌐 منارة</TabsTrigger>
         </TabsList>
+
 
         <TabsContent value="general" className="mt-4">
           <GeneralSettings settings={settings} onChange={(key, value) => setSettings(s => ({ ...s, [key]: value }))} freePeriod={freePeriod} onFreePeriodChange={setFreePeriod} />
@@ -252,7 +256,12 @@ const AdminSettings = () => {
         <TabsContent value="login_code" className="mt-4">
           <LoginCodeSettings />
         </TabsContent>
+
+        <TabsContent value="manara" className="mt-4">
+          <ManaraSettings />
+        </TabsContent>
       </Tabs>
+
     </div>
   );
 };
