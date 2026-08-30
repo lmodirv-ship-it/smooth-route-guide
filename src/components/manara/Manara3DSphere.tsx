@@ -78,19 +78,21 @@ const Manara3DSphere = ({ heightPercent = 70, speed = 24, labels = [] }: Manara3
             {labels.slice(0, 6).map((label, i) => {
               const angle = (360 / Math.min(labels.length, 6)) * i;
               return (
-                <span
+                <div
                   key={label + i}
-                  className="absolute left-1/2 top-1/2 whitespace-nowrap rounded-full border border-border/60 bg-background/70 px-3 py-1 text-[11px] font-medium text-foreground/90 shadow-sm backdrop-blur"
-                  style={{
-                    transform: `rotate(${angle}deg) translate(0, -52%) translateY(-46vh) rotate(${-angle}deg)`,
-                    transformOrigin: "center",
-                    marginInlineStart: "-3rem",
-                  }}
+                  className="absolute inset-0"
+                  style={{ transform: `rotate(${angle}deg)` }}
                 >
-                  {label}
-                </span>
+                  <span
+                    className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-border/60 bg-background/70 px-3 py-1 text-[11px] font-medium text-foreground/90 shadow-sm backdrop-blur"
+                    style={{ transform: `translate(-50%, -50%) rotate(${-angle}deg)` }}
+                  >
+                    {label}
+                  </span>
+                </div>
               );
             })}
+
           </div>
         )}
       </div>
