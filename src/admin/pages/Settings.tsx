@@ -256,7 +256,12 @@ const AdminSettings = () => {
         <TabsContent value="login_code" className="mt-4">
           <LoginCodeSettings />
         </TabsContent>
+
+        <TabsContent value="manara" className="mt-4">
+          <ManaraSettings />
+        </TabsContent>
       </Tabs>
+
     </div>
   );
 };
