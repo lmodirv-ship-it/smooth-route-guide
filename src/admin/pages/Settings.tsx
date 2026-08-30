@@ -193,7 +193,9 @@ const AdminSettings = () => {
           <TabsTrigger value="languages" className="text-xs">🌐 اللغات</TabsTrigger>
           <TabsTrigger value="api_keys" className="text-xs">🔑 مفاتيح API</TabsTrigger>
           <TabsTrigger value="login_code" className="text-xs">🔐 رمز الدخول</TabsTrigger>
+          <TabsTrigger value="manara" className="text-xs">🌐 منارة</TabsTrigger>
         </TabsList>
+
 
         <TabsContent value="general" className="mt-4">
           <GeneralSettings settings={settings} onChange={(key, value) => setSettings(s => ({ ...s, [key]: value }))} freePeriod={freePeriod} onFreePeriodChange={setFreePeriod} />
