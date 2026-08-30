@@ -112,8 +112,9 @@ export const useManaraNetwork = () => {
     };
     load();
 
+    const instanceId = Math.random().toString(36).slice(2, 8);
     const channel = supabase
-      .channel(`manara-network-${siteId}`)
+      .channel(`manara-network-${siteId}-${instanceId}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "manara_imports" },
