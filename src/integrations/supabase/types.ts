@@ -3937,6 +3937,96 @@ export type Database = {
         }
         Relationships: []
       }
+      manara_exports: {
+        Row: {
+          created_at: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+          payload: Json
+          signal_key: string
+          signal_type: string
+          signature: string | null
+          source_site: string
+          status: string
+          target_sites: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          payload?: Json
+          signal_key: string
+          signal_type?: string
+          signature?: string | null
+          source_site: string
+          status?: string
+          target_sites?: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          payload?: Json
+          signal_key?: string
+          signal_type?: string
+          signature?: string | null
+          source_site?: string
+          status?: string
+          target_sites?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      manara_imports: {
+        Row: {
+          created_at: string
+          export_id: string | null
+          id: string
+          payload: Json
+          process_status: string
+          recipient_site: string | null
+          reject_reason: string | null
+          sender_site: string
+          signal_key: string
+          signal_type: string
+          signal_value: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          export_id?: string | null
+          id?: string
+          payload?: Json
+          process_status?: string
+          recipient_site?: string | null
+          reject_reason?: string | null
+          sender_site: string
+          signal_key: string
+          signal_type?: string
+          signal_value?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          export_id?: string | null
+          id?: string
+          payload?: Json
+          process_status?: string
+          recipient_site?: string | null
+          reject_reason?: string | null
+          sender_site?: string
+          signal_key?: string
+          signal_type?: string
+          signal_value?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       menu_categories: {
         Row: {
           created_at: string
