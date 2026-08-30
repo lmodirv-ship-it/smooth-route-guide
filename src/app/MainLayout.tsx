@@ -2,7 +2,7 @@
  * Main Application Layout — wraps customer, driver, and delivery interfaces.
  */
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Users } from "lucide-react";
+import { Users, Sun } from "lucide-react";
 import GlobalLogoutButton from "@/components/GlobalLogoutButton";
 import GlobalNotificationListener from "@/components/GlobalNotificationListener";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -78,9 +78,18 @@ const MainLayoutInner = () => {
           <VisitorCounter />
           <div className="w-px h-5 bg-border/40 shrink-0" />
           
-          {/* Logout + Language */}
+          {/* Logout + Language + Manara */}
           {isVisible("logout_btn") && <GlobalLogoutButton />}
           {isVisible("language_switcher") && <LanguageSwitcher />}
+          <button
+            onClick={() => navigate("/manara")}
+            className="relative p-1.5 rounded-full border border-border bg-secondary text-foreground hover:bg-amber-500 hover:text-white transition-all shrink-0"
+            title="منارة"
+            aria-label="منارة"
+          >
+            <Sun className="w-3.5 h-3.5" />
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+          </button>
           {isVisible("community_btn") && !isCommunityPage && (
             <button
               onClick={() => navigate("/community")}
