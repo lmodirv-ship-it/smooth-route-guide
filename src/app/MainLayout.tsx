@@ -87,7 +87,7 @@ const MainLayoutInner = () => {
             title="منارة"
             aria-label="منارة"
           >
-            <Lighthouse className="w-3.5 h-3.5" />
+            <Sun className="w-3.5 h-3.5" />
             <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
           </button>
           {isVisible("community_btn") && !isCommunityPage && (
