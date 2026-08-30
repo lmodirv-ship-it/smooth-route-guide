@@ -99,6 +99,7 @@ const TopNavPage = lazy(() => import("@/pages/TopNavPage"));
 const WhyHNPage = lazy(() => import("@/pages/WhyHNPage"));
 const OAuthConsent = lazy(() => import("@/pages/OAuthConsent"));
 const ConnectMCP = lazy(() => import("@/pages/ConnectMCP"));
+const Manara = lazy(() => import("@/pages/Manara"));
 
 export const mainRouteElements = (
   <>
@@ -112,6 +113,7 @@ export const mainRouteElements = (
     <Route path="/signup" element={<Navigate to="/auth/client?mode=signup" replace />} />
     <Route path="/.lovable/oauth/consent" element={<LazyPage component={OAuthConsent} />} />
     <Route path="/connect" element={<LazyPage component={ConnectMCP} />} />
+    <Route path="/manara" element={<LazyPage component={Manara} />} />
     <Route path="/auth/:role" element={<LazyPage component={AuthPage} />} />
     <Route path="/complete-profile" element={<RequireRole><LazyPage component={CompleteProfile} /></RequireRole>} />
     <Route path="/forgot-password" element={<LazyPage component={ForgotPassword} />} />
