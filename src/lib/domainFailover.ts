@@ -93,6 +93,17 @@ export const findActiveDomain = async (
   return null;
 };
 
-/** Find the active domain for a specific sub-app role (admin, client, driver, ...). */
-export const findActiveDomainForRole = (role: keyof typeof APK_SUBDOMAIN_FAILOVER) =>
-  findActiveDomain(APK_SUBDOMAIN_FAILOVER[role] ?? APK_DOMAIN_PRIORITY);
+/** Find the active domain for a specific sub-app role (admin, client, driver, ...).
+ *  The Manara knowledge network (hn_manara_domain_map in localStorage) can
+ *  override the static list when a group site has announced a domain change. */
+export const findActiveDomainForRole = (role: keyof typeof APK_SUBDOMAIN_FAILOVER) => {
+  let priority: readonly string[] = APK_SUBDOMAIN_FAILOVER[role] ?? APK_DOMAIN_PRIORITY;
+  try {
+    const map: Record<string, string> = JSON.parse(localStorage.getItem("hn_manara_domain_map") ?? "{}");
+    const announced = map[role as string];
+    if (announced && !priority.includes(announced)) {
+      priority = [announced, ...priority];
+    }
+  } catch { /* ignore */ }
+  return findActiveDomain(priority);
+};

@@ -38,6 +38,7 @@ const AdminRestaurantMenu = lazy(() => import("@/admin/pages/AdminRestaurantMenu
 const CCRestaurantMenu = lazy(() => import("@/admin/pages/callcenter/CCRestaurantMenu"));
 const ZonesManagement = lazy(() => import("@/admin/pages/ZonesManagement"));
 const AdminSettings = lazy(() => import("@/admin/pages/Settings"));
+const ManaraNetwork = lazy(() => import("@/admin/pages/ManaraNetwork"));
 const CommissionRatesPage = lazy(() => import("@/admin/pages/CommissionRates"));
 const SmartAssistantPage = lazy(() => import("@/admin/pages/SmartAssistant"));
 const SmartAssistantManagementPage = lazy(() => import("@/admin/pages/SmartAssistantManagement"));
@@ -164,6 +165,7 @@ export const adminRouteElements = (
       <Route path="versions" element={L(VersionManager)} />
       <Route path="settings" element={L(AdminSettings)} />
       <Route path="pages" element={L(PageManagement)} />
+      <Route path="manara-network" element={L(ManaraNetwork)} />
       <Route path="database" element={L(DatabaseManager)} />
       <Route path="permissions" element={L(PermissionsManagement)} />
       <Route path="messaging" element={L(InternalMessaging)} />

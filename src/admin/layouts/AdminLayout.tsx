@@ -139,6 +139,7 @@ const AdminLayout = () => {
     { path: "/admin/versions", icon: GitBranch, label: "إدارة الإصدارات" },
     { path: "/admin/settings", icon: Settings, label: t.admin.settingsMenu },
     { path: "/admin/pages", icon: FileText, label: "إدارة الصفحات" },
+    { path: "/admin/manara-network", icon: Globe, label: "🛰️ شبكة منارة" },
     { path: "/admin/database", icon: Database, label: "إدارة قاعدة البيانات" },
     { path: "/admin/permissions", icon: Shield, label: "إدارة الصلاحيات" },
     { path: "/admin/health-check", icon: Activity, label: "فحص صحة النظام" },
