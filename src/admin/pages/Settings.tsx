@@ -21,6 +21,8 @@ import StoreSettings from "@/admin/components/settings/StoreSettings";
 import CommissionSettings from "@/admin/components/settings/CommissionSettings";
 import ApiKeysSettings from "@/admin/components/settings/ApiKeysSettings";
 import LoginCodeSettings from "@/admin/components/settings/LoginCodeSettings";
+import ManaraSettings from "@/admin/components/settings/ManaraSettings";
+
 
 const AdminSettings = () => {
   const { t } = useI18n();
