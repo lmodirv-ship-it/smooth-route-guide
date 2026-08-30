@@ -5,6 +5,7 @@ import { ArrowLeft, Lightbulb, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Manara3DSphere from "@/components/manara/Manara3DSphere";
+import ManaraBackground3D from "@/components/manara/ManaraBackground3D";
 import { useManaraContent } from "@/hooks/useManaraContent";
 
 const getIcon = (name: string) => {
@@ -24,7 +25,8 @@ const Manara = () => {
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-background text-foreground">
+    <div dir="rtl" className="relative min-h-screen bg-background text-foreground">
+      <ManaraBackground3D />
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-border/50 bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
